@@ -114,12 +114,16 @@ export default function LoginPage() {
               </p>
             )}
 
-            <p className="text-center text-sm text-ink/60">
-              {t('login.noAccount')}{' '}
-              <Link href="/register" className="font-medium text-brand-dark hover:underline">
-                {t('login.signUp')}
+            {/* New here is a different path from signing in: say so plainly, with its own button. */}
+            <div className="rounded-DEFAULT border border-border bg-paper p-4 text-center">
+              <p className="text-sm font-medium text-ink">{t('signup.newHere')}</p>
+              <Link
+                href="/register"
+                className="mt-2 inline-flex w-full items-center justify-center rounded-DEFAULT border border-brand bg-white px-4 py-2.5 text-sm font-semibold text-brand-dark hover:bg-brand-light"
+              >
+                {t('signup.createAccount')}
               </Link>
-            </p>
+            </div>
 
             {/* Always shown, so it reveals nothing; see the caregiver sign-in page. */}
             <div className="space-y-1 border-t border-border pt-4 text-center text-xs text-ink/50">

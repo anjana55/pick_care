@@ -1,28 +1,28 @@
 import type { ReactElement } from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { agreementVersion } from '@care-platform/shared';
 import RegisterPage from '@/app/register/page';
-import RegisterWhatsappPage from '@/app/register/whatsapp/page';
 import { I18nProvider } from '@/lib/i18n';
+import { hardNavigate } from '@/lib/navigation';
+import { rememberIdentity } from '@/lib/signup';
 
 const get = jest.fn();
 const post = jest.fn();
+const applyTokens = jest.fn();
 
-jest.mock('@/lib/api/auth-context', () => ({ useAuth: () => ({ user: null, logout: jest.fn(), applyTokens: jest.fn() }) }));
+jest.mock('@/lib/navigation', () => ({ hardNavigate: jest.fn() }));
+jest.mock('@/lib/api/auth-context', () => ({ useAuth: () => ({ user: null, logout: jest.fn(), applyTokens: (...a: unknown[]) => applyTokens(...a) }) }));
 jest.mock('next/navigation', () => ({ useRouter: () => ({ push: jest.fn(), replace: jest.fn() }) }));
 jest.mock('@/lib/api/client', () => ({
   ...jest.requireActual('@/lib/api/client'),
   api: { get: (...a: unknown[]) => get(...a), post: (...a: unknown[]) => post(...a) },
 }));
 
-const config = {
-  enabled: true,
-  caregiver: { register: true, login: true, recovery: true },
-  customer: { register: true, login: true, recovery: true },
-  otpLength: 6,
-};
+const METHODS = { email: true, whatsapp: true, providers: { GOOGLE: true, MICROSOFT: false, FACEBOOK: false } };
 const TREE = [{ id: 1, name: 'Western Province', districts: [{ id: 1, name: 'Colombo' }] }];
 const CITIES = [{ id: 340, name: 'Dehiwala', subName: null, postcode: '10350', latitude: 6.85, longitude: 79.86 }];
+const TOKENS = { accessToken: 'a', refreshToken: 'r' };
 
 function renderPage(node: ReactElement) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -35,110 +35,169 @@ function renderPage(node: ReactElement) {
 
 const change = (label: RegExp | string, value: string) => fireEvent.change(screen.getByLabelText(label), { target: { value } });
 
+/** Step 1 with email and password, so the details form opens. */
+async function chooseEmail() {
+  fireEvent.click(await screen.findByRole('button', { name: /Continue with email and password/ }));
+  change(/^Email address/, 'kamala@example.com');
+  change(/^Password/, 'longenough');
+  change(/Confirm password/, 'longenough');
+  fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+  await screen.findByText('About you and the care you need');
+}
+
+/** Step 1 with WhatsApp: number, code, and the API's ticket. */
+async function chooseWhatsapp() {
+  post.mockImplementation((path: string) => {
+    if (path === '/auth/signup/whatsapp/request-otp') return Promise.resolve({ phone: '+94771234567', resendAfterSeconds: 60, expiresInSeconds: 300, devOtp: '123456' });
+    if (path === '/auth/signup/whatsapp/verify-otp') {
+      return Promise.resolve({ signedIn: false, ticket: 'wa-ticket', expiresInSeconds: 3600, method: 'WHATSAPP', side: 'client', phone: '+94771234567', email: null, name: null });
+    }
+    return Promise.resolve({ signedIn: true, method: 'WHATSAPP', tokens: TOKENS });
+  });
+  fireEvent.click(await screen.findByRole('button', { name: /Continue with WhatsApp/ }));
+  change(/WhatsApp number/, '0771234567');
+  fireEvent.click(screen.getByRole('button', { name: 'Send code' }));
+  change(/^Code/, await screen.findByText('Development code: 123456').then(() => '123456'));
+  fireEvent.click(screen.getByRole('button', { name: 'Verify and continue' }));
+  await screen.findByText('About you and the care you need');
+}
+
 beforeEach(() => {
+  window.localStorage.clear();
+  window.sessionStorage.clear();
   get.mockReset();
   post.mockReset();
+  applyTokens.mockReset();
+  (hardNavigate as jest.Mock).mockReset();
   get.mockImplementation((path: string) => {
-    if (path === '/auth/whatsapp/config') return Promise.resolve(config);
+    if (path === '/auth/signup/methods') return Promise.resolve(METHODS);
     if (path.startsWith('/public/meta/locations/tree')) return Promise.resolve(TREE);
     if (path.startsWith('/public/meta/locations/cities')) return Promise.resolve(CITIES);
+    if (path === '/auth/social/google/signup-url') return Promise.resolve({ url: 'https://accounts.google.com/o/oauth2/v2/auth?x=1' });
     return Promise.resolve(null);
   });
 });
 
-describe('client sign-up collects the care intake', () => {
-  it('shows who/where/what to a new client on the email page', async () => {
+describe('client registration asks how they will sign in first', () => {
+  it('offers WhatsApp, the switched-on providers, and email - and a clear way to sign in instead', async () => {
     renderPage(<RegisterPage />);
-    expect(screen.getByText('Who needs care?')).toBeInTheDocument();
-    expect(screen.getByText('How should we contact you?')).toBeInTheDocument();
-    expect(screen.getByText('Where is care needed?')).toBeInTheDocument();
-    expect(screen.getByText('What care is needed?')).toBeInTheDocument();
-    await waitFor(() => expect(screen.getByRole('option', { name: 'Colombo' })).toBeInTheDocument());
+    expect(await screen.findByText('How would you like to sign in?')).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /Continue with WhatsApp/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Continue with Google' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Continue with Microsoft' })).toBeNull();
+    expect(screen.getByRole('button', { name: /Continue with email and password/ })).toBeInTheDocument();
+    expect(screen.getByText('Already have an account?').querySelector('a')).toHaveAttribute('href', '/login');
+    // No details yet: they come after the sign-in is chosen.
+    expect(screen.queryByText('Who needs care?')).toBeNull();
   });
 
-  it('only asks about the person needing care once the registrant says it is someone else', () => {
+  it('starts the provider sign-up with a nonce kept for the way back', async () => {
     renderPage(<RegisterPage />);
-    expect(screen.queryByLabelText(/Name of the person needing care/)).toBeNull();
-    fireEvent.click(screen.getByLabelText("I'm arranging care for someone else"));
-    expect(screen.getByLabelText(/Name of the person needing care/)).toBeInTheDocument();
+    fireEvent.click(await screen.findByRole('button', { name: 'Continue with Google' }));
+    await waitFor(() => expect(hardNavigate).toHaveBeenCalledWith('https://accounts.google.com/o/oauth2/v2/auth?x=1'));
+    const [, params] = get.mock.calls.find(([p]) => p === '/auth/social/google/signup-url')!;
+    expect(params).toEqual({ nonce: window.sessionStorage.getItem('care-caregiver-social-login-nonce'), side: 'client' });
+  });
+
+  it('after WhatsApp, does not ask for the phone number again, and ends signed in', async () => {
+    renderPage(<RegisterPage />);
+    await chooseWhatsapp();
+    expect(screen.getByText("You'll sign in with WhatsApp: +94771234567")).toBeInTheDocument();
+    expect(screen.queryByLabelText(/^Phone number/)).toBeNull();
+    // No email address, so email is not a way to be contacted.
+    const method = screen.getByLabelText(/Preferred contact method/) as HTMLSelectElement;
+    expect(Array.from(method.options).map((o) => o.value)).not.toContain('EMAIL');
+    expect(method.value).toBe('WHATSAPP');
+
+    change(/Full name/, 'Kamala Perera');
     fireEvent.click(screen.getByLabelText('I need care myself'));
-    expect(screen.queryByLabelText(/Name of the person needing care/)).toBeNull();
+    change(/Your age/, '70');
+    change(/Your gender/, 'FEMALE');
+    change(/District/, '1');
+    await screen.findByRole('option', { name: 'Dehiwala' });
+    change(/City/, '340');
+    change(/When is care needed/, 'DAY');
+    change(/When should care start/, 'WITHIN_WEEK');
+    fireEvent.click(screen.getByLabelText(/data processing consent/));
+    fireEvent.click(screen.getByLabelText(/agree to the client service agreement/));
+    fireEvent.click(screen.getByRole('button', { name: 'Create my account' }));
+
+    await waitFor(() => expect(post).toHaveBeenCalledWith('/auth/signup/client', expect.anything()));
+    const body = post.mock.calls.find(([p]) => p === '/auth/signup/client')![1];
+    expect(body).toMatchObject({ fullName: 'Kamala Perera', signupTicket: 'wa-ticket', agreementAccepted: true, agreementVersion: agreementVersion('client') });
+    expect(body).not.toHaveProperty('phone');
+    expect(body).not.toHaveProperty('password');
+    // The description of the care is optional and was left blank.
+    expect(body.careNeeds).toBeUndefined();
+    await waitFor(() => expect(applyTokens).toHaveBeenCalledWith(TOKENS));
+    expect(hardNavigate).toHaveBeenCalledWith('/');
   });
 
-  it('does not submit an incomplete form, and says what is missing', async () => {
+  it('after email and password, asks for a phone number and says to check the inbox', async () => {
+    post.mockResolvedValue({ signedIn: false, method: 'EMAIL', email: 'kamala@example.com', verificationSent: true });
     renderPage(<RegisterPage />);
-    fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
+    await chooseEmail();
+    expect(screen.getByLabelText(/^Phone number/)).toBeInTheDocument();
+    // Asked once, on step 1 - not again here.
+    expect(screen.queryByLabelText(/^Password/)).toBeNull();
+  });
+
+  it('does not submit an incomplete form, and needs the service agreement', async () => {
+    renderPage(<RegisterPage />);
+    await chooseEmail();
+    fireEvent.click(screen.getByRole('button', { name: 'Create my account' }));
     expect(await screen.findByText('Please choose who needs care')).toBeInTheDocument();
     expect(screen.getByText('Please choose a district')).toBeInTheDocument();
-    expect(screen.getByText('Please describe the care needed')).toBeInTheDocument();
+    expect(screen.getByText('Please read and accept the service agreement to continue')).toBeInTheDocument();
+    // Describing the care is optional now.
+    expect(screen.queryByText('Please describe the care needed')).toBeNull();
     expect(post).not.toHaveBeenCalled();
   });
 
-  it('offers no email contact option to a WhatsApp sign-up (it has no email address)', async () => {
-    renderPage(<RegisterWhatsappPage />);
-    await waitFor(() => expect(screen.getByLabelText(/WhatsApp number/)).toBeInTheDocument());
-    const method = screen.getByLabelText(/Preferred contact method/) as HTMLSelectElement;
-    const labels = Array.from(method.options).map((o) => o.textContent);
-    expect(labels).toContain('Phone call');
-    expect(labels).toContain('WhatsApp');
-    expect(labels).not.toContain('Email');
+  it('shows the agreement text on request', async () => {
+    renderPage(<RegisterPage />);
+    await chooseEmail();
+    fireEvent.click(screen.getByRole('button', { name: 'Read the agreement' }));
+    expect(screen.getByText('Bookings and payment')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Open it on its own page' })).toHaveAttribute('href', '/agreements/client');
   });
 
-  it('sends the whole intake with a complete WhatsApp registration', async () => {
-    post.mockResolvedValue({ patientId: 'p1', message: 'ok', otpSent: true, resendAfterSeconds: 60 });
-    renderPage(<RegisterWhatsappPage />);
-    await waitFor(() => expect(screen.getByRole('option', { name: 'Colombo' })).toBeInTheDocument());
+  it('picks up an identity proven by Google, with the name it knows', async () => {
+    rememberIdentity({ ticket: 'g-ticket', expiresInSeconds: 3600, method: 'GOOGLE', side: 'client', email: 'nimali@example.com', phone: null, name: 'Nimali Perera' });
+    renderPage(<RegisterPage />);
+    expect(await screen.findByText("You'll sign in with Google: nimali@example.com")).toBeInTheDocument();
+    await waitFor(() => expect((screen.getByLabelText(/Full name/) as HTMLInputElement).value).toBe('Nimali Perera'));
+    expect(screen.getByLabelText(/^Phone number/)).toBeInTheDocument();
+  });
 
-    change(/Full name/, 'Nadeesha Fernando');
-    change(/WhatsApp number/, '0771234567');
-    fireEvent.click(screen.getByLabelText("I'm arranging care for someone else"));
-    change(/Name of the person needing care/, 'Sunil Fernando');
-    change(/Who are they to you/, 'PARENT');
-    change(/Their age/, '78');
-    change(/Their gender/, 'MALE');
-    change(/Preferred contact method/, 'WHATSAPP');
-    change(/^District/, '1');
-    await waitFor(() => expect(screen.getByRole('option', { name: 'Dehiwala' })).toBeInTheDocument());
-    change(/^City/, '340');
-    change(/Describe the care needed/, 'Needs help with bathing and meals.');
+  it('goes back to choosing when the ticket has expired', async () => {
+    const { ApiError } = jest.requireActual('@/lib/api/client');
+    rememberIdentity({ ticket: 'old', expiresInSeconds: 3600, method: 'GOOGLE', side: 'client', email: 'x@example.com', phone: null, name: 'Old Ticket' });
+    post.mockRejectedValue(new ApiError(401, 'expired', 'ticket_expired'));
+    renderPage(<RegisterPage />);
+    await screen.findByText(/You'll sign in with Google/);
+    await screen.findByRole('option', { name: 'Colombo' });
+    change(/^Phone number/, '0771234567');
+    fireEvent.click(screen.getByLabelText('I need care myself'));
+    change(/Your age/, '70');
+    change(/Your gender/, 'FEMALE');
+    change(/District/, '1');
+    await screen.findByRole('option', { name: 'Dehiwala' });
+    change(/City/, '340');
     change(/When is care needed/, 'DAY');
     change(/When should care start/, 'WITHIN_WEEK');
-    fireEvent.click(screen.getByRole('checkbox'));
-    fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
-
-    await waitFor(() => expect(post).toHaveBeenCalledTimes(1));
-    const [path, body] = post.mock.calls[0];
-    expect(path).toBe('/auth/whatsapp/register-patient');
-    expect(body).toMatchObject({
-      fullName: 'Nadeesha Fernando',
-      whatsappNumber: '0771234567',
-      consentAccepted: true,
-      registrantType: 'GUARDIAN',
-      recipientName: 'Sunil Fernando',
-      recipientRelationship: 'PARENT',
-      recipientAge: 78,
-      recipientGender: 'MALE',
-      preferredContactMethod: 'WHATSAPP',
-      preferredContactTime: 'ANYTIME',
-      districtId: 1,
-      cityId: 340,
-      careNeeds: 'Needs help with bathing and meals.',
-      careSchedule: 'DAY',
-      careStart: 'WITHIN_WEEK',
-      preferredCaregiverGender: 'NO_PREFERENCE',
-    });
-    // Blank optional answers are left out of the request, not sent as ''.
-    const onTheWire = JSON.parse(JSON.stringify(body));
-    expect(onTheWire).not.toHaveProperty('alternatePhone');
-    expect(onTheWire).not.toHaveProperty('careAddress');
+    fireEvent.click(screen.getByLabelText(/data processing consent/));
+    fireEvent.click(screen.getByLabelText(/agree to the client service agreement/));
+    fireEvent.click(screen.getByRole('button', { name: 'Create my account' }));
+    expect(await screen.findByText('Your sign-in step has expired. Please choose how to sign in again.')).toBeInTheDocument();
+    expect(screen.getByText('How would you like to sign in?')).toBeInTheDocument();
   });
 });
 
-describe('client sign-up after a search', () => {
+describe('client registration after a search asks nothing twice', () => {
   const PUBLIC_ID = '11111111-1111-4111-8111-111111111111';
 
   beforeEach(() => {
-    window.localStorage.clear();
     window.localStorage.setItem(
       'care-platform-last-search',
       JSON.stringify({
@@ -148,7 +207,6 @@ describe('client sign-up after a search', () => {
           location: { districtId: 1, cityId: 340 },
           shift: 'NIGHT',
           caregiverGenderPreference: 'FEMALE',
-          // Today, whatever today is: "Immediately".
           desiredStartDate: new Date().toISOString().slice(0, 10),
         },
         skillNames: ['Dementia care'],
@@ -157,38 +215,43 @@ describe('client sign-up after a search', () => {
     window.localStorage.setItem('care-platform-pending-contact', JSON.stringify({ publicId: PUBLIC_ID, at: Date.now() }));
   });
 
-  it('goes straight to a shorter form and shows what the search already answered', async () => {
+  it('hides every question the search answered - age and gender included - and lists them instead', async () => {
     renderPage(<RegisterPage />);
-
     expect(await screen.findByText(/You're contacting caregiver #11111111/)).toBeInTheDocument();
     expect(screen.queryByText('Find and hire the right caregiver for your family')).toBeNull();
-    // Who needs care is still asked - a search never says who is registering.
+    await chooseEmail();
+
+    // Who is registering is still asked; the age and gender the search gave are not.
     expect(screen.getByText('Who needs care?')).toBeVisible();
+    expect(screen.getByLabelText(/Your age/)).not.toBeVisible();
+    expect(screen.getByLabelText(/Your gender/)).not.toBeVisible();
     expect(screen.getByText('Where is care needed?')).not.toBeVisible();
     expect(screen.getByText('What care is needed?')).not.toBeVisible();
     expect(screen.getByText('How should we contact you?')).not.toBeVisible();
     expect(await screen.findByText('Dehiwala, Colombo')).toBeInTheDocument();
+    expect(screen.getByText('Age 78 · Female')).toBeInTheDocument();
     expect(screen.getByText('Caregiver preference: Female')).toBeInTheDocument();
-    expect(screen.getByText('Phone call · Any time')).toBeInTheDocument();
-    expect((screen.getByLabelText(/Your age/) as HTMLInputElement).value).toBe('78');
   });
 
-  it('submits the carried-over answers with only identity and "who" typed in', async () => {
-    post.mockResolvedValue({ patientId: 'p1', message: 'ok', pendingToken: 'tok', pendingTokenExpiresInSeconds: 900, providers: { GOOGLE: true, MICROSOFT: false, FACEBOOK: false } });
+  it('submits the carried-over answers with only name, phone and "who" typed in', async () => {
+    post.mockResolvedValue({ signedIn: false, method: 'EMAIL', email: 'kamala@example.com', verificationSent: true });
     renderPage(<RegisterPage />);
+    await chooseEmail();
     await screen.findByText('Dehiwala, Colombo');
 
     change(/Full name/, 'Kamala Perera');
-    change(/Email address/, 'kamala@example.com');
-    change(/Phone number/, '0771234567');
-    change(/^Password/, 'longenough');
-    change(/Confirm password/, 'longenough');
+    change(/^Phone number/, '0771234567');
     fireEvent.click(screen.getByLabelText('I need care myself'));
-    fireEvent.click(screen.getByRole('checkbox'));
-    fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
+    fireEvent.click(screen.getByLabelText(/data processing consent/));
+    fireEvent.click(screen.getByLabelText(/agree to the client service agreement/));
+    fireEvent.click(screen.getByRole('button', { name: 'Create my account' }));
 
     await waitFor(() => expect(post).toHaveBeenCalledTimes(1));
+    expect(post.mock.calls[0][0]).toBe('/auth/signup/client');
     expect(post.mock.calls[0][1]).toMatchObject({
+      email: 'kamala@example.com',
+      password: 'longenough',
+      phone: '0771234567',
       registrantType: 'SELF',
       recipientAge: 78,
       recipientGender: 'FEMALE',
@@ -201,25 +264,23 @@ describe('client sign-up after a search', () => {
       preferredContactTime: 'ANYTIME',
       careNeeds: 'Help needed with: Dementia care\nHealth conditions: diabetes',
     });
-    expect(await screen.findByText(/we'll take you back to the caregiver you chose/)).toBeInTheDocument();
-    // They can confirm their address with Google instead of the email link.
-    expect(screen.getByText('Or confirm with an account you already have')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /continue with google/i })).toBeInTheDocument();
-    // They chose a password on the form: the caregivers' email-and-password step isn't offered.
-    expect(screen.queryByRole('button', { name: 'Use an email address and password' })).toBeNull();
+    expect(await screen.findByText('Check your email')).toBeInTheDocument();
+    expect(screen.getByText(/we'll take you back to the caregiver you chose/)).toBeInTheDocument();
   });
 
   it('unfolds everything for editing', async () => {
     renderPage(<RegisterPage />);
+    await chooseEmail();
     await screen.findByText('Dehiwala, Colombo');
     fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
     expect(screen.getByText('Where is care needed?')).toBeVisible();
-    expect(screen.getByText('What care is needed?')).toBeVisible();
+    expect(screen.getByLabelText(/Your age/)).toBeVisible();
     expect((screen.getByLabelText(/Describe the care needed/) as HTMLTextAreaElement).value).toContain('Dementia care');
   });
 
   it('defaults a WhatsApp sign-up to being contacted on WhatsApp', async () => {
-    renderPage(<RegisterWhatsappPage />);
+    renderPage(<RegisterPage />);
+    await chooseWhatsapp();
     expect(await screen.findByText('WhatsApp · Any time')).toBeInTheDocument();
   });
 });

@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button';
 import { LOGIN_NONCE_KEY } from '@/components/caregivers/social-login-buttons';
 import { hardNavigate } from '@/lib/navigation';
 import { takeReturnTo } from '@/lib/return-to';
+import { rememberIdentity, SIGNUP_PAGE } from '@/lib/signup';
+import type { SignupIdentity } from '@care-platform/shared';
 
 export type SocialSide = 'caregiver' | 'client';
 
@@ -60,6 +62,8 @@ function CallbackInner({ side }: { side: SocialSide }) {
   const [error, setError] = useState<string | null>(null);
   const [errorCode, setErrorCode] = useState<string | null>(null);
   const isLogin = params.get('flow') === 'login';
+  // Proving who they are before registering: back to the form with the ticket.
+  const isIdentify = params.get('flow') === 'identify';
   // React 18 StrictMode double-invokes effects in development, and this effect
   // spends the code. Without the guard the second run would present the same
   // code as already used and show a spurious failure on a working sign-in.
@@ -85,13 +89,24 @@ function CallbackInner({ side }: { side: SocialSide }) {
     // generated there, went through the provider inside the signed state, and
     // is compared here before the code is spent - so a callback link opened by
     // someone else cannot sign them in as the person who started the attempt.
-    if (isLogin) {
+    if (isLogin || isIdentify) {
       const expected = window.sessionStorage.getItem(LOGIN_NONCE_KEY);
       window.sessionStorage.removeItem(LOGIN_NONCE_KEY);
       if (!expected || expected !== params.get('nonce')) {
         setError(t('caregiverSignup.errors.stateMismatch'));
         return;
       }
+    }
+
+    if (isIdentify) {
+      api
+        .post<SignupIdentity>('/auth/signup/identity/exchange', { code })
+        .then((identity) => {
+          rememberIdentity(identity);
+          hardNavigate(SIGNUP_PAGE[side]);
+        })
+        .catch(() => setError(t('caregiverSignup.errors.exchangeFailed')));
+      return;
     }
 
     api
@@ -108,7 +123,29 @@ function CallbackInner({ side }: { side: SocialSide }) {
       .catch((err) => {
         setError(err instanceof ApiError ? t('caregiverSignup.errors.exchangeFailed') : t('caregiverSignup.errors.generic'));
       });
-  }, [params, applyTokens, t, isLogin, side]);
+  }, [params, applyTokens, t, isLogin, isIdentify, side]);
+
+  // Registering, and the provider step did not work out: back to choosing, or to signing in.
+  if (error && isIdentify) {
+    return (
+      <div className="rounded-lg border border-border bg-white p-6 text-center">
+        <h1 className="mb-2 text-lg font-semibold text-ink">{t('caregiverSignup.callbackTitle')}</h1>
+        <p className="mb-5 text-sm text-danger">{error}</p>
+        <div className="flex flex-col gap-2">
+          <Link href={SIGNUP_PAGE[side]}>
+            <Button variant={errorCode === 'email_taken' || errorCode === 'wrong_portal' ? 'secondary' : 'primary'} className="w-full">
+              {t('caregiverSignup.backToSignup')}
+            </Button>
+          </Link>
+          <Link href={(side === 'client') === (errorCode !== 'wrong_portal') ? '/login' : '/caregiver/login'}>
+            <Button variant={errorCode === 'email_taken' || errorCode === 'wrong_portal' ? 'primary' : 'secondary'} className="w-full">
+              {t('signup.signIn')}
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (error && side === 'client') {
     return (

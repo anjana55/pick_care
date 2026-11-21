@@ -60,7 +60,7 @@ export async function buildPatientIntake(
     districtId: location.districtId,
     cityId: location.cityId,
     careAddress: dto.careAddress?.trim() || null,
-    careNeeds: dto.careNeeds.trim(),
+    careNeeds: dto.careNeeds?.trim() || null,
     careSchedule: dto.careSchedule,
     careStart: dto.careStart,
     preferredCaregiverGender: dto.preferredCaregiverGender ?? 'NO_PREFERENCE',

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { MessageCircle, Mail, X } from 'lucide-react';
+import { LogIn, MessageCircle, Mail, UserPlus, X } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { rememberReturnTo } from '@/lib/return-to';
 import { loadSearch, rememberPendingContact, type SearchContext } from '@/lib/care-intent';
@@ -56,7 +56,6 @@ export function RegistrationGate({ open, onClose, reason, caregiverPublicId, ret
     if (caregiverPublicId) rememberPendingContact(caregiverPublicId);
   };
 
-  const whatsappRegister = Boolean(whatsapp?.customer.register);
   const whatsappLogin = Boolean(whatsapp?.customer.login);
   const primary = 'flex w-full items-center justify-center gap-2 rounded-DEFAULT bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark';
   const secondary = 'flex w-full items-center justify-center gap-2 rounded-DEFAULT border border-border px-4 py-2.5 text-sm font-medium text-ink hover:bg-paper';
@@ -123,33 +122,28 @@ export function RegistrationGate({ open, onClose, reason, caregiverPublicId, ret
           </div>
         )}
 
+        {/* Two plainly different paths: new here, or already registered. How to sign in is chosen on the next page. */}
         <div className="mt-5 space-y-2">
-          {whatsappRegister && (
-            <Link href="/register/whatsapp" onClick={leave} className={primary}>
-              <MessageCircle className="h-4 w-4" aria-hidden />
-              {t('registrationGate.continueWhatsapp')}
-            </Link>
-          )}
-          <Link href="/register" onClick={leave} className={whatsappRegister ? secondary : primary}>
-            <Mail className="h-4 w-4" aria-hidden />
-            {t('registrationGate.continueEmail')}
+          <p className="text-xs font-medium uppercase tracking-wide text-ink/50">{t('signup.newHere')}</p>
+          <Link href="/register" onClick={leave} className={primary}>
+            <UserPlus className="h-4 w-4" aria-hidden />
+            {t('signup.createAccount')}
           </Link>
         </div>
 
-        <p className="mt-5 border-t border-border pt-4 text-center text-sm text-ink/60">
-          {t('registrationGate.haveAccount')}{' '}
-          <Link href="/login" onClick={leave} className="font-medium text-brand-dark hover:underline">
+        <div className="mt-5 space-y-2 border-t border-border pt-4">
+          <p className="text-xs font-medium uppercase tracking-wide text-ink/50">{t('registrationGate.haveAccount')}</p>
+          <Link href="/login" onClick={leave} className={secondary}>
+            <LogIn className="h-4 w-4" aria-hidden />
             {t('registrationGate.signIn')}
           </Link>
           {whatsappLogin && (
-            <>
-              {' · '}
-              <Link href="/login/whatsapp" onClick={leave} className="font-medium text-brand-dark hover:underline">
-                {t('registrationGate.signInWhatsapp')}
-              </Link>
-            </>
+            <Link href="/login/whatsapp" onClick={leave} className={secondary}>
+              <MessageCircle className="h-4 w-4" aria-hidden />
+              {t('registrationGate.signInWhatsapp')}
+            </Link>
           )}
-        </p>
+        </div>
       </div>
     </div>
   );

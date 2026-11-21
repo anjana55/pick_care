@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { Linking, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import type { OtpRequestResult, Tokens, WhatsappPublicConfig } from '@care-platform/shared';
 import { api } from '@/api';
 import { useAuth } from '@/auth/AuthProvider';
 import { isInvalidCredentials, messageFor } from '@/auth/messages';
-import { afterSignIn, portalFor, registerUrl, sideFrom } from '@/auth/sides';
+import { afterSignIn, portalFor, sideFrom } from '@/auth/sides';
 import { SocialButtons } from '@/auth/SocialButtons';
 import { useTranslation } from '@/i18n';
 import { useColors } from '@/theme';
@@ -17,7 +17,8 @@ import { BrandLogo, Card, Pill } from '@/ui/visual';
 /**
  * Sign-in for one side of the app. WhatsApp first when this deployment has it
  * switched on for that side (Settings > WhatsApp), with email as the
- * alternative; email only otherwise. Registering happens on the website for now.
+ * alternative; email only otherwise. Someone new is sent to registering, in
+ * the app, which is a separate path with its own button.
  */
 export default function SignIn() {
   const { t } = useTranslation();
@@ -157,10 +158,15 @@ export default function SignIn() {
           </Card>
         )}
 
-        <View style={styles.signUp}>
-          <Text style={{ color: colors.muted, fontSize: 15 }}>{t('signIn.noAccount')}</Text>
-          <Button variant="link" label={t('signIn.signUp')} onPress={() => Linking.openURL(registerUrl(side))} />
-        </View>
+        {/* New here is a different path from signing in: its own card and button, not a small link. */}
+        <Card style={styles.signUp}>
+          <Text style={{ color: colors.ink, fontSize: 17, fontWeight: '700' }}>{t('signup.newHere')}</Text>
+          <Button
+            variant="secondary"
+            label={side === 'caregiver' ? t('signup.join.title') : t('signup.createAccount')}
+            onPress={() => router.push({ pathname: side === 'caregiver' ? '/join' : '/register', params: { role: side, ...(returnTo ? { returnTo } : {}) } })}
+          />
+        </Card>
       </ScrollView>
 
       <Button variant="link" label={t('signIn.back')} onPress={() => router.replace('/')} />
@@ -174,5 +180,5 @@ const styles = StyleSheet.create({
   title: { fontSize: 26, lineHeight: 36, fontWeight: '700' },
   subtitle: { fontSize: 15, lineHeight: 22 },
   form: { gap: 16, padding: 18 },
-  signUp: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
+  signUp: { gap: 10, padding: 18 },
 });

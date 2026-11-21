@@ -95,9 +95,18 @@ export function SiteHeader({
           </Link>
           <LanguageSwitcher />
           {!user && (
-            <Link href="/login" className="whitespace-nowrap text-sm font-medium text-ink/60 transition-colors hover:text-ink">
-              {t('nav.signIn')}
-            </Link>
+            <>
+              <Link href="/login" className="whitespace-nowrap text-sm font-medium text-ink/60 transition-colors hover:text-ink">
+                {t('nav.signIn')}
+              </Link>
+              {/* Registering is its own path, next to signing in rather than behind it. */}
+              <Link
+                href="/register"
+                className="hidden whitespace-nowrap rounded-full bg-brand px-3 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-brand-dark min-[400px]:inline-flex"
+              >
+                {t('signup.createAccount')}
+              </Link>
+            </>
           )}
         </div>
         {user && (

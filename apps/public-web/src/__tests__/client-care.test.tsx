@@ -104,13 +104,14 @@ describe('CaregiverActions', () => {
     renderUi(<CaregiverActions publicId={PUBLIC_ID} caregiverLabel="11111111" />);
 
     fireEvent.click(screen.getByRole('button', { name: 'Sign up to contact this caregiver' }));
-    // WhatsApp first when it is switched on: one code, no password.
-    fireEvent.click(await screen.findByRole('link', { name: 'Continue with WhatsApp' }));
+    // Two plain paths: create an account (how to sign in is chosen next), or sign in.
+    fireEvent.click(await screen.findByRole('link', { name: 'Create an account' }));
 
     expect(JSON.parse(window.localStorage.getItem('care-platform-return-to')!).path).toBe(`/caregivers/${PUBLIC_ID}`);
     expect(JSON.parse(window.localStorage.getItem('care-platform-pending-contact')!).publicId).toBe(PUBLIC_ID);
-    expect(screen.getByRole('link', { name: 'Continue with email' })).toHaveAttribute('href', '/register');
+    expect(screen.getByRole('link', { name: 'Create an account' })).toHaveAttribute('href', '/register');
     expect(screen.getByRole('link', { name: 'Sign in' })).toHaveAttribute('href', '/login');
+    expect(await screen.findByRole('link', { name: 'Sign in with WhatsApp' })).toHaveAttribute('href', '/login/whatsapp');
   });
 
   it('shows a signed-out visitor what their search already told us', async () => {
@@ -131,8 +132,8 @@ describe('CaregiverActions', () => {
     expect(await screen.findByText('Dehiwala, Colombo')).toBeInTheDocument();
     expect(screen.getByText('Age 78')).toBeInTheDocument();
     expect(screen.getByText('Help needed with: Dementia care')).toBeInTheDocument();
-    // No WhatsApp sign-up configured: email is the main way in.
-    expect(screen.queryByRole('link', { name: 'Continue with WhatsApp' })).not.toBeInTheDocument();
+    // No WhatsApp sign-in configured: none is offered.
+    expect(screen.queryByRole('link', { name: 'Sign in with WhatsApp' })).not.toBeInTheDocument();
   });
 
   it('lets a signed-out visitor save a caregiver on this device without an account', () => {

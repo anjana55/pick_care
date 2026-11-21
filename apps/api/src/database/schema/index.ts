@@ -34,3 +34,4 @@ export * from './jobs.schema';
 export * from './pricing.schema';
 export * from './offers.schema';
 export * from './talk.schema';
+export * from './signup.schema';

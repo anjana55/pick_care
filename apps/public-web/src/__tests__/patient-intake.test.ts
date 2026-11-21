@@ -55,9 +55,11 @@ describe('patient intake schema', () => {
     expect(errors).toContain('patientIntake.validation.city');
   });
 
-  it('requires the care description to say something', () => {
-    expect(messages({ ...complete, careNeeds: '' })).toContain('patientIntake.validation.careNeeds.required');
-    expect(messages({ ...complete, careNeeds: 'help' })).toContain('patientIntake.validation.careNeeds.invalid');
+  it('leaves the care description optional, however short', () => {
+    expect(messages({ ...complete, careNeeds: '' })).toEqual([]);
+    expect(messages({ ...complete, careNeeds: undefined })).toEqual([]);
+    expect(messages({ ...complete, careNeeds: 'help' })).toEqual([]);
+    expect(messages({ ...complete, careNeeds: 'x'.repeat(1001) })).toContain('patientIntake.validation.careNeeds.invalid');
   });
 
   it('asks a guardian for the recipient and relationship, but not someone registering for themselves', () => {

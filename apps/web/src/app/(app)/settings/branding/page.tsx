@@ -35,6 +35,7 @@ type Draft = {
   companyName: string;
   shortName: string;
   tagline: string;
+  officePhone: string;
   primaryColor: string;
   accentColor: string;
   defaultLocale: Locale;
@@ -46,6 +47,7 @@ function toDraft(s: BrandingSettings): Draft {
     companyName: s.companyName,
     shortName: s.shortName,
     tagline: s.tagline ?? '',
+    officePhone: s.officePhone ?? '',
     primaryColor: s.primaryColor,
     accentColor: s.accentColor,
     defaultLocale: s.defaultLocale,
@@ -101,7 +103,7 @@ export default function BrandingSettingsPage() {
 
   const submit = () => {
     save.mutate(
-      { ...draft, companyName: draft.companyName.trim(), shortName: draft.shortName.trim(), tagline: draft.tagline.trim() },
+      { ...draft, companyName: draft.companyName.trim(), shortName: draft.shortName.trim(), tagline: draft.tagline.trim(), officePhone: draft.officePhone.trim() },
       {
         onSuccess: (data) => {
           setDraft(toDraft(data));
@@ -151,6 +153,11 @@ export default function BrandingSettingsPage() {
               <Label htmlFor="tagline">{t('brandingAdmin.tagline')}</Label>
               <Input id="tagline" maxLength={160} value={draft.tagline} onChange={(e) => set('tagline', e.target.value)} placeholder={t('brandingAdmin.taglinePlaceholder')} />
               <p className="mt-1 text-xs text-ink/50">{t('brandingAdmin.taglineHint')}</p>
+            </div>
+            <div className="sm:col-span-2">
+              <Label htmlFor="officePhone">{t('brandingAdmin.officePhone')}</Label>
+              <Input id="officePhone" type="tel" inputMode="tel" maxLength={32} value={draft.officePhone} onChange={(e) => set('officePhone', e.target.value)} placeholder="011 234 5678" />
+              <p className="mt-1 text-xs text-ink/50">{t('brandingAdmin.officePhoneHint')}</p>
             </div>
           </CardContent>
         </Card>

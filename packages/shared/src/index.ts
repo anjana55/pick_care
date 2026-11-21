@@ -51,3 +51,6 @@ export * from './types/auth';
 export * from './types/app-links';
 export * from './types/phone';
 export * from './types/caregiver-ref';
+export * from './types/signup';
+export * from './types/agreements';
+export * from './types/intake-from-search';

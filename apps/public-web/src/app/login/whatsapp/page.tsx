@@ -120,7 +120,7 @@ function WhatsappLoginInner() {
             <p><Link href="/login" className="font-medium text-brand-dark hover:underline">{t('whatsapp.login.useEmail')}</Link></p>
             <p>
               {t('login.noAccount')}{' '}
-              <Link href="/register/whatsapp" className="font-medium text-brand-dark hover:underline">{t('whatsapp.register.link')}</Link>
+              <Link href="/register" className="font-medium text-brand-dark hover:underline">{t('signup.createAccount')}</Link>
             </p>
           </div>
         </div>

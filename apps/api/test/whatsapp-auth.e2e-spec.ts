@@ -483,7 +483,8 @@ describe('WhatsApp authentication (e2e)', () => {
     });
 
     it('rejects a registration that leaves out the care intake, and creates no account', async () => {
-      for (const field of ['registrantType', 'recipientAge', 'recipientGender', 'preferredContactMethod', 'districtId', 'cityId', 'careNeeds', 'careSchedule', 'careStart']) {
+      // (The description of the care is optional, so it is not in this list.)
+      for (const field of ['registrantType', 'recipientAge', 'recipientGender', 'preferredContactMethod', 'districtId', 'cityId', 'careSchedule', 'careStart']) {
         const phone = newPhone();
         await registerPatient(phone, { [field]: undefined }).expect(400);
         expect(await userRow(phone)).toBeUndefined();

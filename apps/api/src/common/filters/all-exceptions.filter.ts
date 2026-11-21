@@ -24,6 +24,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     const body = exception instanceof HttpException ? exception.getResponse() : 'Internal server error';
     const message = typeof body === 'string' ? body : ((body as { message?: unknown }).message ?? body);
+    // A stable machine-readable reason, where a service gives one (SignupError,
+    // SocialLinkError): the screens act on it rather than on wording, which is
+    // translated. Only short snake_case values ever pass.
+    const code = typeof body === 'object' && body && typeof (body as { code?: unknown }).code === 'string' ? (body as { code: string }).code : null;
 
     if (status >= 500) {
       this.logger.error(`${request.method} ${request.url}`, exception instanceof Error ? exception.stack : undefined);
@@ -34,6 +38,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       timestamp: new Date().toISOString(),
       path: request.url,
       message: translateMessages(message, lang),
+      ...(code && /^[a-z_]{1,40}$/.test(code) ? { code } : {}),
     });
   }
 }

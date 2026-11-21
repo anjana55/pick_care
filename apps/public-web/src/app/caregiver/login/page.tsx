@@ -123,12 +123,16 @@ export default function CaregiverLoginPage() {
             </Link>
           </p>
 
-          <p className="mt-2 text-center text-sm text-ink/60">
-            {t('caregiverLogin.noAccount')}{' '}
-            <Link href="/caregiver/signup" className="font-medium text-brand-dark hover:underline">
-              {t('caregiverRegister.join.title')}
+          {/* New here is a different path from signing in: say so plainly, with its own button. */}
+          <div className="mt-4 rounded-DEFAULT border border-border bg-paper p-4 text-center">
+            <p className="text-sm font-medium text-ink">{t('signup.newHere')}</p>
+            <Link
+              href="/caregiver/signup"
+              className="mt-2 inline-flex w-full items-center justify-center rounded-DEFAULT border border-brand bg-white px-4 py-2.5 text-sm font-semibold text-brand-dark hover:bg-brand-light"
+            >
+              {t('signup.join.title')}
             </Link>
-          </p>
+          </div>
 
           {/*
             Always shown to everyone, so it says nothing about any account. Each

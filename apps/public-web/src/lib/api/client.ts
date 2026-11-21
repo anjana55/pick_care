@@ -61,6 +61,8 @@ export class ApiError extends Error {
   constructor(
     public status: number,
     message: string,
+    /** The API's machine-readable reason, where it gives one (e.g. `ticket_expired`). */
+    public code?: string,
   ) {
     super(message);
   }
@@ -80,7 +82,7 @@ export const SESSION_EXPIRED_EVENT = 'care-platform:session-expired';
 
 const SESSION_EXPIRED_MESSAGE: Record<string, string> = {
   en: 'Your session has expired. Please sign in again.',
-  si: 'ඔබගේ සැසිය කල් ඉකුත් වී ඇත. කරුණාකර නැවත පුරනය වන්න.',
+  si: 'ඔබගේ සැසිය කල් ඉකුත් වී ඇත. කරුණාකර නැවත ඇතුල් වන්න.',
   ta: 'உங்கள் அமர்வு காலாவதியாகிவிட்டது. மீண்டும் உள்நுழையவும்.',
 };
 
@@ -97,7 +99,7 @@ export class SessionExpiredError extends ApiError {
 
 const SESSION_CHECK_FAILED_MESSAGE: Record<string, string> = {
   en: "We couldn't confirm you're signed in. Please check your connection and try again.",
-  si: 'ඔබ පුරනය වී ඇති බව තහවුරු කළ නොහැකි විය. කරුණාකර ඔබේ සම්බන්ධතාවය පරීක්ෂා කර නැවත උත්සාහ කරන්න.',
+  si: 'ඔබ ඇතුල් වී ඇති බව තහවුරු කළ නොහැකි විය. කරුණාකර ඔබේ සම්බන්ධතාවය පරීක්ෂා කර නැවත උත්සාහ කරන්න.',
   ta: 'நீங்கள் உள்நுழைந்துள்ளீர்கள் என்பதை உறுதிப்படுத்த முடியவில்லை. உங்கள் இணைப்பைச் சரிபார்த்து மீண்டும் முயற்சிக்கவும்.',
 };
 
@@ -222,13 +224,15 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
 
   if (!res.ok) {
     let message = res.statusText;
+    let code: string | undefined;
     try {
       const errBody = await res.json();
       message = errBody.message ?? message;
+      if (typeof errBody.code === 'string') code = errBody.code;
     } catch {
       /* ignore parse errors */
     }
-    throw new ApiError(res.status, Array.isArray(message) ? message.join(', ') : message);
+    throw new ApiError(res.status, Array.isArray(message) ? message.join(', ') : message, code);
   }
 
   if (res.status === 204) return undefined as T;

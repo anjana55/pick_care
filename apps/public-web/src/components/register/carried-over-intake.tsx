@@ -35,6 +35,7 @@ export function useCarriedOverIntake<T extends PatientIntakeValues>({
 }) {
   const { t } = useTranslation();
   const [folded, setFolded] = useState<IntakeSectionKey[]>([]);
+  const [answered, setAnswered] = useState<string[]>([]);
   const [carried, setCarried] = useState(false);
   const [pendingCaregiver, setPendingCaregiver] = useState<string | null>(null);
 
@@ -43,8 +44,9 @@ export function useCarriedOverIntake<T extends PatientIntakeValues>({
     setPendingCaregiver(peekPendingContact());
     const search = loadSearch();
     if (!search) return;
+    const fromSearch = intakeDefaultsFromSearch(search, t);
     const defaults: Partial<PatientIntakeValues> = {
-      ...intakeDefaultsFromSearch(search, t),
+      ...fromSearch,
       preferredContactMethod: channel === 'whatsapp' ? 'WHATSAPP' : 'PHONE_CALL',
       preferredContactTime: 'ANYTIME',
     };
@@ -52,57 +54,71 @@ export function useCarriedOverIntake<T extends PatientIntakeValues>({
       if (value !== undefined) setValue(name as any, value as any, { shouldDirty: false });
     }
 
-    const next: IntakeSectionKey[] = ['contact'];
-    if (defaults.districtId && defaults.cityId) next.push('location');
-    if (defaults.careNeeds && defaults.careSchedule && defaults.careStart) next.push('care');
-    setFolded(next);
+    // Every question the search answered is kept out of sight, one by one -
+    // not only whole parts - so nothing is asked twice. How to be contacted
+    // has a sensible default from the sign-in they chose.
+    setAnswered(Object.entries(fromSearch).filter(([, v]) => v !== undefined).map(([k]) => k));
+    setFolded(['contact']);
     setCarried(true);
     // Once, on arrival - re-running on a language switch would overwrite edits.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const unfold = useCallback(() => setFolded([]), []);
+  const unfold = useCallback(() => {
+    setFolded([]);
+    setAnswered([]);
+  }, []);
 
   /** Pass as handleSubmit's second argument: shows any folded part that needs fixing. */
   const onInvalid = useCallback(
     (errors: FieldErrors<T>) => {
       const failed = Object.keys(errors);
-      if (folded.some((key) => INTAKE_SECTION_FIELDS[key].some((f) => failed.includes(f)))) unfold();
+      const hiddenFailed =
+        folded.some((key) => INTAKE_SECTION_FIELDS[key].some((f) => failed.includes(f))) || answered.some((f) => failed.includes(f));
+      if (hiddenFailed) unfold();
     },
-    [folded, unfold],
+    [folded, answered, unfold],
   );
 
-  return { folded, carried, unfold, onInvalid, pendingCaregiver };
+  return { folded, answered, carried, unfold, onInvalid, pendingCaregiver };
 }
 
 /** The folded parts, read back from the live form values, with one way to edit them. */
 export function CarriedOverSummary<T extends PatientIntakeValues>({
   control,
   folded,
+  answered = [],
   onEdit,
 }: {
   control: Control<T>;
   folded: readonly IntakeSectionKey[];
+  /** Single questions the search answered (useCarriedOverIntake's `answered`). */
+  answered?: readonly string[];
   onEdit: () => void;
 }) {
   const { t } = useTranslation();
   const values = useWatch({ control }) as Partial<PatientIntakeValues>;
   const location = useLocationLabel(values.districtId ? Number(values.districtId) : null, values.cityId ? Number(values.cityId) : null);
-  if (folded.length === 0) return null;
+  if (folded.length === 0 && answered.length === 0) return null;
 
+  // A question shows here when its part was folded, or when it was answered on its own.
+  const shown = (field: string, part: IntakeSectionKey) => answered.includes(field) || folded.includes(part);
   const lines: string[] = [];
-  if (folded.includes('location') && location) lines.push(location);
-  if (folded.includes('care')) {
-    const when = [
-      values.careSchedule && t(`patientIntake.options.careSchedule.${values.careSchedule}`),
-      values.careStart && t(`patientIntake.options.careStart.${values.careStart}`),
-    ].filter(Boolean);
-    if (when.length > 0) lines.push(when.join(' · '));
-    if (values.preferredCaregiverGender && values.preferredCaregiverGender !== 'NO_PREFERENCE') {
-      lines.push(t('careIntent.summary.caregiverGender', { gender: t(`patientIntake.options.caregiverGender.${values.preferredCaregiverGender}`) }));
-    }
-    if (values.careNeeds) lines.push(values.careNeeds);
+  const who = [
+    shown('recipientAge', 'whoNeedsCare') && values.recipientAge !== undefined ? t('careIntent.summary.age', { age: String(values.recipientAge) }) : null,
+    shown('recipientGender', 'whoNeedsCare') && values.recipientGender ? t(`patientIntake.options.gender.${values.recipientGender}`) : null,
+  ].filter(Boolean);
+  if (who.length > 0) lines.push(who.join(' · '));
+  if ((shown('districtId', 'location') || shown('cityId', 'location')) && location) lines.push(location);
+  const when = [
+    shown('careSchedule', 'care') && values.careSchedule && t(`patientIntake.options.careSchedule.${values.careSchedule}`),
+    shown('careStart', 'care') && values.careStart && t(`patientIntake.options.careStart.${values.careStart}`),
+  ].filter(Boolean);
+  if (when.length > 0) lines.push(when.join(' · '));
+  if (shown('preferredCaregiverGender', 'care') && values.preferredCaregiverGender && values.preferredCaregiverGender !== 'NO_PREFERENCE') {
+    lines.push(t('careIntent.summary.caregiverGender', { gender: t(`patientIntake.options.caregiverGender.${values.preferredCaregiverGender}`) }));
   }
+  if (shown('careNeeds', 'care') && values.careNeeds) lines.push(values.careNeeds);
   if (folded.includes('contact') && values.preferredContactMethod) {
     lines.push(
       t('careIntent.summary.contact', {

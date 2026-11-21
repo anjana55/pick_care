@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Link, Redirect } from 'expo-router';
+import { Link, Redirect, useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -11,12 +11,14 @@ import { useColors, type Colors } from '@/theme';
 import { Text } from '@/ui/Text';
 import { CaregiversIllustration } from '@/ui/Illustration';
 import { BrandLogo, tint } from '@/ui/visual';
+import { Button } from '@/ui/controls';
 
 /**
  * First screen, kept simple: the brand, the language, a picture of the people
  * the app is about, one sentence, and one button - Get started - which asks
  * which side of the app this person is on. People who already have an account
- * sign in straight from here.
+ * have their own, separate section to sign in from - two clear paths, not a
+ * button and a small link.
  */
 export default function Welcome() {
   const { t } = useTranslation();
@@ -25,6 +27,7 @@ export default function Welcome() {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const { user } = useAuth();
+  const router = useRouter();
 
   // Already signed in: straight to their area.
   if (user) return <Redirect href={homeFor(user)} />;
@@ -50,25 +53,21 @@ export default function Welcome() {
           <Text style={styles.subline}>{t('welcome.subline')}</Text>
         </View>
 
-        <Link href="/get-started" asChild>
-          <Pressable accessibilityRole="button" accessibilityLabel={t('welcome.getStarted')} style={styles.start}>
-            <Text style={styles.startText}>{t('welcome.getStarted')}</Text>
-            <Ionicons name="arrow-forward" size={26} color={colors.brandText} />
-          </Pressable>
-        </Link>
+        {/* Two plainly separate paths: new here, or already registered. */}
+        <View style={styles.path}>
+          <Text style={styles.pathLabel}>{t('signup.newHere')}</Text>
+          <Link href="/get-started" asChild>
+            <Pressable accessibilityRole="button" accessibilityLabel={t('welcome.getStarted')} style={styles.start}>
+              <Text style={styles.startText}>{t('welcome.getStarted')}</Text>
+              <Ionicons name="arrow-forward" size={26} color={colors.brandText} />
+            </Pressable>
+          </Link>
+        </View>
 
-        <View style={styles.signIn}>
-          <Text style={styles.signInLead}>{t('welcome.haveAccount')}</Text>
-          <Link href={{ pathname: '/sign-in', params: { role: 'client' } }} asChild>
-            <Pressable accessibilityRole="link" style={styles.signInLink}>
-              <Text style={styles.signInText}>{t('signIn.client')}</Text>
-            </Pressable>
-          </Link>
-          <Link href={{ pathname: '/sign-in', params: { role: 'caregiver' } }} asChild>
-            <Pressable accessibilityRole="link" style={styles.signInLink}>
-              <Text style={styles.signInText}>{t('signIn.caregiver')}</Text>
-            </Pressable>
-          </Link>
+        <View style={[styles.path, styles.signIn]}>
+          <Text style={styles.pathLabel}>{t('welcome.haveAccount')}</Text>
+          <Button variant="secondary" icon="log-in-outline" label={t('signIn.client')} onPress={() => router.push({ pathname: '/sign-in', params: { role: 'client' } })} />
+          <Button variant="secondary" icon="medkit-outline" label={t('signIn.caregiver')} onPress={() => router.push({ pathname: '/sign-in', params: { role: 'caregiver' } })} />
         </View>
       </View>
     </ScrollView>
@@ -88,8 +87,7 @@ const makeStyles = (colors: Colors) =>
     // One flat style each: expo-router's <Link asChild> refuses an array of styles on its child.
     start: { minHeight: 64, borderRadius: 18, backgroundColor: colors.deep, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
     startText: { fontSize: 22, fontWeight: '800', color: colors.brandText },
-    signIn: { alignItems: 'center' },
-    signInLead: { fontSize: 17, color: colors.muted },
-    signInLink: { minHeight: 48, justifyContent: 'center', paddingHorizontal: 8 },
-    signInText: { fontSize: 18, fontWeight: '700', color: colors.brand, textDecorationLine: 'underline' },
+    path: { gap: 10 },
+    pathLabel: { fontSize: 16, fontWeight: '700', color: colors.muted },
+    signIn: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border, paddingTop: 20 },
   });
