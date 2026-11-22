@@ -13,9 +13,15 @@ import { tint } from './visual';
  * picker, so it looks and reads the same on every phone and in every
  * language. Days are YYYY-MM-DD strings (no time zone can move them); weeks
  * start on Monday, as in Sri Lanka. Days before `min` or after `max` can't be
- * chosen. A range longer than a year adds a year switcher, for dates such as a
- * passport's expiry.
+ * chosen.
+ *
+ * Tapping the month's name jumps: a list of years, then the twelve months,
+ * then back to the days - two taps to reach a birthday decades back, instead
+ * of an arrow press per year. A range longer than a year also keeps a year
+ * switcher, for stepping a year either side.
  */
+
+type View3 = 'days' | 'years' | 'months';
 
 const intlLocale = (locale: string) => (locale === 'en' ? 'en-GB' : locale);
 const utc = (day: string) => new Date(`${day}T00:00:00Z`);
@@ -31,7 +37,13 @@ const clamp = (day: string, min?: string, max?: string) => (min && day < min ? m
 
 /** A day in full, for the screen reader and the chosen-day line: "Thursday 12 November 2026". */
 export function longDay(day: string, locale: string): string {
-  return utc(day).toLocaleDateString(intlLocale(locale), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+  return utc(day).toLocaleDateString(intlLocale(locale), {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
 }
 
 /** The days of a month's weeks, Monday first: null for the gaps before the 1st and after the last day. */
@@ -62,6 +74,21 @@ export function Calendar({
   const { t, locale } = useTranslation();
   const colors = useColors();
   const [month, setMonth] = useState(() => monthOf(value ?? clamp(today, min, max)));
+  const [mode, setMode] = useState<View3>('days');
+  const firstYear = min ? Number(min.slice(0, 4)) : Number(today.slice(0, 4)) - 100;
+  const lastYear = max ? Number(max.slice(0, 4)) : Number(today.slice(0, 4)) + 10;
+  // Newest first: the years people look for (a birth year, this year) are near the top or found by scrolling down.
+  const years = useMemo(() => Array.from({ length: lastYear - firstYear + 1 }, (_, i) => lastYear - i), [firstYear, lastYear]);
+  const monthName = (m: number) =>
+    new Date(Date.UTC(2024, m, 1)).toLocaleDateString(intlLocale(locale), {
+      month: 'long',
+      timeZone: 'UTC',
+    });
+  /** A month can be picked when any of its days can. */
+  const monthAllowed = (y: number, m: number) => {
+    const first = `${y}-${String(m + 1).padStart(2, '0')}-01`;
+    return (!min || first >= monthOf(min)) && (!max || first <= monthOf(max));
+  };
   const cells = useMemo(() => monthGrid(month), [month]);
   const canPrev = !min || addMonths(month, -1) >= monthOf(min);
   const canNext = !max || addMonths(month, 1) <= monthOf(max);
@@ -69,10 +96,17 @@ export function Calendar({
   const year = Number(month.slice(0, 4));
   const goYear = (n: number) => setMonth(monthOf(clamp(addMonths(month, n * 12), min && monthOf(min), max)));
 
-  const title = utc(month).toLocaleDateString(intlLocale(locale), { month: 'long', year: 'numeric', timeZone: 'UTC' });
+  const title = utc(month).toLocaleDateString(intlLocale(locale), {
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
   // 1 Jan 2024 was a Monday: the week's day names in the reader's language.
   const weekdays = Array.from({ length: 7 }, (_, i) =>
-    new Date(Date.UTC(2024, 0, 1 + i)).toLocaleDateString(intlLocale(locale), { weekday: 'short', timeZone: 'UTC' }),
+    new Date(Date.UTC(2024, 0, 1 + i)).toLocaleDateString(intlLocale(locale), {
+      weekday: 'short',
+      timeZone: 'UTC',
+    }),
   );
 
   const arrow = (dir: -1 | 1, enabled: boolean, label: string, onPress: () => void) => (
@@ -99,52 +133,146 @@ export function Calendar({
       ) : null}
       <View style={styles.head}>
         {arrow(-1, canPrev, t('calendar.previousMonth'), () => setMonth(addMonths(month, -1)))}
-        <Text accessibilityRole="header" accessibilityLiveRegion="polite" style={[styles.month, { color: colors.deep }]}>
-          {title}
-        </Text>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`${title}, ${t('calendar.chooseYear')}`}
+          accessibilityState={{ expanded: mode !== 'days' }}
+          onPress={() => setMode(mode === 'days' ? 'years' : 'days')}
+          style={[styles.titleButton, { backgroundColor: tint(colors.brand, 0.1) }]}
+        >
+          <Text accessibilityLiveRegion="polite" style={[styles.month, { color: colors.deep }]}>
+            {title}
+          </Text>
+          <Ionicons name={mode === 'days' ? 'chevron-down' : 'chevron-up'} size={22} color={colors.deep} />
+        </Pressable>
         {arrow(1, canNext, t('calendar.nextMonth'), () => setMonth(addMonths(month, 1)))}
       </View>
 
-      <View style={styles.week} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
-        {weekdays.map((w) => (
-          <Text key={w} style={[styles.weekday, { color: colors.muted }]}>
-            {w}
-          </Text>
-        ))}
-      </View>
-
-      <View style={styles.grid}>
-        {cells.map((day, i) => {
-          if (!day) return <View key={`gap-${i}`} style={styles.cell} />;
-          const off = Boolean((min && day < min) || (max && day > max));
-          const chosen = day === value;
-          const isToday = day === today;
-          return (
-            <View key={day} style={styles.cell}>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={isToday ? `${longDay(day, locale)}, ${t('calendar.today')}` : longDay(day, locale)}
-                accessibilityState={{ selected: chosen, disabled: off }}
-                disabled={off}
-                onPress={() => onChange(day)}
-                style={[
-                  styles.day,
-                  chosen
-                    ? { backgroundColor: colors.deep }
-                    : off
-                      ? null
-                      : { backgroundColor: tint(colors.brand, 0.1) },
-                  isToday && !chosen ? { borderWidth: 2, borderColor: colors.brand } : null,
-                ]}
-              >
-                <Text style={[styles.dayText, { color: chosen ? colors.brandText : off ? '#8A97A0' : colors.deep }, off ? { fontWeight: '400' } : null]}>
-                  {String(Number(day.slice(8)))}
-                </Text>
-              </Pressable>
+      {mode === 'years' ? (
+        <View style={{ gap: 8 }}>
+          <Text style={[styles.pickTitle, { color: colors.ink }]}>{t('calendar.chooseYear')}</Text>
+          <ScrollView style={styles.yearList} nestedScrollEnabled>
+            <View style={styles.grid}>
+              {years.map((y) => {
+                const current = y === year;
+                return (
+                  <View key={y} style={styles.yearCell}>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={String(y)}
+                      accessibilityState={{ selected: current }}
+                      onPress={() => {
+                        // Keep the month if that year allows it, else the nearest allowed.
+                        setMonth(monthOf(clamp(`${y}-${month.slice(5, 7)}-01`, min && monthOf(min), max)));
+                        setMode('months');
+                      }}
+                      style={[
+                        styles.pick,
+                        {
+                          backgroundColor: current ? colors.deep : tint(colors.brand, 0.1),
+                        },
+                      ]}
+                    >
+                      <Text style={[styles.pickText, { color: current ? colors.brandText : colors.deep }]}>{y}</Text>
+                    </Pressable>
+                  </View>
+                );
+              })}
             </View>
-          );
-        })}
-      </View>
+          </ScrollView>
+        </View>
+      ) : mode === 'months' ? (
+        <View style={{ gap: 8 }}>
+          <Text style={[styles.pickTitle, { color: colors.ink }]}>{t('calendar.chooseMonth')}</Text>
+          <View style={styles.grid}>
+            {Array.from({ length: 12 }, (_, m) => {
+              const allowed = monthAllowed(year, m);
+              const current = m === Number(month.slice(5, 7)) - 1;
+              return (
+                <View key={m} style={styles.monthCell}>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`${monthName(m)} ${year}`}
+                    accessibilityState={{
+                      selected: current,
+                      disabled: !allowed,
+                    }}
+                    disabled={!allowed}
+                    onPress={() => {
+                      setMonth(`${year}-${String(m + 1).padStart(2, '0')}-01`);
+                      setMode('days');
+                    }}
+                    style={[
+                      styles.pick,
+                      {
+                        backgroundColor: current ? colors.deep : allowed ? tint(colors.brand, 0.1) : 'transparent',
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.pickText,
+                        {
+                          color: current ? colors.brandText : allowed ? colors.deep : '#8A97A0',
+                        },
+                      ]}
+                    >
+                      {monthName(m)}
+                    </Text>
+                  </Pressable>
+                </View>
+              );
+            })}
+          </View>
+        </View>
+      ) : (
+        <>
+          <View style={styles.week} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+            {weekdays.map((w) => (
+              <Text key={w} style={[styles.weekday, { color: colors.muted }]}>
+                {w}
+              </Text>
+            ))}
+          </View>
+
+          <View style={styles.grid}>
+            {cells.map((day, i) => {
+              if (!day) return <View key={`gap-${i}`} style={styles.cell} />;
+              const off = Boolean((min && day < min) || (max && day > max));
+              const chosen = day === value;
+              const isToday = day === today;
+              return (
+                <View key={day} style={styles.cell}>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={isToday ? `${longDay(day, locale)}, ${t('calendar.today')}` : longDay(day, locale)}
+                    accessibilityState={{ selected: chosen, disabled: off }}
+                    disabled={off}
+                    onPress={() => onChange(day)}
+                    style={[
+                      styles.day,
+                      chosen ? { backgroundColor: colors.deep } : off ? null : { backgroundColor: tint(colors.brand, 0.1) },
+                      isToday && !chosen ? { borderWidth: 2, borderColor: colors.brand } : null,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.dayText,
+                        {
+                          color: chosen ? colors.brandText : off ? '#8A97A0' : colors.deep,
+                        },
+                        off ? { fontWeight: '400' } : null,
+                      ]}
+                    >
+                      {String(Number(day.slice(8)))}
+                    </Text>
+                  </Pressable>
+                </View>
+              );
+            })}
+          </View>
+        </>
+      )}
     </View>
   );
 }
@@ -196,7 +324,13 @@ export function DateField({
         accessibilityValue={{ text: shown }}
         accessibilityHint={t('calendar.openHint')}
         onPress={show}
-        style={[styles.field, { borderColor: error ? colors.danger : colors.border, backgroundColor: colors.surface }]}
+        style={[
+          styles.field,
+          {
+            borderColor: error ? colors.danger : colors.border,
+            backgroundColor: colors.surface,
+          },
+        ]}
       >
         <View style={[styles.fieldIcon, { backgroundColor: tint(colors.brand, 0.12) }]}>
           <Ionicons name="calendar" size={24} color={colors.brand} />
@@ -217,7 +351,15 @@ export function DateField({
           <ScrollView contentContainerStyle={styles.sheet}>
             <Calendar value={draft} onChange={setDraft} today={today} min={min} max={max} />
           </ScrollView>
-          <View style={[styles.panel, { backgroundColor: colors.deep, paddingBottom: insets.bottom + 20 }]}>
+          <View
+            style={[
+              styles.panel,
+              {
+                backgroundColor: colors.deep,
+                paddingBottom: insets.bottom + 20,
+              },
+            ]}
+          >
             <Text style={styles.panelLabel}>{t('calendar.yourDate')}</Text>
             <Text accessibilityLiveRegion="polite" style={styles.panelDate}>
               {draft ? longDay(draft, locale) : t('calendar.tapADay')}
@@ -257,26 +399,111 @@ export function DateField({
 
 const styles = StyleSheet.create({
   box: { gap: 10 },
-  head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
-  arrow: { width: 52, height: 52, borderRadius: 26, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
-  month: { flex: 1, textAlign: 'center', fontSize: 21, fontWeight: '800' },
+  head: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  arrow: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  month: {
+    textAlign: 'center',
+    fontSize: 21,
+    fontWeight: '800',
+    flexShrink: 1,
+  },
+  titleButton: {
+    flex: 1,
+    minHeight: 52,
+    borderRadius: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingHorizontal: 8,
+  },
+  pickTitle: { fontSize: 17, fontWeight: '700' },
+  yearList: { maxHeight: 360 },
+  yearCell: { width: '25%', padding: 4 },
+  monthCell: { width: '33.333%', padding: 4 },
+  pick: {
+    minHeight: 52,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  pickText: { fontSize: 17, fontWeight: '700', textAlign: 'center' },
   year: { flex: 1, textAlign: 'center', fontSize: 19, fontWeight: '700' },
   week: { flexDirection: 'row' },
-  weekday: { width: `${100 / 7}%`, textAlign: 'center', fontSize: 14, fontWeight: '700' },
+  weekday: {
+    width: `${100 / 7}%`,
+    textAlign: 'center',
+    fontSize: 14,
+    fontWeight: '700',
+  },
   grid: { flexDirection: 'row', flexWrap: 'wrap' },
   cell: { width: `${100 / 7}%`, padding: 3 },
-  day: { minHeight: 46, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  day: {
+    minHeight: 46,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   dayText: { fontSize: 18, fontWeight: '700' },
   label: { fontSize: 16, fontWeight: '700' },
-  field: { minHeight: 64, borderWidth: 1.5, borderRadius: 16, paddingHorizontal: 12, flexDirection: 'row', alignItems: 'center', gap: 12 },
-  fieldIcon: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  field: {
+    minHeight: 64,
+    borderWidth: 1.5,
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  fieldIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   fieldText: { flex: 1, fontSize: 18, fontWeight: '600' },
   sheet: { padding: 20 },
-  panel: { borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingHorizontal: 20, paddingTop: 20, gap: 8 },
+  panel: {
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    gap: 8,
+  },
   panelLabel: { fontSize: 15, fontWeight: '600', color: '#D7E9EE' },
-  panelDate: { fontSize: 22, lineHeight: 30, fontWeight: '800', color: '#FFFFFF' },
-  confirm: { minHeight: 58, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginTop: 8 },
+  panelDate: {
+    fontSize: 22,
+    lineHeight: 30,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  confirm: {
+    minHeight: 58,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+  },
   confirmText: { fontSize: 19, fontWeight: '800' },
   clear: { minHeight: 48, alignItems: 'center', justifyContent: 'center' },
-  clearText: { fontSize: 17, fontWeight: '700', color: '#FFFFFF', textDecorationLine: 'underline' },
+  clearText: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    textDecorationLine: 'underline',
+  },
 });

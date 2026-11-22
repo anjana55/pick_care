@@ -1315,7 +1315,9 @@
     "yourDate": "Your date",
     "tapADay": "Tap a day on the calendar",
     "confirm": "Choose this date",
-    "clear": "Clear the date"
+    "clear": "Clear the date",
+    "chooseYear": "Choose a year",
+    "chooseMonth": "Choose a month"
   },
   "reviews": {
     "badge": {

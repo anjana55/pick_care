@@ -7,7 +7,8 @@ import { useTranslation } from '@/i18n';
 import { useColors, type Colors } from '@/theme';
 import { fontFamilyFor } from './fonts';
 import { PageHeader } from './PageHeader';
-import { Text } from './Text';
+import { Text, scaleTextStyle } from './Text';
+import { useTextScale } from '@/branding/BrandingProvider';
 
 /**
  * A full screen with the app's background and side margins, under the page
@@ -67,7 +68,7 @@ export function Button({ label, onPress, variant = 'primary', busy = false, disa
       ) : (
         <View style={styles.buttonRow}>
           {icon ? <Ionicons name={icon} size={22} color={variant === 'primary' ? colors.brandText : colors.brand} /> : null}
-          <Text style={variant === 'primary' ? styles.primaryText : variant === 'secondary' ? styles.secondaryText : styles.linkText}>{label}</Text>
+          <Text style={[variant === 'primary' ? styles.primaryText : variant === 'secondary' ? styles.secondaryText : styles.linkText, styles.buttonLabel]}>{label}</Text>
         </View>
       )}
     </Pressable>
@@ -87,6 +88,7 @@ export function Field({ label, hint, error, accessory, ...input }: FieldProps) {
   const colors = useColors();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const { locale } = useTranslation();
+  const textScale = useTextScale(locale);
   return (
     <View style={styles.field}>
       <Text style={styles.label}>{label}</Text>
@@ -95,7 +97,7 @@ export function Field({ label, hint, error, accessory, ...input }: FieldProps) {
           accessibilityLabel={label}
           accessibilityHint={hint}
           placeholderTextColor={colors.muted}
-          style={[styles.input, { fontFamily: fontFamilyFor(locale, false) }]}
+          style={[styles.input, { fontFamily: fontFamilyFor(locale, false) }, scaleTextStyle({ fontSize: 18 }, textScale)]}
           {...input}
         />
         {accessory}
@@ -159,7 +161,10 @@ const makeStyles = (colors: Colors) =>
     primary: { ...button, backgroundColor: colors.deep },
     secondary: { ...button, backgroundColor: colors.surface, borderWidth: 2, borderColor: colors.brand },
     link: { minHeight: 48, justifyContent: 'center' },
-    buttonRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+    // The label shrinks and wraps beside the icon: a long label (Sinhala and
+    // Tamil run longer) must never push the icon outside the button.
+    buttonRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, maxWidth: '100%' },
+    buttonLabel: { flexShrink: 1 },
     primaryText: { fontSize: 18, fontWeight: '700', color: colors.brandText, textAlign: 'center' },
     secondaryText: { fontSize: 18, fontWeight: '700', color: colors.brand, textAlign: 'center' },
     linkText: { fontSize: 17, fontWeight: '700', color: colors.brand },

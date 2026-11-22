@@ -77,6 +77,37 @@ export interface PublicBranding {
   defaultLocale: Locale;
   /** Always contains defaultLocale; in LOCALES order. */
   enabledLocales: Locale[];
+  /**
+   * Text size per language, in percent of the normal size (TEXT_SCALE_MIN to
+   * TEXT_SCALE_MAX). Sinhala and Tamil letters are taller and wider than
+   * English at the same size, so a label that fits in English can overflow its
+   * button; a smaller size for those languages keeps screens tidy. Set in
+   * Settings > Branding next to the languages; used by the app and the website.
+   */
+  textScale: Record<Locale, number>;
+}
+
+export const TEXT_SCALE_MIN = 80;
+export const TEXT_SCALE_MAX = 110;
+/** Sinhala and Tamil start a little smaller: their script needs more room. */
+export const DEFAULT_TEXT_SCALE: Record<Locale, number> = { en: 100, si: 90, ta: 90 };
+
+/** One language's size, made safe: a whole percent within the allowed range, or the default. */
+export function clampTextScale(value: unknown, locale: Locale): number {
+  const n = typeof value === 'number' ? value : typeof value === 'string' ? Number(value) : NaN;
+  if (!Number.isFinite(n)) return DEFAULT_TEXT_SCALE[locale];
+  return Math.min(TEXT_SCALE_MAX, Math.max(TEXT_SCALE_MIN, Math.round(n)));
+}
+
+/** Every language's size from whatever was stored or sent (missing ones take their default). */
+export function normalizeTextScale(raw: unknown): Record<Locale, number> {
+  const r = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {};
+  return Object.fromEntries(LOCALES.map((l) => [l, clampTextScale(r[l], l)])) as Record<Locale, number>;
+}
+
+/** The multiplier for text in a language, e.g. 0.9. */
+export function textScaleFor(branding: Pick<PublicBranding, 'textScale'> | null | undefined, locale: Locale): number {
+  return (branding?.textScale?.[locale] ?? DEFAULT_TEXT_SCALE[locale] ?? 100) / 100;
 }
 
 export const DEFAULT_BRANDING: PublicBranding = {
@@ -90,6 +121,7 @@ export const DEFAULT_BRANDING: PublicBranding = {
   assets: { logo: null, logoReverse: null, symbol: null, appIcon: null },
   defaultLocale: DEFAULT_LOCALE,
   enabledLocales: [...LOCALES],
+  textScale: { ...DEFAULT_TEXT_SCALE },
 };
 
 /** The logo's address under an API base such as '/api'. */
@@ -294,6 +326,7 @@ export function normalizeBranding(raw: unknown): PublicBranding {
     },
     defaultLocale,
     enabledLocales: normalizeLocales(Array.isArray(r.enabledLocales) ? (r.enabledLocales as string[]) : null, defaultLocale),
+    textScale: normalizeTextScale(r.textScale),
   };
 }
 

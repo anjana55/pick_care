@@ -386,6 +386,13 @@
       "when": 1795288394855,
       "tag": "0054_signup_identities_and_agreements",
       "breakpoints": true
+    },
+    {
+      "idx": 55,
+      "version": "5",
+      "when": 1795325283554,
+      "tag": "0055_branding_text_scale",
+      "breakpoints": true
     }
   ]
 }

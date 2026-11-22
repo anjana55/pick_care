@@ -320,6 +320,14 @@ describe('Sign-up with the sign-in method first (e2e)', () => {
     });
   });
 
+  it('keeps a text size per language, changing only the languages sent', async () => {
+    await api().patch('/settings/branding').set(bearer(adminToken)).send({ textScale: { si: 85 } }).expect(200);
+    expect((await api().get('/branding').expect(200)).body.textScale).toEqual({ en: 100, si: 85, ta: 90 });
+    await api().patch('/settings/branding').set(bearer(adminToken)).send({ textScale: { si: 50 } }).expect(400);
+    await api().patch('/settings/branding').set(bearer(adminToken)).send({ textScale: { fr: 90 } }).expect(400);
+    await api().patch('/settings/branding').set(bearer(adminToken)).send({ textScale: { si: 90 } }).expect(200);
+  });
+
   it('publishes the office phone number for "Call the office"', async () => {
     await api().patch('/settings/branding').set(bearer(adminToken)).send({ officePhone: '011 234 5678' }).expect(200);
     expect((await api().get('/branding').expect(200)).body.officePhone).toBe('011 234 5678');

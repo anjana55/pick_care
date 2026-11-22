@@ -1,0 +1,1 @@
+ALTER TABLE `branding_settings` ADD `text_scale` varchar(64) DEFAULT 'en:100,si:90,ta:90' NOT NULL;

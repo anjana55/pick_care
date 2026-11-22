@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQuery } from '@tanstack/react-query';
-import { DEFAULT_BRANDING, brandingAssetUrl, normalizeBranding, type BrandAsset, type BRAND_PNG_SIZES, type PublicBranding } from '@care-platform/shared';
+import { DEFAULT_BRANDING, brandingAssetUrl, normalizeBranding, textScaleFor, type BrandAsset, type BRAND_PNG_SIZES, type Locale, type PublicBranding } from '@care-platform/shared';
 import { api } from '@/api';
 import { config } from '@/config';
 
@@ -65,6 +65,16 @@ export function BrandingProvider({
   }, [data, cached]);
 
   return <BrandingContext.Provider value={value}>{children}</BrandingContext.Provider>;
+}
+
+/**
+ * How much to scale text in a language (Settings > Branding > text size), e.g.
+ * 0.9. Safe outside the provider - shared defaults then - because every piece
+ * of text in the app asks for it.
+ */
+export function useTextScale(locale: Locale): number {
+  const ctx = useContext(BrandingContext);
+  return textScaleFor(ctx?.branding ?? DEFAULT_BRANDING, locale);
 }
 
 export function useBranding(): BrandingValue {

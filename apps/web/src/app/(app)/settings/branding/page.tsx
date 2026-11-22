@@ -15,6 +15,9 @@ import {
   initialsOf,
   isHexColor,
   makeAccessible,
+  normalizeTextScale,
+  TEXT_SCALE_MAX,
+  TEXT_SCALE_MIN,
   type Locale,
 } from '@care-platform/shared';
 import { useAuth } from '@/lib/api/auth-context';
@@ -40,6 +43,7 @@ type Draft = {
   accentColor: string;
   defaultLocale: Locale;
   enabledLocales: Locale[];
+  textScale: Record<Locale, number>;
 };
 
 function toDraft(s: BrandingSettings): Draft {
@@ -52,8 +56,14 @@ function toDraft(s: BrandingSettings): Draft {
     accentColor: s.accentColor,
     defaultLocale: s.defaultLocale,
     enabledLocales: s.enabledLocales,
+    textScale: normalizeTextScale(s.textScale),
   };
 }
+
+/** The sizes offered for a language's text, in percent. */
+const TEXT_SIZES = Array.from({ length: (TEXT_SCALE_MAX - TEXT_SCALE_MIN) / 5 + 1 }, (_, i) => TEXT_SCALE_MIN + i * 5);
+/** A line in each language, to see the size before saving. */
+const TEXT_SAMPLES: Record<Locale, string> = { en: 'Sign in as a caregiver', si: 'සාත්තු සේවකයෙකු ලෙස ඇතුල් වන්න', ta: 'பராமரிப்பாளராக உள்நுழைக' };
 
 /** Each language named in itself, as a speaker would look for it. */
 const LANGUAGE_NAMES: Record<Locale, string> = { en: 'English', si: 'සිංහල', ta: 'தமிழ்' };
@@ -255,6 +265,37 @@ export default function BrandingSettingsPage() {
                 ))}
               </Select>
               <p className="mt-1 text-xs text-ink/50">{t('brandingAdmin.defaultLanguageHint')}</p>
+            </div>
+            {/* Sinhala and Tamil need more room than English at the same size. */}
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-ink">{t('brandingAdmin.textSize')}</p>
+              <p className="text-xs text-ink/50">{t('brandingAdmin.textSizeHint')}</p>
+              <div className="grid gap-2">
+                {draft.enabledLocales.map((code) => (
+                  <div key={code} className="grid items-center gap-3 sm:grid-cols-[7rem_7rem_minmax(0,1fr)]">
+                    <Label htmlFor={`textScale-${code}`} className="mb-0">
+                      <span lang={code}>{LANGUAGE_NAMES[code]}</span>
+                    </Label>
+                    <Select
+                      id={`textScale-${code}`}
+                      value={String(draft.textScale[code])}
+                      onChange={(e) => {
+                        setSaved(false);
+                        setDraft({ ...draft, textScale: { ...draft.textScale, [code]: Number(e.target.value) } });
+                      }}
+                    >
+                      {TEXT_SIZES.map((pct) => (
+                        <option key={pct} value={pct}>
+                          {pct}%
+                        </option>
+                      ))}
+                    </Select>
+                    <span lang={code} className="truncate text-ink" style={{ fontSize: `${(16 * draft.textScale[code]) / 100}px` }}>
+                      {TEXT_SAMPLES[code]}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
             <p className="text-xs text-ink/50">{t('brandingAdmin.regionalNote')}</p>
           </CardContent>

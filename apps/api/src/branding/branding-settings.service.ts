@@ -14,6 +14,7 @@ import {
   initialsOf,
   meetsBrandContrast,
   normalizeLocales,
+  normalizeTextScale,
   resolveLocale,
   type Locale,
   type PublicBranding,
@@ -133,6 +134,7 @@ export class BrandingSettingsService {
       assets: { logo: versionOf(row, 'logo'), logoReverse: versionOf(row, 'logoReverse'), symbol: versionOf(row, 'symbol'), appIcon: versionOf(row, 'appIcon') },
       defaultLocale,
       enabledLocales: normalizeLocales(row.enabledLocales.split(','), defaultLocale),
+      textScale: parseTextScale(row.textScale),
     };
   }
 
@@ -186,10 +188,12 @@ export class BrandingSettingsService {
       throw new BadRequestException('The default language must be one of the languages offered');
     }
     const enabledLocales = normalizeLocales(requested, defaultLocale);
+    // Languages not sent keep their size.
+    const textScale = normalizeTextScale({ ...parseTextScale(current.textScale), ...(dto.textScale ?? {}) });
 
     await this.db
       .update(brandingSettings)
-      .set({ companyName, shortName, tagline, officePhone, primaryColor, accentColor, defaultLocale, enabledLocales: enabledLocales.join(','), updatedBy, updatedAt: new Date() })
+      .set({ companyName, shortName, tagline, officePhone, primaryColor, accentColor, defaultLocale, enabledLocales: enabledLocales.join(','), textScale: formatTextScale(textScale), updatedBy, updatedAt: new Date() })
       .where(eq(brandingSettings.id, SETTINGS_ID));
 
     // The email sender name and the invoice business name start out as the
@@ -286,3 +290,14 @@ export class BrandingSettingsService {
     return this.getAsset('logo');
   }
 }
+
+/** 'en:100,si:90,ta:90' -> { en: 100, si: 90, ta: 90 }, defaults filling any gap. */
+export function parseTextScale(stored: string | null | undefined): Record<Locale, number> {
+  const pairs = (stored ?? '').split(',').map((p) => p.split(':'));
+  return normalizeTextScale(Object.fromEntries(pairs.filter((p) => p.length === 2).map(([l, v]) => [l.trim(), Number(v)])));
+}
+
+const formatTextScale = (scale: Record<Locale, number>) =>
+  Object.entries(scale)
+    .map(([l, v]) => `${l}:${v}`)
+    .join(',');
