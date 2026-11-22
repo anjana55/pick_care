@@ -87,10 +87,13 @@ export class PatientProfileDto {
   @MaxLength(500)
   careAddress?: string;
 
-  @ApiProperty({ description: 'Short description of the care needed (conditions, daily help, anything a caregiver should know)' })
-  @TextField({ min: 10, max: 1000, requiredMessage: 'Describe the care needed', invalidMessage: 'Describe the care needed in at least 10 characters' })
+  // Optional: staff ask about the care when they call, and a search may
+  // already have said most of it. When given, it is kept as written.
+  @ApiPropertyOptional({ description: 'Optional. Short description of the care needed (conditions, daily help, anything a caregiver should know)' })
+  @IsOptional()
   @IsString({ message: 'Care needs must be text' })
-  careNeeds: string;
+  @MaxLength(1000, { message: 'Keep the description of the care needed under 1000 characters' })
+  careNeeds?: string;
 
   @ApiProperty({ enum: careScheduleEnum })
   @IsIn(careScheduleEnum, { message: 'Choose when care is needed' })

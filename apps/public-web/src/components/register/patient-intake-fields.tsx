@@ -34,6 +34,9 @@ export const INTAKE_SECTION_FIELDS: Record<IntakeSectionKey, readonly string[]> 
   care: ['careNeeds', 'careSchedule', 'careStart', 'preferredCaregiverGender'],
 };
 
+/** Questions that may be left blank: they never keep a part open on their own. */
+const OPTIONAL_FIELDS = new Set(['recipientName', 'recipientRelationship', 'alternatePhone', 'careAddress', 'careNeeds', 'preferredCaregiverGender']);
+
 function Section({ title, hidden = false, children }: { title: string; hidden?: boolean; children: React.ReactNode }) {
   // Folded parts stay mounted (just hidden) so their carried-over answers are
   // still registered and submitted.
@@ -59,6 +62,7 @@ export function PatientIntakeFields<T extends PatientIntakeValues>({
   locationsUnavailable = false,
   allowEmailContact,
   hiddenSections = [],
+  hiddenFields = [],
 }: {
   register: UseFormRegister<T>;
   control: Control<T>;
@@ -70,6 +74,11 @@ export function PatientIntakeFields<T extends PatientIntakeValues>({
   allowEmailContact: boolean;
   /** Parts already answered (from the visitor's search) and shown as a summary instead. */
   hiddenSections?: readonly IntakeSectionKey[];
+  /**
+   * Single questions the search already answered, kept out of sight (and in
+   * the summary) even when the rest of their part still has to be asked.
+   */
+  hiddenFields?: readonly string[];
 }) {
   const { t, locale } = useTranslation();
   const err = (name: string) => (errors as any)[name]?.message as string | undefined;
@@ -95,7 +104,10 @@ export function PatientIntakeFields<T extends PatientIntakeValues>({
       </option>
     ));
   const choose = <option value="">{t('personalInfo.options.select')}</option>;
-  const isHidden = (key: IntakeSectionKey) => hiddenSections.includes(key);
+  const answered = (field: string) => hiddenFields.includes(field);
+  // A part is folded when it was folded whole, or when every question in it was answered.
+  const isHidden = (key: IntakeSectionKey) =>
+    hiddenSections.includes(key) || INTAKE_SECTION_FIELDS[key].filter((f) => !OPTIONAL_FIELDS.has(f)).every(answered);
   const contactMethods = allowEmailContact ? CONTACT_METHODS : CONTACT_METHODS.filter((m) => m !== 'EMAIL');
 
   return (
@@ -130,12 +142,12 @@ export function PatientIntakeFields<T extends PatientIntakeValues>({
         )}
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
+          <div hidden={answered('recipientAge')}>
             <Label htmlFor="recipientAge" required>{guardian ? t('patientIntake.fields.recipientAge') : t('patientIntake.fields.yourAge')}</Label>
             <Input id="recipientAge" type="number" inputMode="numeric" min={0} max={120} {...register('recipientAge' as any)} />
             <FieldError message={err('recipientAge')} />
           </div>
-          <div>
+          <div hidden={answered('recipientGender')}>
             <Label htmlFor="recipientGender" required>{guardian ? t('patientIntake.fields.recipientGender') : t('patientIntake.fields.yourGender')}</Label>
             <Select id="recipientGender" {...register('recipientGender' as any)}>
               {choose}
@@ -229,13 +241,13 @@ export function PatientIntakeFields<T extends PatientIntakeValues>({
       </Section>
 
       <Section title={t('patientIntake.sections.care')} hidden={isHidden('care')}>
-        <div>
-          <Label htmlFor="careNeeds" required>{t('patientIntake.fields.careNeeds')}</Label>
-          <Textarea id="careNeeds" rows={3} placeholder={t('patientIntake.careNeedsPlaceholder')} {...register('careNeeds' as any)} />
+        <div hidden={answered('careNeeds')}>
+          <Label htmlFor="careNeeds">{t('patientIntake.fields.careNeeds')}</Label>
+          <Textarea id="careNeeds" rows={3} maxLength={1000} placeholder={t('patientIntake.careNeedsPlaceholder')} {...register('careNeeds' as any)} />
           <FieldError message={err('careNeeds')} />
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
+          <div hidden={answered('careSchedule')}>
             <Label htmlFor="careSchedule" required>{t('patientIntake.fields.careSchedule')}</Label>
             <Select id="careSchedule" {...register('careSchedule' as any)}>
               {choose}
@@ -243,7 +255,7 @@ export function PatientIntakeFields<T extends PatientIntakeValues>({
             </Select>
             <FieldError message={err('careSchedule')} />
           </div>
-          <div>
+          <div hidden={answered('careStart')}>
             <Label htmlFor="careStart" required>{t('patientIntake.fields.careStart')}</Label>
             <Select id="careStart" {...register('careStart' as any)}>
               {choose}
@@ -252,7 +264,7 @@ export function PatientIntakeFields<T extends PatientIntakeValues>({
             <FieldError message={err('careStart')} />
           </div>
         </div>
-        <div>
+        <div hidden={answered('preferredCaregiverGender')}>
           <Label htmlFor="preferredCaregiverGender">{t('patientIntake.fields.caregiverGender')}</Label>
           <Select id="preferredCaregiverGender" {...register('preferredCaregiverGender' as any)}>
             {options('caregiverGender', CAREGIVER_GENDER_PREFERENCES)}

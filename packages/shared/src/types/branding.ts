@@ -62,6 +62,12 @@ export interface PublicBranding {
   /** 1-4 characters shown in the badge when there is no logo. */
   shortName: string;
   tagline: string | null;
+  /**
+   * The office's phone number, shown wherever someone may rather talk to a
+   * person - "Call the office to register" first of all. Null hides those
+   * buttons.
+   */
+  officePhone: string | null;
   primaryColor: string;
   accentColor: string;
   /** Changes whenever the logo does; null when there is no logo. Append as ?v= to bust caches. Same as assets.logo. */
@@ -77,6 +83,7 @@ export const DEFAULT_BRANDING: PublicBranding = {
   companyName: DEFAULT_COMPANY_NAME,
   shortName: DEFAULT_SHORT_NAME,
   tagline: null,
+  officePhone: null,
   primaryColor: DEFAULT_PRIMARY_COLOR,
   accentColor: DEFAULT_ACCENT_COLOR,
   logoVersion: null,
@@ -275,6 +282,7 @@ export function normalizeBranding(raw: unknown): PublicBranding {
     companyName,
     shortName: str(r.shortName, 4) ?? initialsOf(companyName),
     tagline: str(r.tagline, 160),
+    officePhone: str(r.officePhone, 32),
     primaryColor: meetsBrandContrast(r.primaryColor as string) ? (r.primaryColor as string).toUpperCase() : DEFAULT_PRIMARY_COLOR,
     accentColor: meetsBrandContrast(r.accentColor as string) ? (r.accentColor as string).toUpperCase() : DEFAULT_ACCENT_COLOR,
     logoVersion: version(assets.logo) ?? version(r.logoVersion),

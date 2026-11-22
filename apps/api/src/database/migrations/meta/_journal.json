@@ -379,6 +379,13 @@
       "when": 1794896291173,
       "tag": "0053_agent_reminders",
       "breakpoints": true
+    },
+    {
+      "idx": 54,
+      "version": "5",
+      "when": 1795288394855,
+      "tag": "0054_signup_identities_and_agreements",
+      "breakpoints": true
     }
   ]
 }

@@ -254,12 +254,22 @@ describe('signed in', () => {
     expect(await screen.findByText('redirect:/sign-in?role=caregiver&returnTo=/home')).toBeTruthy();
   });
 
-  it('opens registration on the website for now', async () => {
+  it('sends someone new to registering in the app, not the website', async () => {
     serveApi({ 'GET /auth/whatsapp/config': () => ({ status: 200, body: { enabled: false } }) });
     const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
+    mockRouter.params = { role: 'client', returnTo: '/caregivers/abc' };
+    await show(<SignIn />);
+    expect(await screen.findByText(en.signup.newHere)).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: en.signup.createAccount }));
+    expect(mockRouter.push).toHaveBeenCalledWith({ pathname: '/register', params: { role: 'client', returnTo: '/caregivers/abc' } });
+    expect(open).not.toHaveBeenCalled();
+  });
+
+  it('sends a new caregiver to Join, which also offers calling the office', async () => {
+    serveApi({ 'GET /auth/whatsapp/config': () => ({ status: 200, body: { enabled: false } }) });
     mockRouter.params = { role: 'caregiver' };
     await show(<SignIn />);
-    await fireEvent.press(await screen.findByRole('link', { name: en.signIn.signUp }));
-    expect(open).toHaveBeenCalledWith('https://find.caregivers.lk/caregiver/join');
+    await fireEvent.press(await screen.findByRole('button', { name: en.signup.join.title }));
+    expect(mockRouter.push).toHaveBeenCalledWith({ pathname: '/join', params: { role: 'caregiver' } });
   });
 });

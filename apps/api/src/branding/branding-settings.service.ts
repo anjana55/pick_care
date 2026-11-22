@@ -126,6 +126,7 @@ export class BrandingSettingsService {
       companyName: row.companyName || DEFAULT_COMPANY_NAME,
       shortName: row.shortName || initialsOf(row.companyName || DEFAULT_COMPANY_NAME),
       tagline: row.tagline || null,
+      officePhone: row.officePhone || null,
       primaryColor: row.primaryColor.toUpperCase(),
       accentColor: row.accentColor.toUpperCase(),
       logoVersion: versionOf(row, 'logo'),
@@ -166,6 +167,7 @@ export class BrandingSettingsService {
     // Stored as given; a blank one is filled from the company name when read.
     const shortName = dto.shortName !== undefined ? dto.shortName.trim().toUpperCase() : current.shortName;
     const tagline = dto.tagline !== undefined ? dto.tagline.trim() || null : current.tagline;
+    const officePhone = dto.officePhone !== undefined ? dto.officePhone.trim() || null : current.officePhone;
     const primaryColor = (dto.primaryColor ?? current.primaryColor).toUpperCase();
     const accentColor = (dto.accentColor ?? current.accentColor).toUpperCase();
 
@@ -187,7 +189,7 @@ export class BrandingSettingsService {
 
     await this.db
       .update(brandingSettings)
-      .set({ companyName, shortName, tagline, primaryColor, accentColor, defaultLocale, enabledLocales: enabledLocales.join(','), updatedBy, updatedAt: new Date() })
+      .set({ companyName, shortName, tagline, officePhone, primaryColor, accentColor, defaultLocale, enabledLocales: enabledLocales.join(','), updatedBy, updatedAt: new Date() })
       .where(eq(brandingSettings.id, SETTINGS_ID));
 
     // The email sender name and the invoice business name start out as the

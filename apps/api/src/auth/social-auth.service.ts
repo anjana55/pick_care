@@ -17,6 +17,7 @@ import { DRIZZLE, type Database } from '../database/database.module';
 import {
   authHandoffCodes,
   caregivers,
+  signupIdentities,
   socialAccounts,
   users,
   type SocialProvider,
@@ -67,6 +68,16 @@ const LOGIN_STATE_TTL = '10m';
 const PENDING_TOKEN_TTL = '15m';
 
 /**
+ * The `state` for a provider round trip made *before* registering - the
+ * sign-up that starts with "how will you sign in?". Same reasoning for its own
+ * `typ` as the other two.
+ */
+const SIGNUP_STATE_TYPE = 'social-signup-identity';
+const SIGNUP_STATE_TTL = '10m';
+/** How long the proven identity can wait for the details form. */
+export const SIGNUP_TICKET_TTL_MS = 60 * 60 * 1000;
+
+/**
  * Which sign-in a social round trip belongs to. A provider identity signs in
  * only on its own side - a caregiver's Google account is refused on the
  * client sign-in and the reverse, as email sign-in refuses the wrong portal.
@@ -80,7 +91,8 @@ const CHALLENGE_RE = /^[A-Za-z0-9_-]{43}$/;
 
 /** Where a callback goes: whose sign-in, and whether it returns to the mobile app. */
 export interface SocialRoundTrip {
-  flow: 'login' | 'signup';
+  /** login: a returning sign-in. signup: linking to a record just created. identify: proving an identity before registering. */
+  flow: 'login' | 'signup' | 'identify';
   side: SocialSide;
   app: boolean;
 }
@@ -499,6 +511,7 @@ export class SocialAuthService {
         secret: this.config.get<string>('JWT_ACCESS_SECRET'),
       }) as { typ?: string; side?: string; app?: boolean };
       if (payload.typ === LOGIN_STATE_TYPE) return { flow: 'login', side: parseSide(payload.side), app: payload.app === true };
+      if (payload.typ === SIGNUP_STATE_TYPE) return { flow: 'identify', side: parseSide(payload.side), app: payload.app === true };
       if (payload.typ === PENDING_TOKEN_TYPE) return { flow: 'signup', side: parseSide(payload.side), app: false };
       return fallback;
     } catch {
@@ -512,9 +525,11 @@ export class SocialAuthService {
    * nothing new has to be registered with Google, Microsoft or Facebook.
    */
   async completeCallback(params: { provider: string; code: string; state: string }) {
-    if (this.roundTripOf(params.state).flow === 'login') {
+    const flow = this.roundTripOf(params.state).flow;
+    if (flow === 'login') {
       return { flow: 'login' as const, ...(await this.completeLogin(params)) };
     }
+    if (flow === 'identify') return this.completeIdentify(params);
     const handoffCode = await this.completeLink({
       provider: params.provider,
       code: params.code,
@@ -589,6 +604,112 @@ export class SocialAuthService {
         throw new Error('wrong token type');
       }
       if (payload.app && !payload.challenge) throw new Error('app sign-in without a challenge');
+      return { nonce: payload.nonce, side: parseSide(payload.side), challenge: payload.app ? payload.challenge! : null };
+    } catch {
+      throw new SocialLinkError('expired', 'This sign-in link has expired. Please try again.', HttpStatus.UNAUTHORIZED);
+    }
+  }
+
+  // ------------------------------------------------------------------------
+  // Proving an identity before registering
+  // ------------------------------------------------------------------------
+
+  /**
+   * The consent-screen URL for registering with a provider: the first step
+   * of a sign-up that asks "how will you sign in?" before anything else.
+   * Same nonce (and, from the app, challenge) as a sign-in, for the same
+   * reasons: the result must come back to the browser or app that asked.
+   */
+  async signupAuthorizeUrl(
+    rawProvider: string,
+    nonce: string,
+    options: { side?: unknown; client?: unknown; challenge?: unknown } = {},
+  ): Promise<string> {
+    const provider = parseSocialProvider(rawProvider);
+    if (typeof nonce !== 'string' || !/^[A-Za-z0-9_-]{16,128}$/.test(nonce)) {
+      throw new BadRequestException('Missing or invalid sign-in nonce');
+    }
+    const app = options.client === 'app';
+    if (app && (typeof options.challenge !== 'string' || !CHALLENGE_RE.test(options.challenge))) {
+      throw new BadRequestException('Missing or invalid sign-in challenge');
+    }
+    const client = await this.registry.get(provider);
+    const state = this.jwtService.sign(
+      { typ: SIGNUP_STATE_TYPE, nonce, side: parseSide(options.side), ...(app ? { app: true, challenge: options.challenge } : {}) },
+      { secret: this.config.get<string>('JWT_ACCESS_SECRET'), expiresIn: SIGNUP_STATE_TTL as any },
+    );
+    return client.authorizeUrl(state, this.redirectUri(provider));
+  }
+
+  /**
+   * The provider has said who this is. Three outcomes:
+   *
+   * - the identity is already linked to an account on this side: they have
+   *   registered before, so they are simply signed in (a login handoff);
+   * - it is linked on the other side, or its address belongs to another
+   *   account: refused, with the code the page explains;
+   * - otherwise it is new: recorded as a sign-up identity, and a one-time
+   *   code is sent back for the page to trade for the ticket the details form
+   *   is sent with.
+   */
+  private async completeIdentify(raw: { provider: string; code: string; state: string }) {
+    const params = { ...raw, provider: parseSocialProvider(raw.provider) };
+    const client = await this.registry.get(params.provider);
+    const { nonce, side, challenge } = this.verifySignupState(params.state);
+
+    const accessToken = await client.exchangeCode(params.code, this.redirectUri(params.provider));
+    const profile = await client.fetchProfile(accessToken);
+
+    const [link] = await this.db
+      .select({ userId: socialAccounts.userId })
+      .from(socialAccounts)
+      .where(and(eq(socialAccounts.provider, params.provider as SocialProvider), eq(socialAccounts.providerAccountId, profile.accountId)))
+      .limit(1);
+    if (link) {
+      const [user] = await this.db.select().from(users).where(eq(users.id, link.userId)).limit(1);
+      if (!user || !user.isActive || !sideOfRole(user.role)) {
+        throw new SocialLinkError('account_disabled', 'This account cannot be used to sign in.', HttpStatus.FORBIDDEN);
+      }
+      if (sideOfRole(user.role) !== side) {
+        throw new SocialLinkError(
+          'wrong_portal',
+          side === 'client' ? 'That sign-in belongs to a caregiver account. Use the caregiver sign-in.' : 'That sign-in belongs to a client account. Use the client sign-in.',
+          HttpStatus.FORBIDDEN,
+        );
+      }
+      // Registered already: this is a sign-in after all.
+      return { flow: 'login' as const, handoffCode: await this.issueHandoffCode(user.id, challenge), nonce };
+    }
+
+    const [emailTaken] = await this.db.select({ id: users.id }).from(users).where(eq(users.email, profile.email)).limit(1);
+    if (emailTaken) {
+      throw new SocialLinkError('email_taken', 'An account with this email already exists - sign in instead');
+    }
+
+    const code = randomBytes(32).toString('hex');
+    await this.db.insert(signupIdentities).values({
+      id: uuid(),
+      side,
+      method: params.provider as SocialProvider,
+      providerAccountId: profile.accountId,
+      providerEmail: profile.email,
+      providerName: profile.name?.trim().slice(0, 255) || null,
+      ticketHash: null,
+      expiresAt: new Date(Date.now() + SIGNUP_TICKET_TTL_MS),
+      codeHash: this.hashToken(code),
+      codeChallenge: challenge,
+      codeExpiresAt: new Date(Date.now() + HANDOFF_TTL_MS),
+    });
+    return { flow: 'identify' as const, code, nonce };
+  }
+
+  private verifySignupState(state: string): { nonce: string; side: SocialSide; challenge: string | null } {
+    try {
+      const payload = this.jwtService.verify(state, {
+        secret: this.config.get<string>('JWT_ACCESS_SECRET'),
+      }) as { typ?: string; nonce?: string; side?: string; app?: boolean; challenge?: string };
+      if (payload.typ !== SIGNUP_STATE_TYPE || !payload.nonce) throw new Error('wrong token type');
+      if (payload.app && !payload.challenge) throw new Error('app sign-up without a challenge');
       return { nonce: payload.nonce, side: parseSide(payload.side), challenge: payload.app ? payload.challenge! : null };
     } catch {
       throw new SocialLinkError('expired', 'This sign-in link has expired. Please try again.', HttpStatus.UNAUTHORIZED);

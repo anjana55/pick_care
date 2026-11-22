@@ -250,7 +250,9 @@ describe('the Account tab', () => {
     await show(<Account />);
     await fireEvent.press(await screen.findByRole('button', { name: en.signIn.client }));
     expect(mockRouter.push).toHaveBeenCalledWith({ pathname: '/sign-in', params: { role: 'client' } });
-    expect(screen.getByRole('link', { name: en.signIn.signUp })).toBeTruthy();
+    // Registering is in the app now, not on the website.
+    await fireEvent.press(screen.getByRole('button', { name: en.signup.createAccount }));
+    expect(mockRouter.push).toHaveBeenCalledWith({ pathname: '/register', params: { role: 'client' } });
     expect(screen.queryByRole('button', { name: en.nav.signOut })).toBeNull();
   });
 

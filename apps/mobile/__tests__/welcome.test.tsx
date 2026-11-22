@@ -142,22 +142,26 @@ describe('welcome screen', () => {
     expect(screen.getByText(si.welcome.headline)).toHaveStyle({ fontFamily: 'NotoSansSinhala_700Bold', fontWeight: 'normal' });
   });
 
-  it('shows the caregivers picture, one Get started button, and sign-in for people with an account', async () => {
+  it('shows the caregivers picture, and two separate paths: Get started for new people, sign-in for people with an account', async () => {
     await renderWelcome();
     await screen.findByText(en.welcome.headline);
 
     expect(screen.getByLabelText(en.welcome.pictureLabel)).toBeTruthy();
+    expect(screen.getByText(en.signup.newHere)).toBeTruthy();
     expect(screen.getByTestId('link:/get-started')).toHaveTextContent(en.welcome.getStarted);
     expect(screen.getByText(en.welcome.haveAccount)).toBeTruthy();
-    expect(screen.getByTestId('link:/sign-in?role=client')).toHaveTextContent(en.signIn.client);
-    expect(screen.getByTestId('link:/sign-in?role=caregiver')).toHaveTextContent(en.signIn.caregiver);
+    // Real buttons, not small links.
+    await fireEvent.press(screen.getByRole('button', { name: en.signIn.client }));
+    expect(mockRouter.push).toHaveBeenLastCalledWith({ pathname: '/sign-in', params: { role: 'client' } });
+    await fireEvent.press(screen.getByRole('button', { name: en.signIn.caregiver }));
+    expect(mockRouter.push).toHaveBeenLastCalledWith({ pathname: '/sign-in', params: { role: 'caregiver' } });
     // The first screen has nowhere to go back to.
     expect(screen.queryByRole('button', { name: en.nav.back })).toBeNull();
   });
 });
 
 describe('get started', () => {
-  it('asks which side of the app this is: care goes to the client home (no account needed), caregivers to sign-in', async () => {
+  it('asks which side of the app this is: care goes to the client home (no account needed), caregivers to Join', async () => {
     await render(
       <AppProviders>
         <GetStarted />
@@ -165,7 +169,7 @@ describe('get started', () => {
     );
     expect(await screen.findByRole('header', { name: en.start.title })).toBeTruthy();
     expect(screen.getByTestId('link:/start')).toHaveTextContent(en.start.needCare, { exact: false });
-    expect(screen.getByTestId('link:/sign-in?role=caregiver')).toHaveTextContent(en.start.caregiver, { exact: false });
+    expect(screen.getByTestId('link:/join')).toHaveTextContent(en.start.caregiver, { exact: false });
 
     // Back, and Home - the welcome screen, for someone not signed in.
     await fireEvent.press(screen.getByRole('button', { name: en.nav.back }));

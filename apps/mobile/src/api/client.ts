@@ -120,13 +120,15 @@ export function createApiClient({
 
     if (!res.ok) {
       let message = res.statusText || `Request failed (${res.status})`;
+      let code: string | undefined;
       try {
-        const payload = (await res.json()) as { message?: string | string[] };
+        const payload = (await res.json()) as { message?: string | string[]; code?: unknown };
         if (payload?.message) message = Array.isArray(payload.message) ? payload.message.join(', ') : payload.message;
+        if (typeof payload?.code === 'string') code = payload.code;
       } catch {
         /* not JSON */
       }
-      throw new ApiError(res.status, message);
+      throw new ApiError(res.status, message, code);
     }
 
     if (res.status === 204) return undefined as T;

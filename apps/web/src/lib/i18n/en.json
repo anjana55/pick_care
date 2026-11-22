@@ -1269,7 +1269,9 @@
         "hint": "The icon on the phone's home screen and in the App Store and Google Play. It is built into the app, so a new icon needs a new app release (see BUILDING.md). Without it, the symbol on white is used.",
         "spec": "Square and full-bleed: fill the whole square with the background colour, no rounded corners or transparency - the phone adds its own shape. 1024 × 1024 PNG or SVG; keep the mark inside the middle 66%."
       }
-    }
+    },
+    "officePhone": "Office phone number",
+    "officePhoneHint": "Shown on \"Call the office to register\" for caregivers who would rather register by phone, on the website and in the app. Leave it empty to hide those buttons."
   },
   "socialAdmin": {
     "title": "Google, Microsoft and Facebook sign-in",

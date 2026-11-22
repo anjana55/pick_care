@@ -5,6 +5,8 @@ export class ApiError extends Error {
   constructor(
     public readonly status: number,
     message: string,
+    /** The API's machine-readable reason, where it gives one (e.g. `ticket_expired`). */
+    public readonly code?: string,
   ) {
     super(message);
     this.name = 'ApiError';
@@ -15,13 +17,13 @@ export class ApiError extends Error {
 // say the same thing in the same three languages.
 const SESSION_EXPIRED: Record<Locale, string> = {
   en: 'Your session has expired. Please sign in again.',
-  si: 'ඔබගේ සැසිය කල් ඉකුත් වී ඇත. කරුණාකර නැවත පුරනය වන්න.',
+  si: 'ඔබගේ සැසිය කල් ඉකුත් වී ඇත. කරුණාකර නැවත ඇතුල් වන්න.',
   ta: 'உங்கள் அமர்வு காலாவதியாகிவிட்டது. மீண்டும் உள்நுழையவும்.',
 };
 
 const SESSION_CHECK_FAILED: Record<Locale, string> = {
   en: "We couldn't confirm you're signed in. Please check your connection and try again.",
-  si: 'ඔබ පුරනය වී ඇති බව තහවුරු කළ නොහැකි විය. කරුණාකර ඔබේ සම්බන්ධතාවය පරීක්ෂා කර නැවත උත්සාහ කරන්න.',
+  si: 'ඔබ ඇතුල් වී ඇති බව තහවුරු කළ නොහැකි විය. කරුණාකර ඔබේ සම්බන්ධතාවය පරීක්ෂා කර නැවත උත්සාහ කරන්න.',
   ta: 'நீங்கள் உள்நுழைந்துள்ளீர்கள் என்பதை உறுதிப்படுத்த முடியவில்லை. உங்கள் இணைப்பைச் சரிபார்த்து மீண்டும் முயற்சிக்கவும்.',
 };
 

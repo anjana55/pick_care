@@ -16,6 +16,8 @@ import { MySignInMethodsController, SocialAuthController } from './social-auth.c
 import { SocialProviderRegistry } from './social/social-provider';
 import { SocialAuthSettingsService } from './social/social-settings.service';
 import { SocialAuthSettingsController } from './social/social-settings.controller';
+import { SignupService } from './signup.service';
+import { SignupController } from './signup.controller';
 
 @Module({
   imports: [
@@ -44,8 +46,9 @@ import { SocialAuthSettingsController } from './social/social-settings.controlle
     // The registry builds a client per request from the admin-managed settings.
     SocialAuthSettingsService,
     SocialProviderRegistry,
+    SignupService,
   ],
-  controllers: [AuthController, WhatsappAuthController, SocialAuthController, MySignInMethodsController, SocialAuthSettingsController],
+  controllers: [SignupController, AuthController, WhatsappAuthController, SocialAuthController, MySignInMethodsController, SocialAuthSettingsController],
   exports: [AuthService, SocialAuthService, PasswordResetService],
 })
 export class AuthModule {}

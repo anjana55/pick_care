@@ -79,6 +79,7 @@ describe('BrandingSettingsService', () => {
       companyName: 'CareLink',
       shortName: 'CL',
       tagline: null,
+      officePhone: null,
       primaryColor: '#5F6952',
       accentColor: '#2F7A84',
       logoVersion: null,

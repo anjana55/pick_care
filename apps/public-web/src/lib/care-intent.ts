@@ -1,5 +1,5 @@
 import { useCallback, useSyncExternalStore } from 'react';
-import { COLOMBO_TIME_ZONE, type SearchRequest } from '@care-platform/shared';
+import { careNeedsFromSearch as sharedCareNeeds, colomboToday, intakeFromSearch, type SearchRequest } from '@care-platform/shared';
 import type { PatientIntakeValues } from './schemas/patient-intake';
 
 /**
@@ -175,55 +175,20 @@ export function useDeviceShortlist() {
 /* Search -> care intake                                                    */
 /* ------------------------------------------------------------------------ */
 
-/** Today in Colombo as YYYY-MM-DD - the day the care is planned around. */
-export function colomboToday(now = new Date()): string {
-  return new Intl.DateTimeFormat('en-CA', { timeZone: COLOMBO_TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
-}
-
-const daysBetween = (from: string, to: string) =>
-  Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / DAY_MS);
-
-/** A start date picked in search -> the coarse "when should care start" the intake asks for. */
-export function careStartFromDate(date: string | undefined, today: string): PatientIntakeValues['careStart'] | undefined {
-  if (!date || Number.isNaN(Date.parse(`${date}T00:00:00Z`))) return undefined;
-  const days = daysBetween(today, date);
-  if (days <= 2) return 'IMMEDIATELY';
-  if (days <= 7) return 'WITHIN_WEEK';
-  if (days <= 31) return 'WITHIN_MONTH';
-  // Further out than the intake's buckets go: let the client say.
-  return undefined;
-}
-
-const SHIFT_TO_SCHEDULE: Record<string, PatientIntakeValues['careSchedule']> = {
-  DAY: 'DAY',
-  NIGHT: 'NIGHT',
-  TWENTY_FOUR_HOUR_LIVE_IN: 'LIVE_IN_24H',
-  FLEXIBLE: 'NOT_SURE',
-};
-
-const GENDER_PREFERENCE: Record<string, PatientIntakeValues['preferredCaregiverGender']> = {
-  ANY: 'NO_PREFERENCE',
-  MALE: 'MALE',
-  FEMALE: 'FEMALE',
-};
-
-const CARE_NEEDS_MIN = 10;
-const CARE_NEEDS_MAX = 1000;
+/*
+ * The mapping itself is shared with the mobile app
+ * (packages/shared/src/types/intake-from-search.ts), so both read a search
+ * the same way; these wrap it in the website's types and wording.
+ */
+export { colomboToday, careStartFromDate } from '@care-platform/shared';
 
 /**
  * The care-needs note staff read, written from the search: what the visitor
  * typed into AI Search, the help they asked for and any health conditions.
- * Undefined when there is not enough to say - the client then writes it.
+ * Undefined when the search said none of that - the field is optional.
  */
 export function careNeedsFromSearch(context: SearchContext, t: (key: string, params?: Record<string, string | number>) => string) {
-  const parts: string[] = [];
-  const typed = context.aiQuery?.trim();
-  if (typed) parts.push(typed);
-  if (context.skillNames && context.skillNames.length > 0) parts.push(t('careIntent.needs.help', { list: context.skillNames.join(', ') }));
-  const conditions = context.request.patient?.medicalConditions ?? [];
-  if (conditions.length > 0) parts.push(t('careIntent.needs.conditions', { list: conditions.join(', ') }));
-  const text = parts.join('\n').trim();
-  return text.length >= CARE_NEEDS_MIN ? text.slice(0, CARE_NEEDS_MAX) : undefined;
+  return sharedCareNeeds(context, wordingFor(t));
 }
 
 /**
@@ -237,20 +202,10 @@ export function intakeDefaultsFromSearch(
   t: (key: string, params?: Record<string, string | number>) => string,
   today = colomboToday(),
 ): Partial<PatientIntakeValues> {
-  const { request } = context;
-  const defaults: Partial<PatientIntakeValues> = {};
-  const age = request.patient?.age;
-  if (typeof age === 'number' && Number.isInteger(age) && age >= 0 && age <= 120) defaults.recipientAge = age;
-  if (request.patient?.gender === 'MALE' || request.patient?.gender === 'FEMALE') defaults.recipientGender = request.patient.gender;
-  if (request.location?.districtId) defaults.districtId = request.location.districtId;
-  if (request.location?.districtId && request.location.cityId) defaults.cityId = request.location.cityId;
-  if (request.shift && SHIFT_TO_SCHEDULE[request.shift]) defaults.careSchedule = SHIFT_TO_SCHEDULE[request.shift];
-  const start = careStartFromDate(request.desiredStartDate, today);
-  if (start) defaults.careStart = start;
-  if (request.caregiverGenderPreference && GENDER_PREFERENCE[request.caregiverGenderPreference]) {
-    defaults.preferredCaregiverGender = GENDER_PREFERENCE[request.caregiverGenderPreference];
-  }
-  const needs = careNeedsFromSearch(context, t);
-  if (needs) defaults.careNeeds = needs;
-  return defaults;
+  return intakeFromSearch(context, wordingFor(t), today);
 }
+
+const wordingFor = (t: (key: string, params?: Record<string, string | number>) => string) => ({
+  help: (list: string) => t('careIntent.needs.help', { list }),
+  conditions: (list: string) => t('careIntent.needs.conditions', { list }),
+});

@@ -19,6 +19,8 @@ export const brandingSettings = mysqlTable('branding_settings', {
   companyName: varchar('company_name', { length: 120 }).notNull().default('CareLink'),
   shortName: varchar('short_name', { length: 4 }).notNull().default('CL'),
   tagline: varchar('tagline', { length: 160 }),
+  // Shown on "Call the office" buttons (registration first of all). Null hides them.
+  officePhone: varchar('office_phone', { length: 32 }),
   primaryColor: varchar('primary_color', { length: 7 }).notNull().default('#5F6952'),
   accentColor: varchar('accent_color', { length: 7 }).notNull().default('#2F7A84'),
 

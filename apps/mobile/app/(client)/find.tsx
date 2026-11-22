@@ -59,7 +59,7 @@ export default function Find() {
     const withHere = withDeviceOrigin(next, here, radiusKm);
     setAiQuery(query);
     setRequest(withHere);
-    rememberSearch(withHere);
+    rememberSearch(withHere, query);
   };
 
   /** Same search, a different reach - or, before searching, how far the next one looks. */
@@ -76,7 +76,7 @@ export default function Find() {
     if (request) {
       const next = { ...request, location: { districtId: found.city.districtId, cityId: found.city.cityId }, origin: { latitude: found.latitude, longitude: found.longitude } };
       setRequest(next);
-      rememberSearch(next);
+      rememberSearch(next, aiQuery);
     }
   };
 

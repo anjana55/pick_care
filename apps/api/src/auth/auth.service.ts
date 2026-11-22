@@ -355,8 +355,17 @@ export class AuthService {
    * keep working until they expire; whichever is used first verifies.
    */
   async sendVerificationLink(userId: string): Promise<boolean> {
+    return (await this.issueVerificationLink(userId)) !== null;
+  }
+
+  /**
+   * sendVerificationLink, handing back the link it emailed (null when there
+   * was nobody to send it to) - so a caller can expose it in development,
+   * the way the registration responses do (devVerificationUrl).
+   */
+  async issueVerificationLink(userId: string): Promise<string | null> {
     const [user] = await this.db.select({ email: users.email, role: users.role }).from(users).where(eq(users.id, userId)).limit(1);
-    if (!user?.email || !SELF_REGISTERED_ROLES.includes(user.role)) return false;
+    if (!user?.email || !SELF_REGISTERED_ROLES.includes(user.role)) return null;
     const token = randomBytes(32).toString('hex');
     await this.db.insert(emailVerificationTokens).values({
       id: uuid(),
@@ -364,8 +373,9 @@ export class AuthService {
       tokenHash: this.hashToken(token),
       expiresAt: new Date(Date.now() + VERIFICATION_TOKEN_TTL_MS),
     });
-    void this.emailService.sendVerificationEmail(user.email, `${this.frontendUrl(user.role)}/verify-email?token=${token}`, user.role as 'CAREGIVER' | 'PATIENT_GUARDIAN' | 'EMPLOYER');
-    return true;
+    const url = `${this.frontendUrl(user.role)}/verify-email?token=${token}`;
+    void this.emailService.sendVerificationEmail(user.email, url, user.role as 'CAREGIVER' | 'PATIENT_GUARDIAN' | 'EMPLOYER');
+    return url;
   }
 
   async refresh(refreshToken: string) {

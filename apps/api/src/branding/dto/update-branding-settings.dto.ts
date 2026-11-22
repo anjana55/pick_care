@@ -23,6 +23,11 @@ export class UpdateBrandingSettingsDto {
   @IsOptional() @IsString() @MaxLength(160)
   tagline?: string;
 
+  @ApiPropertyOptional({ example: '0112345678', description: 'The office phone number for "Call the office" buttons. Empty = hide them.' })
+  @IsOptional() @IsString() @MaxLength(32)
+  @Matches(/^$|^\+?[\d\s().-]{7,32}$/, { message: 'Enter the office phone number using digits, spaces and an optional leading +' })
+  officePhone?: string;
+
   @ApiPropertyOptional({ example: '#5F6952' })
   @IsOptional() @Matches(/^#[0-9a-fA-F]{6}$/, { message: 'Enter the primary colour as a hex value, e.g. #5F6952' })
   primaryColor?: string;

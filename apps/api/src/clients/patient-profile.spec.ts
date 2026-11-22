@@ -65,7 +65,6 @@ describe('patient registration DTOs', () => {
     ['preferredContactMethod', 'Choose how we should contact you'],
     ['districtId', 'Choose the district where care is needed'],
     ['cityId', 'Choose the city where care is needed'],
-    ['careNeeds', 'Describe the care needed'],
     ['careSchedule', 'Choose when care is needed'],
     ['careStart', 'Choose when care should start'],
   ])('rejects a registration without %s with a plain-English message', async (field, message) => {
@@ -86,10 +85,17 @@ describe('patient registration DTOs', () => {
     expect(await errorsFor({ ...rest, registrantType: 'SELF' }, RegisterPatientWhatsappDto)).toEqual([]);
   });
 
-  it('rejects an impossible age and a too-short care description', async () => {
-    const errors = await errorsFor({ ...whatsappBody, recipientAge: 200, careNeeds: 'help' }, RegisterPatientWhatsappDto);
-    expect(errors).toContain('Enter a valid age');
-    expect(errors).toContain('Describe the care needed in at least 10 characters');
+  it('rejects an impossible age', async () => {
+    expect(await errorsFor({ ...whatsappBody, recipientAge: 200 }, RegisterPatientWhatsappDto)).toContain('Enter a valid age');
+  });
+
+  it('leaves the description of the care optional, however short, but not endless', async () => {
+    const { careNeeds: _c, ...withoutNeeds } = whatsappBody;
+    expect(await errorsFor(withoutNeeds, RegisterPatientWhatsappDto)).toEqual([]);
+    expect(await errorsFor({ ...whatsappBody, careNeeds: 'help' }, RegisterPatientWhatsappDto)).toEqual([]);
+    expect(await errorsFor({ ...whatsappBody, careNeeds: 'x'.repeat(1001) }, RegisterPatientWhatsappDto)).toContain(
+      'Keep the description of the care needed under 1000 characters',
+    );
   });
 
   it('rejects a malformed alternate phone but allows leaving it out', async () => {

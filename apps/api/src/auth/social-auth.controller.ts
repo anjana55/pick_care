@@ -117,6 +117,24 @@ export class SocialAuthController {
   }
 
   /**
+   * The consent URL for registering with a provider - the first step of a
+   * sign-up that picks the sign-in method before the details form. Same
+   * parameters as `login-url`.
+   */
+  @Public()
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
+  @Get('social/:provider/signup-url')
+  async signupUrl(
+    @Param('provider') provider: string,
+    @Query('nonce') nonce: string,
+    @Query('side') side?: string,
+    @Query('client') client?: string,
+    @Query('challenge') challenge?: string,
+  ) {
+    return { url: await this.socialAuth.signupAuthorizeUrl(provider, nonce, { side, client, challenge }) };
+  }
+
+  /**
    * The registered redirect URI for each provider. Always answers with a
    * redirect, never a JSON body - a browser arrives here by navigation, and an
    * exception escaping as a 500 would render a JSON blob over a page the
@@ -149,6 +167,11 @@ export class SocialAuthController {
           ipAddress: req.ip,
         });
         return res.redirect(`${this.callbackPage(trip)}?code=${encodeURIComponent(result.handoffCode)}`);
+      }
+      if (result.flow === 'identify') {
+        // A new identity: the page trades this code for the sign-up ticket.
+        const params = new URLSearchParams({ code: result.code, flow: 'identify', nonce: result.nonce });
+        return res.redirect(`${this.callbackPage(trip)}?${params.toString()}`);
       }
       // The nonce goes back to the browser (or app) that generated it, which
       // compares it with its own copy before spending the code.
@@ -183,7 +206,7 @@ export class SocialAuthController {
   private fail(res: Response, trip: SocialRoundTrip, reason: string, provider?: string) {
     const params = new URLSearchParams({ error: reason });
     if (provider) params.set('provider', provider);
-    if (trip.flow === 'login') params.set('flow', 'login');
+    if (trip.flow === 'login' || trip.flow === 'identify') params.set('flow', trip.flow);
     return res.redirect(`${this.callbackPage(trip)}?${params.toString()}`);
   }
 

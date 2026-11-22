@@ -1,7 +1,6 @@
-import { Linking, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/auth/AuthProvider';
-import { registerUrl } from '@/auth/sides';
 import { useTranslation } from '@/i18n';
 import { useColors } from '@/theme';
 import { Button, Screen } from '@/ui/controls';
@@ -45,10 +44,8 @@ export default function Account() {
               <Text style={{ flex: 1, color: colors.muted, fontSize: 15, lineHeight: 22 }}>{t('account.signedOutHint')}</Text>
             </View>
             <Button label={t('signIn.client')} onPress={() => router.push({ pathname: '/sign-in', params: { role: 'client' } })} />
-            <View style={styles.row}>
-              <Text style={{ color: colors.muted, fontSize: 15 }}>{t('signIn.noAccount')}</Text>
-              <Button variant="link" label={t('signIn.signUp')} onPress={() => Linking.openURL(registerUrl('client'))} />
-            </View>
+            <Text style={{ color: colors.muted, fontSize: 15 }}>{t('signup.newHere')}</Text>
+            <Button variant="secondary" label={t('signup.createAccount')} onPress={() => router.push({ pathname: '/register', params: { role: 'client' } })} />
           </Card>
         )}
 
@@ -93,5 +90,4 @@ const styles = StyleSheet.create({
   section: { gap: 12 },
   lead: { fontSize: 20, fontWeight: '600' },
   label: { fontSize: 15, fontWeight: '600' },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
 });

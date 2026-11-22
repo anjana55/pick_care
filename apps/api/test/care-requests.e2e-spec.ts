@@ -451,7 +451,8 @@ describe('Care requests and saved caregivers (e2e)', () => {
       await logCall({}).expect(400); // neither client nor caller
       await logCall({ patientId: client.patientId, newClient: phoneCaller() }).expect(400);
       await logCall({ newClient: phoneCaller({ consentConfirmed: false }) }).expect(400);
-      await logCall({ newClient: phoneCaller({ careNeeds: '' }) }).expect(400);
+      // The description of the care is optional (as at registration), but not endless.
+      await logCall({ newClient: phoneCaller({ careNeeds: 'x'.repeat(1001) }) }).expect(400);
       await logCall({ newClient: phoneCaller({ phone: 'abc' }) }).expect(400);
       await logCall({ patientId: client.patientId, language: 'fr' }).expect(400);
       await logCall({ patientId: '00000000-0000-4000-8000-000000000000' }).expect(404);

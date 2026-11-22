@@ -16,6 +16,8 @@ export interface BrandingSettingsInput {
   companyName?: string;
   shortName?: string;
   tagline?: string;
+  /** Empty hides the "Call the office" buttons. */
+  officePhone?: string;
   primaryColor?: string;
   accentColor?: string;
   defaultLocale?: Locale;
