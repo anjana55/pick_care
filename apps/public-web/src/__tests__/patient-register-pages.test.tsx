@@ -79,14 +79,14 @@ beforeEach(() => {
 });
 
 describe('client registration asks how they will sign in first', () => {
-  it('offers WhatsApp, the switched-on providers, and email - and a clear way to sign in instead', async () => {
+  it('offers WhatsApp, the switched-on providers, and email - without asking again whether they have an account', async () => {
     renderPage(<RegisterPage />);
     expect(await screen.findByText('How would you like to sign in?')).toBeInTheDocument();
     expect(await screen.findByRole('button', { name: /Continue with WhatsApp/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Continue with Google' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Continue with Microsoft' })).toBeNull();
     expect(screen.getByRole('button', { name: /Continue with email and password/ })).toBeInTheDocument();
-    expect(screen.getByText('Already have an account?').querySelector('a')).toHaveAttribute('href', '/login');
+    expect(screen.queryByText('Already have an account?')).toBeNull();
     // No details yet: they come after the sign-in is chosen.
     expect(screen.queryByText('Who needs care?')).toBeNull();
   });
