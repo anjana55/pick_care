@@ -164,7 +164,7 @@ export default function SignIn() {
           <Button
             variant="secondary"
             label={side === 'caregiver' ? t('signup.join.title') : t('signup.createAccount')}
-            onPress={() => router.push({ pathname: side === 'caregiver' ? '/join' : '/register', params: { role: side, ...(returnTo ? { returnTo } : {}) } })}
+            onPress={() => router.push({ pathname: '/register', params: { role: side, ...(returnTo ? { returnTo } : {}) } })}
           />
         </Card>
       </ScrollView>

@@ -265,11 +265,11 @@ describe('signed in', () => {
     expect(open).not.toHaveBeenCalled();
   });
 
-  it('sends a new caregiver to Join, which also offers calling the office', async () => {
+  it('sends a new caregiver straight to the registration form', async () => {
     serveApi({ 'GET /auth/whatsapp/config': () => ({ status: 200, body: { enabled: false } }) });
     mockRouter.params = { role: 'caregiver' };
     await show(<SignIn />);
     await fireEvent.press(await screen.findByRole('button', { name: en.signup.join.title }));
-    expect(mockRouter.push).toHaveBeenCalledWith({ pathname: '/join', params: { role: 'caregiver' } });
+    expect(mockRouter.push).toHaveBeenCalledWith({ pathname: '/register', params: { role: 'caregiver' } });
   });
 });

@@ -1,9 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
-import { Linking } from 'react-native';
 import { agreementVersion } from '@care-platform/shared';
 import en from '../src/i18n/en.json';
 import Register from '../app/(auth)/register';
-import Join from '../app/join';
 import { AppProviders, serveApi } from '../test-utils/app';
 import { mockRouter } from '../test-utils/router';
 import { pickDate } from '../test-utils/calendar';
@@ -60,15 +58,16 @@ beforeEach(() => {
 });
 
 describe('registering a client in the app', () => {
-  it('starts with how to sign in, and offers a way to sign in instead', async () => {
+  it('starts with how to sign in, without asking again whether they have an account', async () => {
     commonRoutes('client');
     mockRouter.params = { role: 'client' };
     await show(<Register />);
     expect(await screen.findByRole('header', { name: en.signup.chooseTitle })).toBeTruthy();
     expect(await screen.findByRole('button', { name: en.signup.whatsapp })).toBeTruthy();
     expect(screen.getByRole('button', { name: en.signup.email })).toBeTruthy();
-    await fireEvent.press(screen.getByRole('button', { name: en.signup.signIn }));
-    expect(mockRouter.replace).toHaveBeenCalledWith({ pathname: '/sign-in', params: { role: 'client' } });
+    // They tapped "Create an account" to get here.
+    expect(screen.queryByText(en.signup.haveAccount)).toBeNull();
+    expect(screen.queryByRole('button', { name: en.signup.signIn })).toBeNull();
   });
 
   it('after WhatsApp, asks no phone number, needs the agreement, and finishes signed in', async () => {
@@ -216,23 +215,22 @@ describe('registering a caregiver in the app', () => {
   });
 });
 
-describe('Join (caregivers)', () => {
-  it('offers registering in the app, calling the office, and signing in - as three big buttons', async () => {
-    serveApi({ 'GET /branding': () => ({ status: 200, body: { companyName: 'CareLink', officePhone: '011 234 5678' } }) });
+describe('calling the office instead (caregivers)', () => {
+  it('is on the first registration step, and dials the office', async () => {
+    const { Linking } = require('react-native');
+    commonRoutes('caregiver', { 'GET /branding': () => ({ status: 200, body: { companyName: 'CareLink', officePhone: '011 234 5678' } }) });
     const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
-    await show(<Join />);
-    await fireEvent.press(await screen.findByRole('link', { name: en.signup.join.byPhone }));
+    mockRouter.params = { role: 'caregiver' };
+    await show(<Register />);
+    await fireEvent.press(await screen.findByRole('button', { name: en.signup.callOffice.cta.replace('{phone}', '011 234 5678') }));
     expect(open).toHaveBeenCalledWith('tel:0112345678');
-    await fireEvent.press(screen.getByRole('button', { name: en.signup.join.inApp }));
-    expect(mockRouter.push).toHaveBeenLastCalledWith({ pathname: '/register', params: { role: 'caregiver' } });
-    await fireEvent.press(screen.getByRole('button', { name: en.signup.join.haveAccount }));
-    expect(mockRouter.push).toHaveBeenLastCalledWith({ pathname: '/sign-in', params: { role: 'caregiver' } });
   });
 
-  it('leaves out calling the office when there is no number to call', async () => {
-    serveApi({ 'GET /branding': () => ({ status: 200, body: { companyName: 'CareLink', officePhone: null } }) });
-    await show(<Join />);
-    expect(await screen.findByRole('button', { name: en.signup.join.inApp })).toBeTruthy();
-    expect(screen.queryByRole('link', { name: en.signup.join.byPhone })).toBeNull();
+  it('is left out when there is no office number', async () => {
+    commonRoutes('caregiver', { 'GET /branding': () => ({ status: 200, body: { companyName: 'CareLink', officePhone: null } }) });
+    mockRouter.params = { role: 'caregiver' };
+    await show(<Register />);
+    await screen.findByRole('button', { name: en.signup.whatsapp });
+    expect(screen.queryByText(en.signup.callOffice.title)).toBeNull();
   });
 });

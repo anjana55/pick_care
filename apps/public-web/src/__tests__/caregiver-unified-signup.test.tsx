@@ -75,13 +75,13 @@ beforeEach(() => {
 });
 
 describe('caregiver registration', () => {
-  it('starts with the sign-in choice, a way to sign in instead, and the office number to call', async () => {
+  it('starts with the sign-in choice and the office number to call', async () => {
     renderPage(<CaregiverSignupPage />);
     expect(await screen.findByText('How would you like to sign in?')).toBeInTheDocument();
     expect(await screen.findByRole('button', { name: /Continue with WhatsApp/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Continue with Google' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Continue with Microsoft' })).toBeInTheDocument();
-    expect(screen.getByText('Already have an account?').querySelector('a')).toHaveAttribute('href', '/caregiver/login');
+    expect(screen.queryByText('Already have an account?')).toBeNull();
     expect(screen.getByText('Prefer to register by phone?')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Call 011 234 5678/ })).toHaveAttribute('href', 'tel:0112345678');
   });

@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { Mail, MessageCircle } from 'lucide-react';
 import {
   SIGNUP_PROVIDER_ORDER,
@@ -33,7 +32,6 @@ export const HOME_OF: Record<SignupSide, () => string> = {
   client: () => takeReturnTo('/'),
   caregiver: () => '/caregiver/dashboard',
 };
-const LOGIN_OF: Record<SignupSide, string> = { client: '/login', caregiver: '/caregiver/login' };
 
 type Open = 'whatsapp' | 'email' | null;
 
@@ -45,7 +43,9 @@ type Open = 'whatsapp' | 'email' | null;
  * on the details form.
  *
  * Someone who turns out to be registered already - their WhatsApp number or
- * provider account is a login on this side - is simply signed in.
+ * provider account is a login on this side - is simply signed in. There is
+ * no "already have an account?" here: they chose to register to get here,
+ * and the header's Sign in is always there.
  */
 export function SignInMethodStep({ side, onChosen }: { side: SignupSide; onChosen: (chosen: ChosenSignIn) => void }) {
   const { t } = useTranslation();
@@ -128,12 +128,6 @@ export function SignInMethodStep({ side, onChosen }: { side: SignupSide; onChose
         </p>
       )}
 
-      <p className="border-t border-border pt-4 text-center text-sm text-ink/60">
-        {t('signup.haveAccount')}{' '}
-        <Link href={LOGIN_OF[side]} className="font-medium text-brand-dark hover:underline">
-          {t('signup.signIn')}
-        </Link>
-      </p>
     </div>
   );
 }

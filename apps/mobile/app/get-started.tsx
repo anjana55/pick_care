@@ -31,7 +31,7 @@ export default function GetStarted() {
             <Choice icon="heart" title={t('start.needCare')} hint={t('welcome.findCareHint')} onDeep />
           </Pressable>
         </Link>
-        <Link href="/join" asChild>
+        <Link href={{ pathname: '/register', params: { role: 'caregiver' } }} asChild>
           <Pressable accessibilityRole="button" accessibilityLabel={t('start.caregiver')} accessibilityHint={t('welcome.joinHint')} style={styles.secondary}>
             <Choice icon="medkit" title={t('start.caregiver')} hint={t('welcome.joinHint')} />
           </Pressable>

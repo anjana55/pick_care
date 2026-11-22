@@ -161,7 +161,7 @@ describe('welcome screen', () => {
 });
 
 describe('get started', () => {
-  it('asks which side of the app this is: care goes to the client home (no account needed), caregivers to Join', async () => {
+  it('asks which side of the app this is: care goes to the client home (no account needed), caregivers straight to registering', async () => {
     await render(
       <AppProviders>
         <GetStarted />
@@ -169,7 +169,7 @@ describe('get started', () => {
     );
     expect(await screen.findByRole('header', { name: en.start.title })).toBeTruthy();
     expect(screen.getByTestId('link:/start')).toHaveTextContent(en.start.needCare, { exact: false });
-    expect(screen.getByTestId('link:/join')).toHaveTextContent(en.start.caregiver, { exact: false });
+    expect(screen.getByTestId('link:/register?role=caregiver')).toHaveTextContent(en.start.caregiver, { exact: false });
 
     // Back, and Home - the welcome screen, for someone not signed in.
     await fireEvent.press(screen.getByRole('button', { name: en.nav.back }));

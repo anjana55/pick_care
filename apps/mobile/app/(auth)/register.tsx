@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { ScrollView, StyleSheet, View, type ScrollViewInstance } from 'react-native';
+import { ScrollView, StyleSheet, type ScrollViewInstance } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { agreementVersion, type IntakeFromSearch, type SignupResult, type SignupSide, type Tokens } from '@care-platform/shared';
@@ -30,6 +30,11 @@ import { CaregiverDetails, caregiverPayload, caregiverProblems, startCaregiverFo
  * WhatsApp and provider sign-ups finish signed in; email confirms the
  * address by the link sent to it. Caregivers who would rather not type can
  * call the office from step 1.
+ *
+ * Every way here is an explicit "I'm new" (Create an account, Get started),
+ * so this screen does not ask again whether they have an account. Anyone who
+ * has one after all is caught anyway: a WhatsApp number or provider account
+ * that is already registered signs them straight in.
  */
 export default function Register() {
   const { t } = useTranslation();
@@ -146,14 +151,6 @@ export default function Register() {
             {side === 'caregiver' ? <CallOfficeCard /> : null}
             <FormError message={error} />
             <MethodStep side={side} onChosen={choose} onSignedIn={(tokens) => void finishSignedIn(tokens)} />
-            <View style={styles.other}>
-              <Text style={{ fontSize: 16, color: colors.muted }}>{t('signup.haveAccount')}</Text>
-              <Button
-                variant="secondary"
-                label={t('signup.signIn')}
-                onPress={() => router.replace({ pathname: '/sign-in', params: { role: side, ...(returnTo ? { returnTo } : {}) } })}
-              />
-            </View>
           </>
         ) : (
           <>
@@ -189,5 +186,4 @@ export default function Register() {
 const styles = StyleSheet.create({
   body: { paddingTop: 20, paddingBottom: 40, gap: 18 },
   heading: { fontSize: 22, lineHeight: 30, fontWeight: '800' },
-  other: { gap: 10, marginTop: 8 },
 });
