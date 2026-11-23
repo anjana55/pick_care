@@ -22,6 +22,8 @@ export interface BrandingSettingsInput {
   accentColor?: string;
   defaultLocale?: Locale;
   enabledLocales?: Locale[];
+  /** Text size per language, in percent. */
+  textScale?: Partial<Record<Locale, number>>;
 }
 
 const KEY = ['branding-settings'] as const;

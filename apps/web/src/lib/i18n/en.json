@@ -1271,7 +1271,9 @@
       }
     },
     "officePhone": "Office phone number",
-    "officePhoneHint": "Shown on \"Call the office to register\" for caregivers who would rather register by phone, on the website and in the app. Leave it empty to hide those buttons."
+    "officePhoneHint": "Shown on \"Call the office to register\" for caregivers who would rather register by phone, on the website and in the app. Leave it empty to hide those buttons.",
+    "textSize": "Text size",
+    "textSizeHint": "How big text is in each language, on the website and in the app. Sinhala and Tamil letters take more room than English, so a slightly smaller size stops labels overflowing their buttons."
   },
   "socialAdmin": {
     "title": "Google, Microsoft and Facebook sign-in",

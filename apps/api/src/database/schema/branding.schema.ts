@@ -40,6 +40,8 @@ export const brandingSettings = mysqlTable('branding_settings', {
   defaultLocale: mysqlEnum('default_locale', brandingLocaleEnum).notNull().default('en'),
   // Comma-separated subset of brandingLocaleEnum, e.g. 'en,si,ta'.
   enabledLocales: varchar('enabled_locales', { length: 32 }).notNull().default('en,si,ta'),
+  // Text size per language in percent, e.g. 'en:100,si:90,ta:90' (shared normalizeTextScale).
+  textScale: varchar('text_scale', { length: 64 }).notNull().default('en:100,si:90,ta:90'),
 
   updatedBy: varchar('updated_by', { length: 36 }),
   createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),

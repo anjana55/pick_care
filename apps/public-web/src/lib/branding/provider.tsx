@@ -8,10 +8,11 @@ import {
   derivePalette,
   normalizeBranding,
   paletteCssVars,
+  textScaleFor,
   type PublicBranding,
 } from '@care-platform/shared';
 import { API_URL } from '@/lib/api/client';
-import { I18nProvider } from '@/lib/i18n';
+import { I18nProvider, useTranslation } from '@/lib/i18n';
 
 /**
  * The white-label branding (Settings > Branding) for client components: the
@@ -54,10 +55,25 @@ export function BrandingProvider({ initial, children }: { initial: PublicBrandin
   return (
     <BrandingContext.Provider value={branding}>
       <I18nProvider defaultLocale={branding.defaultLocale} enabledLocales={branding.enabledLocales} vars={{ brand: branding.companyName }}>
+        <LanguageTextSize branding={branding} />
         {children}
       </I18nProvider>
     </BrandingContext.Provider>
   );
+}
+
+/**
+ * The page's base size, from the text size set for the reading language
+ * (Settings > Branding): Sinhala and Tamil need more room than English, and
+ * the whole page is sized in rem, so this one value scales it evenly.
+ */
+function LanguageTextSize({ branding }: { branding: PublicBranding }) {
+  const { locale } = useTranslation();
+  const scale = textScaleFor(branding, locale);
+  useEffect(() => {
+    document.documentElement.style.fontSize = scale === 1 ? '' : `${scale * 100}%`;
+  }, [scale]);
+  return null;
 }
 
 /** Outside a BrandingProvider (isolated component tests) this is the shipped identity. */

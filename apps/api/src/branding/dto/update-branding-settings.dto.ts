@@ -1,6 +1,20 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsIn, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
-import { LOCALES, type Locale } from '@care-platform/shared';
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsIn, IsObject, IsOptional, IsString, Matches, MaxLength, MinLength, Validate, ValidatorConstraint, type ValidatorConstraintInterface } from 'class-validator';
+import { LOCALES, TEXT_SCALE_MAX, TEXT_SCALE_MIN, type Locale } from '@care-platform/shared';
+
+/** Known languages only, each a whole percent within the allowed range. */
+@ValidatorConstraint({ name: 'textScale' })
+class TextScaleRule implements ValidatorConstraintInterface {
+  validate(value: unknown) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+    return Object.entries(value as Record<string, unknown>).every(
+      ([locale, pct]) => (LOCALES as readonly string[]).includes(locale) && Number.isInteger(pct) && (pct as number) >= TEXT_SCALE_MIN && (pct as number) <= TEXT_SCALE_MAX,
+    );
+  }
+  defaultMessage() {
+    return `Choose a text size between ${TEXT_SCALE_MIN}% and ${TEXT_SCALE_MAX}% for each language`;
+  }
+}
 
 /**
  * Partial update - the admin form sends back what it has. An empty string for
@@ -43,4 +57,13 @@ export class UpdateBrandingSettingsDto {
   @ApiPropertyOptional({ enum: LOCALES, isArray: true })
   @IsOptional() @IsArray() @ArrayMinSize(1) @ArrayMaxSize(LOCALES.length) @IsIn(LOCALES, { each: true })
   enabledLocales?: Locale[];
+
+  @ApiPropertyOptional({
+    example: { en: 100, si: 90, ta: 90 },
+    description: `Text size per language, in percent (${TEXT_SCALE_MIN}-${TEXT_SCALE_MAX}). Languages left out keep their size.`,
+  })
+  @IsOptional()
+  @IsObject()
+  @Validate(TextScaleRule)
+  textScale?: Partial<Record<Locale, number>>;
 }

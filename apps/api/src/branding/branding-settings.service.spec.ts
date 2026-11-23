@@ -1,7 +1,7 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import sharp from 'sharp';
 import { brandingAssetUrl, normalizeBranding } from '@care-platform/shared';
-import { BrandingSettingsService, inspectLogo } from './branding-settings.service';
+import { BrandingSettingsService, parseTextScale, inspectLogo } from './branding-settings.service';
 
 /**
  * White-label branding (Settings > Branding).
@@ -86,7 +86,14 @@ describe('BrandingSettingsService', () => {
       assets: { logo: null, logoReverse: null, symbol: null, appIcon: null },
       defaultLocale: 'en',
       enabledLocales: ['en', 'si', 'ta'],
+      textScale: { en: 100, si: 90, ta: 90 },
     });
+  });
+
+  it('reads stored text sizes, filling gaps and keeping them in range', () => {
+    expect(parseTextScale('en:100,si:85,ta:90')).toEqual({ en: 100, si: 85, ta: 90 });
+    expect(parseTextScale('si:50')).toEqual({ en: 100, si: 80, ta: 90 });
+    expect(parseTextScale(null)).toEqual({ en: 100, si: 90, ta: 90 });
   });
 
   it('saves a new identity and fills a blank short name from the company name', async () => {
