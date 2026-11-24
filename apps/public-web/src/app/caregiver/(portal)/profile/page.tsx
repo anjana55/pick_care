@@ -6,6 +6,7 @@ import { useTranslation } from '@/lib/i18n';
 import { PersonalDetailsForm } from '@/components/portal/personal-details-form';
 import { CatalogPicker } from '@/components/portal/catalog-picker';
 import { RatesSection } from '@/components/portal/rates-section';
+import { ProfilePhotoSection } from '@/components/portal/profile-photo-section';
 import { RecordSection, type FieldSpec } from '@/components/portal/record-section';
 import { useExperiences, useOwnCaregiver, useQualifications } from '@/lib/hooks/use-caregiver-portal';
 import { QUALIFICATION_TYPES, type Experience, type Qualification } from '@/lib/api/portal-types';
@@ -60,6 +61,8 @@ export default function CaregiverProfilePage() {
         </span>
         <ChevronRight className="h-5 w-5 shrink-0 text-ink/40" aria-hidden />
       </Link>
+
+      <ProfilePhotoSection />
 
       {/* Keyed on the saved record so the form re-reads what the server now holds. */}
       <PersonalDetailsForm key={`${caregiver.id}-${caregiver.status}`} caregiver={caregiver} />

@@ -124,3 +124,33 @@ export function digestNotice(lines: ReminderLine[], lang: Lang): PushText & { li
   const title = lines.length === 1 ? TITLE[lang].one : fill(TITLE[lang].many, { n: lines.length });
   return { title, body: texts.join(' '), lines: texts, footer: SEE_ALL[lang] };
 }
+
+// --- a caregiver's profile photo was reviewed ------------------------------------------
+
+const PHOTO_REVIEWED: Record<'APPROVED' | 'REJECTED', Record<Lang, PushText & { reason?: string }>> = {
+  APPROVED: {
+    en: { title: 'Photo approved', body: 'Your new photo is now on your public profile.' },
+    si: { title: 'ඡායාරූපය අනුමත කළා', body: 'ඔබගේ නව ඡායාරූපය දැන් ඔබගේ පොදු පැතිකඩෙහි ඇත.' },
+    ta: { title: 'புகைப்படம் அங்கீகரிக்கப்பட்டது', body: 'உங்கள் புதிய புகைப்படம் இப்போது உங்கள் பொது சுயவிவரத்தில் உள்ளது.' },
+  },
+  REJECTED: {
+    en: { title: 'Please choose another photo', body: 'Your photo could not be approved. Please upload a clear, recent photo of your face.', reason: 'Reason: {reason}' },
+    si: {
+      title: 'කරුණාකර වෙනත් ඡායාරූපයක් තෝරන්න',
+      body: 'ඔබගේ ඡායාරූපය අනුමත කළ නොහැකි විය. කරුණාකර ඔබේ මුහුණේ පැහැදිලි, මෑත ඡායාරූපයක් උඩුගත කරන්න.',
+      reason: 'හේතුව: {reason}',
+    },
+    ta: {
+      title: 'தயவுசெய்து வேறொரு புகைப்படத்தைத் தேர்ந்தெடுக்கவும்',
+      body: 'உங்கள் புகைப்படத்தை அங்கீகரிக்க முடியவில்லை. உங்கள் முகத்தின் தெளிவான, சமீபத்திய புகைப்படத்தைப் பதிவேற்றவும்.',
+      reason: 'காரணம்: {reason}',
+    },
+  },
+};
+
+/** Staff approved or rejected the caregiver's profile photo; a rejection carries staff's reason, as written. */
+export function photoReviewedNotice(outcome: 'APPROVED' | 'REJECTED', reason: string | null, lang: Lang): PushText {
+  const t = PHOTO_REVIEWED[outcome][lang];
+  const body = reason && t.reason ? `${t.body} ${fill(t.reason, { reason })}` : t.body;
+  return { title: t.title, body };
+}

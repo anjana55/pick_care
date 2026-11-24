@@ -4,6 +4,7 @@ import { PublicSearchController } from './public-search.controller';
 import { PublicSearchService } from './public-search.service';
 import { SkillsService } from '../skills/skills.service';
 import { LanguagesService } from '../languages/languages.service';
+import { CaregiverPhotoService } from '../caregivers/caregiver-photo.service';
 import { AiSettingsService } from '../ai/ai-settings.service';
 import { IS_PUBLIC_KEY } from '../common/decorators/public.decorator';
 
@@ -12,7 +13,9 @@ describe('PublicSearchController', () => {
   const reflector = new Reflector();
 
   const publicSearchService = { search: jest.fn(), findByPublicId: jest.fn() };
-  const skillsService = { findAll: jest.fn().mockResolvedValue([{ id: 's1', name: 'Wound Care', category: 'Clinical' }]) };
+  const skillsService = {
+    list: jest.fn().mockResolvedValue([{ id: 's1', name: 'Wound Care', category: 'Clinical', nameEn: 'Wound Care', nameSi: null, nameTa: null }]),
+  };
   const languagesService = { findAll: jest.fn().mockResolvedValue([{ id: 'l1', name: 'Sinhala' }]) };
   const aiSettings = { forFeature: jest.fn() };
 
@@ -24,6 +27,7 @@ describe('PublicSearchController', () => {
         { provide: SkillsService, useValue: skillsService },
         { provide: LanguagesService, useValue: languagesService },
         { provide: AiSettingsService, useValue: aiSettings },
+        { provide: CaregiverPhotoService, useValue: { publicFile: jest.fn() } },
       ],
     }).compile();
 
@@ -36,7 +40,7 @@ describe('PublicSearchController', () => {
   // No 'locations' entry: the province/district/city routes moved to
   // LocationsController when the reference data became real tables, and are
   // covered by locations.controller.spec.ts instead.
-  it.each(['search', 'findOne', 'skills', 'languages', 'searchConfig', 'coverage'])(
+  it.each(['search', 'findOne', 'photo', 'skills', 'languages', 'searchConfig', 'coverage'])(
     '%s is marked @Public()',
     (handlerName) => {
       const isPublic = reflector.get<boolean>(IS_PUBLIC_KEY, (controller as any)[handlerName]);
@@ -53,8 +57,15 @@ describe('PublicSearchController', () => {
   });
 
   it('maps meta/skills to only id, name, category - never internal fields', async () => {
-    const result = await controller.skills();
+    const result = await controller.skills(undefined, {} as any);
     expect(result).toEqual([{ id: 's1', name: 'Wound Care', category: 'Clinical' }]);
+  });
+
+  it('names meta/skills in ?locale=, else the request language', async () => {
+    await controller.skills('ta', { lang: 'si' } as any);
+    expect(skillsService.list).toHaveBeenLastCalledWith('ta');
+    await controller.skills(undefined, { lang: 'si' } as any);
+    expect(skillsService.list).toHaveBeenLastCalledWith('si');
   });
 
   it('delegates search to PublicSearchService', async () => {

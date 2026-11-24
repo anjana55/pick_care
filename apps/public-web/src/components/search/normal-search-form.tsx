@@ -87,7 +87,7 @@ function ChipToggle({
 
 export function NormalSearchForm({ onSubmit, initialValues, submitLabel, compact = false }: NormalSearchFormProps) {
   const { t, locale } = useTranslation();
-  const { data: skills = [] } = useMetaSkills();
+  const { data: skills = [] } = useMetaSkills(locale);
   const { data: languages = [] } = useMetaLanguages();
   const [conditionInput, setConditionInput] = useState('');
 

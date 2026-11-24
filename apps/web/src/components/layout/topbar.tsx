@@ -1,10 +1,9 @@
 'use client';
 
-import { ArrowLeft, Menu } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/provider';
 import { LanguageToggle } from '@/components/layout/language-toggle';
 import { AccountMenu } from '@/components/layout/account-menu';
-import { PublicSiteLink } from '@/components/layout/brand-mark';
 import { QuickSearch } from '@/components/layout/quick-search';
 import { StaffBell } from '@/components/layout/staff-bell';
 
@@ -24,10 +23,9 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
         >
           <Menu size={18} />
         </button>
-        <PublicSiteLink>
-          <ArrowLeft size={15} />
-          <span className="truncate">{t('nav.backToPublic')}</span>
-        </PublicSiteLink>
+        {/* No link out to the public site here: following it signed staff out
+            and dropped them on the website's home page mid-task. The signed-out
+            pages (AuthHeader) keep theirs. */}
       </div>
       <div className="flex shrink-0 items-center gap-4">
         <QuickSearch />

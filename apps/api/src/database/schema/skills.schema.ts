@@ -4,10 +4,20 @@ import { sql } from 'drizzle-orm';
 export const proficiencyLevelEnum = ['BASIC', 'INTERMEDIATE', 'ADVANCED', 'EXPERT'] as const;
 export type ProficiencyLevel = (typeof proficiencyLevelEnum)[number];
 
+/**
+ * A skill caregivers are matched on. `name` / `category` are the English
+ * text and the identity (unique, matched by imports and the AI); the Sinhala
+ * and Tamil columns are translations, null until an admin fills them in, and
+ * every reader falls back to English for a missing one (skills/skill-name.ts).
+ */
 export const skills = mysqlTable('skills', {
   id: varchar('id', { length: 36 }).primaryKey(),
   name: varchar('name', { length: 150 }).notNull().unique(),
+  nameSi: varchar('name_si', { length: 150 }),
+  nameTa: varchar('name_ta', { length: 150 }),
   category: varchar('category', { length: 100 }),
+  categorySi: varchar('category_si', { length: 100 }),
+  categoryTa: varchar('category_ta', { length: 100 }),
   description: text('description'),
   createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
 });

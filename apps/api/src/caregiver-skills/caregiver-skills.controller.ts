@@ -1,4 +1,5 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Req } from '@nestjs/common';
+import type { RequestWithLanguage } from '../common/i18n/language.middleware';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CaregiverSkillsService } from './caregiver-skills.service';
 import { AssignSkillDto } from './dto/assign-skill.dto';
@@ -13,15 +14,15 @@ export class CaregiverSkillsController {
 
   @Get()
   @CaregiverScope()
-  findAll(@Param('caregiverId') caregiverId: string) {
-    return this.caregiverSkillsService.findAllForCaregiver(caregiverId);
+  findAll(@Param('caregiverId') caregiverId: string, @Req() req: RequestWithLanguage) {
+    return this.caregiverSkillsService.findAllForCaregiver(caregiverId, req.lang);
   }
 
   @Post()
   @CaregiverScope()
   @Audit({ action: 'ASSIGN_SKILL', entityType: 'Caregiver' })
-  assign(@Param('caregiverId') caregiverId: string, @Body() dto: AssignSkillDto) {
-    return this.caregiverSkillsService.assign(caregiverId, dto);
+  assign(@Param('caregiverId') caregiverId: string, @Body() dto: AssignSkillDto, @Req() req: RequestWithLanguage) {
+    return this.caregiverSkillsService.assign(caregiverId, dto, req.lang);
   }
 
   @Delete(':skillId')

@@ -1,6 +1,7 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { and, asc, desc, eq, inArray, isNull, like, or, sql } from 'drizzle-orm';
 import { randomUUID as uuid } from 'crypto';
+import { skillNameSql } from '../skills/skill-name';
 import { DRIZZLE, type Database } from '../database/database.module';
 import {
   caregivers,
@@ -166,6 +167,25 @@ export class CaregiversService {
     return rows.map((r) => r.caregiverId);
   }
 
+  /**
+   * Caregiver IDs who work in ANY of the given districts: they live there, or
+   * a city they would work in is there. Either way staff looking for "someone
+   * in Kandy" want them; matching home alone would hide caregivers willing to
+   * travel, preferences alone would hide the ones who never filled them in.
+   */
+  private async caregiverIdsInAnyDistrict(districtIds: number[]): Promise<string[]> {
+    if (!districtIds.length) return [];
+    const [home, preferred] = await Promise.all([
+      this.db.select({ caregiverId: caregivers.id }).from(caregivers).where(inArray(caregivers.districtId, districtIds)),
+      this.db
+        .selectDistinct({ caregiverId: preferredLocations.caregiverId })
+        .from(preferredLocations)
+        .innerJoin(cities, eq(preferredLocations.cityId, cities.id))
+        .where(inArray(cities.districtId, districtIds)),
+    ]);
+    return [...new Set([...home, ...preferred].map((r) => r.caregiverId))];
+  }
+
   /** Caregiver IDs whose availability record matches ANY of the requested shift flags. */
   private async caregiverIdsWithAvailability(flags: {
     dayDuty?: boolean;
@@ -186,7 +206,7 @@ export class CaregiversService {
     return rows.map((r) => r.caregiverId);
   }
 
-  async findAll(query: CaregiverQueryDto) {
+  async findAll(query: CaregiverQueryDto, lang?: string) {
     const conditions = [isNull(caregivers.deletedAt)];
 
     if (query.search) {
@@ -207,16 +227,17 @@ export class CaregiversService {
     // `id IN (...)`. This keeps the AND-across-facets / OR-within-a-facet
     // semantics explicit and avoids fan-out from joining multiple 1-to-many
     // tables directly onto the caregivers query.
-    const [skillMatches, languageMatches, locationMatches, availabilityMatches] = await Promise.all([
+    const [skillMatches, languageMatches, locationMatches, districtMatches, availabilityMatches] = await Promise.all([
       query.skillIds?.length ? this.caregiverIdsWithAllSkills(query.skillIds) : Promise.resolve(null),
       query.languageIds?.length ? this.caregiverIdsWithAllLanguages(query.languageIds) : Promise.resolve(null),
       query.locationIds?.length ? this.caregiverIdsWithAnyLocation(query.locationIds) : Promise.resolve(null),
+      query.districtIds?.length ? this.caregiverIdsInAnyDistrict(query.districtIds) : Promise.resolve(null),
       query.dayDuty || query.nightDuty || query.liveIn24h
         ? this.caregiverIdsWithAvailability({ dayDuty: query.dayDuty, nightDuty: query.nightDuty, liveIn24h: query.liveIn24h })
         : Promise.resolve(null),
     ]);
 
-    for (const matches of [skillMatches, languageMatches, locationMatches, availabilityMatches]) {
+    for (const matches of [skillMatches, languageMatches, locationMatches, districtMatches, availabilityMatches]) {
       if (matches !== null) {
         conditions.push(matches.length ? inArray(caregivers.id, matches) : NONE);
       }
@@ -247,7 +268,7 @@ export class CaregiversService {
     const [skillRows, languageRows, locationRows] = await Promise.all([
       caregiverIds.length
         ? this.db
-            .select({ caregiverId: caregiverSkills.caregiverId, skillName: skills.name })
+            .select({ caregiverId: caregiverSkills.caregiverId, skillName: skillNameSql(lang) })
             .from(caregiverSkills)
             .innerJoin(skills, eq(caregiverSkills.skillId, skills.id))
             .where(sql`${caregiverSkills.caregiverId} in ${caregiverIds}`)
@@ -288,7 +309,8 @@ export class CaregiversService {
     };
   }
 
-  async findOne(id: string) {
+  /** `lang` names the skills in the reader's language (English when absent or untranslated). */
+  async findOne(id: string, lang?: string) {
     const [caregiver] = await this.db.select().from(caregivers).where(eq(caregivers.id, id)).limit(1);
     if (!caregiver || caregiver.deletedAt) {
       throw new NotFoundException('Caregiver not found');
@@ -298,7 +320,7 @@ export class CaregiversService {
       this.db
         .select({
           skillId: caregiverSkills.skillId,
-          name: skills.name,
+          name: skillNameSql(lang),
           proficiency: caregiverSkills.proficiency,
           yearsOfExperience: caregiverSkills.yearsOfExperience,
         })

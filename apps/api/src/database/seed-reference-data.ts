@@ -1,8 +1,9 @@
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { randomUUID as uuid } from 'crypto';
 import * as schema from './schema';
 import type { Database } from './database.module';
 import { loadLocationCsvs } from './scripts/load-location-csv';
+import { STANDARD_CATEGORY_TRANSLATIONS, STANDARD_SKILL_TRANSLATIONS } from '../skills/skill-translations';
 
 /**
  * Seeds the reference data every environment needs to function at all -
@@ -35,7 +36,21 @@ export async function seedReferenceData(db: Database) {
   for (const [name, category] of skillNames) {
     const id = uuid();
     skillIds[name] = id;
-    await db.insert(schema.skills).values({ id, name, category }).onDuplicateKeyUpdate({ set: { category } });
+    const tr = STANDARD_SKILL_TRANSLATIONS[name];
+    const cat = STANDARD_CATEGORY_TRANSLATIONS[category];
+    await db
+      .insert(schema.skills)
+      .values({ id, name, category, nameSi: tr?.si, nameTa: tr?.ta, categorySi: cat?.si, categoryTa: cat?.ta })
+      // Translations only fill blanks: an admin's own wording is kept on a re-seed.
+      .onDuplicateKeyUpdate({
+        set: {
+          category,
+          nameSi: sql`coalesce(${schema.skills.nameSi}, values(${schema.skills.nameSi}))`,
+          nameTa: sql`coalesce(${schema.skills.nameTa}, values(${schema.skills.nameTa}))`,
+          categorySi: sql`coalesce(${schema.skills.categorySi}, values(${schema.skills.categorySi}))`,
+          categoryTa: sql`coalesce(${schema.skills.categoryTa}, values(${schema.skills.categoryTa}))`,
+        },
+      });
   }
 
   console.log('Seeding languages...');

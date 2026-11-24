@@ -1,13 +1,16 @@
-import { Body, Controller, Get, HttpCode, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, Post, Query, Req, Res, StreamableFile } from '@nestjs/common';
+import type { Response } from 'express';
 import { ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { Public } from '../common/decorators/public.decorator';
+import type { RequestWithLanguage } from '../common/i18n/language.middleware';
 import { PublicSearchService } from './public-search.service';
 import { SearchRequestDto } from './dto/search-request.dto';
 import { PublicSearchConfigDto } from './dto/public-search-config.dto';
 import { SkillsService } from '../skills/skills.service';
 import { LanguagesService } from '../languages/languages.service';
 import { AiSettingsService } from '../ai/ai-settings.service';
+import { CaregiverPhotoService } from '../caregivers/caregiver-photo.service';
 
 /**
  * Everything here is `@Public()` - reachable without a JWT, by design. That
@@ -28,6 +31,7 @@ export class PublicSearchController {
     private readonly skillsService: SkillsService,
     private readonly languagesService: LanguagesService,
     private readonly aiSettings: AiSettingsService,
+    private readonly photos: CaregiverPhotoService,
   ) {}
 
   @Public()
@@ -45,10 +49,23 @@ export class PublicSearchController {
     return this.publicSearchService.findByPublicId(publicId, locale);
   }
 
+  /** The profile photo of a listed caregiver. Same 404 for unknown, unlisted and no photo. */
+  @Public()
+  @Throttle({ default: { limit: 240, ttl: 60_000 } })
+  @Get('caregivers/:publicId/photo')
+  async photo(@Param('publicId') publicId: string, @Res({ passthrough: true }) res: Response) {
+    const { buffer, mimeType } = await this.photos.publicFile(publicId);
+    // The URL carries a version (?v=), so a replaced photo is a new URL; the
+    // short max-age is for removal - a hidden caregiver's face should go soon.
+    res.set({ 'Content-Type': mimeType, 'Cache-Control': 'public, max-age=600', 'X-Content-Type-Options': 'nosniff' });
+    return new StreamableFile(buffer);
+  }
+
   @Public()
   @Get('meta/skills')
-  async skills() {
-    const rows = await this.skillsService.findAll();
+  async skills(@Query('locale') locale: string | undefined, @Req() req: RequestWithLanguage) {
+    // Named in the visitor's language: `?locale=` like the other meta lists, else Accept-Language.
+    const rows = await this.skillsService.list(locale ?? req.lang);
     return rows.map((s) => ({ id: s.id, name: s.name, category: s.category }));
   }
 

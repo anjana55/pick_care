@@ -66,6 +66,7 @@ import { usePendingAccountDeletion } from '@/lib/hooks/use-account-deletions';
 import { PendingDeletionBanner } from '@/components/accounts/pending-deletion-banner';
 import { CaseAutomationPanel } from '@/components/automation/case-automation-panel';
 import { CaregiverRatesCard } from '@/components/caregivers/rates-card';
+import { CaregiverPhoto } from '@/components/caregivers/caregiver-photo';
 
 function Field({ label, value }: { label: string; value: string | number | null | undefined }) {
   return (
@@ -310,10 +311,13 @@ export default function CaregiverProfilePage() {
       <CaseAutomationPanel caseType="CAREGIVER" caseId={id} />
       {pendingDeletion && <PendingDeletionBanner request={pendingDeletion} />}
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-semibold text-ink">{caregiver.fullName}</h1>
-          <p className="text-sm text-ink/50">{caregiver.registrationNumber}</p>
-          <CaregiverRef publicId={caregiver.publicId} status={caregiver.status} detailed className="mt-1" />
+        <div className="flex flex-wrap items-start gap-4">
+          <CaregiverPhoto caregiverId={id} name={caregiver.fullName} canEdit={isAdminOrStaff && !pendingDeletion} />
+          <div>
+            <h1 className="text-xl font-semibold text-ink">{caregiver.fullName}</h1>
+            <p className="text-sm text-ink/50">{caregiver.registrationNumber}</p>
+            <CaregiverRef publicId={caregiver.publicId} status={caregiver.status} detailed className="mt-1" />
+          </div>
         </div>
         <div className="flex items-center gap-3">
           {isEditing ? (

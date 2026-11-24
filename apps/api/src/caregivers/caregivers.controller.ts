@@ -11,6 +11,7 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { CaregiverScope } from '../common/decorators/caregiver-scope.decorator';
 import { Audit } from '../common/decorators/audit.decorator';
 import { CurrentUser, AuthenticatedUser } from '../common/decorators/current-user.decorator';
+import type { RequestWithLanguage } from '../common/i18n/language.middleware';
 
 @ApiTags('caregivers')
 @ApiBearerAuth()
@@ -28,15 +29,15 @@ export class CaregiversController {
 
   @Get()
   @Roles('ADMIN', 'STAFF', 'VERIFIER')
-  findAll(@Query() query: CaregiverQueryDto) {
-    return this.caregiversService.findAll(query);
+  findAll(@Query() query: CaregiverQueryDto, @Req() req: RequestWithLanguage) {
+    return this.caregiversService.findAll(query, req.lang);
   }
 
   @Get(':id')
   @CaregiverScope()
   @Audit({ action: 'VIEW_CAREGIVER', entityType: 'Caregiver' })
-  findOne(@Param('id') id: string) {
-    return this.caregiversService.findOne(id);
+  findOne(@Param('id') id: string, @Req() req: RequestWithLanguage) {
+    return this.caregiversService.findOne(id, req.lang);
   }
 
   // Staff-mediated creation. Self-registration is a separate, public flow

@@ -507,6 +507,11 @@ export class InsightsService {
       .where(and(eq(bookings.status, 'DRAFT'), eq(bookings.billingTiming, 'ADVANCE')));
     const [paused] = await this.db.select({ n: count() }).from(bookings).where(and(eq(bookings.status, 'CONFIRMED'), isNotNull(bookings.paymentHoldInvoiceId)));
     const [waiting] = await this.db.select({ n: count() }).from(talkRequests).where(eq(talkRequests.status, 'OPEN'));
+    // Caregivers' own photo uploads waiting for staff before going on their public profile.
+    const [photos] = await this.db
+      .select({ n: count() })
+      .from(caregivers)
+      .where(and(isNotNull(caregivers.pendingPhotoKey), isNull(caregivers.deletedAt)));
     const [ready] = await this.db
       .select({ n: count() })
       .from(onboardingFiles)
@@ -521,6 +526,7 @@ export class InsightsService {
       pausedForPayment: num(paused?.n),
       peopleWaiting: num(waiting?.n),
       readyToVerify: num(ready?.n),
+      photosToApprove: num(photos?.n),
       unconfirmedShiftsNext7d: num(unconfirmed?.n),
       missedShiftsLast7d: num(missedShifts?.n),
       unbilledCompletedShifts: num(unbilledRows?.[0]?.n),

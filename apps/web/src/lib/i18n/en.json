@@ -145,7 +145,8 @@
       "awaitingPayment": "Bookings not confirmed: first invoice unpaid",
       "pausedForPayment": "Bookings with visits paused: unpaid invoice",
       "peopleWaiting": "People who asked to talk to someone",
-      "readyToVerify": "Caregivers ready to verify (file complete)"
+      "readyToVerify": "Caregivers ready to verify (file complete)",
+      "photosToApprove": "Photos to approve"
     },
     "severity": {
       "act": "Act today",
@@ -585,6 +586,23 @@
       },
       "readExpiry": "expires {date}",
       "readBy": "Read by {model} {when}. A check to help you, not a verification."
+    },
+    "filters": {
+      "district": "District",
+      "districtHint": "Lives in, or will work in, any selected district",
+      "skills": "Skills",
+      "skillsHint": "Must have all selected",
+      "languages": "Languages",
+      "languagesHint": "Must speak all selected",
+      "availability": "Availability",
+      "availabilityHint": "Available for any selected",
+      "gender": "Gender",
+      "dayDuty": "Day duty",
+      "nightDuty": "Night duty",
+      "liveIn24h": "24-hour live-in",
+      "searchPlaceholder": "Search…",
+      "noMatches": "No matches",
+      "clear": "Clear"
     }
   },
   "clients": {
@@ -4420,5 +4438,47 @@
     "title": "Alerts",
     "markAll": "Mark all read",
     "none": "No alerts yet."
+  },
+  "skillsAdmin": {
+    "subtitle": "The skills caregivers are matched on. Give each one a Sinhala and Tamil name so the website, the app and the staff app show it in every language.",
+    "missing": "No {languages} name yet - shown in English",
+    "languageName": {
+      "si": "Sinhala",
+      "ta": "Tamil"
+    },
+    "addTitle": "Add a skill",
+    "editTitle": "Edit skill",
+    "nameEn": "Name in English",
+    "nameSi": "Name in Sinhala",
+    "nameTa": "Name in Tamil",
+    "categoryEn": "Category (English)",
+    "categorySi": "Category (Sinhala)",
+    "categoryTa": "Category (Tamil)",
+    "fallbackHint": "Leave a translation blank and the English text is shown in that language."
+  },
+  "caregiverPhoto": {
+    "alt": "Photo of {name}",
+    "none": "No photo",
+    "upload": "Upload photo",
+    "replace": "Replace photo",
+    "remove": "Remove photo",
+    "tooLarge": "The photo must be 8 MB or smaller.",
+    "hint": "Uploaded by staff, it goes on the public profile straight away. JPG, PNG or WEBP, up to 8 MB.",
+    "pendingAlt": "Photo of {name} waiting for approval",
+    "pendingTitle": "New photo waiting for approval",
+    "pendingFirst": "Uploaded by the caregiver. It shows on their public profile once approved.",
+    "pendingReplaces": "Uploaded by the caregiver. Approving replaces the current photo on their public profile.",
+    "approve": "Approve",
+    "reject": "Reject",
+    "rejectReason": "Reason for the caregiver (optional)",
+    "rejectPlaceholder": "e.g. Face not clearly visible",
+    "confirmReject": "Reject photo",
+    "queue": {
+      "back": "Caregivers",
+      "title": "Photos to approve",
+      "subtitle": "Profile photos caregivers uploaded themselves. A photo goes on the public profile only once approved; rejecting tells the caregiver why.",
+      "empty": "No photos waiting for approval.",
+      "uploaded": "Uploaded {when}"
+    }
   }
 }

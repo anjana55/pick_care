@@ -68,6 +68,18 @@ export class CaregiverQueryDto {
   @Min(1, { each: true })
   locationIds?: number[];
 
+  @ApiPropertyOptional({
+    type: [Number],
+    description:
+      'Comma-separated district IDs. A caregiver matches if they live in ANY of the listed districts or would work in a city in one of them. The staff list filters by this.',
+  })
+  @IsOptional()
+  @Transform(toNumberList)
+  @IsArray()
+  @IsInt({ each: true })
+  @Min(1, { each: true })
+  districtIds?: number[];
+
   @ApiPropertyOptional({ description: 'Only caregivers available for day duty' })
   @IsOptional()
   @Transform(toBoolean)
