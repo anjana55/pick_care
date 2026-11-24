@@ -46,6 +46,8 @@ export interface CaregiverSearchFilters {
   /** City ids. The API matches on the caregiver's own city or on one of their
    *  preferred work cities. */
   locationIds?: number[];
+  /** District ids: caregivers who live in, or would work in, any of them. What the list filters by. */
+  districtIds?: number[];
   dayDuty?: boolean;
   nightDuty?: boolean;
   liveIn24h?: boolean;
@@ -122,10 +124,17 @@ export interface CaregiverDetail {
   }[];
 }
 
+/** GET /skills: `name` / `category` in the request language (English where untranslated), plus the stored text for editing. */
 export interface Skill {
   id: string;
   name: string;
   category: string | null;
+  nameEn?: string;
+  nameSi?: string | null;
+  nameTa?: string | null;
+  categoryEn?: string | null;
+  categorySi?: string | null;
+  categoryTa?: string | null;
 }
 
 export interface Language {

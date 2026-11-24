@@ -107,6 +107,14 @@ export const caregivers = mysqlTable(
     // them. When off (the default), staff decide when to tell them, from the
     // request ("Notify caregiver").
     autoNotifyRequests: boolean('auto_notify_requests').notNull().default(false),
+    // Profile photo, shown on the public profile and search cards
+    // (caregivers/caregiver-photo.service.ts). Stored re-encoded - a square
+    // WebP with every metadata block (GPS included) dropped - never as sent.
+    // photoUpdatedAt versions the public URL so a replaced photo is not served
+    // stale from a cache.
+    photoKey: varchar('photo_key', { length: 255 }),
+    photoMimeType: varchar('photo_mime_type', { length: 50 }),
+    photoUpdatedAt: datetime('photo_updated_at'),
     createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
     updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
     deletedAt: datetime('deleted_at'),

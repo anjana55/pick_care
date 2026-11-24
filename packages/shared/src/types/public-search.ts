@@ -205,6 +205,12 @@ export interface PublicCaregiverSummary {
   serviceArea: ServiceAreaCity[];
   /** Clients' star rating and top praise badges. Null until there are enough ratings to show (Settings > Reviews). */
   rating: CaregiverRatingSummary | null;
+  /**
+   * The caregiver's profile photo, as a path on the API
+   * (`/public/caregivers/:publicId/photo?v=...`) - prefix the API base URL.
+   * Null when they have none.
+   */
+  photoUrl?: string | null;
   /** Why this caregiver is within the search radius: they live there, or they travel there. */
   reach?: 'home' | 'serviceArea' | null;
   /** Present only in search results, absent on a profile fetched directly. */

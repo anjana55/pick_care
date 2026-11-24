@@ -23,8 +23,9 @@ export function useCaregiverCoverage(locale: Locale) {
   });
 }
 
-export function useMetaSkills() {
-  return useQuery({ queryKey: ['meta-skills'], queryFn: publicSearchApi.getSkills, staleTime: 5 * 60 * 1000 });
+/** Keyed by language: the names come back in it, so switching language asks again. */
+export function useMetaSkills(locale?: Locale) {
+  return useQuery({ queryKey: ['meta-skills', locale], queryFn: () => publicSearchApi.getSkills(locale), staleTime: 5 * 60 * 1000 });
 }
 
 export function useMetaLanguages() {

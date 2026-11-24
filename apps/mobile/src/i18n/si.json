@@ -207,7 +207,8 @@
     "availabilityDay": "දිවා සේවය",
     "availabilityNight": "රාත්‍රී සේවය",
     "availabilityLiveIn": "පැය 24 පුරා නේවාසික",
-    "careTypes": "රැකවරණ වර්ග"
+    "careTypes": "රැකවරණ වර්ග",
+    "photoAlt": "රැකවරණ සේවකයාගේ ඡායාරූපය"
   },
   "careTypes": {
     "HOME_SHIFT": "නිවසේදී රැකවරණය (මුර පදනමින්)",

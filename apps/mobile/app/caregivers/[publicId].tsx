@@ -1,4 +1,5 @@
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Image, ScrollView, StyleSheet, View } from 'react-native';
+import { config } from '@/config';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ApiError } from '@/api';
 import { useTranslation } from '@/i18n';
@@ -66,6 +67,14 @@ export default function CaregiverProfile() {
     <Screen>
       <ScrollView contentContainerStyle={styles.page}>
         {back}
+        {c.photoUrl ? (
+          <Image
+            source={{ uri: `${config.apiUrl}${c.photoUrl}` }}
+            style={styles.photo}
+            accessibilityLabel={t('profile.photoAlt')}
+            accessibilityIgnoresInvertColors
+          />
+        ) : null}
         <View style={styles.head}>
           <Text style={[styles.id, { color: colors.muted }]}>{t('profile.anonymousId', { id: shortId(c.publicId) })}</Text>
           {c.verified ? (
@@ -113,6 +122,7 @@ export default function CaregiverProfile() {
 }
 
 const styles = StyleSheet.create({
+  photo: { width: 112, height: 112, borderRadius: 56, marginBottom: 12 },
   page: { paddingBottom: 40, gap: 10 },
   state: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
   head: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },

@@ -86,7 +86,7 @@ export function FinderPage({ variant = 'find', children }: FinderPageProps = {})
   const resultsRef = useRef<HTMLDivElement>(null);
   const refineRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<HTMLDivElement>(null);
-  const { data: skills = [] } = useMetaSkills();
+  const { data: skills = [] } = useMetaSkills(locale);
   const { data: coverage = [] } = useCaregiverCoverage(locale);
 
   // Coming back from a profile ("Back to results") should show the same

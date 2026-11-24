@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslation } from '@/lib/i18n';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { CareChecklistShift, CareOfferDeclineReason, CareType, CaregiverCareOffer, CaregiverPayout, CaregiverRateCard, CaregiverShift, CheckInInput, CreateIssueReportBody, MyIssueReport } from '@care-platform/shared';
 import { api } from '../api/client';
@@ -117,9 +118,11 @@ export function useSaveAvailability() {
 // --- skills, languages, qualifications, experience -------------------------
 
 export function useCatalog(kind: 'skills' | 'languages') {
+  // Skills come back named in the reader's language, so the language is part of the key.
+  const { locale } = useTranslation();
   return useQuery({
-    queryKey: ['catalog', kind],
-    queryFn: () => api.get<NamedItem[]>(`/${kind}`),
+    queryKey: ['catalog', kind, locale],
+    queryFn: () => api.get<NamedItem[]>(`/${kind}`, { lang: locale }),
     staleTime: 5 * 60 * 1000,
   });
 }

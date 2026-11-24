@@ -4,6 +4,7 @@ import type { CaregiverRelation, PublicCaregiverSummary } from '@care-platform/s
 import { useTranslation } from '@/lib/i18n';
 import { DeviceSaveButton, SaveButton } from '@/components/care/caregiver-actions';
 import { VerifiedBadge } from './verified-badge';
+import { CaregiverAvatar } from './caregiver-avatar';
 import { RatingLine } from '@/components/reviews/stars';
 
 /**
@@ -38,16 +39,19 @@ export function ResultCard({
       className={`rounded-lg border bg-white p-5 shadow-sm transition-shadow hover:shadow-md ${shownOnMap ? 'border-accent ring-1 ring-accent' : 'border-border'}`}
     >
       <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="text-xs font-medium uppercase tracking-wide text-ink/40">{t('profile.anonymousId', { id: caregiver.publicId.slice(0, 8) })}</p>
-            {caregiver.verified && <VerifiedBadge />}
+        <div className="flex min-w-0 items-start gap-3">
+          <CaregiverAvatar photoUrl={caregiver.photoUrl} alt={t('profile.photoAlt')} className="h-14 w-14" />
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-xs font-medium uppercase tracking-wide text-ink/40">{t('profile.anonymousId', { id: caregiver.publicId.slice(0, 8) })}</p>
+              {caregiver.verified && <VerifiedBadge />}
+            </div>
+            <h3 className="mt-0.5 text-base font-semibold text-ink">
+              {caregiver.gender === 'FEMALE' ? '♀' : caregiver.gender === 'MALE' ? '♂' : ''}{' '}
+              {t('results.approxAge', { age: caregiver.approxAge })} ·{' '}
+              {t('results.yearsExperience', { years: caregiver.yearsExperience })}
+            </h3>
           </div>
-          <h3 className="mt-0.5 text-base font-semibold text-ink">
-            {caregiver.gender === 'FEMALE' ? '♀' : caregiver.gender === 'MALE' ? '♂' : ''}{' '}
-            {t('results.approxAge', { age: caregiver.approxAge })} ·{' '}
-            {t('results.yearsExperience', { years: caregiver.yearsExperience })}
-          </h3>
         </div>
         <div className="flex items-center gap-2">
           {caregiver.matchScore !== undefined && (

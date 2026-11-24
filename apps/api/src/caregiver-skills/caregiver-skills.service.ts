@@ -3,16 +3,18 @@ import { and, eq } from 'drizzle-orm';
 import { DRIZZLE, type Database } from '../database/database.module';
 import { caregiverSkills, skills } from '../database/schema';
 import { AssignSkillDto } from './dto/assign-skill.dto';
+import { skillNameSql } from '../skills/skill-name';
 
 @Injectable()
 export class CaregiverSkillsService {
   constructor(@Inject(DRIZZLE) private readonly db: Database) {}
 
-  findAllForCaregiver(caregiverId: string) {
+  /** Named in `lang`, English where a translation is missing. */
+  findAllForCaregiver(caregiverId: string, lang?: string) {
     return this.db
       .select({
         skillId: caregiverSkills.skillId,
-        name: skills.name,
+        name: skillNameSql(lang),
         category: skills.category,
         proficiency: caregiverSkills.proficiency,
         yearsOfExperience: caregiverSkills.yearsOfExperience,
@@ -22,7 +24,7 @@ export class CaregiverSkillsService {
       .where(eq(caregiverSkills.caregiverId, caregiverId));
   }
 
-  async assign(caregiverId: string, dto: AssignSkillDto) {
+  async assign(caregiverId: string, dto: AssignSkillDto, lang?: string) {
     const [existing] = await this.db
       .select()
       .from(caregiverSkills)
@@ -36,7 +38,7 @@ export class CaregiverSkillsService {
       proficiency: dto.proficiency ?? 'BASIC',
       yearsOfExperience: dto.yearsOfExperience ?? 0,
     });
-    return this.findAllForCaregiver(caregiverId);
+    return this.findAllForCaregiver(caregiverId, lang);
   }
 
   async remove(caregiverId: string, skillId: string) {

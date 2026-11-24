@@ -207,7 +207,8 @@
     "availabilityDay": "Day duty",
     "availabilityNight": "Night duty",
     "availabilityLiveIn": "24-hour live-in",
-    "careTypes": "Types of care"
+    "careTypes": "Types of care",
+    "photoAlt": "Caregiver photo"
   },
   "careTypes": {
     "HOME_SHIFT": "Care at home (shift basis)",

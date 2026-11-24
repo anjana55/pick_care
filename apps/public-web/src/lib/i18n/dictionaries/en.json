@@ -144,7 +144,8 @@
     "availabilityDay": "Day duty",
     "availabilityNight": "Night duty",
     "availabilityLiveIn": "24-hour live-in",
-    "careTypes": "Types of care"
+    "careTypes": "Types of care",
+    "photoAlt": "Caregiver photo"
   },
   "registrationGate": {
     "title": "Tell us how to reach you",
@@ -1239,6 +1240,17 @@
         "accepted": "You took this shift. It is in your shifts now, with the client's details.",
         "seeShifts": "Open my shifts"
       }
+    },
+    "photo": {
+      "title": "Your photo",
+      "hint": "Families see this on your public profile and in search results. Use a clear, recent photo of your face. JPG, PNG or WEBP, up to 8 MB. We remove location and camera details from the file.",
+      "alt": "Your profile photo",
+      "upload": "Upload a photo",
+      "replace": "Change photo",
+      "remove": "Remove photo",
+      "uploaded": "Photo saved. It now shows on your public profile.",
+      "removed": "Photo removed.",
+      "tooLarge": "The photo must be 8 MB or smaller."
     }
   },
   "caregiverClaim": {

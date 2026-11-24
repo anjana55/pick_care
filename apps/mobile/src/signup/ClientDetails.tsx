@@ -116,8 +116,8 @@ export function startClientForm(opts: { name?: string | null; whatsapp: boolean;
 
 /** The last search, read into intake answers (with the picked skills by name, as staff need them). */
 export function useIntakeFromLastSearch(): IntakeFromSearch {
-  const { t } = useTranslation();
-  const skills = useSkills();
+  const { t, locale } = useTranslation();
+  const skills = useSkills(locale);
   return useMemo(() => {
     const context = lastSearchContext();
     if (!context) return {};

@@ -64,7 +64,7 @@ export function NormalSearchForm({ initial, onSearch }: { initial?: SearchReques
 
   const districts = useDistricts(locale);
   const cities = useCities(districtId, locale);
-  const { data: skills = [] } = useSkills();
+  const { data: skills = [] } = useSkills(locale);
 
   const submit = () => {
     setTried(true);

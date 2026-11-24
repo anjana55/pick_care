@@ -23,6 +23,7 @@ type Triple = readonly [en: string, si: string, ta: string];
 /** Field names as they appear in validation messages. */
 const LABELS: Record<string, { si: string; ta: string }> = {
   'Full name': { si: 'සම්පූර්ණ නම', ta: 'முழுப் பெயர்' },
+  'Skill name': { si: 'කුසලතාවයේ නම', ta: 'திறனின் பெயர்' },
   'Permanent address': { si: 'ස්ථිර ලිපිනය', ta: 'நிரந்தர முகவரி' },
   NIC: { si: 'ජාතික හැඳුනුම්පත් අංකය', ta: 'தேசிய அடையாள அட்டை எண்' },
   'Passport number': { si: 'ගමන් බලපත්‍ර අංකය', ta: 'கடவுச்சீட்டு எண்' },
@@ -131,6 +132,7 @@ const ENTRIES: Triple[] = [
 
   // --- caregivers -----------------------------------------------------------
   ['Caregiver not found', 'රැකවරණ සේවකයා හමු නොවීය', 'பராமரிப்பாளர் கிடைக்கவில்லை'],
+  ['Skill not found', 'කුසලතාවය හමු නොවීය', 'திறன் கிடைக்கவில்லை'],
   // Job offers.
   ['Choose a caregiver', 'සත්කාරකයෙකු තෝරන්න', 'ஒரு பராமரிப்பாளரைத் தேர்ந்தெடுக்கவும்'],
   ['Offers can only be sent while the request is open', 'යෝජනා යැවිය හැක්කේ ඉල්ලීම විවෘතව පවතින අතරතුර පමණි', 'கோரிக்கை திறந்திருக்கும்போது மட்டுமே வாய்ப்புகளை அனுப்ப முடியும்'],

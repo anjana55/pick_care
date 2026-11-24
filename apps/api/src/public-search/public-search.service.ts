@@ -46,6 +46,8 @@ import {
 import { SearchRequestDto } from './dto/search-request.dto';
 import { RankingService, type RankedCandidate, type RankingCandidate } from './ranking/ranking.service';
 import { GeoService, localName } from '../geo/geo.service';
+import { skillNameSql } from '../skills/skill-name';
+import { publicPhotoUrl } from '../caregivers/caregiver-photo.service';
 import { ReviewStore } from '../reviews/review-store.service';
 import { ReviewSettingsService } from '../reviews/review-settings.service';
 import { publicSummary, ratingSignal } from '../reviews/review-rules';
@@ -149,6 +151,8 @@ export interface EnrichedCandidate {
   careTypes: CareType[];
   /** Clients' rating, when there are enough to show (null otherwise). */
   rating: CaregiverRatingSummary | null;
+  /** Public URL of the profile photo (relative to the API), or null. */
+  photoUrl: string | null;
   /** The ranking signal from ratings, 0..1; null when unrated or below the threshold. */
   ratingSignal: number | null;
 }
@@ -598,12 +602,14 @@ export class PublicSearchService {
     const requestedLanguageIds = request.languageIds ?? [];
     const conditions = request.patient?.medicalConditions ?? [];
 
-    const [skillRows, languageRows, locationRows, availabilityRows, qualificationRows, experienceRows, ownLocationRows] = await Promise.all([
+    const [skillRows, languageRows, locationRows, availabilityRows, qualificationRows, experienceRows, ownLocationRows, photoRows] = await Promise.all([
       this.db
         .select({
           caregiverId: caregiverSkills.caregiverId,
           skillId: caregiverSkills.skillId,
+          // English, for matching the patient's conditions; skillLabel is what the reader sees.
           skillName: skills.name,
+          skillLabel: skillNameSql(locale),
           yearsOfExperience: caregiverSkills.yearsOfExperience,
         })
         .from(caregiverSkills)
@@ -670,7 +676,13 @@ export class PublicSearchService {
         .leftJoin(cities, eq(caregivers.cityId, cities.id))
         .leftJoin(districts, eq(caregivers.districtId, districts.id))
         .where(inArray(caregivers.id, caregiverIds)),
+      // Profile photos, for the public URL (publicId + version).
+      this.db
+        .select({ caregiverId: caregivers.id, publicId: caregivers.publicId, photoKey: caregivers.photoKey, photoUpdatedAt: caregivers.photoUpdatedAt })
+        .from(caregivers)
+        .where(inArray(caregivers.id, caregiverIds)),
     ]);
+    const photos = new Map(photoRows.map((r) => [r.caregiverId, r]));
 
     const [ratingStats, reviewSettings] = await Promise.all([
       this.reviewStore ? this.reviewStore.statsFor(caregiverIds) : Promise.resolve(new Map()),
@@ -736,7 +748,7 @@ export class PublicSearchService {
       }
 
       result.set(id, {
-        skills: mySkills.map((s) => ({ id: s.skillId, name: s.skillName })),
+        skills: mySkills.map((s) => ({ id: s.skillId, name: s.skillLabel })),
         languages: myLanguages.map((l) => ({ name: l.languageName, proficiency: l.proficiency })),
         preferredLocationCities: myLocations.map((l) => pick(l, locale)),
         preferredLocationCityIds: myLocations.map((l) => l.cityId),
@@ -769,6 +781,7 @@ export class PublicSearchService {
         availableFrom: myAvailability?.availableFrom ? String(myAvailability.availableFrom) : null,
         careTypes: careTypeValues.filter((type) => (myAvailability ? myAvailability[CARE_TYPE_COLUMNS[type]] : true)),
         rating: reviewSettings ? publicSummary(ratingStats.get(id), reviewSettings) : null,
+        photoUrl: photos.has(id) ? publicPhotoUrl(photos.get(id)!) : null,
         ratingSignal:
           reviewSettings?.enabled && ratingStats.get(id)
             ? ratingSignal(ratingStats.get(id)!.ratingCount, ratingStats.get(id)!.ratingSum, reviewSettings.minRatingsToShow)
@@ -820,6 +833,7 @@ export class PublicSearchService {
       distanceKm: enriched.homeDistanceKm,
       serviceArea: enriched.serviceArea,
       rating: enriched.rating,
+      photoUrl: enriched.photoUrl,
       reach: enriched.reach,
       matchScore: score,
       matchReasons: reasons,

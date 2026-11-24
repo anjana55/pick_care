@@ -38,6 +38,7 @@ function buildCaregiverQuery(filters: CaregiverSearchFilters): string {
   if (filters.skillIds?.length) query.set('skillIds', filters.skillIds.join(','));
   if (filters.languageIds?.length) query.set('languageIds', filters.languageIds.join(','));
   if (filters.locationIds?.length) query.set('locationIds', filters.locationIds.join(','));
+  if (filters.districtIds?.length) query.set('districtIds', filters.districtIds.join(','));
   if (filters.dayDuty) query.set('dayDuty', 'true');
   if (filters.nightDuty) query.set('nightDuty', 'true');
   if (filters.liveIn24h) query.set('liveIn24h', 'true');

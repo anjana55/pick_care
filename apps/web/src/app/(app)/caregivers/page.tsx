@@ -1,12 +1,12 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowDownUp, Plus, Search, SlidersHorizontal } from 'lucide-react';
+import { ArrowDownUp, Plus, Search } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRecordTrail } from '@/lib/record-trail';
 import { useTranslation } from '@/lib/i18n/provider';
-import { useCaregivers, useSkills, useLanguages, useLocationTree, caregiverListPath } from '@/lib/hooks/use-caregivers';
+import { useCaregivers, caregiverListPath } from '@/lib/hooks/use-caregivers';
 import type { CaregiverSearchFilters } from '@/lib/api/types';
 import { useAuth } from '@/lib/api/auth-context';
 import { api, ApiError } from '@/lib/api/client';
@@ -15,15 +15,8 @@ import { Select } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/ui/badge';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { FilterChip } from '@/components/ui/filter-chip';
 import { ListPagination } from '@/components/ui/list-pagination';
-import {
-  AdvancedFiltersPanel,
-  EMPTY_ADVANCED_FILTERS,
-  countActiveFilters,
-  toApiFilters,
-  type AdvancedFilters,
-} from '@/components/caregivers/advanced-filters';
+import { CaregiverFilterBar, EMPTY_ADVANCED_FILTERS, toApiFilters, type AdvancedFilters } from '@/components/caregivers/advanced-filters';
 import { CAREGIVER_STATUS_OPTIONS } from '@/lib/caregiver-status';
 import { CaregiverRef } from '@/components/caregivers/caregiver-ref';
 import { useInitialParam } from '@/lib/use-initial-param';
@@ -36,15 +29,8 @@ export default function CaregiversListPage() {
   const [status, setStatus] = useState('');
   const [page, setPage] = useState(1);
   useInitialParam('status', CAREGIVER_STATUS_OPTIONS, setStatus);
-  const [filtersOpen, setFiltersOpen] = useState(false);
   const [advanced, setAdvanced] = useState<AdvancedFilters>(EMPTY_ADVANCED_FILTERS);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
-
-  const { data: skills } = useSkills();
-  const { data: languages } = useLanguages();
-  const { data: tree } = useLocationTree();
-
-  const activeCount = countActiveFilters(advanced);
 
   // Also left as the trail the record pages' previous / next follow (lib/record-trail).
   const listFilters: CaregiverSearchFilters = {
@@ -57,20 +43,9 @@ export default function CaregiversListPage() {
   const { data, isLoading } = useCaregivers(listFilters);
   useRecordTrail('caregivers', caregiverListPath(listFilters), data);
 
-  const nameOf = useMemo(() => {
-    const skillNames = new Map((skills ?? []).map((s) => [s.id, s.name]));
-    const languageNames = new Map((languages ?? []).map((l) => [l.id, l.name]));
-    const districtNames = new Map((tree ?? []).flatMap((p) => p.districts).map((d) => [d.id, d.name]));
-    return { skill: skillNames, language: languageNames, location: districtNames };
-  }, [skills, languages, tree]);
-
   const updateAdvanced = (next: AdvancedFilters) => {
     setAdvanced(next);
     setPage(1);
-  };
-
-  const removeChip = (kind: 'skillIds' | 'languageIds', id: string) => {
-    updateAdvanced({ ...advanced, [kind]: advanced[kind].filter((x) => x !== id) });
   };
 
   const deleteMutation = useMutation({
@@ -135,59 +110,9 @@ export default function CaregiversListPage() {
             </option>
           ))}
         </Select>
-        <Button
-          type="button"
-          variant={activeCount > 0 ? 'primary' : 'secondary'}
-          onClick={() => setFiltersOpen((o) => !o)}
-          className="relative sm:w-auto"
-        >
-          <SlidersHorizontal size={15} />
-          {t('filters.button')}
-          {activeCount > 0 && (
-            <span className="ml-1 rounded-full bg-white/25 px-1.5 py-0.5 text-[10px] font-semibold">{activeCount}</span>
-          )}
-        </Button>
       </div>
 
-      {filtersOpen && (
-        <div className="mb-4">
-          <AdvancedFiltersPanel filters={advanced} onChange={updateAdvanced} onClose={() => setFiltersOpen(false)} />
-        </div>
-      )}
-
-      {activeCount > 0 && (
-        <div className="mb-4 flex flex-wrap items-center gap-2">
-          {advanced.gender && (
-            <FilterChip label={`Gender: ${advanced.gender}`} onRemove={() => updateAdvanced({ ...advanced, gender: undefined })} />
-          )}
-          {advanced.dayDuty && <FilterChip label="Day duty" onRemove={() => updateAdvanced({ ...advanced, dayDuty: false })} />}
-          {advanced.nightDuty && <FilterChip label="Night duty" onRemove={() => updateAdvanced({ ...advanced, nightDuty: false })} />}
-          {advanced.liveIn24h && (
-            <FilterChip label="24-hour live-in" onRemove={() => updateAdvanced({ ...advanced, liveIn24h: false })} />
-          )}
-          {advanced.skillIds.map((id) => (
-            <FilterChip key={id} label={nameOf.skill.get(id) ?? id} onRemove={() => removeChip('skillIds', id)} />
-          ))}
-          {advanced.languageIds.map((id) => (
-            <FilterChip key={id} label={nameOf.language.get(id) ?? id} onRemove={() => removeChip('languageIds', id)} />
-          ))}
-          {advanced.locationIds.length > 0 && (
-            <FilterChip
-              label={
-                advanced.locationDistrictId
-                  ? `${nameOf.location.get(advanced.locationDistrictId) ?? ''} (${advanced.locationIds.length})`
-                  : `${advanced.locationIds.length} cities`
-              }
-              onRemove={() =>
-                updateAdvanced({ ...advanced, locationIds: [], locationDistrictId: undefined })
-              }
-            />
-          )}
-          <button onClick={() => updateAdvanced(EMPTY_ADVANCED_FILTERS)} className="text-xs font-medium text-ink/40 hover:text-danger">
-            {t('filters.clearAll')}
-          </button>
-        </div>
-      )}
+      <CaregiverFilterBar filters={advanced} onChange={updateAdvanced} />
 
       <div className="overflow-hidden rounded-lg border border-border bg-white">
         <table className="w-full text-left text-sm">

@@ -29,7 +29,8 @@ const RARELY_CHANGES = 5 * 60 * 1000;
 
 export const searchApi = {
   config: () => get<PublicSearchConfig>('/public/meta/search-config'),
-  skills: () => get<PublicMetaSkill[]>('/public/meta/skills'),
+  // Named in the reader's language (English where a skill has no translation yet).
+  skills: (locale: Locale) => get<PublicMetaSkill[]>('/public/meta/skills', { locale }),
   // Province -> district only; the cities of a district are fetched when it is chosen.
   locationTree: (locale: Locale) => get<PublicLocationTree>('/public/meta/locations/tree', { locale }),
   cities: (districtId: number, locale: Locale) => get<PublicMetaCity[]>('/public/meta/locations/cities', { districtId, locale }),
@@ -46,8 +47,9 @@ export function useSearchConfig() {
   return useQuery({ queryKey: ['public-search-config'], queryFn: searchApi.config, staleTime: RARELY_CHANGES });
 }
 
-export function useSkills() {
-  return useQuery({ queryKey: ['meta-skills'], queryFn: searchApi.skills, staleTime: RARELY_CHANGES });
+/** Keyed by language, like the districts: the names come back in it. */
+export function useSkills(locale: Locale) {
+  return useQuery({ queryKey: ['meta-skills', locale], queryFn: () => searchApi.skills(locale), staleTime: RARELY_CHANGES });
 }
 
 /** Keyed by language: the names come back in it, so switching language must ask again. */

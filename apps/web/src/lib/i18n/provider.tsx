@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
+import { QueryClientContext } from '@tanstack/react-query';
 import en from './en.json';
 import si from './si.json';
 import ta from './ta.json';
@@ -76,6 +77,8 @@ export function I18nProvider({ children, defaultLocale = 'en', enabledLocales, v
     document.documentElement.lang = chosen;
   }, [offered, defaultLocale]);
 
+  // Optional: tests render this without a query client.
+  const queryClient = useContext(QueryClientContext);
   const setLocale = useCallback(
     (next: Locale) => {
       if (!offered.includes(next)) return;
@@ -86,8 +89,12 @@ export function I18nProvider({ children, defaultLocale = 'en', enabledLocales, v
         /* ignore */
       }
       document.documentElement.lang = next;
+      // The API names some things in the request language (skills, places),
+      // and the cached answers are in the old one: ask again. The api client
+      // reads the language from the storage key written above.
+      void queryClient?.invalidateQueries();
     },
-    [offered],
+    [offered, queryClient],
   );
 
   // Keyed by content, so a caller passing a fresh object each render does not re-create t.

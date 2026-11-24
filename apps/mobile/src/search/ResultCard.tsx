@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { config } from '@/config';
 import type { PublicCaregiverSummary } from '@care-platform/shared';
 import { useTranslation } from '@/i18n';
 import { useColors } from '@/theme';
@@ -36,7 +37,11 @@ export function ResultCard({ caregiver, onOpen }: { caregiver: PublicCaregiverSu
     >
       <View style={styles.top}>
         <View style={[styles.portrait, { backgroundColor: tint(caregiver.gender === 'MALE' ? colors.brand : colors.accent, 0.14) }]}>
-          <Ionicons name={caregiver.gender === 'MALE' ? 'man' : caregiver.gender === 'FEMALE' ? 'woman' : 'person'} size={30} color={caregiver.gender === 'MALE' ? colors.brand : colors.accent} />
+          {caregiver.photoUrl ? (
+            <Image source={{ uri: `${config.apiUrl}${caregiver.photoUrl}` }} style={styles.photo} accessibilityIgnoresInvertColors />
+          ) : (
+            <Ionicons name={caregiver.gender === 'MALE' ? 'man' : caregiver.gender === 'FEMALE' ? 'woman' : 'person'} size={30} color={caregiver.gender === 'MALE' ? colors.brand : colors.accent} />
+          )}
           {caregiver.verified ? (
             <View style={[styles.tick, { backgroundColor: colors.brand, borderColor: colors.surface }]}>
               <Ionicons name="checkmark" size={12} color={colors.brandText} />
@@ -134,6 +139,7 @@ const styles = StyleSheet.create({
   },
   top: { flexDirection: 'row', alignItems: 'flex-start', gap: 14, marginBottom: 4 },
   portrait: { width: 60, height: 60, borderRadius: 30, alignItems: 'center', justifyContent: 'center' },
+  photo: { width: 60, height: 60, borderRadius: 30 },
   tick: { position: 'absolute', right: -2, bottom: -2, width: 22, height: 22, borderRadius: 11, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
   id: { fontSize: 12, fontWeight: '600', letterSpacing: 0.5, textTransform: 'uppercase' },
   pills: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },

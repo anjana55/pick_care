@@ -207,7 +207,8 @@
     "availabilityDay": "பகல் பணி",
     "availabilityNight": "இரவுப் பணி",
     "availabilityLiveIn": "24 மணிநேரத் தங்கும் பணி",
-    "careTypes": "பராமரிப்பு வகைகள்"
+    "careTypes": "பராமரிப்பு வகைகள்",
+    "photoAlt": "பராமரிப்பாளரின் புகைப்படம்"
   },
   "careTypes": {
     "HOME_SHIFT": "வீட்டில் பராமரிப்பு (ஷிப்ட் அடிப்படையில்)",
