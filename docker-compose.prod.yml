@@ -47,6 +47,9 @@ services:
     build:
       context: .
       dockerfile: apps/api/Dockerfile
+      args:
+        # Set by setup.sh / update.sh on small servers; blank = 2 GB (see the Dockerfile).
+        NODE_BUILD_HEAP_MB: ${NODE_BUILD_HEAP_MB:-}
     # Tagged with the deployed commit (setup.sh / update.sh write IMAGE_TAG into
     # .env.production), so the previous release's images stay on disk for an
     # instant rollback and older ones can be removed by name.

@@ -26,7 +26,13 @@ COPY packages/shared packages/shared
 # this image runs `node dist/src/main.js` with no transpiler - Node loads
 # packages/shared/dist/index.js directly.
 RUN npm run build -w @care-platform/shared
-RUN npm run build -w @care-platform/api
+# The API type-check alone needs about 1 GB of heap (931 MB at release
+# 0055, 958 MB at 0056), and Node sizes its default heap from physical RAM, so
+# on a small server `nest build` died with "JavaScript heap out of memory".
+# Use the build heap setup.sh / update.sh pick for small servers (as the web
+# images do); with none set, still give it 2 GB rather than Node's guess.
+ARG NODE_BUILD_HEAP_MB=
+RUN NODE_OPTIONS="--max-old-space-size=${NODE_BUILD_HEAP_MB:-2048}" npm run build -w @care-platform/api
 # Strips devDependencies (typescript, jest, ts-node, ...) from node_modules
 # without needing a second, separate `npm ci --omit=dev` pass (which would
 # otherwise redo dependency resolution from scratch).
