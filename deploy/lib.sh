@@ -154,6 +154,116 @@ cl_build() {
 }
 
 # ---------------------------------------------------------------------------
+# Prebuilt images (.github/workflows/images.yml).
+#
+# GitHub Actions builds every commit pushed to main and pushes the images to
+# a registry as <IMAGE_REGISTRY>-<service>:<12-char commit> - the same tag a
+# release gets here. With IMAGE_REGISTRY set in the env file, setup.sh and
+# update.sh download those instead of building, and build only what isn't
+# there (or doesn't fit this server - see cl_fetch_prebuilt). Blank or "none":
+# everything is built here, as before.
+# ---------------------------------------------------------------------------
+cl_registry() {
+  local r
+  r="$(cl_env_get IMAGE_REGISTRY)"
+  [ "$r" = none ] && r=""
+  echo "${r%/}"
+}
+cl_registry_ref() { echo "$(cl_registry)-$1:$2"; }
+
+# Whether the registry has service $1 at tag $2, without downloading it.
+# On "no", CL_REGISTRY_ERR holds docker's reason (e.g. "unauthorized").
+cl_prebuilt_available() {
+  CL_REGISTRY_ERR=""
+  local out
+  # CL_REGISTRY_INSECURE=1 for a plain-HTTP registry (a self-hosted one, or
+  # the tests); ghcr.io is HTTPS and never needs it.
+  if out="$(docker manifest inspect ${CL_REGISTRY_INSECURE:+--insecure} "$(cl_registry_ref "$1" "$2")" 2>&1 >/dev/null)"; then
+    return 0
+  fi
+  CL_REGISTRY_ERR="$(printf '%s' "$out" | tail -n 1)"
+  return 1
+}
+
+# A hint for a registry that refuses us, or empty.
+cl_registry_hint() {
+  case "${CL_REGISTRY_ERR:-}" in
+    *unauthorized*|*denied*|*authentication*)
+      echo "The registry refused access - the images are private. Log in once: echo <read:packages token> | docker login ghcr.io -u <github user> --password-stdin (DEPLOYMENT.md, \"Prebuilt images\")." ;;
+  esac
+}
+
+# Waits up to $2 minutes for the registry to have every service in $3.. at
+# tag $1 - GitHub builds for a few minutes after a merge. Fills
+# CL_PREBUILT_READY / CL_PREBUILT_LATE with the ones that came / didn't.
+cl_wait_prebuilt() {
+  local tag="$1" minutes="$2" s waited=0 pending
+  shift 2
+  pending=("$@")
+  CL_PREBUILT_READY=()
+  CL_PREBUILT_LATE=()
+  while :; do
+    local still=()
+    for s in "${pending[@]}"; do
+      if cl_prebuilt_available "$s" "$tag"; then
+        echo "  $s is ready on the registry."
+        CL_PREBUILT_READY+=("$s")
+      else
+        still+=("$s")
+      fi
+    done
+    pending=("${still[@]}")
+    [ "${#pending[@]}" -eq 0 ] && return 0
+    if [ "$waited" -ge $(( minutes * 60 )) ]; then
+      CL_PREBUILT_LATE=("${pending[@]}")
+      return 0
+    fi
+    echo "  Waiting for GitHub to finish ${pending[*]} ($(( waited / 60 )) of ${minutes} min) ..."
+    sleep "${CL_PREBUILT_POLL_SECONDS:-30}"
+    waited=$(( waited + ${CL_PREBUILT_POLL_SECONDS:-30} ))
+  done
+}
+
+# Downloads service $3.. at tag $1 from the registry and names each one
+# <$2>-<service>:<$1>, the local name a release's image has - so starting,
+# switching and rolling back work exactly as for an image built here.
+#
+# A web image has the API address (NEXT_PUBLIC_API_URL) built in. One built
+# for another address would load and then call the wrong API, so its
+# lk.pickcare.api-url label must match this server's setting, or it is not
+# used. Fills CL_PREBUILT_OK and CL_PREBUILT_FAILED (to build here instead).
+cl_fetch_prebuilt() {
+  local tag="$1" prefix="$2" s ref want have
+  shift 2
+  CL_PREBUILT_OK=()
+  CL_PREBUILT_FAILED=()
+  want="$(cl_env_get NEXT_PUBLIC_API_URL)"
+  for s in "$@"; do
+    ref="$(cl_registry_ref "$s" "$tag")"
+    echo "  Downloading $s ($ref) ..."
+    if ! docker pull -q "$ref" >/dev/null; then
+      echo "  Couldn't download $s - building it here instead." >&2
+      CL_PREBUILT_FAILED+=("$s")
+      continue
+    fi
+    if [ "$s" != api ]; then
+      have="$(docker image inspect --format '{{ index .Config.Labels "lk.pickcare.api-url" }}' "$ref" 2>/dev/null || true)"
+      if [ "$have" != "$want" ]; then
+        echo "  The downloaded $s was built for API address '${have:-unknown}', but this server uses '$want' -" >&2
+        echo "  building it here instead. Set the GitHub variable NEXT_PUBLIC_API_URL to '$want' to stop this." >&2
+        docker rmi "$ref" >/dev/null 2>&1 || true
+        CL_PREBUILT_FAILED+=("$s")
+        continue
+      fi
+    fi
+    docker tag "$ref" "${prefix}-${s}:${tag}"
+    # Only the local name stays: cleanup and rollback go by it.
+    docker rmi "$ref" >/dev/null 2>&1 || true
+    CL_PREBUILT_OK+=("$s")
+  done
+}
+
+# ---------------------------------------------------------------------------
 # Disk cleanup.
 #
 # Why a re-run used to fill the disk - each of these grows with every build:

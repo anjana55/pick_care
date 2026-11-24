@@ -51,6 +51,8 @@ KEEP_BACKUPS=5
 BUILD_CACHE_GB=""
 AUTO_ROLLBACK=1
 ALLOW_LOW_MEMORY=0
+BUILD_HERE=0
+WAIT_MIN=20
 ASSUME_YES=0
 FOREGROUND=0
 FOLLOW=0
@@ -80,6 +82,11 @@ Options:
                      18 GB, else 3; 0 = none).
   --no-auto-rollback If the new release isn't healthy, leave it running for
                      debugging instead of putting the previous one back.
+  --build-here       Build every image on this server, even when IMAGE_REGISTRY
+                     has GitHub-built ones (see "Prebuilt images" below).
+  --wait=MIN         How long to wait for GitHub to finish building a release's
+                     images before building them here instead (default 20).
+  --no-wait          Don't wait: build here whatever GitHub hasn't finished.
   --allow-low-memory Build even with under 4 GB of memory + swap. The build can run
                      the server out of memory and take MySQL - and the site - down
                      with it; add swap instead if you can.
@@ -92,6 +99,11 @@ Options:
 
 Once you confirm, the update carries on in the background even if your SSH
 connection drops. Ctrl-C only stops watching; './update.sh --follow' resumes.
+
+Prebuilt images: with IMAGE_REGISTRY=ghcr.io/<owner>/<repo> in $ENV_FILE,
+the images GitHub Actions built for the commit are downloaded instead of
+built here - no build memory needed, and a minute instead of many. Anything
+not there (yet) is waited for (main only; see --wait), then built here.
 EOF
 }
 
@@ -112,6 +124,9 @@ for arg in "$@"; do
     --build-cache=*) BUILD_CACHE_GB="${arg#*=}"; [[ "$BUILD_CACHE_GB" =~ ^[0-9]+$ ]] || die "--build-cache takes a whole number of GB" ;;
     --no-auto-rollback) AUTO_ROLLBACK=0 ;;
     --allow-low-memory) ALLOW_LOW_MEMORY=1 ;;
+    --build-here) BUILD_HERE=1 ;;
+    --no-wait) WAIT_MIN=0 ;;
+    --wait=*) WAIT_MIN="${arg#*=}"; [[ "$WAIT_MIN" =~ ^[0-9]+$ ]] || die "--wait takes a number of minutes" ;;
     --dry-run) DRY_RUN=1 ;;
     -y|--yes) ASSUME_YES=1 ;;
     --foreground) FOREGROUND=1 ;;
@@ -360,6 +375,31 @@ for s in "${CL_BUILT_SERVICES[@]}"; do
   if [ -n "${BUILD[$s]:-}" ]; then TO_BUILD+=("$s"); else TO_REUSE+=("$s"); fi
 done
 
+# Of what needs a new image: download it if GitHub has built it (TO_PULL),
+# wait for GitHub if it is still building main (TO_AWAIT), else build it here
+# (LOCAL_BUILD). Only LOCAL_BUILD needs build memory.
+REGISTRY=""
+[ "$BUILD_HERE" -eq 1 ] || REGISTRY="$(cl_registry)"
+TO_PULL=()
+TO_AWAIT=()
+LOCAL_BUILD=()
+REGISTRY_HINT=""
+# GitHub builds pushes to main - so only main is worth waiting for. A PR, an
+# older commit or a tag is built here unless its images are already there.
+CAN_WAIT=0
+[ "$WAIT_MIN" -gt 0 ] && [ -z "$PR" ] && [ "$REF" = main ] && CAN_WAIT=1
+for s in "${TO_BUILD[@]}"; do
+  if [ -z "$REGISTRY" ]; then
+    LOCAL_BUILD+=("$s")
+  elif cl_prebuilt_available "$s" "$TARGET_TAG"; then
+    TO_PULL+=("$s")
+  else
+    [ -n "$REGISTRY_HINT" ] || REGISTRY_HINT="$(cl_registry_hint)"
+    if [ "$CAN_WAIT" -eq 1 ] && [ -z "$REGISTRY_HINT" ]; then TO_AWAIT+=("$s"); else LOCAL_BUILD+=("$s"); fi
+  fi
+done
+[ -z "$REGISTRY_HINT" ] || NOTES+=("$REGISTRY_HINT")
+
 DO_BACKUP=0
 case "$BACKUP" in
   always) DO_BACKUP=1 ;;
@@ -375,12 +415,18 @@ if [ "$CURRENT_COMMIT" = "$TARGET" ] && [ "$FULL" -eq 0 ] && [ "${#TO_BUILD[@]}"
 fi
 COMMITS="$(git rev-list --count "${CURRENT_COMMIT}..${TARGET}" 2>/dev/null || echo '?')"
 echo "  Changes:    $COMMITS commit(s), $(printf '%s' "$CHANGED" | grep -c . || true) file(s)"
-echo "  Rebuild:    ${TO_BUILD[*]:-nothing}"
+if [ -n "$REGISTRY" ]; then
+  echo "  Download:   ${TO_PULL[*]:-nothing} $([ "${#TO_PULL[@]}" -gt 0 ] && echo "(built by GitHub, from $REGISTRY)")"
+  [ "${#TO_AWAIT[@]}" -eq 0 ] || echo "  Wait for:   ${TO_AWAIT[*]} (GitHub is still building them - up to ${WAIT_MIN} min, then built here)"
+  echo "  Build here: ${LOCAL_BUILD[*]:-nothing}"
+else
+  echo "  Rebuild:    ${TO_BUILD[*]:-nothing}"
+fi
 echo "  Unchanged:  ${TO_REUSE[*]:-nothing} (left running - same image, tagged as this release)"
 echo "  Migrations: ${MIGRATIONS:-none new}"
 echo "  DB backup:  $([ "$DO_BACKUP" -eq 1 ] && echo "yes, into $BACKUP_DIR/ before migrating" || echo no)"
 echo "  nginx:      $([ "$RESTART_NGINX" -eq 1 ] && echo "config changed - recreated" || echo "reloaded")"
-if [ "${#TO_BUILD[@]}" -gt 0 ]; then
+if [ "${#LOCAL_BUILD[@]}" -gt 0 ]; then
   cl_detect_memory
   echo "  Memory:     ${CL_MEM_MB} MB RAM + ${CL_SWAP_MB} MB swap - $([ "$CL_LOW_MEMORY" -eq 1 ] && echo "building one image at a time" || echo "building side by side")"
 fi
@@ -390,7 +436,7 @@ for n in "${NOTES[@]}"; do warn "$n"; done
 # stop with the misleading "can only install with an existing
 # package-lock.json". Check it here, before anything is built, with the same
 # Node the images build with (the server itself may have no Node at all).
-if [ "${#TO_BUILD[@]}" -gt 0 ]; then
+if [ "${#LOCAL_BUILD[@]}" -gt 0 ]; then
   if ! git show "$TARGET:package-lock.json" | docker run --rm -i node:20-alpine node -e '
     let s = ""; process.stdin.on("data", (d) => (s += d)).on("end", () => {
       try { const l = JSON.parse(s); if (!l.lockfileVersion || !l.packages) throw new Error("no packages"); }
@@ -402,7 +448,7 @@ fi
 # The build runs beside the live site. Short of memory, the kernel kills the
 # biggest process to make room - MySQL - and the site is down before anything
 # has been deployed. Refuse here, while nothing has changed.
-if [ "${#TO_BUILD[@]}" -gt 0 ] && [ "$ALLOW_LOW_MEMORY" -eq 0 ] && ! cl_build_memory_ok; then
+if [ "${#LOCAL_BUILD[@]}" -gt 0 ] && [ "$ALLOW_LOW_MEMORY" -eq 0 ] && ! cl_build_memory_ok; then
   warn "This server has ${CL_MEM_MB} MB of RAM and ${CL_SWAP_MB} MB of swap. Building beside the running site"
   warn "needs swap on a server under 6 GB of RAM, and about 4 GB of RAM + swap together - otherwise"
   warn "the kernel can kill MySQL to make room, and the site goes down mid-update."
@@ -432,11 +478,35 @@ git checkout -q --detach "$TARGET"
 restore_checkout() { git checkout -q "$START_REF" 2>/dev/null || git checkout -q --detach "$CURRENT_COMMIT" 2>/dev/null || true; }
 
 cl_make_room $(( ${#TO_BUILD[@]} * 2048 + 1024 )) "$CURRENT_TAG" "$PREVIOUS_TAG"
-if [ "${#TO_BUILD[@]}" -gt 0 ]; then
-  log "Building ${TO_BUILD[*]}"
+
+# Prebuilt images first: what GitHub is still building, then download.
+if [ "${#TO_AWAIT[@]}" -gt 0 ]; then
+  log "Waiting for GitHub to build ${TO_AWAIT[*]}"
+  cl_wait_prebuilt "$TARGET_TAG" "$WAIT_MIN" "${TO_AWAIT[@]}"
+  TO_PULL+=("${CL_PREBUILT_READY[@]}")
+  if [ "${#CL_PREBUILT_LATE[@]}" -gt 0 ]; then
+    warn "Not on $REGISTRY after ${WAIT_MIN} min: ${CL_PREBUILT_LATE[*]} - building here. Check the repo's Actions tab for a failed run."
+    LOCAL_BUILD+=("${CL_PREBUILT_LATE[@]}")
+  fi
+fi
+if [ "${#TO_PULL[@]}" -gt 0 ]; then
+  log "Downloading ${TO_PULL[*]} (built by GitHub)"
+  cl_fetch_prebuilt "$TARGET_TAG" "$PREFIX" "${TO_PULL[@]}"
+  LOCAL_BUILD+=("${CL_PREBUILT_FAILED[@]}")
+fi
+# Anything that fell back to a build here needs the build memory the plan
+# only checked for what it already meant to build.
+if [ "${#LOCAL_BUILD[@]}" -gt 0 ] && [ "$ALLOW_LOW_MEMORY" -eq 0 ] && ! cl_build_memory_ok; then
+  restore_checkout
+  cl_swap_howto 4096 >&2
+  die "${LOCAL_BUILD[*]} must be built here after all, and this server hasn't the memory to build safely (${CL_MEM_MB} MB RAM + ${CL_SWAP_MB} MB swap). Nothing was deployed. Fix the GitHub build, or add swap (above), then run this again."
+fi
+
+if [ "${#LOCAL_BUILD[@]}" -gt 0 ]; then
+  log "Building ${LOCAL_BUILD[*]}"
   # IMAGE_TAG for this compose call only - the env file still names the
   # running release until the switch in step 5.
-  if ! IMAGE_TAG="$TARGET_TAG" cl_build "${TO_BUILD[@]}"; then
+  if ! IMAGE_TAG="$TARGET_TAG" cl_build "${LOCAL_BUILD[@]}"; then
     restore_checkout
     docker image prune -f >/dev/null 2>&1 || true
     cl_prune_build_cache $(( BUILD_CACHE_GB * 1024 ))
