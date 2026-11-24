@@ -140,9 +140,13 @@ cl_build() {
   if [ "$CL_LOW_MEMORY" -eq 1 ]; then
     export NODE_BUILD_HEAP_MB=2048
     local s
+    # One at a time, and stop at the first failure. The loop used to return
+    # only the LAST build's status, so a failed api build followed by a good
+    # web build counted as success and the update went on to run migrations
+    # with an api image that was never made ("Migrations failed").
     for s in "$@"; do
       echo "  Building $s ..."
-      compose build "$s"
+      compose build "$s" || { echo "  Building $s failed." >&2; return 1; }
     done
   else
     compose build "$@"
