@@ -11,6 +11,7 @@ import { CurrentUser, AuthenticatedUser } from '../common/decorators/current-use
 import { AuditService } from '../audit/audit.service';
 import { PasswordResetService } from '../auth/password-reset.service';
 import { AdminPasswordResetDto } from '../auth/dto/password-reset.dto';
+import { PhoneClientDto } from '../clients/phone-client.dto';
 
 @ApiTags('patients')
 @ApiBearerAuth()
@@ -29,6 +30,14 @@ export class PatientsController {
   @Get()
   findAll(@Query() query: PatientQueryDto) {
     return this.patientsService.findAll(query);
+  }
+
+  // "Add new client": staff and admin (class-level @Roles) add someone who
+  // reached the office by phone. Phone required, email optional.
+  @Post()
+  @Audit({ action: 'CREATE_CLIENT', entityType: 'Patient' })
+  create(@Body() dto: PhoneClientDto) {
+    return this.patientsService.create(dto);
   }
 
   @Get(':id')

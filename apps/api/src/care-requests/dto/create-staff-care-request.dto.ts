@@ -1,47 +1,19 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { Equals, IsEmail, IsIn, IsOptional, IsString, IsUUID, Matches, MaxLength, ValidateIf, ValidateNested } from 'class-validator';
+import { IsIn, IsOptional, IsString, IsUUID, MaxLength, ValidateIf, ValidateNested } from 'class-validator';
 import { CARE_REQUEST_MESSAGE_MAX, careTypeValues, type CareType } from '@care-platform/shared';
-import { PatientProfileDto } from '../../auth/dto/patient-profile.dto';
-import { TextField } from '../../common/validation/text-field.validator';
+import { PhoneClientDto } from '../../clients/phone-client.dto';
 import { careRequestLanguageEnum, type CareRequestLanguage } from '../../database/schema';
 
 const trimToUndefined = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() || undefined : value);
-
-/**
- * A caller who is not yet a client. The same intake the public sign-up asks
- * for (PatientProfileDto), plus who they are and a number to reach them on.
- * There is no password: they can sign in later with a WhatsApp code sent to
- * this number.
- */
-export class PhoneClientDto extends PatientProfileDto {
-  @ApiProperty()
-  @TextField({ min: 2, max: 255, requiredMessage: 'Full name is required', invalidMessage: 'Enter a valid full name' })
-  @IsString({ message: 'Full name must be text' })
-  fullName: string;
-
-  @ApiProperty({ example: '0771234567', description: "The caller's mobile number - becomes their WhatsApp sign-in number" })
-  @TextField({ phone: true, requiredMessage: 'Phone number is required', invalidMessage: 'Enter a valid phone number' })
-  @IsString({ message: 'Phone number must be text' })
-  phone: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @Transform(trimToUndefined)
-  @IsEmail({}, { message: 'Enter a valid email address' })
-  @MaxLength(255)
-  email?: string;
-
-  @ApiProperty({ description: 'The caller agreed, on the call, to CareLink storing their details to arrange care' })
-  @Equals(true, { message: 'Confirm the caller agreed to us keeping their details' })
-  consentConfirmed: boolean;
-}
 
 /**
  * POST /care-requests - a request staff take down during a phone call.
  * Exactly one of `patientId` (an existing client) or `newClient` (a first-time
  * caller). The caregiver is optional: staff can log the need now and match later.
  */
+export { PhoneClientDto };
+
 export class CreateStaffCareRequestDto {
   @ApiPropertyOptional({ description: 'An existing client' })
   @ValidateIf((o: CreateStaffCareRequestDto) => !o.newClient)

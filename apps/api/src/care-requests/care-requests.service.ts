@@ -32,10 +32,8 @@ import { CareRequestNotifier } from './care-request-notifier.service';
 import { CreateCareRequestDto } from './dto/create-care-request.dto';
 import { CareRequestQueryDto } from './dto/care-request-query.dto';
 import { UpdateCareRequestStatusDto } from './dto/update-care-request-status.dto';
-import { CreateStaffCareRequestDto, PhoneClientDto } from './dto/create-staff-care-request.dto';
-import { normalizePhone } from '../common/utils/phone.util';
-import { assertWhatsappNumberAvailable } from '../auth/phone-accounts.util';
-import { buildPatientIntake } from '../clients/patient-profile.util';
+import { CreateStaffCareRequestDto } from './dto/create-staff-care-request.dto';
+import { createPhoneClient, DUPLICATE_CLIENT_MESSAGE } from '../clients/phone-client.util';
 import { WhatsappSettingsService } from '../whatsapp/whatsapp-settings.service';
 import { GeoService, localName } from '../geo/geo.service';
 import { caregiverRefCondition } from '../caregivers/caregiver-ref.util';
@@ -733,7 +731,7 @@ export class CareRequestsService {
             const [existing] = await tx.select({ id: patients.id }).from(patients).where(eq(patients.id, patientId)).limit(1);
             if (!existing) throw new NotFoundException('Client not found');
           } else {
-            patientId = await this.createPhoneClient(txDb, dto.newClient!, defaultCountryCode);
+            patientId = await createPhoneClient(txDb, dto.newClient!, defaultCountryCode);
           }
 
           await tx.insert(careRequests).values({
@@ -766,7 +764,7 @@ export class CareRequestsService {
         }
         if (isDuplicate(err, 'care_requests_reference_unique') && attempt < 3) continue;
         // users.phone / users.email are unique: two staff adding the same caller at once.
-        if (isDuplicate(err)) throw new ConflictException('A client with this phone number or email already exists - search for them instead');
+        if (isDuplicate(err)) throw new ConflictException(DUPLICATE_CLIENT_MESSAGE);
         throw err;
       }
     }
@@ -776,59 +774,6 @@ export class CareRequestsService {
     // The intake agent, when it is on, checks the request has what a booking needs.
     await nudgeIntake(this.jobs, this.automation, id);
     return this.findOne(id);
-  }
-
-  /**
-   * The client record for a first-time caller. The number they called from
-   * becomes their WhatsApp sign-in, already confirmed (staff are speaking to
-   * them on it), so they can sign in later with a code sent to it - no
-   * password is ever set. A number or email that already belongs to anyone is
-   * refused, so staff pick the existing client instead of making a duplicate.
-   */
-  private async createPhoneClient(db: Database, dto: PhoneClientDto, defaultCountryCode: string): Promise<string> {
-    const phone = normalizePhone(dto.phone, defaultCountryCode);
-    if (!phone) throw new BadRequestException('Enter a valid phone number');
-    try {
-      await assertWhatsappNumberAvailable(db, phone, defaultCountryCode);
-    } catch (err) {
-      if (err instanceof ConflictException) {
-        throw new ConflictException('A client with this phone number or email already exists - search for them instead');
-      }
-      throw err;
-    }
-    const email = dto.email?.toLowerCase() ?? null;
-    if (email) {
-      const [taken] = await db.select({ id: users.id }).from(users).where(eq(users.email, email)).limit(1);
-      if (taken) throw new ConflictException('A client with this phone number or email already exists - search for them instead');
-    }
-    const intake = await buildPatientIntake(db, dto, { hasEmail: Boolean(email) });
-
-    const userId = uuid();
-    const now = new Date();
-    await db.insert(users).values({
-      id: userId,
-      email,
-      passwordHash: null,
-      phone,
-      phoneVerifiedAt: now,
-      fullName: dto.fullName.trim(),
-      role: 'PATIENT_GUARDIAN',
-      isActive: true,
-    });
-    const patientId = uuid();
-    await db.insert(patients).values({
-      id: patientId,
-      userId,
-      fullName: dto.fullName.trim(),
-      phone,
-      // Verbal consent, confirmed by the staff member on the form.
-      consentAcceptedAt: now,
-      ...intake,
-      // Unlike a self-registration there is nothing to review: staff took
-      // these details down themselves.
-      status: 'ACTIVE',
-    });
-    return patientId;
   }
 
   /** Staff may attach any caregiver whose record has not been removed. */

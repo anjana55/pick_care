@@ -593,7 +593,7 @@ export interface CareRequestSummary {
   unmatched: number;
 }
 
-/** A first-time caller, as POST /care-requests `newClient` expects. */
+/** A client staff add themselves: POST /patients, and POST /care-requests `newClient`. Phone required, email optional. */
 export interface PhoneClientInput {
   fullName: string;
   phone: string;
@@ -610,7 +610,7 @@ export interface PhoneClientInput {
   districtId: number;
   cityId: number;
   careAddress?: string;
-  careNeeds: string;
+  careNeeds?: string;
   careSchedule: string;
   careStart: string;
   preferredCaregiverGender?: string;

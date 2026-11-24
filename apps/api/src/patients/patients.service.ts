@@ -29,6 +29,8 @@ import { resolveLocationRefs } from '../common/utils/location.util';
 import { assertWhatsappNumberAvailable } from '../auth/phone-accounts.util';
 import { WhatsappSettingsService } from '../whatsapp/whatsapp-settings.service';
 import { assertNoPendingDeletion, closePendingDeletionAsErased } from '../account-deletion/pending-deletion.util';
+import { createPhoneClient, DUPLICATE_CLIENT_MESSAGE, isDuplicateEntry } from '../clients/phone-client.util';
+import type { PhoneClientDto } from '../clients/phone-client.dto';
 
 /**
  * The columns a staff edit may write directly. Everything else is either set
@@ -57,10 +59,10 @@ const UPDATABLE_COLUMNS: ReadonlySet<string> = new Set([
  * The staff-facing view of registered patients/guardians.
  *
  * Every client is a `users` row with role PATIENT_GUARDIAN plus a 1:1
- * `patients` row, so most read paths are a join across the two. There is no
- * create() here: clients self-register through the public site
- * (POST /auth/register-patient and its WhatsApp twin), so unlike caregivers
- * there is no staff-mediated creation to expose.
+ * `patients` row, so most read paths are a join across the two. Most clients
+ * self-register through the public site (POST /auth/register-patient and its
+ * WhatsApp twin); create() is for the ones who reach the office by phone and
+ * have staff add them ("Add new client").
  */
 @Injectable()
 export class PatientsService {
@@ -248,6 +250,26 @@ export class PatientsService {
   }
 
   async findOne(id: string) {
+    return this.findOrThrow(id);
+  }
+
+  /**
+   * "Add new client" - staff create a client who reached the office by phone.
+   * Phone is mandatory (it becomes their WhatsApp sign-in), email optional;
+   * the rest is the same intake the public sign-up asks for. See
+   * createPhoneClient for the rules, shared with phone care requests.
+   */
+  async create(dto: PhoneClientDto) {
+    const defaultCountryCode = await this.whatsappSettings.getDefaultCountryCode();
+    let id: string;
+    try {
+      id = await this.db.transaction((tx) => createPhoneClient(tx as unknown as Database, dto, defaultCountryCode));
+    } catch (err) {
+      // Two staff adding the same caller at once: the pre-checks both passed,
+      // the unique index on users.phone / users.email caught the second.
+      if (isDuplicateEntry(err)) throw new ConflictException(DUPLICATE_CLIENT_MESSAGE);
+      throw err;
+    }
     return this.findOrThrow(id);
   }
 

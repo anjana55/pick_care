@@ -765,6 +765,18 @@
         "tooLong": "Notes must be 2000 characters or fewer"
       },
       "saveFailed": "Could not save the client. Please try again."
+    },
+    "add": "Add new client",
+    "new": {
+      "title": "Add new client",
+      "subtitle": "For clients who contact us by phone or visit the office. Their mobile number becomes their WhatsApp sign-in, so they can use the website or app later without a password.",
+      "detailsTitle": "Client details",
+      "fullName": "Full name",
+      "emailHint": "Leave blank if the client has no email address.",
+      "consent": "The client agreed to us keeping their details",
+      "consentHint": "Ask before saving: we store these details to arrange care and to contact them.",
+      "submit": "Add client",
+      "saveFailed": "Could not add the client. Please try again."
     }
   },
   "common": {

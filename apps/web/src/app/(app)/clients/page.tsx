@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAccountDeletionSummary } from '@/lib/hooks/use-account-deletions';
-import { ArrowDownUp, Search, SlidersHorizontal, UserX } from 'lucide-react';
+import { ArrowDownUp, Search, SlidersHorizontal, UserPlus, UserX } from 'lucide-react';
 import { useRecordTrail } from '@/lib/record-trail';
 import { useTranslation } from '@/lib/i18n/provider';
 import { useAuth } from '@/lib/api/auth-context';
@@ -114,6 +114,13 @@ export default function ClientsListPage() {
                   {deletionsWaiting}
                 </span>
               )}
+            </Button>
+          </Link>
+          {/* Clients who reach the office by phone rather than signing up on the website. */}
+          <Link href="/clients/new">
+            <Button>
+              <UserPlus size={16} />
+              {t('clients.add')}
             </Button>
           </Link>
           {user?.role === 'ADMIN' && (

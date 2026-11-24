@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api/client';
-import type { Client, ClientListResponse, ClientStatus, ClientGender, ContactMethod } from '../api/types';
+import type { Client, ClientListResponse, ClientStatus, ClientGender, ContactMethod, PhoneClientInput } from '../api/types';
 
 /** The body of PATCH /patients/:id. Every field is optional - the service
  * writes only what is named, and a blank phone is a no-op rather than a clear,
@@ -70,6 +70,18 @@ export function useClient(id: string | undefined) {
     queryKey: ['client', id],
     queryFn: () => api.get<Client>(`/patients/${id}`),
     enabled: Boolean(id),
+  });
+}
+
+/** "Add new client" - POST /patients. Phone required, email optional. */
+export function useCreateClient() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: PhoneClientInput) => api.post<Client>('/patients', input),
+    onSuccess: (client) => {
+      queryClient.setQueryData(['client', client.id], client);
+      queryClient.invalidateQueries({ queryKey: ['clients'] });
+    },
   });
 }
 
