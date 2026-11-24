@@ -145,7 +145,8 @@
       "awaitingPayment": "Bookings not confirmed: first invoice unpaid",
       "pausedForPayment": "Bookings with visits paused: unpaid invoice",
       "peopleWaiting": "People who asked to talk to someone",
-      "readyToVerify": "Caregivers ready to verify (file complete)"
+      "readyToVerify": "Caregivers ready to verify (file complete)",
+      "photosToApprove": "Photos to approve"
     },
     "severity": {
       "act": "Act today",
@@ -4462,6 +4463,22 @@
     "replace": "Replace photo",
     "remove": "Remove photo",
     "tooLarge": "The photo must be 8 MB or smaller.",
-    "hint": "Shown on the public profile. JPG, PNG or WEBP, up to 8 MB."
+    "hint": "Uploaded by staff, it goes on the public profile straight away. JPG, PNG or WEBP, up to 8 MB.",
+    "pendingAlt": "Photo of {name} waiting for approval",
+    "pendingTitle": "New photo waiting for approval",
+    "pendingFirst": "Uploaded by the caregiver. It shows on their public profile once approved.",
+    "pendingReplaces": "Uploaded by the caregiver. Approving replaces the current photo on their public profile.",
+    "approve": "Approve",
+    "reject": "Reject",
+    "rejectReason": "Reason for the caregiver (optional)",
+    "rejectPlaceholder": "e.g. Face not clearly visible",
+    "confirmReject": "Reject photo",
+    "queue": {
+      "back": "Caregivers",
+      "title": "Photos to approve",
+      "subtitle": "Profile photos caregivers uploaded themselves. A photo goes on the public profile only once approved; rejecting tells the caregiver why.",
+      "empty": "No photos waiting for approval.",
+      "uploaded": "Uploaded {when}"
+    }
   }
 }

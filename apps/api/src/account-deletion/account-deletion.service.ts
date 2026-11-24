@@ -419,7 +419,7 @@ export class AccountDeletionService {
     const docs = await db.select({ key: caregiverDocuments.storageKey }).from(caregiverDocuments).where(eq(caregiverDocuments.caregiverId, caregiverId));
     const photos = await db.select({ key: sharedProfiles.photoKey }).from(sharedProfiles).where(eq(sharedProfiles.caregiverId, caregiverId));
     // The profile photo is the person's face: it goes with the rest of them.
-    const [profilePhoto] = await db.select({ key: caregivers.photoKey }).from(caregivers).where(eq(caregivers.id, caregiverId));
+    const [profilePhoto] = await db.select({ key: caregivers.photoKey, pending: caregivers.pendingPhotoKey }).from(caregivers).where(eq(caregivers.id, caregiverId));
 
     await db
       .update(caregivers)
@@ -428,6 +428,11 @@ export class AccountDeletionService {
         photoKey: null,
         photoMimeType: null,
         photoUpdatedAt: null,
+        pendingPhotoKey: null,
+        pendingPhotoMimeType: null,
+        pendingPhotoAt: null,
+        photoRejectedAt: null,
+        photoRejectionReason: null,
         permanentAddress: '',
         nic: null,
         passportNumber: null,
@@ -476,7 +481,7 @@ export class AccountDeletionService {
     await db.delete(caregiverRatingStats).where(eq(caregiverRatingStats.caregiverId, caregiverId));
     await db.delete(reviewRequests).where(eq(reviewRequests.caregiverId, caregiverId));
 
-    return [...docs.map((d) => d.key), ...[...photos, profilePhoto].map((p) => p?.key).filter((k): k is string => Boolean(k))];
+    return [...docs.map((d) => d.key), ...[...photos, profilePhoto].map((p) => p?.key).filter((k): k is string => Boolean(k)), ...(profilePhoto?.pending ? [profilePhoto.pending] : [])];
   }
 
   /** The client's record kept for bookings and invoices, without the person or the one they care for. */

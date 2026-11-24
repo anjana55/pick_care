@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "23126c45-8802-4192-b08b-fa6a43222070",
+  "id": "428ece6d-457b-4757-b2db-f0eb9ddeb62f",
   "prevId": "d91eee40-d1f3-4787-84ed-06b7ed9c1016",
   "tables": {
     "email_verification_tokens": {
@@ -856,6 +856,41 @@
         "photo_updated_at": {
           "name": "photo_updated_at",
           "type": "datetime",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "pending_photo_key": {
+          "name": "pending_photo_key",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "pending_photo_mime_type": {
+          "name": "pending_photo_mime_type",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "pending_photo_at": {
+          "name": "pending_photo_at",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "photo_rejected_at": {
+          "name": "photo_rejected_at",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "photo_rejection_reason": {
+          "name": "photo_rejection_reason",
+          "type": "varchar(500)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false

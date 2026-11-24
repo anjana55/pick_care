@@ -1,6 +1,11 @@
 ALTER TABLE `caregivers` ADD `photo_key` varchar(255);--> statement-breakpoint
 ALTER TABLE `caregivers` ADD `photo_mime_type` varchar(50);--> statement-breakpoint
 ALTER TABLE `caregivers` ADD `photo_updated_at` datetime;--> statement-breakpoint
+ALTER TABLE `caregivers` ADD `pending_photo_key` varchar(255);--> statement-breakpoint
+ALTER TABLE `caregivers` ADD `pending_photo_mime_type` varchar(50);--> statement-breakpoint
+ALTER TABLE `caregivers` ADD `pending_photo_at` datetime;--> statement-breakpoint
+ALTER TABLE `caregivers` ADD `photo_rejected_at` datetime;--> statement-breakpoint
+ALTER TABLE `caregivers` ADD `photo_rejection_reason` varchar(500);--> statement-breakpoint
 ALTER TABLE `skills` ADD `name_si` varchar(150);--> statement-breakpoint
 ALTER TABLE `skills` ADD `name_ta` varchar(150);--> statement-breakpoint
 ALTER TABLE `skills` ADD `category_si` varchar(100);--> statement-breakpoint

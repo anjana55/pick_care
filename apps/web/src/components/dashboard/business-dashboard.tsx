@@ -26,7 +26,8 @@ import {
   UserPlus,
   UserX,
   Wallet,
-  type LucideIcon, Bot, Phone, BadgeCheck } from 'lucide-react';
+  type LucideIcon, Bot, Phone, BadgeCheck, Camera
+} from 'lucide-react';
 import { formatLkr, type BusinessInsights, type InsightKpi, type InsightRange, type InsightRatio } from '@care-platform/shared';
 import { useTranslation } from '@/lib/i18n/provider';
 import { useBusinessInsights } from '@/lib/hooks/use-insights';
@@ -310,6 +311,7 @@ function DashboardBody({ data }: { data: BusinessInsights }) {
     { key: 'drafts', count: a.draftBookings, label: t('dashboard.attention.draftBookings'), href: '/bookings?tab=DRAFT', severity: 'watch', Icon: CalendarClock },
     { key: 'readyToVerify', count: a.readyToVerify ?? 0, label: t('dashboard.attention.readyToVerify'), href: '/caregivers?status=UNDER_VERIFICATION', severity: 'act', Icon: BadgeCheck },
     { key: 'verify', count: a.caregiversAwaitingVerification, label: t('dashboard.attention.caregiversAwaiting'), href: '/caregivers?status=UNDER_VERIFICATION', severity: 'watch', Icon: ShieldCheck },
+    { key: 'photos', count: a.photosToApprove ?? 0, label: t('dashboard.attention.photosToApprove'), href: '/caregivers/photos', severity: 'watch', Icon: Camera },
     { key: 'docs', count: a.documentsPending, label: t('dashboard.attention.documentsPending'), href: '/caregivers?status=DOCUMENTS_PENDING', severity: 'watch', Icon: FileWarning },
     { key: 'clients', count: a.clientsPendingReview, label: t('dashboard.attention.clientsPending'), href: '/clients?status=PENDING_REVIEW', severity: 'watch', Icon: UserPlus },
     { key: 'reviews', count: reviewCounts?.pending ?? 0, label: t('dashboard.attention.reviewsPending'), href: '/reviews?filter=pending', severity: 'watch', Icon: Star },

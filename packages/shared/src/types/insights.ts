@@ -148,6 +148,8 @@ export interface BusinessInsights {
     peopleWaiting: number;
     /** Applicants whose verification file the onboarding agent marked ready for staff to check. */
     readyToVerify: number;
+    /** Caregivers' profile photos waiting for staff approval. */
+    photosToApprove: number;
     unconfirmedShiftsNext7d: number;
     missedShiftsLast7d: number;
     unbilledCompletedShifts: number;

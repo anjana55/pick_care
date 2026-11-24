@@ -1243,14 +1243,20 @@
     },
     "photo": {
       "title": "Your photo",
-      "hint": "Families see this on your public profile and in search results. Use a clear, recent photo of your face. JPG, PNG or WEBP, up to 8 MB. We remove location and camera details from the file.",
+      "hint": "Families see your photo on your public profile and in search results once our team has approved it. Use a clear, recent photo of your face. JPG, PNG or WEBP, up to 8 MB. We remove location and camera details from the file.",
       "alt": "Your profile photo",
       "upload": "Upload a photo",
       "replace": "Change photo",
       "remove": "Remove photo",
-      "uploaded": "Photo saved. It now shows on your public profile.",
       "removed": "Photo removed.",
-      "tooLarge": "The photo must be 8 MB or smaller."
+      "tooLarge": "The photo must be 8 MB or smaller.",
+      "sentForApproval": "Photo sent. It will show on your public profile once our team approves it.",
+      "current": "Current",
+      "waiting": "Waiting for approval",
+      "pendingAlt": "Your new photo, waiting for approval",
+      "pendingNote": "Our team is checking your new photo. Families see your current photo until it is approved.",
+      "rejected": "Your last photo was not approved. Please upload a clear, recent photo of your face.",
+      "rejectedReason": "Reason: {reason}"
     }
   },
   "caregiverClaim": {
