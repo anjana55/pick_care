@@ -56,3 +56,24 @@ describe('what the live-care agent does about a visit', () => {
     expect(flagReason('LEFT_EARLY', { minutes: 404, ofMinutes: 540 }, 'CG-0001', '08:00')).toBe('CG-0001 checked out after 6 h 44 min of a 9 h visit');
   });
 });
+
+describe('On my way: asking before the caregiver is late', () => {
+  // Starts 02:30 UTC; "late after" is 15 minutes, so arriving after 02:45 is late.
+  it('asks early when the phone says they will arrive after "late after"', () => {
+    expect(liveStep(visit({ arrivesAt: '2026-11-16T02:55:00.000Z' }), settings, at('02:10'))).toEqual({ step: 'chase', minutesLate: 0, early: { arrivesInMinutes: 45 } });
+  });
+
+  it('says nothing when they will arrive in time, or it is too early to tell, or they were already asked', () => {
+    expect(liveStep(visit({ arrivesAt: '2026-11-16T02:40:00.000Z' }), settings, at('02:10'))).toEqual({ step: 'none' });
+    // More than half an hour before the start: traffic can still change.
+    expect(liveStep(visit({ arrivesAt: '2026-11-16T03:30:00.000Z' }), settings, at('01:50'))).toEqual({ step: 'none' });
+    expect(liveStep(visit({ arrivesAt: '2026-11-16T02:55:00.000Z', chasedAt: '2026-11-16T02:05:00.000Z' }), settings, at('02:10'))).toEqual({ step: 'none' });
+  });
+
+  it('once late, the usual rules apply: an early ask counts as the chase', () => {
+    const asked = visit({ arrivesAt: '2026-11-16T02:55:00.000Z', chasedAt: '2026-11-16T02:10:00.000Z' });
+    expect(liveStep(asked, settings, at('02:50'))).toEqual({ step: 'flag', kind: 'STILL_LATE', minutes: 20 });
+    // Without On my way, nothing changes.
+    expect(liveStep(visit(), settings, at('02:46'))).toEqual({ step: 'chase', minutesLate: 16 });
+  });
+});

@@ -224,7 +224,7 @@ describe('Today', () => {
 describe('Shifts', () => {
   it('checks in with the code the client reads out, shows a wrong code’s reason, then checks out', async () => {
     await signIn();
-    const open = { state: 'DUE' as const, opensAt: at(-HOUR), checkedInAt: null, checkedOutAt: null, codeLocked: false };
+    const open = { state: 'DUE' as const, opensAt: at(-HOUR), checkedInAt: null, checkedOutAt: null, codeLocked: false, onMyWay: null };
     let current = shift(1, 10 * 60_000, { hasCarePlan: false, checkIn: open });
     let tries = 0;
     const calls = serveApi({
@@ -294,7 +294,7 @@ describe('Shifts', () => {
 
   it('offers no check-in when it is too early, locked or switched off', async () => {
     await signIn();
-    const base = { opensAt: at(HOUR), checkedInAt: null, checkedOutAt: null };
+    const base = { opensAt: at(HOUR), checkedInAt: null, checkedOutAt: null, onMyWay: null };
     serveApi({
       'GET /me/shifts': () => ({
         status: 200,

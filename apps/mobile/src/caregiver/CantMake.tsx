@@ -7,6 +7,7 @@ import { useColors } from '@/theme';
 import { Button, Field, FormError } from '@/ui/controls';
 import { Text } from '@/ui/Text';
 import { useCantMake } from './api';
+import { endTripFor } from './OnMyWay';
 
 /** A shift the caregiver can still say they cannot make: going ahead, not over, not checked in, not paused. */
 export function canSayCantMake(s: CaregiverShift, now = Date.now()): boolean {
@@ -42,7 +43,7 @@ export function CantMake({ shift }: { shift: CaregiverShift }) {
       <Text style={{ fontSize: 14, color: colors.muted }}>{t('portal.shifts.cantMake.why')}</Text>
       <Field label={t('portal.shifts.cantMake.note')} value={note} onChangeText={setNote} maxLength={CANT_MAKE_NOTE_MAX} multiline />
       <FormError message={error} />
-      <Button label={t('portal.shifts.cantMake.send')} busy={save.isPending} onPress={() => save.mutate({ shiftId: shift.id, note: note.trim() || undefined }, { onSuccess: () => setOpen(false) })} />
+      <Button label={t('portal.shifts.cantMake.send')} busy={save.isPending} onPress={() => save.mutate({ shiftId: shift.id, note: note.trim() || undefined }, { onSuccess: () => { setOpen(false); void endTripFor(shift.id); } })} />
       <Button variant="link" label={t('common.cancel')} onPress={() => setOpen(false)} />
     </View>
   );

@@ -14,7 +14,13 @@ export function useMyBookings() {
     queryKey: [...key(client?.userId), 'bookings', locale],
     queryFn: () => api.get<ClientBooking[]>('/me/bookings'),
     enabled: Boolean(client),
+    // A visit starts within two hours: look again every minute, so "on the way" and the arrival code show up by themselves.
+    refetchInterval: (q) => (visitSoon(q.state.data) ? 60_000 : false),
   });
+}
+
+export function visitSoon(bookings: ClientBooking[] | undefined, now = Date.now()): boolean {
+  return Boolean(bookings?.some((b) => b.shifts.some((s) => s.status === 'SCHEDULED' && !s.visit?.checkedInAt && Date.parse(s.startsAt) - now < 2 * 3_600_000 && Date.parse(s.endsAt) > now)));
 }
 
 /** One day's checklist; null `date` is today (the API decides what today is, in Sri Lanka). */

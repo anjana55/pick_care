@@ -15,6 +15,7 @@ import {
   colomboToday,
   distanceMetres,
   isFarFromHome,
+  etaFrom,
   minutesLate,
   toColombo,
   visitState,
@@ -38,6 +39,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { JobsService } from '../jobs/jobs.service';
 import { AutomationService } from '../automation/automation.service';
 import { CareLocationsService } from '../care-locations/care-locations.service';
+import { closeShares, openShares } from './location-shares.db';
 import { nudgeLiveCare } from './live-care-jobs';
 import type { UpdateCheckInSettingsDto } from './dto/check-in.dto';
 
@@ -46,7 +48,15 @@ type SettingsRow = typeof checkInSettings.$inferSelect;
 type CheckinRow = typeof shiftCheckins.$inferSelect;
 type Times = { id: string; startsAt: Date | string; endsAt: Date | string };
 
-const toSettings = (row: SettingsRow): CheckInSettings => ({ enabled: row.enabled, earlyMinutes: row.earlyMinutes, lateAfterMinutes: row.lateAfterMinutes, farMetres: row.farMetres });
+const toSettings = (row: SettingsRow): CheckInSettings => ({
+  enabled: row.enabled,
+  earlyMinutes: row.earlyMinutes,
+  lateAfterMinutes: row.lateAfterMinutes,
+  farMetres: row.farMetres,
+  liveEnabled: row.liveEnabled,
+  onMyWayMinutes: row.onMyWayMinutes,
+  locationRetentionDays: row.locationRetentionDays,
+});
 const iso = (d: Date | string | null) => (d ? new Date(d).toISOString() : null);
 
 /** "Your caregiver has arrived" - the client's bell and push, in their language. */
@@ -139,6 +149,17 @@ export class CheckInService {
       if (dto.farMetres < min || dto.farMetres > max) throw new BadRequestException(`"Far from the home" must be between ${min} and ${max} metres`);
       next.farMetres = dto.farMetres;
     }
+    if (dto.liveEnabled !== undefined) next.liveEnabled = dto.liveEnabled;
+    if (dto.onMyWayMinutes !== undefined) {
+      const { min, max } = CHECK_IN_SETTINGS_LIMITS.onMyWayMinutes;
+      if (dto.onMyWayMinutes < min || dto.onMyWayMinutes > max) throw new BadRequestException(`"On my way opens" must be between ${min} and ${max} minutes`);
+      next.onMyWayMinutes = dto.onMyWayMinutes;
+    }
+    if (dto.locationRetentionDays !== undefined) {
+      const { min, max } = CHECK_IN_SETTINGS_LIMITS.locationRetentionDays;
+      if (dto.locationRetentionDays < min || dto.locationRetentionDays > max) throw new BadRequestException(`Keeping location points must be between ${min} and ${max} days`);
+      next.locationRetentionDays = dto.locationRetentionDays;
+    }
     await this.settingsRow();
     await this.db.update(checkInSettings).set(next).where(eq(checkInSettings.id, SETTINGS_ID));
     return this.settingsForAdmin();
@@ -173,10 +194,21 @@ export class CheckInService {
     if (!settings.enabled) return out;
     const live = shifts.filter((s) => s.status === 'SCHEDULED' || s.status === 'COMPLETED');
     const rows = await this.rowsFor(live.map((s) => s.id));
+    const shares = settings.liveEnabled ? await openShares(this.db, live.map((s) => s.id)) : new Map();
     for (const s of live) {
       const row = rows.get(s.id);
       const times = { startsAt: s.startsAt, endsAt: s.endsAt, checkedInAt: row?.checkedInAt ?? null, checkedOutAt: row?.checkedOutAt ?? null };
+      const share = shares.get(s.id);
+      const shareOpen = share && new Date(share.endsBy).getTime() > now.getTime();
       out.set(s.id, {
+        onMyWay:
+          settings.liveEnabled && s.status === 'SCHEDULED' && !times.checkedInAt && new Date(s.endsAt).getTime() > now.getTime()
+            ? {
+                opensAt: new Date(new Date(s.startsAt).getTime() - settings.onMyWayMinutes * 60_000).toISOString(),
+                shareId: shareOpen ? share.id : null,
+                sharingSince: shareOpen ? new Date(share.startedAt).toISOString() : null,
+              }
+            : null,
         state: visitState(times, settings, now),
         opensAt: new Date(new Date(s.startsAt).getTime() - settings.earlyMinutes * 60_000).toISOString(),
         checkedInAt: iso(times.checkedInAt),
@@ -194,10 +226,13 @@ export class CheckInService {
     if (!settings.enabled) return out;
     const live = shifts.filter((s) => s.status === 'SCHEDULED' || s.status === 'COMPLETED');
     const rows = await this.rowsFor(live.map((s) => s.id));
+    const shares = settings.liveEnabled ? await openShares(this.db, live.map((s) => s.id)) : new Map();
     for (const s of live) {
       const row = rows.get(s.id);
       const times = { startsAt: s.startsAt, endsAt: s.endsAt, checkedInAt: row?.checkedInAt ?? null, checkedOutAt: row?.checkedOutAt ?? null };
+      const share = shares.get(s.id);
       out.set(s.id, {
+        onTheWay: Boolean(share && !times.checkedInAt && new Date(share.endsBy).getTime() > now.getTime()),
         arrivalCode: s.status === 'SCHEDULED' && arrivalCodeShown(times, now) ? this.arrivalCode(s.id) : null,
         checkedInAt: iso(times.checkedInAt),
         checkedOutAt: iso(times.checkedOutAt),
@@ -216,8 +251,12 @@ export class CheckInService {
     const names = actorIds.length
       ? new Map((await this.db.select({ id: users.id, fullName: users.fullName }).from(users).where(inArray(users.id, actorIds))).map((u) => [u.id, u.fullName]))
       : new Map<string, string>();
+    const shares = settings.liveEnabled ? await openShares(this.db, shifts.map((s) => s.id)) : new Map();
     for (const s of shifts) {
       const row = rows.get(s.id);
+      const share = shares.get(s.id);
+      const shareOpen = share && !row?.checkedInAt && new Date(share.endsBy).getTime() > now.getTime();
+      const eta = shareOpen ? etaFrom(share.lastDistanceM ?? null, now, settings.farMetres) : null;
       const point = (lat: number | null | undefined, lng: number | null | undefined, acc: number | null | undefined) =>
         lat === null || lat === undefined || lng === null || lng === undefined ? null : { latitude: Number(lat), longitude: Number(lng), accuracyM: acc ?? null };
       out.set(s.id, {
@@ -242,6 +281,7 @@ export class CheckInService {
         outDistanceM: row?.outDistanceM ?? null,
         outFar: isFarFromHome(row?.outDistanceM ?? null, row?.outAccuracyM ?? null, settings.farMetres),
         outMocked: row?.outMocked ?? false,
+        onTheWay: shareOpen && eta ? { shareId: share.id, etaMinutes: eta.minutes, arriving: eta.arriving, updatedAt: iso(share.lastAt) } : null,
       });
     }
     return out;
@@ -339,7 +379,8 @@ export class CheckInService {
 
   // --- the caregiver checks in and out ----------------------------------------------
 
-  private async ownShift(user: AuthenticatedUser, shiftId: string) {
+  /** A caregiver's own shift (anyone else's is "not found"). Also used by On my way. */
+  async caregiverShift(user: AuthenticatedUser, shiftId: string) {
     if (user.role !== 'CAREGIVER' || !user.caregiverId) throw new ForbiddenException('You do not have permission to perform this action');
     const [shift] = await this.db
       .select({
@@ -350,6 +391,7 @@ export class CheckInService {
         status: bookingShifts.status,
         bookingStatus: bookings.status,
         paused: bookings.paymentHoldInvoiceId,
+        cantMakeAt: bookingShifts.cantMakeAt,
         patientUserId: patients.userId,
       })
       .from(bookingShifts)
@@ -395,7 +437,7 @@ export class CheckInService {
   async nearHome(user: AuthenticatedUser, shiftId: string, input: { latitude?: number; longitude?: number; accuracyM?: number }, now = new Date()): Promise<NearHomeAnswer> {
     const settings = await this.settings();
     if (!settings.enabled) return { atHome: null };
-    const shift = await this.ownShift(user, shiftId);
+    const shift = await this.caregiverShift(user, shiftId);
     if (shift.status !== 'SCHEDULED') return { atHome: null };
     const state = visitState({ startsAt: shift.startsAt, endsAt: shift.endsAt, checkedInAt: null, checkedOutAt: null }, settings, now);
     if (!checkInOpen(state)) return { atHome: null };
@@ -409,7 +451,7 @@ export class CheckInService {
   async checkIn(user: AuthenticatedUser, shiftId: string, input: CheckInInput, now = new Date()): Promise<void> {
     const settings = await this.settings();
     if (!settings.enabled) throw new BadRequestException('Check-in is not switched on');
-    const shift = await this.ownShift(user, shiftId);
+    const shift = await this.caregiverShift(user, shiftId);
     if (shift.status !== 'SCHEDULED') throw new BadRequestException('This shift is not open for check-in');
     const [row] = await this.db.select().from(shiftCheckins).where(eq(shiftCheckins.shiftId, shiftId)).limit(1);
     if (row?.checkedInAt) return; // a second tap, or a retry after a lost reply
@@ -443,6 +485,8 @@ export class CheckInService {
       updatedAt: now,
     };
     await this.db.insert(shiftCheckins).values({ shiftId, bookingId: shift.bookingId, ...record }).onDuplicateKeyUpdate({ set: record });
+    // Arrived: "On my way" is over.
+    await closeShares(this.db, shiftId, 'CHECKED_IN', now, 'ON_THE_WAY');
     // No place on the map yet: keep this one as a suggestion for staff to confirm (a fake position is no suggestion).
     if (here && !input.mocked && distance.from !== 'PIN' && (here.accuracyM === null || here.accuracyM <= 100)) {
       await this.places.suggestFromCheckIn(shift.bookingId, shiftId, here, now);
@@ -455,7 +499,7 @@ export class CheckInService {
   async checkOut(user: AuthenticatedUser, shiftId: string, input: Omit<CheckInInput, 'code'>, now = new Date()): Promise<void> {
     const settings = await this.settings();
     if (!settings.enabled) throw new BadRequestException('Check-in is not switched on');
-    const shift = await this.ownShift(user, shiftId);
+    const shift = await this.caregiverShift(user, shiftId);
     const [row] = await this.db.select().from(shiftCheckins).where(eq(shiftCheckins.shiftId, shiftId)).limit(1);
     if (!row?.checkedInAt) throw new BadRequestException('Check in before you check out');
     if (row.checkedOutAt) return;
@@ -512,6 +556,7 @@ export class CheckInService {
     const record = { checkedInAt: at, inBy: 'STAFF' as const, inByUserId: actor.userId, inNote: input.note?.trim() || null, updatedAt: now };
     await this.db.insert(shiftCheckins).values({ shiftId, bookingId: shift.bookingId, ...record }).onDuplicateKeyUpdate({ set: record });
     await closeCoverOffers(this.db, this.jobs, shiftId);
+    await closeShares(this.db, shiftId, 'CHECKED_IN', now, 'ON_THE_WAY');
     return (await this.forStaff([shift], now)).get(shiftId)!;
   }
 

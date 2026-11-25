@@ -1,7 +1,7 @@
 import { BadRequestException, Inject, Injectable, Logger, OnApplicationBootstrap, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { and, eq, gt, gte, inArray, isNotNull, isNull, lt } from 'drizzle-orm';
-import { toColombo, type AgentRunResult } from '@care-platform/shared';
+import { LOCATION_STALE_MINUTES, etaFrom, toColombo, type AgentRunResult } from '@care-platform/shared';
 import { DRIZZLE, type Database } from '../database/database.module';
 import { agentDecisions, bookingShifts, bookings, caregivers, shiftCheckins, users } from '../database/schema';
 import { AutomationService, type ActionExecutor } from '../automation/automation.service';
@@ -16,7 +16,8 @@ import { BookingsService } from './bookings.service';
 import { CheckInService } from './check-in.service';
 import type { UpdateShiftDto } from './dto/booking.dto';
 import { LIVE_CARE_SHIFT_JOB, LIVE_CARE_SWEEP_JOB } from './live-care-jobs';
-import { FLAG_AFTER_CHASE_MINUTES, FLAG_NEXT, LIVE_WINDOW_HOURS, flagReason, liveStep, type FlagKind } from './live-care-rules';
+import { EARLY_CHASE_WINDOW_MINUTES, FLAG_AFTER_CHASE_MINUTES, FLAG_NEXT, LIVE_WINDOW_HOURS, flagReason, liveStep, type FlagKind } from './live-care-rules';
+import { openShares } from './location-shares.db';
 
 const CHASE = 'live_care.chase_late_caregiver' as const;
 const FLAG = 'live_care.flag_visit' as const;
@@ -37,6 +38,8 @@ export interface VisitProposal extends Record<string, unknown> {
   kind?: FlagKind;
   minutes?: number;
   ofMinutes?: number;
+  /** An early chase: the phone's ETA, in minutes, when it was decided. */
+  earlyArrivesInMinutes?: number;
 }
 
 /** "Please check in" - the caregiver's bell and push, and the WhatsApp message, in their language. */
@@ -44,6 +47,13 @@ const CHASE_TEXT = {
   en: { title: 'Please check in for your shift', body: 'Your shift started at {time} and you have not checked in. If you are with the client, check in now with their code. If you cannot be there, call the office.' },
   si: { title: 'ඔබගේ වාරය සඳහා පැමිණීම සටහන් කරන්න', body: 'ඔබගේ වාරය {time} ට ආරම්භ වූ නමුත් ඔබ පැමිණීම සටහන් කර නැත. ඔබ සේවාලාභියා සමඟ සිටී නම්, ඔවුන්ගේ කේතයෙන් දැන් පැමිණීම සටහන් කරන්න. ඔබට එහි සිටිය නොහැකි නම්, කාර්යාලයට අමතන්න.' },
   ta: { title: 'உங்கள் பணிநேரத்திற்கு வருகையைப் பதிவுசெய்யுங்கள்', body: 'உங்கள் பணிநேரம் {time} மணிக்குத் தொடங்கியது, ஆனால் நீங்கள் வருகையைப் பதிவுசெய்யவில்லை. நீங்கள் வாடிக்கையாளருடன் இருந்தால், அவர்களின் குறியீட்டைக் கொண்டு இப்போதே பதிவுசெய்யுங்கள். வர முடியாவிட்டால், அலுவலகத்தை அழைக்கவும்.' },
+} as const;
+
+/** On my way, but the phone's ETA is after "late after": a word before they are late. */
+const EARLY_CHASE_TEXT = {
+  en: { title: 'Running late for your {time} visit?', body: 'Your phone says you are about {minutes} min away. If you will be late, call the office so they can tell the client.' },
+  si: { title: 'ඔබගේ {time} මුරයට ප්‍රමාද වනවාද?', body: 'ඔබ මිනිත්තු {minutes} ක් පමණ දුරින් සිටින බව ඔබගේ දුරකථනය පවසයි. ඔබ ප්‍රමාද වන්නේ නම්, සේවාලාභියාට දැනුම් දීමට හැකි වන සේ කාර්යාලයට අමතන්න.' },
+  ta: { title: 'உங்கள் {time} வருகைக்குத் தாமதமாகிறதா?', body: 'நீங்கள் ஏறக்குறைய {minutes} நிமிடத் தொலைவில் இருப்பதாக உங்கள் தொலைபேசி காட்டுகிறது. தாமதமாகும் என்றால், வாடிக்கையாளருக்குத் தெரிவிக்க அலுவலகத்தை அழைக்கவும்.' },
 } as const;
 
 /** Another part of the same agent (cover), run in the same pass and counted in the same result. */
@@ -187,7 +197,10 @@ export class LiveCareAgentService implements OnApplicationBootstrap, OnModuleDes
           eq(bookingShifts.status, 'SCHEDULED'),
           // The caregiver said they cannot make it: there is nobody to chase; the cover part takes it from there.
           isNull(bookingShifts.cantMakeAt),
-          only ? inArray(bookingShifts.id, only) : and(lt(bookingShifts.startsAt, now), gt(bookingShifts.endsAt, new Date(now.getTime() - LIVE_WINDOW_HOURS * 3_600_000))),
+          // Shifts under way, and (for the early chase from On my way) those starting soon.
+          only
+            ? inArray(bookingShifts.id, only)
+            : and(lt(bookingShifts.startsAt, new Date(now.getTime() + EARLY_CHASE_WINDOW_MINUTES * 60_000)), gt(bookingShifts.endsAt, new Date(now.getTime() - LIVE_WINDOW_HOURS * 3_600_000))),
         ),
       )
       .orderBy(bookingShifts.startsAt)
@@ -217,9 +230,18 @@ export class LiveCareAgentService implements OnApplicationBootstrap, OnModuleDes
       done.set(p.shiftId, seen);
     }
 
+    // On my way: when each caregiver's phone says they will arrive (a fresh point only).
+    const shares = settings.liveEnabled ? await openShares(this.db, rows.map((r) => r.shiftId)) : new Map();
+    const arrivals = new Map<string, Date>();
+    for (const [shiftId, share] of shares) {
+      if (!share.lastAt || now.getTime() - new Date(share.lastAt).getTime() > LOCATION_STALE_MINUTES * 60_000) continue;
+      const eta = etaFrom(share.lastDistanceM ?? null, now, settings.farMetres);
+      if (eta.minutes !== null) arrivals.set(shiftId, new Date(new Date(share.lastAt).getTime() + eta.minutes * 60_000));
+    }
+
     for (const row of rows) {
       const seen = done.get(row.shiftId);
-      const step = liveStep({ ...row, chasedAt: seen?.chasedAt ?? null }, settings, now);
+      const step = liveStep({ ...row, chasedAt: seen?.chasedAt ?? null, arrivesAt: arrivals.get(row.shiftId) ?? null }, settings, now);
       if (step.step === 'none') continue;
       if (step.step === 'flag' && seen?.flags.has(step.kind)) continue;
       if (step.step === 'complete' && seen?.complete) continue;
@@ -240,8 +262,10 @@ export class LiveCareAgentService implements OnApplicationBootstrap, OnModuleDes
             ? await this.automation.decide({
                 action: CHASE,
                 case: ref,
-                reason: `Ask ${row.registration} to check in: the ${time} visit started ${step.minutesLate} min ago with nobody checked in`,
-                proposal: { ...base, minutes: step.minutesLate },
+                reason: step.early
+                  ? `Ask ${row.registration} whether they will be late: on their way to the ${time} visit, about ${step.early.arrivesInMinutes} min away`
+                  : `Ask ${row.registration} to check in: the ${time} visit started ${step.minutesLate} min ago with nobody checked in`,
+                proposal: { ...base, minutes: step.minutesLate, ...(step.early ? { earlyArrivesInMinutes: step.early.arrivesInMinutes } : {}) },
                 dedupeKey: row.shiftId,
               })
             : step.step === 'flag'
@@ -307,13 +331,18 @@ export class LiveCareAgentService implements OnApplicationBootstrap, OnModuleDes
     if (v.caregiverId !== p!.caregiverId) throw new BadRequestException('This shift has a different caregiver now');
     const time = toColombo(p!.startsAt).time;
     const told = ['bell'];
-    this.notices.notify([v.caregiverUserId], (lang) => ({ title: CHASE_TEXT[lang].title, body: CHASE_TEXT[lang].body.replace('{time}', time) }), '/shifts', `check-in chase ${p!.shiftId}`);
+    const early = typeof p!.earlyArrivesInMinutes === 'number' ? String(p!.earlyArrivesInMinutes) : null;
+    const words = (lang: 'en' | 'si' | 'ta') =>
+      early
+        ? { title: EARLY_CHASE_TEXT[lang].title.replace('{time}', time), body: EARLY_CHASE_TEXT[lang].body.replace('{minutes}', early) }
+        : { title: CHASE_TEXT[lang].title, body: CHASE_TEXT[lang].body.replace('{time}', time) };
+    this.notices.notify([v.caregiverUserId], words, '/shifts', `check-in chase ${p!.shiftId}`);
     try {
       const wa = await this.whatsappSettings.getResolved();
       const phone = v.accountPhone ?? normalizePhone(v.primaryPhone, await this.whatsappSettings.getDefaultCountryCode());
       // A caregiver who asked to be phoned is not messaged; staff will phone if they stay late.
       if (phone && v.preferred !== 'PHONE_CALL' && this.whatsapp.canSendUpdates(wa)) {
-        const text = (['en', 'si', 'ta'] as const).map((l) => `${CHASE_TEXT[l].title}. ${CHASE_TEXT[l].body.replace('{time}', time)}`).join(' / ');
+        const text = (['en', 'si', 'ta'] as const).map((l) => `${words(l).title}. ${words(l).body}`).join(' / ');
         await this.whatsapp.sendUpdate(wa, phone, 'en', `{brand}: ${text}`);
         told.push('whatsapp');
       }
@@ -323,7 +352,9 @@ export class LiveCareAgentService implements OnApplicationBootstrap, OnModuleDes
     await this.automation.setHandoverNote(
       { caseType: 'BOOKING', caseId: p!.bookingId },
       {
-        done: `Asked ${p!.caregiverRegistration} to check in for the ${time} visit (${told.join(' and ')})`,
+        done: early
+          ? `Asked ${p!.caregiverRegistration} whether they will be late for the ${time} visit - about ${early} min away (${told.join(' and ')})`
+          : `Asked ${p!.caregiverRegistration} to check in for the ${time} visit (${told.join(' and ')})`,
         waiting: 'The caregiver to check in',
         next: `Tell staff if nobody has checked in ${FLAG_AFTER_CHASE_MINUTES} minutes from now`,
       },

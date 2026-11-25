@@ -1820,5 +1820,31 @@
     "makeDefault": "Use for my bookings",
     "remove": "Remove",
     "removeConfirm": "Remove \"{name}\"?"
+  },
+  "onMyWay": {
+    "start": "On my way",
+    "again": "Share from this phone",
+    "notThisPhone": "Your location isn't being shared from this phone right now.",
+    "opensAt": "\"On my way\" opens at {time}.",
+    "sharing": "Sharing your location with the client",
+    "sharingHint": "It stops by itself when you check in. You can stop it at any time.",
+    "stop": "Stop sharing",
+    "explainTitle": "Share your trip with the client?",
+    "explain": "The client and the office will see where you are and about how long until you arrive. It is shared only until you check in, and never outside a shift. Your phone shows a notification while it is on, and you can stop it at any time.",
+    "agree": "Share and set off",
+    "denied": "Location is not allowed for this app. Allow it (\"While using the app\") in your phone's settings, then try again.",
+    "unavailable": "This version of the app can't share your trip. Update the app, or tell the office you are on your way.",
+    "failed": "That didn't work. Please try again.",
+    "notificationTitle": "Sharing your trip",
+    "notificationBody": "Until you check in. Open the app to stop."
+  },
+  "onTheWay": {
+    "title": "{name} is on the way",
+    "minutes": "About {minutes} min away",
+    "arriving": "Arriving now",
+    "waiting": "Waiting for their phone to share where they are",
+    "noHome": "On the way. Put a pin on the home (Account) to see how long until they arrive.",
+    "stale": "Location not updating - their phone may have no signal",
+    "map": "Map of your caregiver on the way"
   }
 }

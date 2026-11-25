@@ -1,7 +1,8 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { CheckInSettings, StaffCheckIn, StaffCheckInInput, TodayVisits } from '@care-platform/shared';
+import { useEffect, useRef } from 'react';
+import type { CheckInSettings, StaffCheckIn, StaffCheckInInput, StaffLiveShare, TodayVisits } from '@care-platform/shared';
 import { api } from '@/lib/api/client';
 
 const KEY = ['visits'] as const;
@@ -49,5 +50,28 @@ export function useUpdateCheckInSettings() {
       queryClient.setQueryData([...KEY, 'settings'], data);
       queryClient.invalidateQueries({ queryKey: [...KEY, 'today'] });
     },
+  });
+}
+
+/**
+ * Everyone sharing their location right now (GPS tracking B), looked at again
+ * every 20 seconds while the map is open. The first look says it is an
+ * opening (?opened=1), which the API writes to the audit log.
+ */
+export function useLiveVisits(enabled: boolean) {
+  const opened = useRef(false);
+  useEffect(() => {
+    if (!enabled) opened.current = false;
+  }, [enabled]);
+  return useQuery({
+    queryKey: ['visits', 'live'],
+    queryFn: () => {
+      const first = !opened.current;
+      opened.current = true;
+      return api.get<StaffLiveShare[]>('/visits/live', first ? { opened: '1' } : undefined);
+    },
+    enabled,
+    refetchInterval: 20_000,
+    gcTime: 0,
   });
 }

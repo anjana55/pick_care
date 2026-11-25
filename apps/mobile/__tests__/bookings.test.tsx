@@ -197,7 +197,7 @@ describe('bookings', () => {
 
   it('shows the arrival code for a visit about to start, and when the caregiver came and went', async () => {
     await client();
-    const visit = (id: string, startsAt: string, v: { arrivalCode: string | null; checkedInAt: string | null; checkedOutAt: string | null } | null) => ({
+    const visit = (id: string, startsAt: string, v: { arrivalCode: string | null; checkedInAt: string | null; checkedOutAt: string | null, onTheWay: false } | null) => ({
       id, startsAt, endsAt: startsAt.replace('T02:30', 'T11:30'), status: 'SCHEDULED' as const, isCover: false, visit: v,
     });
     serveApi({
@@ -206,9 +206,9 @@ describe('bookings', () => {
         body: [
           booking({
             shifts: [
-              visit('s-in', '2026-11-04T02:30:00.000Z', { arrivalCode: null, checkedInAt: '2026-11-04T02:29:00.000Z', checkedOutAt: null }),
-              visit('s-done', '2026-11-05T02:30:00.000Z', { arrivalCode: null, checkedInAt: '2026-11-05T02:33:00.000Z', checkedOutAt: '2026-11-05T11:31:00.000Z' }),
-              visit('s-soon', '2026-11-06T02:30:00.000Z', { arrivalCode: '0482', checkedInAt: null, checkedOutAt: null }),
+              visit('s-in', '2026-11-04T02:30:00.000Z', { arrivalCode: null, checkedInAt: '2026-11-04T02:29:00.000Z', checkedOutAt: null, onTheWay: false }),
+              visit('s-done', '2026-11-05T02:30:00.000Z', { arrivalCode: null, checkedInAt: '2026-11-05T02:33:00.000Z', checkedOutAt: '2026-11-05T11:31:00.000Z', onTheWay: false }),
+              visit('s-soon', '2026-11-06T02:30:00.000Z', { arrivalCode: '0482', checkedInAt: null, checkedOutAt: null, onTheWay: false }),
               visit('s-off', '2026-11-07T02:30:00.000Z', null),
             ],
           }),

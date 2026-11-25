@@ -29,6 +29,23 @@ export class UpdateCheckInSettingsDto {
   @Type(() => Number)
   @IsInt()
   farMetres?: number;
+
+  @ApiPropertyOptional({ description: 'Live location: On my way (and checks during a visit)' })
+  @IsOptional()
+  @IsBoolean()
+  liveEnabled?: boolean;
+
+  @ApiPropertyOptional({ minimum: 15, maximum: 180 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  onMyWayMinutes?: number;
+
+  @ApiPropertyOptional({ minimum: 7, maximum: 365 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  locationRetentionDays?: number;
 }
 
 /** Where the phone is, when it can say. All optional: a phone with no fix still checks in. */

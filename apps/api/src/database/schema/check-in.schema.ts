@@ -15,6 +15,12 @@ export const checkInSettings = mysqlTable('check_in_settings', {
   lateAfterMinutes: int('late_after_minutes').notNull().default(15),
   /** A check-in further than this from the booking's place (plus the fix's accuracy) is pointed out to staff. */
   farMetres: int('far_metres').notNull().default(300),
+  /** Live location (GPS tracking B and C): On my way, and the checks during a visit. Off by default. */
+  liveEnabled: boolean('live_enabled').notNull().default(false),
+  /** On my way can be tapped from this many minutes before the start. */
+  onMyWayMinutes: int('on_my_way_minutes').notNull().default(60),
+  /** Raw location points are deleted after this many days. */
+  locationRetentionDays: int('location_retention_days').notNull().default(30),
   updatedBy: varchar('updated_by', { length: 36 }),
   createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
   updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),

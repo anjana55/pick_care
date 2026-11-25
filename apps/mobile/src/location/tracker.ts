@@ -2,6 +2,7 @@ import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { hasNativeModule } from '@/native';
 import { keepPoint, sessionOver, trackingOptions, type TrackPoint, type TrackSession } from './session';
+import { flushOutbox, type FlushResult } from './outbox';
 
 /**
  * Location tracking on the phone: one background task, started from a tap,
@@ -87,7 +88,7 @@ export async function receiveLocations(
 ): Promise<void> {
   const session = await currentSession();
   if (!session || sessionOver(session, now)) {
-    await stopTracking();
+    await finishTracking();
     return;
   }
   const points = await readPoints();
@@ -111,11 +112,20 @@ export async function receiveLocations(
   await writePoints(points);
 }
 
+let lastFlush = 0;
+/** Send what is waiting, at most every 25 seconds from the background (the radio wakes less often). */
+export async function sendPoints(force = false, now = Date.now()): Promise<FlushResult> {
+  if (!force && now - lastFlush < 25_000) return 'nothing';
+  lastFlush = now;
+  return flushOutbox(await currentSession(), { read: readPoints, forget: (id, upTo) => clearPoints(id, upTo), stop: stopTracking });
+}
+
 const tm = taskManager();
 if (tm && !tm.isTaskDefined(LOCATION_TASK)) {
   tm.defineTask<{ locations: Parameters<typeof receiveLocations>[0] }>(LOCATION_TASK, async ({ data, error }) => {
     if (error || !data?.locations) return;
     await receiveLocations(data.locations);
+    await sendPoints().catch(() => undefined);
   });
 }
 
@@ -142,6 +152,12 @@ export async function startTracking(session: TrackSession, platform: 'ios' | 'an
     await AsyncStorage.removeItem(SESSION_KEY).catch(() => undefined);
     return 'unavailable';
   }
+}
+
+/** Send what is left, then stop: for check-in, the end of a trip, a stop from the person. */
+export async function finishTracking(): Promise<void> {
+  await sendPoints(true).catch(() => undefined);
+  await stopTracking();
 }
 
 /** Stop whatever is running. Points already kept stay until they are sent or cleared. */

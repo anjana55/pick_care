@@ -16,6 +16,7 @@ import type {
   CareRecordInput,
   ClientCareDay, ClientRequestDetailsInput,
   CareLocation,
+  ClientLive,
   CareLocationInput,
   CareLocationUpdate,
 } from '@care-platform/shared';
@@ -126,6 +127,8 @@ export function useMyBookings() {
     queryKey: [...key, 'bookings', locale],
     queryFn: () => api.get<ClientBooking[]>('/me/bookings'),
     enabled: Boolean(client),
+    // A visit starts within two hours: look again every minute, so "on the way" and the arrival code show up by themselves.
+    refetchInterval: (q) => (visitSoon(q.state.data) ? 60_000 : false),
   });
 }
 
@@ -265,4 +268,20 @@ export function useSaveCareLocation() {
 export function useRemoveCareLocation() {
   const invalidate = useInvalidateClient();
   return useMutation({ mutationFn: (id: string) => api.delete<{ ok: true }>(`/me/care-locations/${id}`), onSuccess: invalidate });
+}
+
+export function visitSoon(bookings: ClientBooking[] | undefined, now = Date.now()): boolean {
+  return Boolean(bookings?.some((b) => b.shifts.some((s) => s.status === 'SCHEDULED' && !s.visit?.checkedInAt && Date.parse(s.startsAt) - now < 2 * 3_600_000 && Date.parse(s.endsAt) > now)));
+}
+
+/** The caregiver on their way to this booking's next visit (GPS tracking B); asked every 15 s while they are. */
+export function useBookingLive(bookingId: string) {
+  const client = useIsClient();
+  const key = useClientKey();
+  return useQuery({
+    queryKey: [...key, 'live', bookingId],
+    queryFn: () => api.get<ClientLive>(`/me/bookings/${bookingId}/live`),
+    enabled: Boolean(client),
+    refetchInterval: (q) => (q.state.data?.status === 'ON_THE_WAY' ? 15_000 : false),
+  });
 }

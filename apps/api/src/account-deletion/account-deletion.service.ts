@@ -46,6 +46,8 @@ import {
   reviewRequests,
   careLocations,
   shiftCheckins,
+  locationShares,
+  locationPoints,
 } from '../database/schema';
 import { releaseLogin } from '../account-access/identity.util';
 import { AuditService } from '../audit/audit.service';
@@ -418,6 +420,8 @@ export class AccountDeletionService {
 
   /** The caregiver's record kept for bookings and payouts, without the person. Returns the storage keys to delete. */
   private async eraseCaregiver(db: Database, caregiverId: string, now: Date): Promise<string[]> {
+    // Where they were while sharing their location.
+    await eraseLocationTrail(db, 'caregiver', caregiverId);
     const docs = await db.select({ key: caregiverDocuments.storageKey }).from(caregiverDocuments).where(eq(caregiverDocuments.caregiverId, caregiverId));
     const photos = await db.select({ key: sharedProfiles.photoKey }).from(sharedProfiles).where(eq(sharedProfiles.caregiverId, caregiverId));
     // The profile photo is the person's face: it goes with the rest of them.
@@ -518,6 +522,8 @@ export class AccountDeletionService {
     await db.delete(savedCaregivers).where(eq(savedCaregivers.patientId, patientId));
     // Where they live: their places on the map go, and so do the positions caregivers checked in and out at their home.
     await db.delete(careLocations).where(eq(careLocations.patientId, patientId));
+    // And where caregivers were on their way to them.
+    await eraseLocationTrail(db, 'booking', theirBookingIds(db, patientId));
     await db.update(bookings).set({ careLocationId: null }).where(eq(bookings.patientId, patientId));
     const theirBookings = db.select({ id: bookings.id }).from(bookings).where(eq(bookings.patientId, patientId));
     await db
@@ -548,4 +554,20 @@ function isRecordDeleted(
   if (r.caregiverId) return Boolean(caregiverDeletedAt) || !caregiverFound;
   if (r.patientId) return !patientRowId;
   return false;
+}
+
+/** Live location: delete the points and the last position of every share of a caregiver, or on a client's bookings. */
+async function eraseLocationTrail(db: Database, by: 'caregiver' | 'booking', who: string | ReturnType<typeof theirBookingIds>) {
+  const shares = db
+    .select({ id: locationShares.id })
+    .from(locationShares)
+    .where(by === 'caregiver' ? eq(locationShares.caregiverId, who as string) : inArray(locationShares.bookingId, who as ReturnType<typeof theirBookingIds>));
+  const ids = (await shares).map((s) => s.id);
+  if (!ids.length) return;
+  await db.delete(locationPoints).where(inArray(locationPoints.shareId, ids));
+  await db.update(locationShares).set({ lastLatitude: null, lastLongitude: null, lastAccuracyM: null, lastDistanceM: null }).where(inArray(locationShares.id, ids));
+}
+
+function theirBookingIds(db: Database, patientId: string) {
+  return db.select({ id: bookings.id }).from(bookings).where(eq(bookings.patientId, patientId));
 }

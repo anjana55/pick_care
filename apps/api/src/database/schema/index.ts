@@ -19,6 +19,7 @@ export * from './bookings.schema';
 export * from './care-plans.schema';
 export * from './check-in.schema';
 export * from './care-locations.schema';
+export * from './location-shares.schema';
 export * from './billing.schema';
 export * from './branding.schema';
 export * from './ads.schema';

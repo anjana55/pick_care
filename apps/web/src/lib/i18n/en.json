@@ -4372,7 +4372,10 @@
       "farFromHome": "Checked in {distance} from the home",
       "outFarFromHome": "Checked out {distance} from the home",
       "mockedIn": "The phone said its position at check-in was simulated",
-      "mockedOut": "The phone said its position at check-out was simulated"
+      "mockedOut": "The phone said its position at check-out was simulated",
+      "onTheWay": "On the way",
+      "onTheWayEta": "On the way · about {minutes} min",
+      "arriving": "Arriving now"
     },
     "settings": {
       "title": "Check-in",
@@ -4386,7 +4389,14 @@
       "saved": "Saved",
       "saveError": "The settings could not be saved.",
       "far": "Far from the home (metres)",
-      "farHint": "Between {min} and {max}. A check-in further than this from the booking's place on the map is pointed out to staff. A phone that is unsure of its position gets that much more room."
+      "farHint": "Between {min} and {max}. A check-in further than this from the booking's place on the map is pointed out to staff. A phone that is unsure of its position gets that much more room.",
+      "liveTitle": "Live location",
+      "live": "Live location (\"On my way\")",
+      "liveHint": "Caregivers can tap On my way in the app; the client and staff see where they are and about how long until they arrive, until check-in. Needs check-in on.",
+      "onMyWay": "\"On my way\" opens (minutes before the start)",
+      "onMyWayHint": "Between {min} and {max}. Caregivers are also reminded then.",
+      "retention": "Keep location points (days)",
+      "retentionHint": "Between {min} and {max}. After that the points are deleted; each visit keeps only when the trip started and ended."
     },
     "coverPanel": {
       "find": "Find cover",
@@ -4416,7 +4426,17 @@
       "said": "Can't make it (told us at {when})",
       "afterAll": "They can come after all"
     },
-    "truncated": "Showing the first {n} visits of the day, by start time."
+    "truncated": "Showing the first {n} visits of the day, by start time.",
+    "live": {
+      "title": "On the way now ({n})",
+      "show": "Show live map",
+      "hide": "Hide map",
+      "audited": "Opening this map is recorded in the audit log. Positions refresh every 20 seconds.",
+      "none": "Nobody is on the way right now.",
+      "map": "Map of caregivers on their way",
+      "stale": "Location not updating",
+      "mocked": "simulated position"
+    }
   },
   "peopleWaiting": {
     "title": "People waiting",

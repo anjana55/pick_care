@@ -22,6 +22,7 @@ import { useMyIssues } from '@/care/billing-api';
 import { shortId } from '@/search/ResultCard';
 import { BookingReviews, PendingReviewsBanner } from '@/reviews/BookingReviews';
 import { useMarkPathsRead } from '@/notifications/api';
+import { OnTheWay } from '@/care/OnTheWay';
 
 /**
  * The client's bookings, as on the website: today's care checklist first, then
@@ -44,6 +45,7 @@ export default function Bookings() {
     <View style={styles.head}>
       {client ? (
         <>
+          <OnTheWay bookings={bookings.data ?? []} />
           <ArrivalCodes bookings={bookings.data ?? []} />
           <BookingProposals />
           <PendingReviewsBanner />
