@@ -1339,7 +1339,8 @@
       "bookings": "Bookings",
       "invoices": "Invoices",
       "signIn": "Sign-in methods",
-      "notifications": "Notifications"
+      "notifications": "Notifications",
+      "places": "Where care happens"
     },
     "findCaregivers": "Find caregivers",
     "requests": {
@@ -1465,6 +1466,31 @@
       "youAsked": "You asked:",
       "notBookedYet": "Nothing is booked until you accept and we confirm it.",
       "failed": "That did not go through. Please try again."
+    },
+    "places": {
+      "title": "Where care happens",
+      "subtitle": "Put a pin on the house where care happens. When the caregiver checks in, their phone is compared with it, so the office knows they reached the right door. Caregivers do not see the pin.",
+      "map": "Map of where care happens",
+      "pin": "Where care happens",
+      "mapFailed": "The map could not load. Check your connection and try again.",
+      "saveError": "The place could not be saved. Please try again.",
+      "noLocation": "Your device could not say where it is. Tap the map instead.",
+      "addTitle": "Add a place",
+      "moveTitle": "Move the pin",
+      "howTo": "If you are at the house now, tap \"Use where I am\". Otherwise tap the map near the house, then drag the pin onto it.",
+      "useMyLocation": "Use where I am",
+      "tapHint": "No pin yet: tap the map to drop one.",
+      "label": "Name (optional)",
+      "labelPlaceholder": "Home",
+      "save": "Save place",
+      "empty": "You have not put a pin on the home yet.",
+      "addFirst": "Put a pin on the home",
+      "addAnother": "Add another place",
+      "default": "Used for your bookings",
+      "move": "Move pin",
+      "makeDefault": "Use for my bookings",
+      "remove": "Remove",
+      "removeConfirm": "Remove \"{name}\"?"
     }
   },
   "bookings": {
@@ -2610,7 +2636,8 @@
       "bookings": "Your current and past care",
       "bills": "See and pay your invoices",
       "saved": "Caregivers you liked",
-      "requests": "Talk to the office"
+      "requests": "Talk to the office",
+      "places": "Put a pin on the home"
     }
   },
   "checkIn": {

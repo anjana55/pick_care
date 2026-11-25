@@ -1,14 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { CalendarDays, CheckCircle2, ChevronRight, Heart, MessagesSquare, ReceiptText, Search, type LucideIcon } from 'lucide-react';
+import { CalendarDays, CheckCircle2, ChevronRight, Heart, MapPin, MessagesSquare, ReceiptText, Search, type LucideIcon } from 'lucide-react';
 import type { NotificationCategory, TodoKind } from '@care-platform/shared';
 import { useTranslation } from '@/lib/i18n';
 import { useBellUser, useNotificationsSummary } from '@/lib/hooks/use-notifications';
 import { TodoList } from '@/components/notifications/todo-list';
 
 interface Tile {
-  key: 'find' | 'bookings' | 'bills' | 'saved' | 'requests';
+  key: 'find' | 'bookings' | 'bills' | 'saved' | 'requests' | 'places';
   href: string;
   label: string;
   icon: LucideIcon;
@@ -25,6 +25,7 @@ const TILES: Tile[] = [
   { key: 'bills', href: '/account/invoices', label: 'account.nav.invoices', icon: ReceiptText, todos: ['PAY_INVOICE'] },
   { key: 'requests', href: '/account/requests', label: 'account.nav.requests', icon: MessagesSquare, unread: 'REQUEST' },
   { key: 'saved', href: '/account/saved', label: 'account.nav.saved', icon: Heart },
+  { key: 'places', href: '/account/places', label: 'account.nav.places', icon: MapPin },
 ];
 
 /**

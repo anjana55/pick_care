@@ -13,6 +13,7 @@ import {
   caregiverDocuments,
   caregiverSkills,
   caregivers,
+  careLocations,
   careRequests,
   deviceTokens,
   patients,
@@ -304,6 +305,7 @@ describe('Account deletion (e2e)', () => {
       await api().put(`/me/saved-caregivers/${cg.publicId}`).set(bearer(client.token)).expect(200);
       await db.insert(deviceTokens).values({ id: uuid(), userId: client.userId, expoPushToken: `ExponentPushToken[${uuid()}]`, platform: 'ios' });
       const req = await api().post('/me/care-requests').set(bearer(client.token)).send({ caregiverPublicId: cg.publicId, message: 'Mornings, please - Dad is at 5 Lake Road' }).expect(201);
+      await api().post('/me/care-locations').set(bearer(client.token)).send({ latitude: 6.9271, longitude: 79.8452 }).expect(201);
       await ask(client.token).expect(200);
 
       // Not before 14 days.
@@ -337,6 +339,8 @@ describe('Account deletion (e2e)', () => {
       const [u] = await db.select().from(users).where(eq(users.id, client.userId));
       expect(u).toMatchObject({ fullName: 'Deleted account', email: null, phone: null, passwordHash: null, isActive: false });
       expect(await db.select().from(savedCaregivers).where(eq(savedCaregivers.patientId, client.patientId))).toHaveLength(0);
+      // Where they live goes too.
+      expect(await db.select().from(careLocations).where(eq(careLocations.patientId, client.patientId))).toHaveLength(0);
       expect(await db.select().from(deviceTokens).where(eq(deviceTokens.userId, client.userId))).toHaveLength(0);
       // The care request stays (staff's record), without what the client wrote.
       const [cr] = await db.select().from(careRequests).where(eq(careRequests.id, req.body.id));

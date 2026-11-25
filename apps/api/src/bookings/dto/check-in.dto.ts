@@ -23,6 +23,12 @@ export class UpdateCheckInSettingsDto {
   @Type(() => Number)
   @IsInt()
   lateAfterMinutes?: number;
+
+  @ApiPropertyOptional({ minimum: 50, maximum: 2000, description: 'Metres from the home before a check-in is pointed out' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  farMetres?: number;
 }
 
 /** Where the phone is, when it can say. All optional: a phone with no fix still checks in. */
@@ -49,6 +55,11 @@ export class PositionDto {
   @IsNumber()
   @Min(0)
   accuracyM?: number;
+
+  @ApiPropertyOptional({ description: "Android said the position was simulated (a mock location)" })
+  @IsOptional()
+  @IsBoolean()
+  mocked?: boolean;
 }
 
 /** POST /me/shifts/:id/check-in */

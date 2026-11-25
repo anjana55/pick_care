@@ -12,14 +12,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input, Label } from '@/components/ui/input';
 
-type Draft = { enabled: boolean; earlyMinutes: string; lateAfterMinutes: string };
-const toDraft = (s: CheckInSettings): Draft => ({ enabled: s.enabled, earlyMinutes: String(s.earlyMinutes), lateAfterMinutes: String(s.lateAfterMinutes) });
+type Draft = { enabled: boolean; earlyMinutes: string; lateAfterMinutes: string; farMetres: string };
+const toDraft = (s: CheckInSettings): Draft => ({ enabled: s.enabled, earlyMinutes: String(s.earlyMinutes), lateAfterMinutes: String(s.lateAfterMinutes), farMetres: String(s.farMetres) });
 const inRange = (v: string, { min, max }: { min: number; max: number }) => /^\d+$/.test(v) && Number(v) >= min && Number(v) <= max;
 
 /**
  * Settings > Check-in (admin): shift check-in on or off, how early a
- * caregiver may check in, and how long after the start a visit with nobody
- * checked in counts as late.
+ * caregiver may check in, how long after the start a visit with nobody
+ * checked in counts as late, and how far from the home a check-in is
+ * pointed out.
  */
 export default function CheckInSettingsPage() {
   const { t } = useTranslation();
@@ -46,6 +47,7 @@ export default function CheckInSettingsPage() {
   const bad = {
     earlyMinutes: !inRange(draft.earlyMinutes, CHECK_IN_SETTINGS_LIMITS.earlyMinutes),
     lateAfterMinutes: !inRange(draft.lateAfterMinutes, CHECK_IN_SETTINGS_LIMITS.lateAfterMinutes),
+    farMetres: !inRange(draft.farMetres, CHECK_IN_SETTINGS_LIMITS.farMetres),
   };
   const change = (patch: Partial<Draft>) => {
     setSaved(false);
@@ -54,7 +56,7 @@ export default function CheckInSettingsPage() {
   };
   const submit = () =>
     save.mutate(
-      { enabled: draft.enabled, earlyMinutes: Number(draft.earlyMinutes), lateAfterMinutes: Number(draft.lateAfterMinutes) },
+      { enabled: draft.enabled, earlyMinutes: Number(draft.earlyMinutes), lateAfterMinutes: Number(draft.lateAfterMinutes), farMetres: Number(draft.farMetres) },
       {
         onSuccess: (data) => {
           setDraft(toDraft(data));
@@ -65,7 +67,7 @@ export default function CheckInSettingsPage() {
       },
     );
 
-  const number = (key: 'earlyMinutes' | 'lateAfterMinutes', label: string, hint: string) => (
+  const number = (key: 'earlyMinutes' | 'lateAfterMinutes' | 'farMetres', label: string, hint: string) => (
     <div>
       <Label htmlFor={key}>{label}</Label>
       <Input
@@ -98,13 +100,14 @@ export default function CheckInSettingsPage() {
           </label>
           {number('earlyMinutes', t('visits.settings.early'), t('visits.settings.earlyHint', CHECK_IN_SETTINGS_LIMITS.earlyMinutes))}
           {number('lateAfterMinutes', t('visits.settings.late'), t('visits.settings.lateHint', CHECK_IN_SETTINGS_LIMITS.lateAfterMinutes))}
+          {number('farMetres', t('visits.settings.far'), t('visits.settings.farHint', CHECK_IN_SETTINGS_LIMITS.farMetres))}
           {error && (
             <p role="alert" className="text-sm text-danger">
               {error}
             </p>
           )}
           <div className="flex flex-wrap items-center gap-3">
-            <Button onClick={submit} disabled={save.isPending || bad.earlyMinutes || bad.lateAfterMinutes}>
+            <Button onClick={submit} disabled={save.isPending || bad.earlyMinutes || bad.lateAfterMinutes || bad.farMetres}>
               {save.isPending ? t('common.loading') : t('common.save')}
             </Button>
             {saved && (

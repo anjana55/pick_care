@@ -14,7 +14,11 @@ import type {
   PayhereCheckout,
   CareChecklistShift,
   CareRecordInput,
-  ClientCareDay, ClientRequestDetailsInput} from '@care-platform/shared';
+  ClientCareDay, ClientRequestDetailsInput,
+  CareLocation,
+  CareLocationInput,
+  CareLocationUpdate,
+} from '@care-platform/shared';
 import { api } from '../api/client';
 import { useAuth } from '../api/auth-context';
 import { useTranslation } from '../i18n';
@@ -240,4 +244,25 @@ export function useSetCareReminders() {
     mutationFn: (enabled: boolean) => api.put<{ reminders: boolean }>('/me/care/reminders', { enabled }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: [...key, 'care'] }),
   });
+}
+
+/** "Where care happens": the client's places on the map, the point check-ins are measured from. */
+export function useMyCareLocations() {
+  const client = useIsClient();
+  const key = useClientKey();
+  return useQuery({ queryKey: [...key, 'care-locations'], queryFn: () => api.get<CareLocation[]>('/me/care-locations'), enabled: Boolean(client) });
+}
+
+export function useSaveCareLocation() {
+  const invalidate = useInvalidateClient();
+  return useMutation({
+    mutationFn: ({ id, ...body }: CareLocationUpdate & { id?: string }) =>
+      id ? api.patch<CareLocation>(`/me/care-locations/${id}`, body) : api.post<CareLocation>('/me/care-locations', body as CareLocationInput),
+    onSuccess: invalidate,
+  });
+}
+
+export function useRemoveCareLocation() {
+  const invalidate = useInvalidateClient();
+  return useMutation({ mutationFn: (id: string) => api.delete<{ ok: true }>(`/me/care-locations/${id}`), onSuccess: invalidate });
 }

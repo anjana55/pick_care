@@ -34,6 +34,7 @@ import { PhoneLink } from '@/components/clients/contact-links';
 import { CaregiverPicker } from '@/components/requests/caregiver-picker';
 import { BookingStatusBadge, ShiftStatusBadge } from '@/components/bookings/booking-badges';
 import { VisitChip } from '@/components/bookings/visit-chip';
+import { BookingCareLocationPanel } from '@/components/bookings/booking-care-location';
 import { RelatedInvoices } from '@/components/billing/related-invoices';
 import { EditBookingPanel } from '@/components/bookings/edit-booking-panel';
 import { CorrectBookingPanel } from '@/components/bookings/correct-booking-panel';
@@ -195,6 +196,7 @@ export default function BookingPage() {
             {booking.client?.recipientName && <p className="text-ink/60">{t('requests.forRecipient', { name: booking.client.recipientName })}</p>}
             {booking.client?.phone && <PhoneLink phone={booking.client.phone} />}
             <p className="text-ink/60">{[booking.client?.careAddress, booking.client?.city, booking.client?.district].filter(Boolean).join(', ') || '—'}</p>
+            {booking.client && <BookingCareLocationPanel bookingId={booking.id} patientId={booking.client.id} />}
           </CardContent>
         </Card>
         <Card>

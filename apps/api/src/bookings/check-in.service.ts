@@ -6,6 +6,7 @@ import {
   ARRIVAL_CODE_LENGTH,
   CHECK_IN_MAX_WRONG_CODES,
   CHECK_IN_SETTINGS_LIMITS,
+  CHECK_IN_USELESS_ACCURACY_M,
   DEFAULT_CHECK_IN_SETTINGS,
   addDays,
   arrivalCodeShown,
@@ -13,14 +14,17 @@ import {
   colomboToUtc,
   colomboToday,
   distanceMetres,
+  isFarFromHome,
   minutesLate,
   toColombo,
   visitState,
   type CaregiverCheckIn,
+  type CheckInDistanceFrom,
   type CheckInInput,
   type CheckInSettings,
   type ClientVisit,
   type GeoPoint,
+  type NearHomeAnswer,
   type StaffCheckIn,
   type StaffCheckInInput,
   type TodayVisits,
@@ -33,6 +37,7 @@ import { deriveKey } from '../common/utils/secret-box.util';
 import { NotificationsService } from '../notifications/notifications.service';
 import { JobsService } from '../jobs/jobs.service';
 import { AutomationService } from '../automation/automation.service';
+import { CareLocationsService } from '../care-locations/care-locations.service';
 import { nudgeLiveCare } from './live-care-jobs';
 import type { UpdateCheckInSettingsDto } from './dto/check-in.dto';
 
@@ -41,7 +46,7 @@ type SettingsRow = typeof checkInSettings.$inferSelect;
 type CheckinRow = typeof shiftCheckins.$inferSelect;
 type Times = { id: string; startsAt: Date | string; endsAt: Date | string };
 
-const toSettings = (row: SettingsRow): CheckInSettings => ({ enabled: row.enabled, earlyMinutes: row.earlyMinutes, lateAfterMinutes: row.lateAfterMinutes });
+const toSettings = (row: SettingsRow): CheckInSettings => ({ enabled: row.enabled, earlyMinutes: row.earlyMinutes, lateAfterMinutes: row.lateAfterMinutes, farMetres: row.farMetres });
 const iso = (d: Date | string | null) => (d ? new Date(d).toISOString() : null);
 
 /** "Your caregiver has arrived" - the client's bell and push, in their language. */
@@ -63,7 +68,9 @@ const ARRIVED = {
  *  - Five wrong codes lock that shift's code; after that only the office can
  *    check the caregiver in.
  *  - A phone's position is recorded when it can give one and never required.
- *    A check-in far from where the booking's earlier visits checked in is
+ *    It is measured from the booking's place on the map (care_locations) or,
+ *    with none, from where its first visit checked in; a check-in clearly
+ *    outside the home's circle, or one the phone says was simulated, is
  *    pointed out to staff, not refused.
  *  - A check-in never changes the shift: not its status, its times or what
  *    is billed for it.
@@ -85,6 +92,7 @@ export class CheckInService {
     private readonly notices: NotificationsService,
     private readonly jobs: JobsService,
     private readonly automation: AutomationService,
+    private readonly places: CareLocationsService,
   ) {
     this.key = deriveKey(config.get<string>('SETTINGS_ENCRYPTION_KEY') || config.get<string>('JWT_REFRESH_SECRET') || 'care-platform', 'arrival-code');
   }
@@ -125,6 +133,11 @@ export class CheckInService {
       const { min, max } = CHECK_IN_SETTINGS_LIMITS.lateAfterMinutes;
       if (dto.lateAfterMinutes < min || dto.lateAfterMinutes > max) throw new BadRequestException(`"Late after" must be between ${min} and ${max} minutes`);
       next.lateAfterMinutes = dto.lateAfterMinutes;
+    }
+    if (dto.farMetres !== undefined) {
+      const { min, max } = CHECK_IN_SETTINGS_LIMITS.farMetres;
+      if (dto.farMetres < min || dto.farMetres > max) throw new BadRequestException(`"Far from the home" must be between ${min} and ${max} metres`);
+      next.farMetres = dto.farMetres;
     }
     await this.settingsRow();
     await this.db.update(checkInSettings).set(next).where(eq(checkInSettings.id, SETTINGS_ID));
@@ -218,11 +231,17 @@ export class CheckInService {
         inNote: row?.inNote ?? null,
         inLocation: point(row?.inLatitude, row?.inLongitude, row?.inAccuracyM),
         inDistanceM: row?.inDistanceM ?? null,
+        inDistanceFrom: row?.inDistanceFrom ?? null,
+        inFar: isFarFromHome(row?.inDistanceM ?? null, row?.inAccuracyM ?? null, settings.farMetres),
+        inMocked: row?.inMocked ?? false,
         checkedOutAt: iso(row?.checkedOutAt ?? null),
         outBy: row?.outBy ?? null,
         outByName: row?.outByUserId ? (names.get(row.outByUserId) ?? null) : null,
         outNote: row?.outNote ?? null,
         outLocation: point(row?.outLatitude, row?.outLongitude, row?.outAccuracyM),
+        outDistanceM: row?.outDistanceM ?? null,
+        outFar: isFarFromHome(row?.outDistanceM ?? null, row?.outAccuracyM ?? null, settings.farMetres),
+        outMocked: row?.outMocked ?? false,
       });
     }
     return out;
@@ -349,17 +368,42 @@ export class CheckInService {
     return { latitude, longitude, accuracyM: typeof input.accuracyM === 'number' && input.accuracyM >= 0 ? Math.min(Math.round(input.accuracyM), 100_000) : null };
   }
 
-  /** Metres from the first located check-in on the same booking (another shift's); null when there is none. */
-  private async distanceFromEarlier(bookingId: string, shiftId: string, here: GeoPoint | null): Promise<number | null> {
-    if (!here) return null;
+  /**
+   * Metres from the booking's place on the map; with none, from the first
+   * located check-in on the same booking (another shift's). Null when there
+   * is nothing to compare with.
+   */
+  private async distanceFromHome(bookingId: string, shiftId: string, here: GeoPoint | null): Promise<{ metres: number | null; from: CheckInDistanceFrom | null }> {
+    if (!here) return { metres: null, from: null };
+    const pin = await this.places.pointForBooking(bookingId);
+    if (pin) return { metres: distanceMetres(pin, here), from: 'PIN' };
     const [first] = await this.db
       .select({ latitude: shiftCheckins.inLatitude, longitude: shiftCheckins.inLongitude })
       .from(shiftCheckins)
       .where(and(eq(shiftCheckins.bookingId, bookingId), ne(shiftCheckins.shiftId, shiftId), isNotNull(shiftCheckins.checkedInAt), isNotNull(shiftCheckins.inLatitude), isNotNull(shiftCheckins.inLongitude)))
       .orderBy(asc(shiftCheckins.checkedInAt))
       .limit(1);
-    if (!first || first.latitude === null || first.longitude === null) return null;
-    return distanceMetres({ latitude: Number(first.latitude), longitude: Number(first.longitude) }, here);
+    if (!first || first.latitude === null || first.longitude === null) return { metres: null, from: null };
+    return { metres: distanceMetres({ latitude: Number(first.latitude), longitude: Number(first.longitude) }, here), from: 'EARLIER' };
+  }
+
+  /**
+   * "You're at the client's home": asked by the app when the caregiver opens
+   * check-in, so they know their phone agrees before they ask for the code.
+   * Answers only yes, no or can't say - never where the home is.
+   */
+  async nearHome(user: AuthenticatedUser, shiftId: string, input: { latitude?: number; longitude?: number; accuracyM?: number }, now = new Date()): Promise<NearHomeAnswer> {
+    const settings = await this.settings();
+    if (!settings.enabled) return { atHome: null };
+    const shift = await this.ownShift(user, shiftId);
+    if (shift.status !== 'SCHEDULED') return { atHome: null };
+    const state = visitState({ startsAt: shift.startsAt, endsAt: shift.endsAt, checkedInAt: null, checkedOutAt: null }, settings, now);
+    if (!checkInOpen(state)) return { atHome: null };
+    const here = this.position(input);
+    if (!here || (here.accuracyM !== null && here.accuracyM > CHECK_IN_USELESS_ACCURACY_M)) return { atHome: null };
+    const pin = await this.places.pointForBooking(shift.bookingId);
+    if (!pin) return { atHome: null };
+    return { atHome: !isFarFromHome(distanceMetres(pin, here), here.accuracyM, settings.farMetres) };
   }
 
   async checkIn(user: AuthenticatedUser, shiftId: string, input: CheckInInput, now = new Date()): Promise<void> {
@@ -385,6 +429,7 @@ export class CheckInService {
     }
 
     const here = this.position(input);
+    const distance = await this.distanceFromHome(shift.bookingId, shiftId, here);
     const record = {
       checkedInAt: now,
       inBy: 'CAREGIVER' as const,
@@ -392,10 +437,16 @@ export class CheckInService {
       inLatitude: here?.latitude ?? null,
       inLongitude: here?.longitude ?? null,
       inAccuracyM: here?.accuracyM ?? null,
-      inDistanceM: await this.distanceFromEarlier(shift.bookingId, shiftId, here),
+      inDistanceM: distance.metres,
+      inDistanceFrom: distance.from,
+      inMocked: Boolean(here && input.mocked),
       updatedAt: now,
     };
     await this.db.insert(shiftCheckins).values({ shiftId, bookingId: shift.bookingId, ...record }).onDuplicateKeyUpdate({ set: record });
+    // No place on the map yet: keep this one as a suggestion for staff to confirm (a fake position is no suggestion).
+    if (here && !input.mocked && distance.from !== 'PIN' && (here.accuracyM === null || here.accuracyM <= 100)) {
+      await this.places.suggestFromCheckIn(shift.bookingId, shiftId, here, now);
+    }
     // The caregiver came after all: anyone offered this shift as cover is told it is no longer open.
     await closeCoverOffers(this.db, this.jobs, shiftId);
     this.tellClient(shift.patientUserId, now, shiftId);
@@ -409,9 +460,20 @@ export class CheckInService {
     if (!row?.checkedInAt) throw new BadRequestException('Check in before you check out');
     if (row.checkedOutAt) return;
     const here = this.position(input);
+    const pin = here ? await this.places.pointForBooking(shift.bookingId) : null;
     await this.db
       .update(shiftCheckins)
-      .set({ checkedOutAt: now, outBy: 'CAREGIVER', outByUserId: user.userId, outLatitude: here?.latitude ?? null, outLongitude: here?.longitude ?? null, outAccuracyM: here?.accuracyM ?? null, updatedAt: now })
+      .set({
+        checkedOutAt: now,
+        outBy: 'CAREGIVER',
+        outByUserId: user.userId,
+        outLatitude: here?.latitude ?? null,
+        outLongitude: here?.longitude ?? null,
+        outAccuracyM: here?.accuracyM ?? null,
+        outDistanceM: here && pin ? distanceMetres(pin, here) : null,
+        outMocked: Boolean(here && input.mocked),
+        updatedAt: now,
+      })
       .where(eq(shiftCheckins.shiftId, shift.id));
     // The live-care agent, when it is switched on, marks the shift done.
     await nudgeLiveCare(this.jobs, this.automation, shiftId);

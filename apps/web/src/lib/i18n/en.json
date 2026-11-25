@@ -4368,7 +4368,11 @@
       "far": "{distance} from where earlier visits checked in",
       "locked": "Code locked after too many wrong tries - record the check-in here",
       "wrongCodes": "{n} wrong codes tried",
-      "map": "Show on a map"
+      "map": "Show on a map",
+      "farFromHome": "Checked in {distance} from the home",
+      "outFarFromHome": "Checked out {distance} from the home",
+      "mockedIn": "The phone said its position at check-in was simulated",
+      "mockedOut": "The phone said its position at check-out was simulated"
     },
     "settings": {
       "title": "Check-in",
@@ -4380,7 +4384,9 @@
       "late": "Late after (minutes past the start)",
       "lateHint": "Between {min} and {max}. A visit with nobody checked in by then is listed for staff.",
       "saved": "Saved",
-      "saveError": "The settings could not be saved."
+      "saveError": "The settings could not be saved.",
+      "far": "Far from the home (metres)",
+      "farHint": "Between {min} and {max}. A check-in further than this from the booking's place on the map is pointed out to staff. A phone that is unsure of its position gets that much more room."
     },
     "coverPanel": {
       "find": "Find cover",
@@ -4480,5 +4486,29 @@
       "empty": "No photos waiting for approval.",
       "uploaded": "Uploaded {when}"
     }
+  },
+  "careLocation": {
+    "title": "Place on the map",
+    "map": "Map of where care happens",
+    "pin": "Where care happens",
+    "mapFailed": "The map could not load.",
+    "saveError": "The place could not be saved.",
+    "editHint": "Tap the map to drop the pin, then drag it onto the house.",
+    "label": "Name",
+    "labelPlaceholder": "Home",
+    "save": "Save place",
+    "openMap": "Open map",
+    "forThisBooking": "chosen for this booking",
+    "clientDefault": "the client's usual place",
+    "move": "Move pin",
+    "addAnother": "Add another place",
+    "useFor": "Place for this booking",
+    "useDefault": "The client's usual place",
+    "suggested": "Suggested from the first check-in on this client's bookings. Check-ins are not measured from it until it is confirmed.",
+    "confirm": "Confirm",
+    "moveAndConfirm": "Move and confirm",
+    "discard": "Discard",
+    "none": "No place on the map yet. Until there is one, check-ins are compared with this booking's first located check-in.",
+    "add": "Add the place"
   }
 }

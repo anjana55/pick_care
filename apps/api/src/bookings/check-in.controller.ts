@@ -21,6 +21,13 @@ export class MyCheckInController {
     return { ok: true };
   }
 
+  /** "You're at the client's home": yes, no or can't say - never where the home is. */
+  @Post(':id/near')
+  @HttpCode(200)
+  near(@Param('id', ParseUUIDPipe) id: string, @Body() dto: PositionDto, @CurrentUser() user: AuthenticatedUser) {
+    return this.checkIns.nearHome(user, id, dto);
+  }
+
   @Post(':id/check-out')
   @HttpCode(200)
   async checkOut(@Param('id', ParseUUIDPipe) id: string, @Body() dto: PositionDto, @CurrentUser() user: AuthenticatedUser) {

@@ -44,6 +44,8 @@ import {
   caregiverReviewBadges,
   caregiverRatingStats,
   reviewRequests,
+  careLocations,
+  shiftCheckins,
 } from '../database/schema';
 import { releaseLogin } from '../account-access/identity.util';
 import { AuditService } from '../audit/audit.service';
@@ -514,6 +516,14 @@ export class AccountDeletionService {
       })
       .where(eq(patients.id, patientId));
     await db.delete(savedCaregivers).where(eq(savedCaregivers.patientId, patientId));
+    // Where they live: their places on the map go, and so do the positions caregivers checked in and out at their home.
+    await db.delete(careLocations).where(eq(careLocations.patientId, patientId));
+    await db.update(bookings).set({ careLocationId: null }).where(eq(bookings.patientId, patientId));
+    const theirBookings = db.select({ id: bookings.id }).from(bookings).where(eq(bookings.patientId, patientId));
+    await db
+      .update(shiftCheckins)
+      .set({ inLatitude: null, inLongitude: null, inAccuracyM: null, outLatitude: null, outLongitude: null, outAccuracyM: null })
+      .where(inArray(shiftCheckins.bookingId, theirBookings));
     // The requests stay (staff's record of who was introduced); what the client wrote doesn't.
     await db.update(careRequests).set({ message: null }).where(eq(careRequests.patientId, patientId));
     // Their ratings stay, anonymously - a caregiver keeps the stars and badges they earned - but what they wrote goes.

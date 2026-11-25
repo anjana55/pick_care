@@ -19,6 +19,7 @@ const SCREENS: [RegExp, string][] = [
   [/^\/account\/requests$/, '/requests'],
   [/^\/account\/saved$/, '/saved'],
   [/^\/account\/invoices$/, '/invoices'],
+  [/^\/account\/places$/, '/care-places'],
   [/^\/caregiver\/dashboard$/, '/home'],
   [/^\/caregiver\/shifts$/, '/shifts'],
   [/^\/caregiver\/payments$/, '/payments'],

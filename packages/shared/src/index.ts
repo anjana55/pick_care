@@ -39,6 +39,7 @@ export * from './types/automation';
 export * from './types/pricing';
 export * from './types/care-offers';
 export * from './types/check-in';
+export * from './types/care-locations';
 export * from './types/cover';
 export * from './types/intake';
 export * from './types/onboarding';

@@ -13,6 +13,8 @@ export const checkInSettings = mysqlTable('check_in_settings', {
   earlyMinutes: int('early_minutes').notNull().default(60),
   /** Minutes after the start with no check-in before staff are told. */
   lateAfterMinutes: int('late_after_minutes').notNull().default(15),
+  /** A check-in further than this from the booking's place (plus the fix's accuracy) is pointed out to staff. */
+  farMetres: int('far_metres').notNull().default(300),
   updatedBy: varchar('updated_by', { length: 36 }),
   createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
   updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
@@ -44,8 +46,12 @@ export const shiftCheckins = mysqlTable(
     inLatitude: decimal('in_latitude', { precision: 9, scale: 6, mode: 'number' }),
     inLongitude: decimal('in_longitude', { precision: 9, scale: 6, mode: 'number' }),
     inAccuracyM: int('in_accuracy_m'),
-    /** Metres from the booking's first located check-in, worked out when this one was made. */
+    /** Metres from the booking's place on the map (or, with none, its first located check-in), worked out when this one was made. */
     inDistanceM: int('in_distance_m'),
+    /** What in_distance_m was measured from: PIN (the booking's care location) or EARLIER (its first located check-in). */
+    inDistanceFrom: mysqlEnum('in_distance_from', ['PIN', 'EARLIER']),
+    /** The phone said the position was simulated (Android's mock-location flag). */
+    inMocked: boolean('in_mocked').notNull().default(false),
 
     checkedOutAt: datetime('checked_out_at', { fsp: 3 }),
     outBy: mysqlEnum('out_by', checkInByEnum),
@@ -54,6 +60,9 @@ export const shiftCheckins = mysqlTable(
     outLatitude: decimal('out_latitude', { precision: 9, scale: 6, mode: 'number' }),
     outLongitude: decimal('out_longitude', { precision: 9, scale: 6, mode: 'number' }),
     outAccuracyM: int('out_accuracy_m'),
+    /** Metres from the booking's place on the map at check-out; null with no place or no position. */
+    outDistanceM: int('out_distance_m'),
+    outMocked: boolean('out_mocked').notNull().default(false),
 
     createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
     updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),

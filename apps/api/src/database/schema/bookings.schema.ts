@@ -50,6 +50,9 @@ export const bookings = mysqlTable(
     // the booking closes that request as PLACED.
     careRequestId: varchar('care_request_id', { length: 36 }),
     patientId: varchar('patient_id', { length: 36 }).notNull(),
+    // Where care happens on the map (care_locations), when this booking names
+    // its own place. Null: the client's default place.
+    careLocationId: varchar('care_location_id', { length: 36 }),
     // The booked caregiver. Individual shifts may be covered by someone else
     // (booking_shifts.caregiver_id) without changing this.
     caregiverId: varchar('caregiver_id', { length: 36 }).notNull(),

@@ -9,6 +9,7 @@ import type {
   CaregiverRateCard,
   CaregiverShift,
   CheckInInput,
+  NearHomeAnswer,
   CreateIssueReportBody,
   DocumentType,
   Experience,
@@ -94,6 +95,14 @@ export function useShiftCheckIn() {
     mutationFn: ({ shiftId, ...body }: CheckInInput & { shiftId: string }) => api.post<{ ok: true }>(`/me/shifts/${encodeURIComponent(shiftId)}/check-in`, body),
     // Also after a refusal: a wrong code may have locked it, and the list should say so.
     onSettled: () => queryClient.invalidateQueries({ queryKey: [...key(me?.userId), 'shifts'] }),
+  });
+}
+
+/** "You're at the client's home": yes, no or can't say. The phone never learns where the home is. */
+export function useNearHome() {
+  return useMutation({
+    mutationFn: ({ shiftId, ...body }: { shiftId: string; latitude: number; longitude: number; accuracyM?: number }) =>
+      api.post<NearHomeAnswer>(`/me/shifts/${encodeURIComponent(shiftId)}/near`, body),
   });
 }
 

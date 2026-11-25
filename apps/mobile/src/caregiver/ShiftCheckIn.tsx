@@ -6,14 +6,16 @@ import { useColors } from '@/theme';
 import { Button, Field, FormError } from '@/ui/controls';
 import { Text } from '@/ui/Text';
 import { fmtTime } from '@/ui/dates';
-import { useShiftCheckIn, useShiftCheckOut } from './api';
+import { useNearHome, useShiftCheckIn, useShiftCheckOut } from './api';
 import { phonePosition, type Position } from './position';
 
 /**
  * Check-in for one of the caregiver's shifts, as on the website: while it is
  * open, "Check in" asks for the four digits the client reads out; once in,
  * "Check out". Where the phone is goes along when the caregiver allows it,
- * and is never needed. Renders nothing while check-in is switched off or
+ * and is never needed. Opening check-in asks the phone where it is once and
+ * says "You're at the client's home" (or that it doesn't look like it), so a
+ * caregiver at the wrong house finds out before asking for the code. Renders nothing while check-in is switched off or
  * there is nothing to do or say yet.
  */
 export function ShiftCheckIn({ shift, locate = phonePosition }: { shift: CaregiverShift; locate?: () => Promise<Position> }) {
@@ -21,7 +23,11 @@ export function ShiftCheckIn({ shift, locate = phonePosition }: { shift: Caregiv
   const colors = useColors();
   const checkIn = useShiftCheckIn();
   const checkOut = useShiftCheckOut();
+  const near = useNearHome();
   const [open, setOpen] = useState(false);
+  // The fix taken on opening, reused for the check-in while it is fresh.
+  const [fix, setFix] = useState<{ position: Position; at: number } | null>(null);
+  const [atHome, setAtHome] = useState<boolean | null>(null);
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
   const c = shift.checkIn;
@@ -55,16 +61,36 @@ export function ShiftCheckIn({ shift, locate = phonePosition }: { shift: Caregiv
   if (c.state === 'NOT_RECORDED') return <Text style={{ fontSize: 14, color: colors.muted }}>{t('checkIn.caregiver.notRecorded')}</Text>;
   if (!checkInOpen(c.state)) return null;
 
-  if (!open) return <Button label={t('checkIn.caregiver.checkIn')} onPress={() => setOpen(true)} />;
+  const start = async () => {
+    setOpen(true);
+    setAtHome(null);
+    const position = await locate();
+    setFix({ position, at: Date.now() });
+    if (position.latitude === undefined || position.longitude === undefined) return;
+    near.mutate(
+      { shiftId: shift.id, latitude: position.latitude, longitude: position.longitude, accuracyM: position.accuracyM },
+      { onSuccess: (answer) => setAtHome(answer.atHome), onError: () => setAtHome(null) },
+    );
+  };
+  if (!open) return <Button label={t('checkIn.caregiver.checkIn')} onPress={() => void start()} />;
 
   const send = async () => {
     if (code.length !== 4 || busy) return;
     setBusy(true);
-    const position = await locate();
+    const position = fix && Date.now() - fix.at < 2 * 60_000 && fix.position.latitude !== undefined ? fix.position : await locate();
     checkIn.mutate({ shiftId: shift.id, code, ...position }, { onSuccess: () => setOpen(false), onSettled: () => setBusy(false) });
   };
   return (
     <View style={{ gap: 8 }}>
+      {atHome === true ? (
+        <Text accessibilityLiveRegion="polite" style={{ fontSize: 15, fontWeight: '600', color: colors.brand }}>
+          {t('checkIn.caregiver.atHome')}
+        </Text>
+      ) : atHome === false ? (
+        <Text accessibilityLiveRegion="polite" style={{ fontSize: 15, fontWeight: '600', color: colors.danger }}>
+          {t('checkIn.caregiver.notAtHome')}
+        </Text>
+      ) : null}
       <Field
         label={t('checkIn.caregiver.codeLabel')}
         hint={t('checkIn.caregiver.codeHint')}

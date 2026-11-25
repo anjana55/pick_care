@@ -5,7 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ThrottlerStorage } from '@nestjs/throttler';
 import { eq } from 'drizzle-orm';
 import request from 'supertest';
-import { addDays, colomboToday, isoWeekday, type CaregiverShift, type ClientBooking, type StaffCheckIn, type TodayVisits } from '@care-platform/shared';
+import { addDays, colomboToday, isoWeekday, type BookingCareLocation, type CareLocation, type CaregiverShift, type ClientBooking, type StaffCheckIn, type TodayVisits } from '@care-platform/shared';
 import { AppModule } from '../src/app.module';
 import { DRIZZLE, type Database } from '../src/database/database.module';
 import { bookingShifts, caregivers, patients, shiftCheckins } from '../src/database/schema';
@@ -118,11 +118,11 @@ describe('Shift check-in (e2e)', () => {
       preferredContactMethod: 'PHONE_CALL', districtId, cityId, careNeeds: 'Needs help with bathing, meals and medication reminders.',
       careSchedule: 'DAY', careStart: 'WITHIN_WEEK',
     };
-    await setting({ enabled: false, earlyMinutes: 60, lateAfterMinutes: 15 }).expect(200);
+    await setting({ enabled: false, earlyMinutes: 60, lateAfterMinutes: 15, farMetres: 300 }).expect(200);
   });
 
   afterAll(async () => {
-    await setting({ enabled: false, earlyMinutes: 60, lateAfterMinutes: 15 });
+    await setting({ enabled: false, earlyMinutes: 60, lateAfterMinutes: 15, farMetres: 300 });
     await app.close();
   });
 
@@ -222,6 +222,114 @@ describe('Shift check-in (e2e)', () => {
     await checkIn(w.cg.token, w.shiftId, { code: theirs, latitude: 123, longitude: 79 }).expect(400);
     await checkIn(w.cg.token, w.shiftId, { code: theirs }).expect(200);
     expect((await staffShift(w.bookingId, w.shiftId)).checkIn).toMatchObject({ state: 'IN', inLocation: null, inDistanceM: null });
+  });
+
+  describe('the place on the map (care locations)', () => {
+    const places = (token: string) => api().get('/me/care-locations').set(bearer(token));
+    const addPlace = (token: string, body: object) => api().post('/me/care-locations').set(bearer(token)).send(body);
+    const bookingPlace = async (bookingId: string) => (await api().get(`/bookings/${bookingId}/care-location`).set(bearer(staffToken)).expect(200)).body as BookingCareLocation;
+    const codeFor = (bookingId: string, shiftId: string) => staffShift(bookingId, shiftId).then((s) => s.checkIn!.arrivalCode);
+    // Galle Face Green, Colombo, and points about 100 m and 1 km north of it.
+    const HOME = { latitude: 6.9271, longitude: 79.8452 };
+    const NEAR = { latitude: 6.928, longitude: 79.8452 };
+    const FAR = { latitude: 6.9361, longitude: 79.8452 };
+
+    it('lets a client keep their places, one default, inside Sri Lanka, and nobody else\'s', async () => {
+      const v = await visit(30);
+      expect((await places(v.clientToken).expect(200)).body).toEqual([]);
+      // Outside Sri Lanka, no point, or a name too long: refused.
+      expect((await addPlace(v.clientToken, { latitude: 51.5, longitude: -0.12 }).expect(400)).body.message).toMatch(/outside Sri Lanka/);
+      await addPlace(v.clientToken, { label: 'Home' }).expect(400);
+      await addPlace(v.clientToken, { ...HOME, label: 'x'.repeat(61) }).expect(400);
+      // The first place is the default, and is called Home when no name is given.
+      const home = (await addPlace(v.clientToken, HOME).expect(201)).body as CareLocation;
+      expect(home).toMatchObject({ label: 'Home', isDefault: true, confirmed: true, source: 'CLIENT_PIN', latitude: HOME.latitude, longitude: HOME.longitude });
+      const mum = (await addPlace(v.clientToken, { ...FAR, label: "  Mother's   house " }).expect(201)).body as CareLocation;
+      expect(mum).toMatchObject({ label: "Mother's house", isDefault: false });
+      // Making the second the default leaves exactly one.
+      await api().patch(`/me/care-locations/${mum.id}`).set(bearer(v.clientToken)).send({ isDefault: true }).expect(200);
+      let mine = (await places(v.clientToken).expect(200)).body as CareLocation[];
+      expect(mine.filter((p) => p.isDefault).map((p) => p.id)).toEqual([mum.id]);
+      // Removing the default hands it to what is left.
+      await api().delete(`/me/care-locations/${mum.id}`).set(bearer(v.clientToken)).expect(200);
+      mine = (await places(v.clientToken).expect(200)).body as CareLocation[];
+      expect(mine).toHaveLength(1);
+      expect(mine[0]).toMatchObject({ id: home.id, isDefault: true });
+      // A client cannot confirm anything, and cannot see or change another client's places or bookings.
+      const other = await visit(30);
+      await api().patch(`/me/care-locations/${home.id}`).set(bearer(other.clientToken)).send({ label: 'Mine now' }).expect(404);
+      await api().put(`/me/bookings/${v.bookingId}/care-location`).set(bearer(other.clientToken)).send({ careLocationId: null }).expect(404);
+      await places(v.cg.token).expect(403);
+      // Staff see the same place as the booking's.
+      expect(await bookingPlace(v.bookingId)).toMatchObject({ location: { id: home.id }, chosenForBooking: false, suggestion: null });
+    });
+
+    it('measures check-ins from the home, allowing for a poor fix, and points out a simulated one', async () => {
+      await setting({ enabled: true, farMetres: 300 }).expect(200);
+      const v = await visit(5);
+      await addPlace(v.clientToken, HOME).expect(201);
+      // "You're at the home" before asking for the code: yes, no or can't say - and never where it is.
+      const near = (body: object) => api().post(`/me/shifts/${v.shiftId}/near`).set(bearer(v.cg.token)).send(body);
+      expect((await near({ ...NEAR, accuracyM: 15 }).expect(200)).body).toEqual({ atHome: true });
+      expect((await near({ ...FAR, accuracyM: 15 }).expect(200)).body).toEqual({ atHome: false });
+      expect((await near({ ...FAR, accuracyM: 5000 }).expect(200)).body).toEqual({ atHome: null });
+      expect((await near({}).expect(200)).body).toEqual({ atHome: null });
+      expect((await api().post(`/me/shifts/${v.nextShiftId}/near`).set(bearer(v.cg.token)).send(NEAR).expect(200)).body).toEqual({ atHome: null });
+      const stranger = await newCaregiver();
+      await api().post(`/me/shifts/${v.shiftId}/near`).set(bearer(stranger.token)).send(NEAR).expect(404);
+      expect(JSON.stringify((await api().get('/me/shifts').set(bearer(v.cg.token)).expect(200)).body)).not.toContain('79.8452');
+
+      // A kilometre off with a good fix: far. On the way out, a simulated position, near the home.
+      await checkIn(v.cg.token, v.shiftId, { code: await codeFor(v.bookingId, v.shiftId), ...FAR, accuracyM: 20 }).expect(200);
+      await checkOut(v.cg.token, v.shiftId, { ...NEAR, accuracyM: 10, mocked: true }).expect(200);
+      const first = (await staffShift(v.bookingId, v.shiftId)).checkIn!;
+      expect(first).toMatchObject({ inDistanceFrom: 'PIN', inFar: true, inMocked: false, outFar: false, outMocked: true });
+      expect(first.inDistanceM).toBeGreaterThan(950);
+      expect(first.outDistanceM).toBeGreaterThan(80);
+      expect(first.outDistanceM).toBeLessThan(120);
+
+      // The next day 400 m off, but the phone is only sure to within 200 m: not called far.
+      await db.update(bookingShifts).set({ startsAt: minutes(5), endsAt: minutes(200) }).where(eq(bookingShifts.id, v.nextShiftId));
+      await checkIn(v.cg.token, v.nextShiftId, { code: await codeFor(v.bookingId, v.nextShiftId), latitude: 6.9307, longitude: 79.8452, accuracyM: 200 }).expect(200);
+      expect((await staffShift(v.bookingId, v.nextShiftId)).checkIn).toMatchObject({ inDistanceFrom: 'PIN', inFar: false });
+      // The admin's "far" setting has limits.
+      await setting({ farMetres: 10 }).expect(400);
+      await setting({ farMetres: 5000 }).expect(400);
+    });
+
+    it('keeps the first located check-in as a suggestion for staff, measured from only once confirmed', async () => {
+      await setting({ enabled: true, farMetres: 300 }).expect(200);
+      const v = await visit(5);
+      // A simulated position is no suggestion; a real one with a good fix is.
+      await checkIn(v.cg.token, v.shiftId, { code: await codeFor(v.bookingId, v.shiftId), ...HOME, accuracyM: 15 }).expect(200);
+      let seen = await bookingPlace(v.bookingId);
+      expect(seen.location).toBeNull();
+      expect(seen.suggestion).toMatchObject({ source: 'FROM_CHECKIN', confirmed: false, latitude: HOME.latitude, longitude: HOME.longitude });
+      // The client never sees it, and cannot touch it.
+      expect((await places(v.clientToken).expect(200)).body).toEqual([]);
+      await api().patch(`/me/care-locations/${seen.suggestion!.id}`).set(bearer(v.clientToken)).send({ isDefault: true }).expect(404);
+      // Unconfirmed, it is not measured from: the next day is measured from the earlier check-in instead.
+      await db.update(bookingShifts).set({ startsAt: minutes(5), endsAt: minutes(200) }).where(eq(bookingShifts.id, v.nextShiftId));
+      // Staff confirm it (and it becomes the default); from now on check-ins are measured from it.
+      const confirmed = (await api().patch(`/patients/${(await db.select().from(patients).where(eq(patients.userId, v.patientUserId)))[0].id}/care-locations/${seen.suggestion!.id}`).set(bearer(staffToken)).send({ confirm: true, isDefault: true }).expect(200)).body as CareLocation;
+      expect(confirmed).toMatchObject({ confirmed: true, isDefault: true, source: 'FROM_CHECKIN' });
+      seen = await bookingPlace(v.bookingId);
+      expect(seen).toMatchObject({ location: { id: confirmed.id }, suggestion: null });
+      await checkIn(v.cg.token, v.nextShiftId, { code: await codeFor(v.bookingId, v.nextShiftId), ...FAR, accuracyM: 10 }).expect(200);
+      expect((await staffShift(v.bookingId, v.nextShiftId)).checkIn).toMatchObject({ inDistanceFrom: 'PIN', inFar: true });
+
+      // A client who drops their own pin replaces any suggestion; a booking can name one of their places.
+      const w = await visit(5);
+      await checkIn(w.cg.token, w.shiftId, { code: await codeFor(w.bookingId, w.shiftId), ...FAR, accuracyM: 15, mocked: true }).expect(200);
+      expect((await bookingPlace(w.bookingId)).suggestion).toBeNull();
+      const pin = (await addPlace(w.clientToken, HOME).expect(201)).body as CareLocation;
+      const other = (await addPlace(w.clientToken, { ...FAR, label: 'Clinic' }).expect(201)).body as CareLocation;
+      await api().put(`/bookings/${w.bookingId}/care-location`).set(bearer(staffToken)).send({ careLocationId: other.id }).expect(200);
+      expect(await bookingPlace(w.bookingId)).toMatchObject({ location: { id: other.id }, chosenForBooking: true });
+      await api().put(`/me/bookings/${w.bookingId}/care-location`).set(bearer(w.clientToken)).send({ careLocationId: null }).expect(200);
+      expect(await bookingPlace(w.bookingId)).toMatchObject({ location: { id: pin.id }, chosenForBooking: false });
+      await api().put(`/bookings/${w.bookingId}/care-location`).set(bearer(staffToken)).send({ careLocationId: 'nope' }).expect(400);
+    });
   });
 
   it('locks the code after five wrong tries; staff then record the visit by hand', async () => {
