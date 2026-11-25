@@ -2824,5 +2824,15 @@
     },
     "consentClient": "I agree to the data processing consent and terms of use.",
     "consentCaregiver": "I consent to my personal and health information being processed for caregiver registration and verification purposes."
+  },
+  "onTheWay": {
+    "title": "{name} is on the way",
+    "minutes": "About {minutes} min away",
+    "arriving": "Arriving now",
+    "waiting": "Waiting for their phone to share where they are",
+    "noHome": "On the way. Put a pin on the home (Where care happens) to see how long until they arrive.",
+    "stale": "Location not updating - their phone may have no signal",
+    "map": "Map of your caregiver on the way",
+    "home": "Home"
   }
 }

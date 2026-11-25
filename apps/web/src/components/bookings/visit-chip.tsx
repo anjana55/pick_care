@@ -36,6 +36,10 @@ export function VisitChip({ checkIn, minutesLate }: { checkIn: StaffCheckIn; min
 export function VisitNotes({ checkIn }: { checkIn: StaffCheckIn }) {
   const { t, locale } = useTranslation();
   const lines: { text: string; warn?: boolean }[] = [];
+  if (checkIn.onTheWay) {
+    const o = checkIn.onTheWay;
+    lines.push({ text: o.arriving ? t('visits.note.arriving') : o.etaMinutes !== null ? t('visits.note.onTheWayEta', { minutes: o.etaMinutes }) : t('visits.note.onTheWay') });
+  }
   if (checkIn.checkedInAt && checkIn.checkedOutAt) lines.push({ text: t('visits.note.inAndOut', { in: fmtTime(checkIn.checkedInAt, locale), out: fmtTime(checkIn.checkedOutAt, locale) }) });
   if (checkIn.inBy === 'STAFF') lines.push({ text: t('visits.note.inByStaff', { name: checkIn.inByName ?? '—' }) + (checkIn.inNote ? ` — ${checkIn.inNote}` : '') });
   if (checkIn.outBy === 'STAFF') lines.push({ text: t('visits.note.outByStaff', { name: checkIn.outByName ?? '—' }) + (checkIn.outNote ? ` — ${checkIn.outNote}` : '') });

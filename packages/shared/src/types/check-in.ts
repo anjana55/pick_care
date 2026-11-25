@@ -1,3 +1,4 @@
+import { DEFAULT_LOCATION_RETENTION_DAYS, DEFAULT_ON_MY_WAY_MINUTES, LOCATION_RETENTION_LIMITS, ON_MY_WAY_MINUTES_LIMITS, type CaregiverOnMyWay } from './location-shares';
 import type { ShiftStatus } from './bookings';
 import { haversineKm, type GeoPoint } from './geo';
 
@@ -31,10 +32,30 @@ export interface CheckInSettings {
   lateAfterMinutes: number;
   /** A check-in further than this many metres from the booking's place (plus the fix's accuracy) is pointed out to staff. */
   farMetres: number;
+  /** Live location: caregivers may tap On my way (and, with presence on, be checked during visits). Off by default. */
+  liveEnabled: boolean;
+  /** On my way can be tapped from this many minutes before the start. */
+  onMyWayMinutes: number;
+  /** Raw location points are deleted after this many days. */
+  locationRetentionDays: number;
 }
 
-export const DEFAULT_CHECK_IN_SETTINGS: CheckInSettings = { enabled: false, earlyMinutes: 60, lateAfterMinutes: 15, farMetres: CHECK_IN_FAR_METRES };
-export const CHECK_IN_SETTINGS_LIMITS = { earlyMinutes: { min: 0, max: 240 }, lateAfterMinutes: { min: 5, max: 120 }, farMetres: { min: 50, max: 2000 } } as const;
+export const DEFAULT_CHECK_IN_SETTINGS: CheckInSettings = {
+  enabled: false,
+  earlyMinutes: 60,
+  lateAfterMinutes: 15,
+  farMetres: CHECK_IN_FAR_METRES,
+  liveEnabled: false,
+  onMyWayMinutes: DEFAULT_ON_MY_WAY_MINUTES,
+  locationRetentionDays: DEFAULT_LOCATION_RETENTION_DAYS,
+};
+export const CHECK_IN_SETTINGS_LIMITS = {
+  earlyMinutes: { min: 0, max: 240 },
+  lateAfterMinutes: { min: 5, max: 120 },
+  farMetres: { min: 50, max: 2000 },
+  onMyWayMinutes: ON_MY_WAY_MINUTES_LIMITS,
+  locationRetentionDays: LOCATION_RETENTION_LIMITS,
+} as const;
 
 /**
  * Is a position "far from the home"? The circle is widened by the fix's
@@ -107,6 +128,8 @@ export interface CaregiverCheckIn {
   checkedOutAt: string | null;
   /** Too many wrong codes: only the office can check them in now. */
   codeLocked: boolean;
+  /** "On my way": null when live location is off, or the shift is past it (checked in, ended). */
+  onMyWay: CaregiverOnMyWay | null;
 }
 
 /** A client's view of one visit (on a shift in GET /me/bookings). Null when check-in is off. */
@@ -115,6 +138,8 @@ export interface ClientVisit {
   arrivalCode: string | null;
   checkedInAt: string | null;
   checkedOutAt: string | null;
+  /** The caregiver tapped On my way and has not checked in yet: GET /me/bookings/:id/live shows where they are. */
+  onTheWay: boolean;
 }
 
 export type CheckInBy = 'CAREGIVER' | 'STAFF';
@@ -143,6 +168,8 @@ export interface StaffCheckIn {
   outByName: string | null;
   outNote: string | null;
   outLocation: (GeoPoint & { accuracyM: number | null }) | null;
+  /** An open "On my way" share for this shift, with its last ETA; null when there is none. */
+  onTheWay: { shareId: string; etaMinutes: number | null; arriving: boolean; updatedAt: string | null } | null;
   /** Metres from the booking's place at check-out; null when either is missing. */
   outDistanceM: number | null;
   outFar: boolean;

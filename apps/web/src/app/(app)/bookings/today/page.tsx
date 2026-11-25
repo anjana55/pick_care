@@ -16,6 +16,7 @@ import { PhoneLink } from '@/components/clients/contact-links';
 import { ShiftStatusBadge } from '@/components/bookings/booking-badges';
 import { VisitChip, VisitNotes } from '@/components/bookings/visit-chip';
 import { CoverPanel } from '@/components/bookings/cover-panel';
+import { LiveVisitsPanel } from '@/components/bookings/live-visits-panel';
 
 /**
  * Today's visits: every shift on today's roster in time order, and whether
@@ -60,6 +61,7 @@ export default function TodayVisitsPage() {
         </p>
       )}
 
+      <LiveVisitsPanel onTheWay={data.visits.filter((v) => v.checkIn.onTheWay).length} />
       {data.truncated && <p role="status" className="mt-2 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">{t('visits.truncated', { n: data.visits.length })}</p>}
       {data.visits.length === 0 ? (
         <p className="rounded border border-dashed border-border bg-white px-4 py-10 text-center text-sm text-ink/50">{t('visits.none')}</p>

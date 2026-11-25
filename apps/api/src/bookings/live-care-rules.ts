@@ -22,15 +22,23 @@ export interface LiveVisit {
   checkedOutAt: Date | string | null;
   /** When the caregiver was chased (or the chase was logged or proposed); null if never. */
   chasedAt: Date | string | null;
+  /**
+   * The caregiver tapped On my way: when their phone says they will arrive
+   * (last point + ETA). Null with no share, no point yet, or a stale one.
+   */
+  arrivesAt?: Date | string | null;
 }
+
+/** How long before the start an ETA that runs past "late after" is worth a word with the caregiver. */
+export const EARLY_CHASE_WINDOW_MINUTES = 30;
 
 /** NO_COVER comes from the cover side of the agent: it looked for someone to step in and found nobody. */
 export type FlagKind = 'STILL_LATE' | 'NO_CHECK_IN' | 'LEFT_EARLY' | 'NO_COVER';
 
 export type LiveStep =
   | { step: 'none' }
-  /** Started a while ago with nobody checked in: ask the caregiver to check in or call. */
-  | { step: 'chase'; minutesLate: number }
+  /** Started a while ago with nobody checked in: ask the caregiver to check in or call. Early: not late yet, but their ETA says they will be. */
+  | { step: 'chase'; minutesLate: number; early?: { arrivesInMinutes: number } }
   /** A person is needed: still not checked in after the chase, ended with no check-in, or the caregiver left early. */
   | { step: 'flag'; kind: FlagKind; minutes: number; ofMinutes?: number }
   /** In and out, for long enough: the shift is done. */
@@ -54,6 +62,11 @@ export function liveStep(visit: LiveVisit, settings: Pick<CheckInSettings, 'earl
   if (visit.checkedInAt) return { step: 'none' }; // there now; nothing to do until they leave
 
   const state = visitState({ ...visit, checkedInAt: null, checkedOutAt: null }, settings, now);
+  // On my way, and the phone says they will arrive after "late after": ask them now rather than once they are late.
+  if (!visit.chasedAt && visit.arrivesAt && state !== 'LATE' && state !== 'NOT_RECORDED' && t >= start - EARLY_CHASE_WINDOW_MINUTES * 60_000) {
+    const arrives = ms(visit.arrivesAt);
+    if (arrives > start + settings.lateAfterMinutes * 60_000) return { step: 'chase', minutesLate: 0, early: { arrivesInMinutes: minutes(t, arrives) } };
+  }
   if (state === 'LATE') {
     if (!visit.chasedAt) return { step: 'chase', minutesLate: minutes(start, t) };
     return t - ms(visit.chasedAt) >= FLAG_AFTER_CHASE_MINUTES * 60_000 ? { step: 'flag', kind: 'STILL_LATE', minutes: minutes(start, t) } : { step: 'none' };

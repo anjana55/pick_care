@@ -29,6 +29,8 @@ export interface TrackSession {
   /** The phone's notification while it runs (Android), in the person's language. */
   notification: { title: string; body: string };
   shiftId?: string;
+  /** SERVER: the share's upload token, sent with the points instead of the sign-in (works with the phone locked). */
+  uploadToken?: string;
 }
 
 export interface TrackPoint {

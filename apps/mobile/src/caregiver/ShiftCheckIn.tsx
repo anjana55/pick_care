@@ -8,6 +8,7 @@ import { Text } from '@/ui/Text';
 import { fmtTime } from '@/ui/dates';
 import { useNearHome, useShiftCheckIn, useShiftCheckOut } from './api';
 import { phonePosition, type Position } from './position';
+import { OnMyWay, endTripFor } from './OnMyWay';
 
 /**
  * Check-in for one of the caregiver's shifts, as on the website: while it is
@@ -59,7 +60,9 @@ export function ShiftCheckIn({ shift, locate = phonePosition }: { shift: Caregiv
   if (shift.status !== 'SCHEDULED') return null;
   if (c.codeLocked) return <Text style={{ fontSize: 14, color: colors.danger }}>{t('checkIn.caregiver.locked')}</Text>;
   if (c.state === 'NOT_RECORDED') return <Text style={{ fontSize: 14, color: colors.muted }}>{t('checkIn.caregiver.notRecorded')}</Text>;
-  if (!checkInOpen(c.state)) return null;
+  // "On my way" sits with check-in until the caregiver arrives.
+  const onMyWay = c.onMyWay ? <OnMyWay shift={shift} /> : null;
+  if (!checkInOpen(c.state)) return onMyWay;
 
   const start = async () => {
     setOpen(true);
@@ -72,13 +75,30 @@ export function ShiftCheckIn({ shift, locate = phonePosition }: { shift: Caregiv
       { onSuccess: (answer) => setAtHome(answer.atHome), onError: () => setAtHome(null) },
     );
   };
-  if (!open) return <Button label={t('checkIn.caregiver.checkIn')} onPress={() => void start()} />;
+  if (!open) {
+    return (
+      <View style={{ gap: 10 }}>
+        {onMyWay}
+        <Button label={t('checkIn.caregiver.checkIn')} onPress={() => void start()} />
+      </View>
+    );
+  }
 
   const send = async () => {
     if (code.length !== 4 || busy) return;
     setBusy(true);
     const position = fix && Date.now() - fix.at < 2 * 60_000 && fix.position.latitude !== undefined ? fix.position : await locate();
-    checkIn.mutate({ shiftId: shift.id, code, ...position }, { onSuccess: () => setOpen(false), onSettled: () => setBusy(false) });
+    checkIn.mutate(
+      { shiftId: shift.id, code, ...position },
+      {
+        onSuccess: () => {
+          setOpen(false);
+          // Arrived: stop sharing the trip.
+          void endTripFor(shift.id);
+        },
+        onSettled: () => setBusy(false),
+      },
+    );
   };
   return (
     <View style={{ gap: 8 }}>

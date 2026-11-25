@@ -13,6 +13,7 @@ import { nudgeLiveCare } from '../bookings/live-care-jobs';
 import { EmailService } from '../email/email.service';
 import { CoverService } from './cover.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { closeShares } from '../bookings/location-shares.db';
 
 const STANDBY = 'booking.line_up_understudy' as const;
 /** Bookings with a shift this soon get a standby proposed. */
@@ -103,6 +104,8 @@ export class ShiftDropoutsService implements OnApplicationBootstrap {
       .update(bookingShifts)
       .set({ cantMakeAt: now, cantMakeNote: clean, cantMakeCaregiverId: row.caregiverId })
       .where(and(eq(bookingShifts.id, shiftId), isNull(bookingShifts.cantMakeAt)));
+    // Not coming: "On my way" is over.
+    await closeShares(this.db, shiftId, 'CANT_MAKE', now, 'ON_THE_WAY');
     const when = toColombo(row.startsAt);
     const said = `${row.registration} said they cannot make the shift on ${when.date} at ${when.time}${clean ? `: "${clean}"` : ''}`;
     await this.db.insert(bookingEvents).values({ id: uuid(), bookingId: row.bookingId, type: 'NOTE', note: said, actorUserId: user.userId });

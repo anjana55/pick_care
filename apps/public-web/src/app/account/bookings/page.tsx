@@ -14,6 +14,7 @@ import { IssueReportList, ReportIssueForm } from '@/components/care/report-issue
 import { TodaysCare } from '@/components/care/todays-care';
 import { BookingProposals } from '@/components/care/booking-proposals';
 import { ArrivalCodes } from '@/components/care/arrival-codes';
+import { OnTheWay } from '@/components/care/on-the-way';
 import { BookingReviews, PendingReviewsBanner } from '@/components/reviews/booking-reviews';
 import { useMarkPathsRead } from '@/lib/hooks/use-notifications';
 
@@ -44,6 +45,7 @@ export default function MyBookingsPage() {
       <div className="mt-6">
         {/* Caregivers waiting for a rating, then the care-plan checklist for today. */}
         {/* First, anything waiting for the client's answer: a booking we drafted for them to check. */}
+        <OnTheWay bookings={data ?? []} />
         <ArrivalCodes bookings={data ?? []} />
         <BookingProposals />
         <PendingReviewsBanner />

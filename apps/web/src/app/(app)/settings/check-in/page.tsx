@@ -12,8 +12,16 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input, Label } from '@/components/ui/input';
 
-type Draft = { enabled: boolean; earlyMinutes: string; lateAfterMinutes: string; farMetres: string };
-const toDraft = (s: CheckInSettings): Draft => ({ enabled: s.enabled, earlyMinutes: String(s.earlyMinutes), lateAfterMinutes: String(s.lateAfterMinutes), farMetres: String(s.farMetres) });
+type Draft = { enabled: boolean; earlyMinutes: string; lateAfterMinutes: string; farMetres: string; liveEnabled: boolean; onMyWayMinutes: string; locationRetentionDays: string };
+const toDraft = (s: CheckInSettings): Draft => ({
+  enabled: s.enabled,
+  earlyMinutes: String(s.earlyMinutes),
+  lateAfterMinutes: String(s.lateAfterMinutes),
+  farMetres: String(s.farMetres),
+  liveEnabled: s.liveEnabled,
+  onMyWayMinutes: String(s.onMyWayMinutes),
+  locationRetentionDays: String(s.locationRetentionDays),
+});
 const inRange = (v: string, { min, max }: { min: number; max: number }) => /^\d+$/.test(v) && Number(v) >= min && Number(v) <= max;
 
 /**
@@ -48,6 +56,8 @@ export default function CheckInSettingsPage() {
     earlyMinutes: !inRange(draft.earlyMinutes, CHECK_IN_SETTINGS_LIMITS.earlyMinutes),
     lateAfterMinutes: !inRange(draft.lateAfterMinutes, CHECK_IN_SETTINGS_LIMITS.lateAfterMinutes),
     farMetres: !inRange(draft.farMetres, CHECK_IN_SETTINGS_LIMITS.farMetres),
+    onMyWayMinutes: !inRange(draft.onMyWayMinutes, CHECK_IN_SETTINGS_LIMITS.onMyWayMinutes),
+    locationRetentionDays: !inRange(draft.locationRetentionDays, CHECK_IN_SETTINGS_LIMITS.locationRetentionDays),
   };
   const change = (patch: Partial<Draft>) => {
     setSaved(false);
@@ -56,7 +66,15 @@ export default function CheckInSettingsPage() {
   };
   const submit = () =>
     save.mutate(
-      { enabled: draft.enabled, earlyMinutes: Number(draft.earlyMinutes), lateAfterMinutes: Number(draft.lateAfterMinutes), farMetres: Number(draft.farMetres) },
+      {
+        enabled: draft.enabled,
+        earlyMinutes: Number(draft.earlyMinutes),
+        lateAfterMinutes: Number(draft.lateAfterMinutes),
+        farMetres: Number(draft.farMetres),
+        liveEnabled: draft.liveEnabled,
+        onMyWayMinutes: Number(draft.onMyWayMinutes),
+        locationRetentionDays: Number(draft.locationRetentionDays),
+      },
       {
         onSuccess: (data) => {
           setDraft(toDraft(data));
@@ -67,7 +85,7 @@ export default function CheckInSettingsPage() {
       },
     );
 
-  const number = (key: 'earlyMinutes' | 'lateAfterMinutes' | 'farMetres', label: string, hint: string) => (
+  const number = (key: 'earlyMinutes' | 'lateAfterMinutes' | 'farMetres' | 'onMyWayMinutes' | 'locationRetentionDays', label: string, hint: string) => (
     <div>
       <Label htmlFor={key}>{label}</Label>
       <Input
@@ -101,13 +119,25 @@ export default function CheckInSettingsPage() {
           {number('earlyMinutes', t('visits.settings.early'), t('visits.settings.earlyHint', CHECK_IN_SETTINGS_LIMITS.earlyMinutes))}
           {number('lateAfterMinutes', t('visits.settings.late'), t('visits.settings.lateHint', CHECK_IN_SETTINGS_LIMITS.lateAfterMinutes))}
           {number('farMetres', t('visits.settings.far'), t('visits.settings.farHint', CHECK_IN_SETTINGS_LIMITS.farMetres))}
+          <fieldset className="space-y-4 border-t border-border pt-4">
+            <legend className="sr-only">{t('visits.settings.liveTitle')}</legend>
+            <label className="flex items-start gap-3">
+              <input type="checkbox" className="mt-1 h-4 w-4" checked={draft.liveEnabled} onChange={(e) => change({ liveEnabled: e.target.checked })} />
+              <span>
+                <span className="block text-sm font-medium text-ink">{t('visits.settings.live')}</span>
+                <span className="block text-xs text-ink/50">{t('visits.settings.liveHint')}</span>
+              </span>
+            </label>
+            {number('onMyWayMinutes', t('visits.settings.onMyWay'), t('visits.settings.onMyWayHint', CHECK_IN_SETTINGS_LIMITS.onMyWayMinutes))}
+            {number('locationRetentionDays', t('visits.settings.retention'), t('visits.settings.retentionHint', CHECK_IN_SETTINGS_LIMITS.locationRetentionDays))}
+          </fieldset>
           {error && (
             <p role="alert" className="text-sm text-danger">
               {error}
             </p>
           )}
           <div className="flex flex-wrap items-center gap-3">
-            <Button onClick={submit} disabled={save.isPending || bad.earlyMinutes || bad.lateAfterMinutes || bad.farMetres}>
+            <Button onClick={submit} disabled={save.isPending || Object.values(bad).some(Boolean)}>
               {save.isPending ? t('common.loading') : t('common.save')}
             </Button>
             {saved && (

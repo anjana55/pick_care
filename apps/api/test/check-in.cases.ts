@@ -5,10 +5,11 @@ import { JwtService } from '@nestjs/jwt';
 import { ThrottlerStorage } from '@nestjs/throttler';
 import { eq } from 'drizzle-orm';
 import request from 'supertest';
-import { addDays, colomboToday, isoWeekday, type BookingCareLocation, type CareLocation, type CaregiverShift, type ClientBooking, type StaffCheckIn, type TodayVisits } from '@care-platform/shared';
+import { addDays, colomboToday, isoWeekday, type BookingCareLocation, type CareLocation, type CaregiverShift, type ClientBooking, type ClientLive, type StaffLiveShare, type StartedShare, type StaffCheckIn, type TodayVisits } from '@care-platform/shared';
 import { AppModule } from '../src/app.module';
 import { DRIZZLE, type Database } from '../src/database/database.module';
-import { bookingShifts, caregivers, patients, shiftCheckins } from '../src/database/schema';
+import { bookingShifts, caregivers, locationNotices, locationPoints, locationShares, patients, shiftCheckins } from '../src/database/schema';
+import { LocationSharesService } from '../src/bookings/location-shares.service';
 import { NotificationsService } from '../src/notifications/notifications.service';
 import { SEED_PASSWORD } from './seed-password';
 
@@ -158,7 +159,7 @@ describe('Shift check-in (e2e)', () => {
     expect(mine.checkIn).toMatchObject({ state: 'DUE', checkedInAt: null, checkedOutAt: null, codeLocked: false });
     expect(JSON.stringify((await api().get('/me/shifts').set(bearer(v.cg.token)).expect(200)).body)).not.toContain(code);
     // Tomorrow's shift: a different code, not shown to the client yet, and too early to check in.
-    expect((await clientShift(v.clientToken, v.nextShiftId)).visit).toEqual({ arrivalCode: null, checkedInAt: null, checkedOutAt: null });
+    expect((await clientShift(v.clientToken, v.nextShiftId)).visit).toEqual({ arrivalCode: null, checkedInAt: null, checkedOutAt: null, onTheWay: false });
     expect((await staffShift(v.bookingId, v.nextShiftId)).checkIn!.arrivalCode).not.toBe(code);
     expect((await myShift(v.cg.token, v.nextShiftId)).checkIn!.state).toBe('UPCOMING');
     expect((await checkIn(v.cg.token, v.nextShiftId, { code }).expect(400)).body.message).toBe('It is too early to check in for this shift');
@@ -390,5 +391,151 @@ describe('Shift check-in (e2e)', () => {
     await checkIn(w.cg.token, w.shiftId, { code: '0000' }).expect(400);
     await api().post(`/visits/${w.shiftId}/check-in`).set(bearer(staffToken)).send({}).expect(400);
     expect(await db.select().from(shiftCheckins).where(eq(shiftCheckins.shiftId, w.shiftId))).toHaveLength(0);
+  });
+  describe('On my way (live location)', () => {
+    const HOME = { latitude: 6.9271, longitude: 79.8452 };
+    const onMyWay = (token: string, shiftId: string) => api().post(`/me/shifts/${shiftId}/on-my-way`).set(bearer(token));
+    const send = (shareId: string, token: string | null, points: object[]) => {
+      const req = api().post(`/location-shares/${shareId}/points`);
+      return (token ? req.set('X-Share-Token', token) : req).send({ points });
+    };
+    const live = (token: string, bookingId: string) => api().get(`/me/bookings/${bookingId}/live`).set(bearer(token));
+    const ago = (s: number) => new Date(Date.now() - s * 1000).toISOString();
+    /** The bell is filled in the background: wait a moment for it. */
+    const bellTitles = async (token: string, match: RegExp) => {
+      for (let i = 0; i < 20; i++) {
+        const page = (await api().get('/me/notifications').set(bearer(token)).expect(200)).body as { items: { title: string }[] };
+        const found = page.items.filter((x) => match.test(x.title)).map((x) => x.title);
+        if (found.length) return found;
+        await new Promise((r) => setTimeout(r, 100));
+      }
+      return [];
+    };
+    // About 3 km north of the home, then 1 km.
+    const far = (s: number) => ({ at: ago(s), latitude: 6.954, longitude: 79.8452, accuracyM: 25 });
+    const nearer = (s: number) => ({ at: ago(s), latitude: 6.936, longitude: 79.8452, accuracyM: 15, speed: 6.5 });
+
+    afterAll(async () => {
+      await setting({ liveEnabled: false, onMyWayMinutes: 60, locationRetentionDays: 30 });
+    });
+
+    it('is off until an admin turns live location on', async () => {
+      await setting({ enabled: true, liveEnabled: false }).expect(200);
+      const v = await visit(30);
+      expect((await myShift(v.cg.token, v.shiftId)).checkIn!.onMyWay).toBeNull();
+      await onMyWay(v.cg.token, v.shiftId).expect(403);
+      // The admin's limits.
+      await setting({ onMyWayMinutes: 5 }).expect(400);
+      await setting({ locationRetentionDays: 3 }).expect(400);
+    });
+
+    it('shares the trip with the client and staff until check-in, then closes by itself', async () => {
+      await setting({ enabled: true, liveEnabled: true, onMyWayMinutes: 60 }).expect(200);
+      // Too early: opens 60 minutes before the start.
+      const early = await visit(90);
+      expect((await onMyWay(early.cg.token, early.shiftId).expect(409)).body.message).toMatch(/opens 60 minutes before/);
+
+      const v = await visit(30);
+      await api().post('/me/care-locations').set(bearer(v.clientToken)).send(HOME).expect(201);
+      expect((await myShift(v.cg.token, v.shiftId)).checkIn!.onMyWay).toMatchObject({ shareId: null });
+      expect((await live(v.clientToken, v.bookingId).expect(200)).body).toEqual({ status: 'NONE' });
+
+      const started = (await onMyWay(v.cg.token, v.shiftId).expect(200)).body as StartedShare;
+      expect(started).toMatchObject({ kind: 'ON_THE_WAY', shareId: expect.any(String), uploadToken: expect.any(String) });
+      expect((await myShift(v.cg.token, v.shiftId)).checkIn!.onMyWay).toMatchObject({ shareId: started.shareId });
+      expect((await clientShift(v.clientToken, v.shiftId)).visit).toMatchObject({ onTheWay: true });
+      // Before any point: on the way, nowhere yet, no ETA.
+      expect((await live(v.clientToken, v.bookingId).expect(200)).body).toMatchObject({ status: 'ON_THE_WAY', caregiverName: 'Visiting', position: null, home: HOME, eta: { minutes: null } });
+
+      // Points need the share's own token, not a sign-in.
+      await send(started.shareId, null, [far(60)]).expect(401);
+      await send(started.shareId, 'not-it', [far(60)]).expect(401);
+      await api().post(`/location-shares/${started.shareId}/points`).set(bearer(v.cg.token)).send({ points: [far(60)] }).expect(401);
+      // Kept: in order, inside Sri Lanka, possible speeds. Dropped: London, a jump to Jaffna a minute later, a repeat.
+      const first = await send(started.shareId, started.uploadToken, [far(90), { at: ago(85), latitude: 51.5, longitude: -0.12 }, { at: ago(80), latitude: 9.66, longitude: 80.02 }, nearer(30), nearer(30)]).expect(200);
+      expect(first.body).toEqual({ accepted: 2, open: true });
+      await send(started.shareId, started.uploadToken, new Array(51).fill(far(10))).expect(400);
+
+      const seen = (await live(v.clientToken, v.bookingId).expect(200)).body as Extract<ClientLive, { status: 'ON_THE_WAY' }>;
+      expect(seen.position).toMatchObject({ latitude: 6.936, longitude: 79.8452, accuracyM: 15 });
+      expect(seen.eta.minutes).toBeGreaterThan(0);
+      expect(seen.eta.distanceM).toBeGreaterThan(900);
+      expect(seen.stale).toBe(false);
+      const staff = (await api().get('/visits/live').set(bearer(staffToken)).expect(200)).body as StaffLiveShare[];
+      expect(staff.find((s) => s.shareId === started.shareId)).toMatchObject({ kind: 'ON_THE_WAY', bookingReference: v.reference, position: { mocked: false } });
+      expect((await staffShift(v.bookingId, v.shiftId)).checkIn!.onTheWay).toMatchObject({ shareId: started.shareId, arriving: false });
+      // Nobody else sees it: another client, a caregiver.
+      const other = await visit(30);
+      await live(other.clientToken, v.bookingId).expect(404);
+      await live(v.cg.token, v.bookingId).expect(403);
+      await api().get('/visits/live').set(bearer(v.cg.token)).expect(403);
+      // The client was told once.
+      expect(await bellTitles(v.clientToken, /is on the way/)).toEqual(['Visiting is on the way']);
+
+      // Check-in ends it: the phone is told to stop, the client sees nothing.
+      const code = (await staffShift(v.bookingId, v.shiftId)).checkIn!.arrivalCode;
+      await checkIn(v.cg.token, v.shiftId, { code, ...HOME, accuracyM: 10 }).expect(200);
+      expect((await send(started.shareId, started.uploadToken, [nearer(5)]).expect(200)).body).toMatchObject({ open: false });
+      expect((await live(v.clientToken, v.bookingId).expect(200)).body).toEqual({ status: 'NONE' });
+      expect((await myShift(v.cg.token, v.shiftId)).checkIn!.onMyWay).toBeNull();
+      const [row] = await db.select().from(locationShares).where(eq(locationShares.id, started.shareId));
+      // Three points: the last was taken just before the check-in, so it still counts.
+      expect(row).toMatchObject({ endReason: 'CHECKED_IN', points: 3 });
+      await onMyWay(v.cg.token, v.shiftId).expect(409);
+    });
+
+    it("closes on \"I can't make this shift\", on stop, on a second tap, at the hard stop, and when turned off", async () => {
+      await setting({ enabled: true, liveEnabled: true, onMyWayMinutes: 60 }).expect(200);
+      const shares = app.get(LocationSharesService);
+      const reason = async (id: string) => (await db.select().from(locationShares).where(eq(locationShares.id, id)))[0].endReason;
+
+      const a = await visit(20);
+      const one = (await onMyWay(a.cg.token, a.shiftId).expect(200)).body as StartedShare;
+      // A second tap (a new phone): the old share closes, only the new one sends.
+      const two = (await onMyWay(a.cg.token, a.shiftId).expect(200)).body as StartedShare;
+      expect(await reason(one.shareId)).toBe('STOPPED');
+      // Points the old phone took before it was replaced still count; it is told to stop.
+      expect((await send(one.shareId, one.uploadToken, [far(5)]).expect(200)).body).toMatchObject({ open: false });
+      await api().post(`/me/shifts/${a.shiftId}/cant-make`).set(bearer(a.cg.token)).send({ note: 'Bus broke down' }).expect(200);
+      expect(await reason(two.shareId)).toBe('CANT_MAKE');
+      await onMyWay(a.cg.token, a.shiftId).expect(409);
+
+      const b = await visit(20);
+      const three = (await onMyWay(b.cg.token, b.shiftId).expect(200)).body as StartedShare;
+      const stranger = await newCaregiver();
+      await api().post(`/me/location-shares/${three.shareId}/stop`).set(bearer(stranger.token)).expect(404);
+      await api().post(`/me/location-shares/${three.shareId}/stop`).set(bearer(b.cg.token)).expect(200);
+      expect(await reason(three.shareId)).toBe('STOPPED');
+
+      // The hard stop passes: the sweep closes it. Old points go after the retention days.
+      const c = await visit(20);
+      const four = (await onMyWay(c.cg.token, c.shiftId).expect(200)).body as StartedShare;
+      await send(four.shareId, four.uploadToken, [far(30)]).expect(200);
+      await db.insert(locationPoints).values({ shareId: four.shareId, at: new Date(Date.now() - 40 * 86_400_000), latitude: 6.95, longitude: 79.85 });
+      await db.update(locationShares).set({ endsBy: new Date(Date.now() - 1000) }).where(eq(locationShares.id, four.shareId));
+      expect((await live(c.clientToken, c.bookingId).expect(200)).body).toEqual({ status: 'NONE' });
+      await shares.sweep();
+      expect(await reason(four.shareId)).toBe('CAP');
+      const left = await db.select().from(locationPoints).where(eq(locationPoints.shareId, four.shareId));
+      expect(left).toHaveLength(1);
+
+      // Live location turned off: open shares close at the next sweep.
+      const d = await visit(20);
+      const five = (await onMyWay(d.cg.token, d.shiftId).expect(200)).body as StartedShare;
+      await setting({ liveEnabled: false }).expect(200);
+      await shares.sweep();
+      expect(await reason(five.shareId)).toBe('TURNED_OFF');
+    });
+
+    it('reminds the caregiver once when On my way opens', async () => {
+      await setting({ enabled: true, liveEnabled: true, onMyWayMinutes: 60 }).expect(200);
+      const shares = app.get(LocationSharesService);
+      const v = await visit(40);
+      await shares.sweep();
+      await shares.sweep();
+      const sent = await db.select().from(locationNotices).where(eq(locationNotices.shiftId, v.shiftId));
+      expect(sent.map((s) => s.kind)).toEqual(['ON_MY_WAY_REMINDER']);
+      expect(await bellTitles(v.cg.token, /Leaving for your/)).toHaveLength(1);
+    });
   });
 });
