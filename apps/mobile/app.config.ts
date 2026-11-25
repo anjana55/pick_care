@@ -151,8 +151,19 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       // The brand's mark on a plain screen while the app starts (Settings > Branding, via brand:assets).
       ...(art.splashIcon ? [['expo-splash-screen', { image: art.splashIcon, imageWidth: 180, backgroundColor: art.splashBackground }] as [string, object]] : []),
       'expo-notifications',
-      // "Use my location" on Find, and a caregiver's shift check-in: while the app is open only, never in the background.
-      ['expo-location', { locationWhenInUsePermission: `${brand.name} uses your location, only when you ask, to show caregivers near you or to record where you check in to a shift.` }],
+      // "Use my location" on Find and a caregiver's check-in; and, started only by a caregiver's tap, "On my way" and
+      // the checks during a visit (GPS tracking B and C). Those keep running with the app in the background, but
+      // only with "while using the app" permission: a foreground service with a notification on Android, the
+      // location background mode with the blue indicator on iOS. Never "Allow all the time".
+      [
+        'expo-location',
+        {
+          locationWhenInUsePermission: `${brand.name} uses your location only for what you start: to show caregivers near you, to check in to a shift, and while you share your trip to a client or are checked in to a visit. It never tracks you outside a shift.`,
+          isIosBackgroundLocationEnabled: true,
+          isAndroidForegroundServiceEnabled: true,
+          isAndroidBackgroundLocationEnabled: false,
+        },
+      ],
       // Caregivers photograph their documents. Photos only - the microphone is never asked for.
       [
         'expo-image-picker',

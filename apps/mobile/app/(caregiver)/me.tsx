@@ -10,6 +10,7 @@ import { Text } from '@/ui/Text';
 import { useWaitingCounts } from '@/notifications/tab-counts';
 import { Avatar, Card, Divider, MenuRow, Pill } from '@/ui/visual';
 import { useCareOfferCount, useOwnCaregiver, useRateCard } from '@/caregiver/api';
+import { locationTestAvailable } from '@/location/test-mode';
 
 /**
  * The caregiver's account: who they are, their profile and documents, the
@@ -76,6 +77,8 @@ export default function Me() {
             router.replace('/');
           }}
         />
+        {/* Internal builds only (src/location/test-mode.ts): never in the store app. */}
+        {locationTestAvailable() ? <Button variant="link" label="Location test" onPress={() => router.push('/location-test')} /> : null}
         <Button variant="link" label={t('deleteAccount.title')} onPress={() => router.push('/delete-account')} />
       </ScrollView>
     </Screen>

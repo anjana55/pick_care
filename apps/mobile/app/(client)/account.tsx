@@ -9,6 +9,7 @@ import { AppLockSetting } from '@/auth/AppLock';
 import { useWaitingCounts } from '@/notifications/tab-counts';
 import { Text } from '@/ui/Text';
 import { Avatar, Card, Divider, IconBadge, MenuRow } from '@/ui/visual';
+import { locationTestAvailable } from '@/location/test-mode';
 
 /**
  * A client's account. Signed out: sign in or sign up (searching doesn't need
@@ -79,6 +80,8 @@ export default function Account() {
             }}
           />
         ) : null}
+        {/* Internal builds only (src/location/test-mode.ts): never in the store app. */}
+        {locationTestAvailable() ? <Button variant="link" label="Location test" onPress={() => router.push('/location-test')} /> : null}
         {user ? <Button variant="link" label={t('deleteAccount.title')} onPress={() => router.push('/delete-account')} /> : null}
       </ScrollView>
     </Screen>

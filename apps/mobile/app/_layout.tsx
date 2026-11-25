@@ -13,6 +13,8 @@ import { FONT_ASSETS } from '@/ui/fonts';
 import { createQueryClient } from '@/api/query-client';
 import { PushRegistration } from '@/push/PushRegistration';
 import { UpdateGate } from '@/app-config/UpdateGate';
+// Defines the background location task as the app starts: the phone may wake the app just to hand it locations.
+import '@/location/tracker';
 
 // Kept up until the saved language, the session and the fonts are all ready,
 // so nobody sees an English or signed-out flash, or Sinhala in a fallback font.
