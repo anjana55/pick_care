@@ -400,6 +400,13 @@
       "when": 1795522646530,
       "tag": "0056_caregiver_photo_and_skill_translations",
       "breakpoints": true
+    },
+    {
+      "idx": 57,
+      "version": "5",
+      "when": 1795593118923,
+      "tag": "0057_care_locations",
+      "breakpoints": true
     }
   ]
 }

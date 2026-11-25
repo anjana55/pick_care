@@ -12,8 +12,12 @@ import { haversineKm, type GeoPoint } from './geo';
 export const ARRIVAL_CODE_LENGTH = 4;
 /** After this many wrong codes on one shift the caregiver has to ask the office. */
 export const CHECK_IN_MAX_WRONG_CODES = 5;
-/** A check-in this far from the booking's earlier check-ins is pointed out to staff. */
+/** The default for Settings > Check-in "Far from the home": a check-in further than this from the booking's place is pointed out to staff. */
 export const CHECK_IN_FAR_METRES = 300;
+/** A poor fix widens the circle by its accuracy, up to this much, so a phone that only knows "within 400 m" is not called far. */
+export const CHECK_IN_ACCURACY_ALLOWANCE_MAX = 500;
+/** A fix less sure than this says nothing about whether the caregiver is at the home. */
+export const CHECK_IN_USELESS_ACCURACY_M = 1000;
 /** The client sees a shift's arrival code from this long before it starts. */
 export const ARRIVAL_CODE_SHOWN_HOURS = 12;
 export const CHECK_IN_NOTE_MAX = 300;
@@ -25,10 +29,25 @@ export interface CheckInSettings {
   earlyMinutes: number;
   /** Minutes after the start with no check-in before staff are told. */
   lateAfterMinutes: number;
+  /** A check-in further than this many metres from the booking's place (plus the fix's accuracy) is pointed out to staff. */
+  farMetres: number;
 }
 
-export const DEFAULT_CHECK_IN_SETTINGS: CheckInSettings = { enabled: false, earlyMinutes: 60, lateAfterMinutes: 15 };
-export const CHECK_IN_SETTINGS_LIMITS = { earlyMinutes: { min: 0, max: 240 }, lateAfterMinutes: { min: 5, max: 120 } } as const;
+export const DEFAULT_CHECK_IN_SETTINGS: CheckInSettings = { enabled: false, earlyMinutes: 60, lateAfterMinutes: 15, farMetres: CHECK_IN_FAR_METRES };
+export const CHECK_IN_SETTINGS_LIMITS = { earlyMinutes: { min: 0, max: 240 }, lateAfterMinutes: { min: 5, max: 120 }, farMetres: { min: 50, max: 2000 } } as const;
+
+/**
+ * Is a position "far from the home"? The circle is widened by the fix's
+ * accuracy (up to CHECK_IN_ACCURACY_ALLOWANCE_MAX), so only a check-in that is
+ * clearly outside it counts.
+ */
+export function isFarFromHome(distanceM: number | null, accuracyM: number | null, farMetres: number): boolean {
+  if (distanceM === null) return false;
+  return distanceM > farMetres + Math.min(Math.max(accuracyM ?? 0, 0), CHECK_IN_ACCURACY_ALLOWANCE_MAX);
+}
+
+/** What a check-in distance was measured from: the booking's place on the map, or (with none) its first located check-in. */
+export type CheckInDistanceFrom = 'PIN' | 'EARLIER';
 
 /**
  * Where one visit stands:
@@ -111,13 +130,23 @@ export interface StaffCheckIn {
   inByName: string | null;
   inNote: string | null;
   inLocation: (GeoPoint & { accuracyM: number | null }) | null;
-  /** Metres from the booking's first located check-in; null when there is nothing to compare. */
+  /** Metres from the booking's place (or, with none, its first located check-in); null when there is nothing to compare. */
   inDistanceM: number | null;
+  /** What inDistanceM was measured from. */
+  inDistanceFrom: CheckInDistanceFrom | null;
+  /** The check-in was clearly outside the home's circle (allowing for the fix's accuracy). */
+  inFar: boolean;
+  /** The phone said its position was simulated (Android's mock-location flag). */
+  inMocked: boolean;
   checkedOutAt: string | null;
   outBy: CheckInBy | null;
   outByName: string | null;
   outNote: string | null;
   outLocation: (GeoPoint & { accuracyM: number | null }) | null;
+  /** Metres from the booking's place at check-out; null when either is missing. */
+  outDistanceM: number | null;
+  outFar: boolean;
+  outMocked: boolean;
 }
 
 /** GET /visits/today (staff): every visit on today's roster, in time order. */
@@ -157,6 +186,8 @@ export interface CheckInInput {
   latitude?: number;
   longitude?: number;
   accuracyM?: number;
+  /** Android reports a simulated (mock) location. Recorded and pointed out to staff, never refused. */
+  mocked?: boolean;
 }
 
 /** POST /visits/:shiftId/check-in and /check-out (staff, on the caregiver's behalf). */

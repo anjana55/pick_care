@@ -1,7 +1,8 @@
 import { hasNativeModule } from '@/native';
 
 type LocationModule = typeof import('expo-location');
-export type Position = { latitude?: number; longitude?: number; accuracyM?: number };
+/** `mocked`: Android says the position is simulated - sent along, and pointed out to the office. */
+export type Position = { latitude?: number; longitude?: number; accuracyM?: number; mocked?: boolean };
 
 function locationModule(): LocationModule | null {
   if (!hasNativeModule('ExpoLocation')) return null;
@@ -29,7 +30,7 @@ export async function phonePosition(timeoutMs = 8000, load: () => LocationModule
       new Promise<null>((resolve) => setTimeout(() => resolve(null), timeoutMs)),
     ]);
     if (!fix) return {};
-    return { latitude: fix.coords.latitude, longitude: fix.coords.longitude, accuracyM: fix.coords.accuracy ?? undefined };
+    return { latitude: fix.coords.latitude, longitude: fix.coords.longitude, accuracyM: fix.coords.accuracy ?? undefined, ...(fix.mocked ? { mocked: true } : {}) };
   } catch {
     return {};
   }

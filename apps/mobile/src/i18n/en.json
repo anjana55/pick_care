@@ -1516,7 +1516,9 @@
       "out": "In {in} · out {out}",
       "locked": "Too many wrong codes. Ask the office to check you in.",
       "notRecorded": "No check-in was recorded. If you were there, tell the office.",
-      "failed": "That did not go through. Please try again."
+      "failed": "That did not go through. Please try again.",
+      "atHome": "Your phone shows you're at the client's home.",
+      "notAtHome": "Your phone doesn't look close to the client's home. Check you're at the right house - you can still check in."
     }
   },
   "payNow": {
@@ -1794,5 +1796,29 @@
       "caregiverGender": "Caregiver preference: {gender}",
       "contact": "{method} · {time}"
     }
+  },
+  "places": {
+    "title": "Where care happens",
+    "intro": "Put a pin on the house. The caregiver's check-in is compared with it, so the office knows they came to the right door. Caregivers don't see the pin.",
+    "map": "Map of where care happens",
+    "mapFailed": "The map could not load. Check your connection.",
+    "saveError": "The place could not be saved. Please try again.",
+    "noLocation": "Your phone could not say where it is. Move the map instead.",
+    "addTitle": "Add a place",
+    "moveTitle": "Move the pin",
+    "howTo": "At the house now? Tap \"Use where I am\". Otherwise move the map with your finger until the pin sits on the house.",
+    "useWhereIAm": "Use where I am",
+    "zoomIn": "Zoom in closer so the pin is on one house.",
+    "label": "Name (optional)",
+    "labelPlaceholder": "Home",
+    "save": "Save place",
+    "empty": "You haven't put a pin on the home yet.",
+    "addFirst": "Put a pin on the home",
+    "addAnother": "Add another place",
+    "default": "Used for your bookings",
+    "move": "Move pin",
+    "makeDefault": "Use for my bookings",
+    "remove": "Remove",
+    "removeConfirm": "Remove \"{name}\"?"
   }
 }

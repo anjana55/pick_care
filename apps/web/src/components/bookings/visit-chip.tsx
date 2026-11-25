@@ -1,7 +1,6 @@
 'use client';
 
 import type { StaffCheckIn, VisitState } from '@care-platform/shared';
-import { CHECK_IN_FAR_METRES } from '@care-platform/shared';
 import { useTranslation } from '@/lib/i18n/provider';
 import { fmtTime } from '@/lib/colombo-time';
 import { cn } from '@/lib/utils';
@@ -41,9 +40,13 @@ export function VisitNotes({ checkIn }: { checkIn: StaffCheckIn }) {
   if (checkIn.inBy === 'STAFF') lines.push({ text: t('visits.note.inByStaff', { name: checkIn.inByName ?? '—' }) + (checkIn.inNote ? ` — ${checkIn.inNote}` : '') });
   if (checkIn.outBy === 'STAFF') lines.push({ text: t('visits.note.outByStaff', { name: checkIn.outByName ?? '—' }) + (checkIn.outNote ? ` — ${checkIn.outNote}` : '') });
   if (checkIn.inBy === 'CAREGIVER' && !checkIn.inLocation) lines.push({ text: t('visits.note.noPosition') });
-  if (checkIn.inDistanceM !== null && checkIn.inDistanceM > CHECK_IN_FAR_METRES) {
-    lines.push({ text: t('visits.note.far', { distance: checkIn.inDistanceM >= 1000 ? `${(checkIn.inDistanceM / 1000).toFixed(1)} km` : `${checkIn.inDistanceM} m` }), warn: true });
+  const metres = (m: number) => (m >= 1000 ? `${(m / 1000).toFixed(1)} km` : `${m} m`);
+  if (checkIn.inFar && checkIn.inDistanceM !== null) {
+    lines.push({ text: t(checkIn.inDistanceFrom === 'PIN' ? 'visits.note.farFromHome' : 'visits.note.far', { distance: metres(checkIn.inDistanceM) }), warn: true });
   }
+  if (checkIn.inMocked) lines.push({ text: t('visits.note.mockedIn'), warn: true });
+  if (checkIn.outFar && checkIn.outDistanceM !== null) lines.push({ text: t('visits.note.outFarFromHome', { distance: metres(checkIn.outDistanceM) }), warn: true });
+  if (checkIn.outMocked) lines.push({ text: t('visits.note.mockedOut'), warn: true });
   if (checkIn.codeLocked) lines.push({ text: t('visits.note.locked'), warn: true });
   else if (!checkIn.checkedInAt && checkIn.wrongCodes > 0) lines.push({ text: t('visits.note.wrongCodes', { n: checkIn.wrongCodes }) });
   if (!lines.length && !checkIn.inLocation) return null;
