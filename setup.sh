@@ -54,6 +54,7 @@ ASSUME_YES=0
 # size (deploy/lib.sh cl_default_build_cache_gb).
 BUILD_CACHE_GB=""
 CLEANUP=1
+REGISTRY_ARG=""
 PASSWORD_SOURCE="generated"
 TLS_ENABLED=0
 
@@ -86,6 +87,12 @@ Options:
                            it all - smallest disk use,
                            slowest next build.
   --no-cleanup            Don't remove old images and build cache afterwards.
+  --registry=REG          Download the images GitHub Actions built
+                          (.github/workflows/images.yml) instead of building
+                          them here, e.g. --registry=ghcr.io/owner/repo. Saved
+                          as IMAGE_REGISTRY in .env.production, so update.sh
+                          does the same. "none" turns it off. Anything not on
+                          the registry is still built here.
   -y, --yes               Don't pause for confirmation before starting.
   -h, --help              Show this help.
 EOF
@@ -105,6 +112,7 @@ for arg in "$@"; do
     --skip-swap) SKIP_SWAP=1 ;;
     --build-cache=*) BUILD_CACHE_GB="${arg#*=}"; [[ "$BUILD_CACHE_GB" =~ ^[0-9]+$ ]] || die "--build-cache takes a whole number of GB" ;;
     --no-cleanup) CLEANUP=0 ;;
+    --registry=*) REGISTRY_ARG="${arg#*=}" ;;
     -y|--yes) ASSUME_YES=1 ;;
     -h|--help) usage; exit 0 ;;
     *) die "Unknown option: $arg (see --help)" ;;
@@ -504,6 +512,7 @@ PREV_IMAGE_TAG="$(cl_env_get IMAGE_TAG)"
 PREV_COMMIT="$(cl_state_get DEPLOYED_COMMIT)"
 IMAGE_TAG="$(cl_image_tag)"
 cl_env_set IMAGE_PREFIX "$PROJECT"
+[ -z "$REGISTRY_ARG" ] || cl_env_set IMAGE_REGISTRY "$REGISTRY_ARG"
 cl_env_set IMAGE_TAG "$IMAGE_TAG"
 [ "$PREV_IMAGE_TAG" = "$IMAGE_TAG" ] && PREV_IMAGE_TAG="$(cl_state_get PREVIOUS_IMAGE_TAG)"
 
@@ -555,7 +564,25 @@ if [ "$CL_LOW_MEMORY" -eq 1 ]; then
 else
   log "Building images (this can take 5-15 minutes the first time)"
 fi
-cl_build "${CL_BUILT_SERVICES[@]}"
+# Prebuilt images from GitHub (IMAGE_REGISTRY), when it has this commit's;
+# whatever it hasn't is built here as before.
+TO_BUILD_HERE=("${CL_BUILT_SERVICES[@]}")
+if [ -n "$(cl_registry)" ]; then
+  TO_DOWNLOAD=()
+  TO_BUILD_HERE=()
+  for s in "${CL_BUILT_SERVICES[@]}"; do
+    if cl_prebuilt_available "$s" "$IMAGE_TAG"; then TO_DOWNLOAD+=("$s"); else TO_BUILD_HERE+=("$s"); fi
+  done
+  hint="$(cl_registry_hint)"
+  [ -z "$hint" ] || warn "$hint"
+  if [ "${#TO_DOWNLOAD[@]}" -gt 0 ]; then
+    log "Downloading ${TO_DOWNLOAD[*]} (built by GitHub, from $(cl_registry))"
+    cl_fetch_prebuilt "$IMAGE_TAG" "$PROJECT" "${TO_DOWNLOAD[@]}"
+    TO_BUILD_HERE+=("${CL_PREBUILT_FAILED[@]}")
+  fi
+  [ "${#TO_BUILD_HERE[@]}" -eq 0 ] || log "Not on the registry for ${IMAGE_TAG}: building ${TO_BUILD_HERE[*]} here"
+fi
+cl_build "${TO_BUILD_HERE[@]}"
 # Old images are NOT pruned here: the running containers still use them, so
 # a prune at this point skips them (this is what used to leave every
 # release's images behind). Cleanup runs at the end, after recreating.

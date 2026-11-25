@@ -1181,17 +1181,59 @@ The nginx reload matters. nginx looks up the apps' addresses only when it
 starts, so after recreating one app on its own it keeps sending traffic to
 the old container (502 errors) until it is reloaded.
 
-### 16.7 Faster still, later: build the images somewhere else
+### 16.7 Prebuilt images: let GitHub do the building
 
-Every update still builds the changed apps **on the server**, which on a
-small instance takes a few minutes and briefly uses a lot of memory. Once
-you outgrow that, have GitHub Actions build the three images on every
-merge and push them to a registry (e.g. GitHub Container Registry, tagged
-by commit). The server then only pulls and restarts - no Node.js builds,
-almost no build cache, and the same image you tested is the one that runs.
-`docker-compose.prod.yml` already names images by commit
-(`IMAGE_PREFIX`/`IMAGE_TAG`), so this is a matter of pointing those names
-at the registry and replacing the build step with `docker compose pull`.
+Building on the server is slow, slows the live site while it runs, and on a
+small server can run out of memory (`JavaScript heap out of memory`). Instead,
+GitHub Actions can build the three images on every merge to `main`
+(`.github/workflows/images.yml`) and push them to GitHub Container Registry.
+`update.sh` then **downloads** the images for the commit it deploys - about
+a minute, no build memory - and builds on the server only what isn't there.
+
+**One-time setup**
+
+1. **Tell GitHub your API address.** On GitHub: the repo's
+   **Settings > Secrets and variables > Actions > Variables > New repository
+   variable**. Name `NEXT_PUBLIC_API_URL`, value exactly as in the server's
+   `.env.production` (e.g. `https://pickcare.lk/api`). The staff app and the
+   website have it built in. (An ARM server, e.g. AWS Graviton, also needs
+   `IMAGE_PLATFORMS` = `linux/arm64`.)
+2. **Build once.** **Actions > Build server images > Run workflow** (or merge
+   anything to `main`). It takes about 10 minutes the first time, less after.
+3. **Point the server at the registry.** On the server, add to
+   `.env.production` (your GitHub user and repo, lowercase):
+
+   ```bash
+   IMAGE_REGISTRY=ghcr.io/anjana55/pick_care
+   ```
+
+4. **Private images only:** if the repo - and so its images - is private, log
+   the server in once. Make a token at GitHub > Settings > Developer settings
+   > Personal access tokens (classic) with only **read:packages**, then:
+
+   ```bash
+   echo <token> | docker login ghcr.io -u <your-github-user> --password-stdin
+   ```
+
+That's it: the next `./update.sh` shows **Download:** instead of **Rebuild:**
+in its plan. A new server can start the same way:
+`./setup.sh --domain=... --registry=ghcr.io/anjana55/pick_care`.
+
+**How it behaves**
+
+- Deploying `main` straight after a merge: GitHub is usually still building,
+  so the update **waits** for it (up to 20 minutes, `--wait=MIN` to change,
+  `--no-wait` to skip), then downloads. If GitHub's build failed, it builds
+  on the server instead and says so - check the repo's **Actions** tab.
+- `--pr=N`, `--ref=<older commit>` and tags aren't built by GitHub, so they
+  are built on the server as before, unless their images happen to exist.
+- A downloaded web image built for a different `NEXT_PUBLIC_API_URL` is not
+  used (it would call the wrong API): the update builds it on the server and
+  tells you to fix the GitHub variable.
+- `--build-here` ignores the registry for one update. Remove
+  `IMAGE_REGISTRY` (or set it to `none`) to go back to building every time.
+- Rollback never downloads: the previous release's images stay on the
+  server, as before. GitHub keeps the newest 15 images of each app.
 
 ### 16.8 The caregiver sign-in recovery update (migration 0003)
 
