@@ -191,6 +191,55 @@ eas build --profile preview --platform all
 Share the install link with testers. Android testers get an APK. iPhone
 testers' devices must be registered first (step 4).
 
+### The location test (GPS tracking, B0)
+
+Before "On my way" and the checks during a visit are switched on, test
+background location on real phones. The test is in development and preview
+builds only (Account or Profile > **Location test**). It never appears in a
+store build, even after an over-the-air update.
+
+**Build.** This needs a **new** preview build: the location task
+(`expo-task-manager`), iOS's location background mode and Android's
+location foreground service are native changes.
+
+```bash
+eas build --profile preview --platform all
+```
+
+**Phones:** one budget Android phone (the kind caregivers use), one recent
+Android phone and one iPhone.
+
+**On each phone**
+1. Charge to above 80%. Allow location **"While using the app"** only, never
+   "Allow all the time". On Android 13+, allow notifications.
+2. **Trip test:** start "Trip: every 30 s", lock the phone, travel about 45
+   minutes, then stop.
+3. **Visit test:** start "Visit: every 30 min" at the start of a working
+   day, use the phone normally, and stop after 8 hours.
+4. After each test, tap **Share results** and send the text (it includes a
+   CSV of the points).
+
+**Pass**
+- Points keep coming with the screen off and the app in the background:
+  at most one gap on a trip, and none on a visit.
+- Battery: under 10% over the 8-hour visit test.
+- Android shows the notification for the whole test, and iPhone shows the
+  blue location indicator.
+- Nothing asks for "Allow all the time".
+
+**If an iPhone uses too much battery**, the fallback is a 60-minute interval
+on iOS. Also try one run where the app is swiped away: iOS stops tracking
+then. That is expected, and it shows up as "no signal" for staff.
+
+**Store forms this build needs**
+- **Google Play:** App content › Foreground service permissions. Declare
+  **Location** and give the reason: "Only while a caregiver has tapped On my
+  way to a client, or is checked in to a care visit; a notification shows
+  while it runs." No background location declaration is needed, because the
+  app never asks for "Allow all the time".
+- **App Store:** in the review notes, explain that background location runs
+  only after a caregiver taps On my way or Check in, and stops at check-out.
+
 ### A store release (production)
 
 1. Raise `version` in `app.config.ts` (for example `1.0.0` to `1.1.0`).
