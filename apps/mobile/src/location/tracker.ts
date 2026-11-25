@@ -27,19 +27,24 @@ const MAX_POINTS = 2000;
 type LocationModule = typeof import('expo-location');
 type TaskManagerModule = typeof import('expo-task-manager');
 
-function load<T>(native: string, name: string): T | null {
+/**
+ * Load a native module only when this build has it (Expo Go and older builds
+ * don't). Metro only bundles require() calls with a fixed string, so each
+ * module gets its own loader: never require(variable).
+ */
+function load<T>(native: string, get: () => T): T | null {
   if (!hasNativeModule(native)) return null;
   try {
-    return require(name) as T;
+    return get();
   } catch {
     return null;
   }
 }
-const location = () => load<LocationModule>('ExpoLocation', 'expo-location');
-const taskManager = () => load<TaskManagerModule>('ExpoTaskManager', 'expo-task-manager');
+const location = () => load<LocationModule>('ExpoLocation', () => require('expo-location') as LocationModule);
+const taskManager = () => load<TaskManagerModule>('ExpoTaskManager', () => require('expo-task-manager') as TaskManagerModule);
 
 async function batteryPercent(): Promise<number | null> {
-  const Battery = load<typeof import('expo-battery')>('ExpoBattery', 'expo-battery');
+  const Battery = load<typeof import('expo-battery')>('ExpoBattery', () => require('expo-battery') as typeof import('expo-battery'));
   if (!Battery) return null;
   try {
     const level = await Battery.getBatteryLevelAsync();
