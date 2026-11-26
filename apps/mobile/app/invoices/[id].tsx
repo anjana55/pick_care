@@ -15,6 +15,7 @@ import { SignInPrompt } from '@/care/SignInPrompt';
 import { useClient } from '@/care/api';
 import { PayhereSheet, webViewAvailable, type PayhereOutcome } from '@/care/PayhereSheet';
 import { useMarkPathsRead } from '@/notifications/api';
+import { shareInvoicePdf } from '@/care/invoice-pdf';
 
 /** After a manual close, how long to keep checking whether a payment came through. */
 const QUIET_CHECK_MS = 60_000;
@@ -41,6 +42,7 @@ export default function InvoiceScreen() {
   const start = useStartOnlinePayment(id ?? '');
   const [checkout, setCheckout] = useState<PayhereCheckout | null>(null);
   const [email, setEmail] = useState('');
+  const [pdf, setPdf] = useState<'idle' | 'busy' | 'failed'>('idle');
   // Opened from "Pay now": start the online payment once, when nothing more is needed (no email to ask for).
   const autoStarted = useRef(false);
   useEffect(() => {
@@ -105,6 +107,20 @@ export default function InvoiceScreen() {
     start.mutate(needEmail ? email.trim() : undefined, { onSuccess: setCheckout });
   };
 
+  /**
+   * The invoice as a PDF, to the share sheet ("Save to Files", Drive, WhatsApp,
+   * email). A build made before PDFs were added opens the website's invoice,
+   * which prints and saves as PDF.
+   */
+  const downloadPdf = async () => {
+    setPdf('busy');
+    const outcome = await shareInvoicePdf(invoice, t, locale, colors.brand);
+    if (outcome === 'unsupported') {
+      Linking.openURL(`${config.siteUrl}/account/invoices/${invoice.id}`).catch(() => undefined);
+    }
+    setPdf(outcome === 'failed' ? 'failed' : 'idle');
+  };
+
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.page}>
@@ -156,6 +172,15 @@ export default function InvoiceScreen() {
         ) : invoice.status === 'ISSUED' ? (
           <Text style={[styles.notice, { borderColor: colors.border, color: colors.muted }]}>{t('invoices.pay.offline')}</Text>
         ) : null}
+
+        <Button
+          variant="secondary"
+          icon="download-outline"
+          label={pdf === 'busy' ? t('invoices.pdf.preparing') : t('invoices.pdf.download')}
+          busy={pdf === 'busy'}
+          onPress={downloadPdf}
+        />
+        <FormError message={pdf === 'failed' ? t('invoices.pdf.error') : null} />
 
         <InvoiceView invoice={invoice} locale={locale} />
       </ScrollView>
