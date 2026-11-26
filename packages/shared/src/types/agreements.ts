@@ -171,6 +171,10 @@ const CAREGIVER_EN: AgreementText = {
       body: 'You are free to accept or decline the work we offer. Once you accept a shift, tell the office as early as you can if you cannot make it, so the client is not left without care.',
     },
     {
+      heading: 'Your location during visits',
+      body: 'If you tap "On my way" before a visit, the client and the office see where you are and about how long until you arrive, until you check in. While you are checked in, the app may check your location at set times (for example every 30 minutes) and share it with the office only. This is only ever during a shift you started from the app; a notification shows while it runs, and you can stop it. It is used for the safety and quality of visits, never for ratings or search, and the points are deleted after a set number of days.',
+    },
+    {
       heading: 'Payment',
       body: 'You are paid for the shifts you complete at the rate agreed when you accepted them, on the dates and in the way the office tells you.',
     },
@@ -210,6 +214,10 @@ const CAREGIVER_SI: AgreementText = {
     {
       heading: 'වැඩ පිරිනැමීම් සහ මුර',
       body: 'අප පිරිනමන වැඩ භාර ගැනීමට හෝ ප්‍රතික්ෂේප කිරීමට ඔබට නිදහස ඇත. මුරයක් භාර ගත් පසු, ඔබට එයට සහභාගී විය නොහැකි නම්, සේවාලාභියා රැකවරණයකින් තොරව නොසිටින ලෙස හැකි ඉක්මනින් කාර්යාලයට දන්වන්න.',
+    },
+    {
+      heading: 'පැමිණීම් අතරතුර ඔබගේ ස්ථානය',
+      body: 'පැමිණීමකට පෙර ඔබ "මම එනවා" තට්ටු කළහොත්, ඔබ පැමිණීම සටහන් කරන තුරු ඔබ සිටින ස්ථානය සහ ඔබ පැමිණීමට ආසන්න කාලය සේවාලාභියාට සහ කාර්යාලයට පෙනේ. ඔබ පැමිණීම සටහන් කර සිටින අතරතුර, යෙදුම නියමිත වේලාවන්හිදී (උදාහරණයක් ලෙස සෑම මිනිත්තු 30 කට වරක්) ඔබගේ ස්ථානය පරීක්ෂා කර එය කාර්යාලය සමඟ පමණක් බෙදා ගත හැක. මෙය සිදු වන්නේ ඔබ යෙදුමෙන් ආරම්භ කළ සේවා මුරයක් අතරතුර පමණි; එය ක්‍රියාත්මක වන අතරතුර දැනුම්දීමක් පෙන්වන අතර, ඔබට එය නැවැත්විය හැක. එය පැමිණීම්වල ආරක්ෂාව සහ ගුණාත්මකභාවය සඳහා පමණක් භාවිතා වේ, ශ්‍රේණිගත කිරීම් හෝ සෙවීම සඳහා කිසිවිටෙක නොවේ, සහ ස්ථාන සටහන් නියමිත දින ගණනකට පසු මකා දමනු ලැබේ.',
     },
     {
       heading: 'ගෙවීම්',
@@ -253,6 +261,10 @@ const CAREGIVER_TA: AgreementText = {
       body: 'நாங்கள் வழங்கும் வேலையை ஏற்கவோ மறுக்கவோ உங்களுக்குச் சுதந்திரம் உண்டு. ஒரு பணிநேரத்தை ஏற்றுக்கொண்ட பின் உங்களால் வர முடியாவிட்டால், வாடிக்கையாளர் பராமரிப்பின்றி விடப்படாமல் இருக்க முடிந்தவரை விரைவில் அலுவலகத்திற்குத் தெரிவிக்கவும்.',
     },
     {
+      heading: 'வருகைகளின்போது உங்கள் இருப்பிடம்',
+      body: 'வருகைக்கு முன் நீங்கள் "வருகிறேன்" என்பதைத் தட்டினால், நீங்கள் வருகையைப் பதிவுசெய்யும் வரை நீங்கள் எங்கே இருக்கிறீர்கள், வந்துசேர ஏறக்குறைய எவ்வளவு நேரம் என்பதை வாடிக்கையாளரும் அலுவலகமும் பார்ப்பார்கள். நீங்கள் வருகையைப் பதிவுசெய்திருக்கும்போது, செயலி குறிப்பிட்ட நேரங்களில் (உதாரணமாக ஒவ்வொரு 30 நிமிடங்களுக்கும்) உங்கள் இருப்பிடத்தைச் சரிபார்த்து அலுவலகத்துடன் மட்டும் பகிரலாம். இது நீங்கள் செயலியிலிருந்து தொடங்கிய பணியின்போது மட்டுமே நடக்கும்; இது இயங்கும்போது ஓர் அறிவிப்பு காட்டப்படும், நீங்கள் அதை நிறுத்தலாம். இது வருகைகளின் பாதுகாப்புக்கும் தரத்துக்கும் மட்டுமே பயன்படுகிறது, மதிப்பீடுகளுக்கோ தேடலுக்கோ ஒருபோதும் அல்ல, மேலும் இருப்பிடப் புள்ளிகள் குறிப்பிட்ட நாட்களுக்குப் பிறகு நீக்கப்படும்.',
+    },
+    {
       heading: 'கட்டணம்',
       body: 'நீங்கள் நிறைவு செய்யும் பணிநேரங்களுக்கு, அவற்றை ஏற்றுக்கொண்டபோது ஒப்புக்கொண்ட விகிதத்தில், அலுவலகம் தெரிவிக்கும் திகதிகளிலும் முறையிலும் உங்களுக்குக் கட்டணம் செலுத்தப்படும்.',
     },
@@ -274,7 +286,7 @@ const CAREGIVER_TA: AgreementText = {
 
 export const SERVICE_AGREEMENTS: Record<SignupSide, ServiceAgreement> = {
   client: { version: '2026-11-22', text: { en: CLIENT_EN, si: CLIENT_SI, ta: CLIENT_TA } },
-  caregiver: { version: '2026-11-22', text: { en: CAREGIVER_EN, si: CAREGIVER_SI, ta: CAREGIVER_TA } },
+  caregiver: { version: '2026-11-26', text: { en: CAREGIVER_EN, si: CAREGIVER_SI, ta: CAREGIVER_TA } },
 };
 
 /** The current version of a side's agreement - what a registration must say it accepted. */

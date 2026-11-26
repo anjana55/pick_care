@@ -2,32 +2,7 @@
 
 import { useMemo, useState, type ReactNode } from 'react';
 import Link from 'next/link';
-import {
-  AlertOctagon,
-  AlertTriangle,
-  ArrowDownRight,
-  ArrowRight,
-  ArrowUpRight,
-  CalendarClock,
-  CheckCircle2,
-  ClipboardList,
-  ClipboardX,
-  Clock3,
-  FileWarning,
-  Globe2,
-  HandCoins,
-  Inbox,
-  Loader2,
-  ReceiptText,
-  RefreshCw,
-  ShieldCheck,
-  Star,
-  MapPinOff,
-  UserPlus,
-  UserX,
-  Wallet,
-  type LucideIcon, Bot, Phone, BadgeCheck, Camera
-} from 'lucide-react';
+import { AlertOctagon, AlertTriangle, ArrowDownRight, ArrowRight, ArrowUpRight, CalendarClock, CheckCircle2, ClipboardList, ClipboardX, Clock3, FileWarning, Globe2, HandCoins, Inbox, Loader2, ReceiptText, RefreshCw, ShieldCheck, Star, MapPinOff, UserPlus, UserX, Wallet, type LucideIcon, Bot, Phone, BadgeCheck, Camera, MapPin } from 'lucide-react';
 import { formatLkr, type BusinessInsights, type InsightKpi, type InsightRange, type InsightRatio } from '@care-platform/shared';
 import { useTranslation } from '@/lib/i18n/provider';
 import { useBusinessInsights } from '@/lib/hooks/use-insights';
@@ -295,6 +270,7 @@ function DashboardBody({ data }: { data: BusinessInsights }) {
   const overseasWaiting = overseas ? overseas.new + overseas.pendingProfiles + overseas.pendingEmployers + overseas.interviewRequests : 0;
   const attention: AttentionItem[] = [
     { key: 'peopleWaiting', count: a.peopleWaiting ?? 0, label: t('dashboard.attention.peopleWaiting'), href: '/people-waiting', severity: 'act', Icon: Phone },
+    { key: 'placesToConfirm', count: a.placesToConfirm ?? 0, label: t('dashboard.attention.placesToConfirm'), href: '/bookings/places', severity: 'act', Icon: MapPin },
     { key: 'proposals', count: proposals?.length ?? 0, label: t('automation.proposals.attention'), href: '/agent-proposals', severity: 'act', Icon: Bot },
     { key: 'overdue', count: a.overdueInvoices, label: t('dashboard.attention.overdueInvoices'), detail: formatLkr(a.overdueAmount), href: '/invoices?tab=overdue', severity: 'act', Icon: ReceiptText },
     { key: 'stale', count: a.newRequestsOver24h, label: t('dashboard.attention.newRequestsOver24h'), href: '/requests?tab=open', severity: 'act', Icon: Inbox },

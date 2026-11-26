@@ -1,3 +1,4 @@
+import { PRESENCE_NEXT, PRESENCE_SUBJECT, presenceReason, type PresenceFlagKind } from './presence-rules';
 import { visitState, type CheckInSettings } from '@care-platform/shared';
 
 /**
@@ -33,7 +34,7 @@ export interface LiveVisit {
 export const EARLY_CHASE_WINDOW_MINUTES = 30;
 
 /** NO_COVER comes from the cover side of the agent: it looked for someone to step in and found nobody. */
-export type FlagKind = 'STILL_LATE' | 'NO_CHECK_IN' | 'LEFT_EARLY' | 'NO_COVER';
+export type FlagKind = 'STILL_LATE' | 'NO_CHECK_IN' | 'LEFT_EARLY' | 'NO_COVER' | PresenceFlagKind;
 
 export type LiveStep =
   | { step: 'none' }
@@ -79,6 +80,7 @@ const span = (m: number) => (m >= 120 ? `${Math.floor(m / 60)} h ${m % 60 ? `${m
 
 /** The flag in plain words, for the decision log, the staff notice and the handover note. */
 export function flagReason(kind: FlagKind, step: { minutes: number; ofMinutes?: number }, who: string, startTime: string): string {
+  if (kind in PRESENCE_NEXT) return presenceReason(kind as PresenceFlagKind, step.minutes, who, startTime);
   if (kind === 'STILL_LATE') return `${who} was due at ${startTime}, was asked to check in, and still has not (${span(step.minutes)} late)`;
   if (kind === 'NO_CHECK_IN') return `The ${startTime} visit ended with no check-in from ${who}`;
   if (kind === 'NO_COVER') {
@@ -94,4 +96,11 @@ export const FLAG_NEXT: Record<FlagKind, string> = {
   NO_CHECK_IN: 'Staff to find out whether the visit happened, and mark the shift done or missed',
   LEFT_EARLY: 'Staff to check with the client, then mark the shift done or change its times',
   NO_COVER: 'Staff to find cover by phone, or tell the client the visit will not happen',
+  ...PRESENCE_NEXT,
 };
+
+/** The staff bell and email subject for a flag. */
+export function flagSubject(kind: FlagKind, reference: string): string {
+  if (kind in PRESENCE_SUBJECT) return `${PRESENCE_SUBJECT[kind as PresenceFlagKind]}: ${reference}`;
+  return kind === 'LEFT_EARLY' ? `Visit cut short: ${reference}` : kind === 'NO_COVER' ? `No cover found: ${reference}` : `Visit not checked in: ${reference}`;
+}

@@ -101,6 +101,7 @@ export const AUTOMATION_ACTIONS = {
   'live_care.triage_issue': { function: 'LIVE_CARE', tier: 0, label: 'Sort an issue report by urgency' },
   'live_care.chase_late_caregiver': { function: 'LIVE_CARE', tier: 1, label: 'Chase a caregiver who has not checked in' },
   'live_care.flag_visit': { function: 'LIVE_CARE', tier: 0, label: 'Tell staff about a visit that needs a person' },
+  'live_care.check_presence': { function: 'LIVE_CARE', tier: 1, label: 'Ask a caregiver who seems to have left the home during a visit' },
   'live_care.complete_shift': { function: 'LIVE_CARE', tier: 1, label: 'Mark a shift completed after check-out' },
   'live_care.nudge_care_plan': { function: 'LIVE_CARE', tier: 1, label: 'Remind the client to tick off care' },
   'live_care.replace_caregiver': { function: 'LIVE_CARE', tier: 2, label: 'Offer a no-show shift to cover caregivers' },

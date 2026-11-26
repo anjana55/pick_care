@@ -16,6 +16,7 @@ export const TODO_ICONS: Record<TodoKind, IconName> = {
   PAY_INVOICE: 'receipt-outline',
   RATE_CAREGIVER: 'star-outline',
   TICK_OFF_CARE: 'checkbox-outline',
+  PIN_HOME: 'location-outline',
   UPLOAD_DOCUMENT: 'cloud-upload-outline',
   DOCUMENT_REJECTED: 'alert-circle-outline',
   DOCUMENT_EXPIRING: 'time-outline',

@@ -148,7 +148,7 @@ function VisitRow({ visit: v, date, on }: { visit: TodayVisit; date: string; on:
         </div>
         <div className="min-w-[10rem] text-sm">
           {live ? on ? <VisitChip checkIn={v.checkIn} minutesLate={v.minutesLate} /> : null : <ShiftStatusBadge status={v.shiftStatus} label={t(`bookings.shiftStatus.${v.shiftStatus}`)} />}
-          {on && live && <VisitNotes checkIn={v.checkIn} />}
+          {on && live && <VisitNotes checkIn={v.checkIn} shiftId={v.shiftId} />}
           {/* The code matters only while the caregiver can still use it. */}
           {on && live && !v.checkIn.checkedInAt && v.checkIn.state !== 'NOT_RECORDED' && (
             <p className="mt-1 text-xs text-ink/50">

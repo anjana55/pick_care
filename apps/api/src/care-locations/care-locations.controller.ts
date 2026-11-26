@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post, Put } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import type { BookingCareLocation, CareLocation } from '@care-platform/shared';
+import type { BookingCareLocation, CareLocation, CareLocationSuggestion } from '@care-platform/shared';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Audit } from '../common/decorators/audit.decorator';
 import { CurrentUser, type AuthenticatedUser } from '../common/decorators/current-user.decorator';
@@ -81,6 +81,20 @@ export class PatientCareLocationsController {
   async remove(@Param('patientId') patientId: string, @Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
     await this.places.remove(patientId, id, { kind: 'STAFF', userId: user.userId });
     return { ok: true };
+  }
+}
+
+/** Staff: places suggested from a check-in, waiting to be confirmed (Needs attention). */
+@ApiTags('care-locations')
+@ApiBearerAuth()
+@Roles('ADMIN', 'STAFF')
+@Controller('care-locations')
+export class CareLocationSuggestionsController {
+  constructor(private readonly places: CareLocationsService) {}
+
+  @Get('suggestions')
+  suggestions(): Promise<CareLocationSuggestion[]> {
+    return this.places.suggestions();
   }
 }
 

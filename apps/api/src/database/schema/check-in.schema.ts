@@ -21,6 +21,11 @@ export const checkInSettings = mysqlTable('check_in_settings', {
   onMyWayMinutes: int('on_my_way_minutes').notNull().default(60),
   /** Raw location points are deleted after this many days. */
   locationRetentionDays: int('location_retention_days').notNull().default(30),
+  /** Location checks during a visit (GPS tracking C). Off by default; needs live location on. */
+  presenceEnabled: boolean('presence_enabled').notNull().default(false),
+  presenceEveryMinutes: int('presence_every_minutes').notNull().default(30),
+  presenceAwayPoints: int('presence_away_points').notNull().default(2),
+  presenceSilentMultiplier: int('presence_silent_multiplier').notNull().default(2),
   updatedBy: varchar('updated_by', { length: 36 }),
   createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
   updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),

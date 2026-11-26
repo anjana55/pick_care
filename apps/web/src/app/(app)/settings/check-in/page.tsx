@@ -12,7 +12,19 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input, Label } from '@/components/ui/input';
 
-type Draft = { enabled: boolean; earlyMinutes: string; lateAfterMinutes: string; farMetres: string; liveEnabled: boolean; onMyWayMinutes: string; locationRetentionDays: string };
+type Draft = {
+  enabled: boolean;
+  earlyMinutes: string;
+  lateAfterMinutes: string;
+  farMetres: string;
+  liveEnabled: boolean;
+  onMyWayMinutes: string;
+  locationRetentionDays: string;
+  presenceEnabled: boolean;
+  presenceEveryMinutes: string;
+  presenceAwayPoints: string;
+  presenceSilentMultiplier: string;
+};
 const toDraft = (s: CheckInSettings): Draft => ({
   enabled: s.enabled,
   earlyMinutes: String(s.earlyMinutes),
@@ -21,6 +33,10 @@ const toDraft = (s: CheckInSettings): Draft => ({
   liveEnabled: s.liveEnabled,
   onMyWayMinutes: String(s.onMyWayMinutes),
   locationRetentionDays: String(s.locationRetentionDays),
+  presenceEnabled: s.presenceEnabled,
+  presenceEveryMinutes: String(s.presenceEveryMinutes),
+  presenceAwayPoints: String(s.presenceAwayPoints),
+  presenceSilentMultiplier: String(s.presenceSilentMultiplier),
 });
 const inRange = (v: string, { min, max }: { min: number; max: number }) => /^\d+$/.test(v) && Number(v) >= min && Number(v) <= max;
 
@@ -58,6 +74,9 @@ export default function CheckInSettingsPage() {
     farMetres: !inRange(draft.farMetres, CHECK_IN_SETTINGS_LIMITS.farMetres),
     onMyWayMinutes: !inRange(draft.onMyWayMinutes, CHECK_IN_SETTINGS_LIMITS.onMyWayMinutes),
     locationRetentionDays: !inRange(draft.locationRetentionDays, CHECK_IN_SETTINGS_LIMITS.locationRetentionDays),
+    presenceEveryMinutes: !inRange(draft.presenceEveryMinutes, CHECK_IN_SETTINGS_LIMITS.presenceEveryMinutes),
+    presenceAwayPoints: !inRange(draft.presenceAwayPoints, CHECK_IN_SETTINGS_LIMITS.presenceAwayPoints),
+    presenceSilentMultiplier: !inRange(draft.presenceSilentMultiplier, CHECK_IN_SETTINGS_LIMITS.presenceSilentMultiplier),
   };
   const change = (patch: Partial<Draft>) => {
     setSaved(false);
@@ -74,6 +93,10 @@ export default function CheckInSettingsPage() {
         liveEnabled: draft.liveEnabled,
         onMyWayMinutes: Number(draft.onMyWayMinutes),
         locationRetentionDays: Number(draft.locationRetentionDays),
+        presenceEnabled: draft.presenceEnabled,
+        presenceEveryMinutes: Number(draft.presenceEveryMinutes),
+        presenceAwayPoints: Number(draft.presenceAwayPoints),
+        presenceSilentMultiplier: Number(draft.presenceSilentMultiplier),
       },
       {
         onSuccess: (data) => {
@@ -85,7 +108,7 @@ export default function CheckInSettingsPage() {
       },
     );
 
-  const number = (key: 'earlyMinutes' | 'lateAfterMinutes' | 'farMetres' | 'onMyWayMinutes' | 'locationRetentionDays', label: string, hint: string) => (
+  const number = (key: 'earlyMinutes' | 'lateAfterMinutes' | 'farMetres' | 'onMyWayMinutes' | 'locationRetentionDays' | 'presenceEveryMinutes' | 'presenceAwayPoints' | 'presenceSilentMultiplier', label: string, hint: string) => (
     <div>
       <Label htmlFor={key}>{label}</Label>
       <Input
@@ -130,6 +153,16 @@ export default function CheckInSettingsPage() {
             </label>
             {number('onMyWayMinutes', t('visits.settings.onMyWay'), t('visits.settings.onMyWayHint', CHECK_IN_SETTINGS_LIMITS.onMyWayMinutes))}
             {number('locationRetentionDays', t('visits.settings.retention'), t('visits.settings.retentionHint', CHECK_IN_SETTINGS_LIMITS.locationRetentionDays))}
+            <label className="flex items-start gap-3">
+              <input type="checkbox" className="mt-1 h-4 w-4" checked={draft.presenceEnabled} onChange={(e) => change({ presenceEnabled: e.target.checked })} />
+              <span>
+                <span className="block text-sm font-medium text-ink">{t('visits.settings.presence')}</span>
+                <span className="block text-xs text-ink/50">{t('visits.settings.presenceHint')}</span>
+              </span>
+            </label>
+            {number('presenceEveryMinutes', t('visits.settings.presenceEvery'), t('visits.settings.presenceEveryHint', CHECK_IN_SETTINGS_LIMITS.presenceEveryMinutes))}
+            {number('presenceAwayPoints', t('visits.settings.presenceAway'), t('visits.settings.presenceAwayHint', CHECK_IN_SETTINGS_LIMITS.presenceAwayPoints))}
+            {number('presenceSilentMultiplier', t('visits.settings.presenceSilent'), t('visits.settings.presenceSilentHint', CHECK_IN_SETTINGS_LIMITS.presenceSilentMultiplier))}
           </fieldset>
           {error && (
             <p role="alert" className="text-sm text-danger">

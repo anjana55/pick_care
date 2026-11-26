@@ -46,6 +46,29 @@ export class UpdateCheckInSettingsDto {
   @Type(() => Number)
   @IsInt()
   locationRetentionDays?: number;
+
+  @ApiPropertyOptional({ description: 'Location checks during a visit' })
+  @IsOptional()
+  @IsBoolean()
+  presenceEnabled?: boolean;
+
+  @ApiPropertyOptional({ minimum: 5, maximum: 120 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  presenceEveryMinutes?: number;
+
+  @ApiPropertyOptional({ minimum: 1, maximum: 6 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  presenceAwayPoints?: number;
+
+  @ApiPropertyOptional({ minimum: 2, maximum: 4 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  presenceSilentMultiplier?: number;
 }
 
 /** Where the phone is, when it can say. All optional: a phone with no fix still checks in. */

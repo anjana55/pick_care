@@ -421,6 +421,13 @@
       "when": 1795664086243,
       "tag": "0059_communication_preferences",
       "breakpoints": true
+    },
+    {
+      "idx": 60,
+      "version": "5",
+      "when": 1795679659718,
+      "tag": "0060_presence_checks",
+      "breakpoints": true
     }
   ]
 }

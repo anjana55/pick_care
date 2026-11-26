@@ -4,8 +4,8 @@ import { AuditService } from '../audit/audit.service';
 import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { Type } from 'class-transformer';
-import { ArrayMaxSize, IsArray, IsBoolean, IsISO8601, IsNumber, IsOptional, ValidateNested } from 'class-validator';
-import { LOCATION_POINTS_BATCH_MAX, type ClientLive, type PointsAccepted, type StaffLiveShare, type StartedShare } from '@care-platform/shared';
+import { ArrayMaxSize, IsArray, IsBoolean, IsIn, IsISO8601, IsNumber, IsOptional, ValidateNested } from 'class-validator';
+import { LOCATION_POINTS_BATCH_MAX, presenceReplies, type PresenceReply, type StaffPresenceDetail, type ClientLive, type PointsAccepted, type StaffLiveShare, type StartedShare } from '@care-platform/shared';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Public } from '../common/decorators/public.decorator';
 import { Audit } from '../common/decorators/audit.decorator';
@@ -34,6 +34,11 @@ class PointDto {
   mocked?: boolean;
 }
 
+class PresenceReplyDto {
+  @IsIn(presenceReplies)
+  reply: PresenceReply;
+}
+
 class PointsDto {
   @IsArray()
   @ArrayMaxSize(LOCATION_POINTS_BATCH_MAX)
@@ -55,6 +60,22 @@ export class MyLocationSharesController {
   @Audit({ action: 'ON_MY_WAY', entityType: 'BookingShift' })
   onMyWay(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AuthenticatedUser): Promise<StartedShare> {
     return this.shares.startOnMyWay(user, id);
+  }
+
+  /** "Share from this phone" while checked in: a new share for the checks during the visit. */
+  @Post('shifts/:id/presence/restart')
+  @HttpCode(200)
+  @Audit({ action: 'RESTART_PRESENCE', entityType: 'BookingShift' })
+  restart(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AuthenticatedUser): Promise<StartedShare> {
+    return this.shares.restartPresence(user, id);
+  }
+
+  /** The answer to "Still with …?". */
+  @Post('shifts/:id/presence/reply')
+  @HttpCode(200)
+  async reply(@Param('id', ParseUUIDPipe) id: string, @Body() dto: PresenceReplyDto, @CurrentUser() user: AuthenticatedUser) {
+    await this.shares.reply(user, id, dto.reply);
+    return { ok: true };
   }
 
   @Post('location-shares/:id/stop')
@@ -118,5 +139,12 @@ export class LiveVisitsController {
     const shares = await this.shares.staffLive();
     if (opened === '1') void this.audit.record({ userId: user.userId, action: 'VIEW_LIVE_LOCATIONS', entityType: 'LocationShare', entityId: null, ipAddress: req.ip ?? null });
     return shares;
+  }
+
+  /** The checks during one visit, with the points for the map. Written to the audit log. */
+  @Get(':shiftId/presence')
+  @Audit({ action: 'VIEW_VISIT_LOCATIONS', entityType: 'BookingShift' })
+  presence(@Param('shiftId', ParseUUIDPipe) shiftId: string): Promise<StaffPresenceDetail | null> {
+    return this.shares.staffPresence(shiftId);
   }
 }

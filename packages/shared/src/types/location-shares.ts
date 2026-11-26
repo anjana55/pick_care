@@ -16,7 +16,8 @@ import type { GeoPoint } from './geo';
 export const locationShareKinds = ['ON_THE_WAY', 'ON_SHIFT'] as const;
 export type LocationShareKind = (typeof locationShareKinds)[number];
 
-export const locationShareEndReasons = ['CHECKED_IN', 'STOPPED', 'SHIFT_ENDED', 'CANT_MAKE', 'CAP', 'CHECKED_OUT', 'TURNED_OFF'] as const;
+/** REPLACED: a second tap, or another phone, took over - not the caregiver stopping. */
+export const locationShareEndReasons = ['CHECKED_IN', 'STOPPED', 'SHIFT_ENDED', 'CANT_MAKE', 'CAP', 'CHECKED_OUT', 'TURNED_OFF', 'REPLACED'] as const;
 export type LocationShareEndReason = (typeof locationShareEndReasons)[number];
 
 /** On my way can be tapped from this many minutes before the start (the admin's setting) until check-in. */
@@ -126,4 +127,77 @@ export function etaFrom(distanceM: number | null, at: Date, arrivingWithinM: num
   const raw = ((distanceM * 1.4) / 1000 / kmh) * 60;
   const minutes = raw <= 15 ? Math.max(1, Math.round(raw)) : Math.round(raw / 5) * 5;
   return { minutes, arriving: false, distanceM: Math.round(distanceM) };
+}
+
+// --- Phase C: location checks during a visit --------------------------------------------
+
+export const PRESENCE_EVERY_LIMITS = { min: 5, max: 120 } as const;
+export const PRESENCE_AWAY_POINTS_LIMITS = { min: 1, max: 6 } as const;
+export const PRESENCE_SILENT_LIMITS = { min: 2, max: 4 } as const;
+export const DEFAULT_PRESENCE = { everyMinutes: 30, awayPoints: 2, silentMultiplier: 2 } as const;
+/** An ON_SHIFT share keeps going this long after the shift's end, for a caregiver who forgets to check out. */
+export const PRESENCE_AFTER_END_MINUTES = 30;
+
+/** One interval of a visit, as the staff dot strip shows it. */
+export type PresenceSlot = 'IN' | 'AWAY' | 'NONE' | 'UNKNOWN';
+
+/** The caregiver's answer to "Still with Mrs Perera?". */
+export const presenceReplies = ['WITH_CLIENT', 'OUT_FOR_CLIENT'] as const;
+export type PresenceReply = (typeof presenceReplies)[number];
+
+/** A caregiver's own view of the checks during one visit (on CaregiverCheckIn). */
+export interface CaregiverPresence {
+  everyMinutes: number;
+  /** The open share while checked in; null before check-in or once it closed. */
+  shareId: string | null;
+  /** "Still with …?" was asked and not answered yet. */
+  askedAt: string | null;
+}
+
+/** Staff's view of the checks during one visit. */
+export interface StaffPresence {
+  shareId: string;
+  everyMinutes: number;
+  open: boolean;
+  startedAt: string;
+  endedAt: string | null;
+  endReason: LocationShareEndReason | null;
+  /** One per interval from check-in to now (or the end): IN at the home, AWAY, NONE (no point), UNKNOWN (no place on the map). */
+  slots: PresenceSlot[];
+  inside: number;
+  away: number;
+  none: number;
+  mocked: number;
+  /** The caregiver's answer to "Still with …?", and when. */
+  reply: PresenceReply | null;
+  repliedAt: string | null;
+}
+
+/** GET /visits/:shiftId/presence: the points too, for the map. */
+export interface StaffPresenceDetail extends StaffPresence {
+  points: (GeoPoint & { at: string; accuracyM: number | null; inside: boolean | null; mocked: boolean })[];
+  home: GeoPoint | null;
+}
+
+/**
+ * The dot strip: split the visit into intervals and say, for each, whether
+ * the phone reported in at the home, away, or not at all. The last interval
+ * counts only once it is over.
+ */
+export function presenceSlots(startedAt: number, until: number, everyMs: number, points: { at: number; inside: boolean | null }[]): PresenceSlot[] {
+  const slots: PresenceSlot[] = [];
+  for (let from = startedAt; from + everyMs <= until + 60_000 && slots.length < 200; from += everyMs) {
+    const mine = points.filter((p) => p.at >= from - 60_000 && p.at < from + everyMs - 60_000);
+    if (!mine.length) slots.push('NONE');
+    else if (mine.some((p) => p.inside === false)) slots.push('AWAY');
+    else if (mine.some((p) => p.inside === true)) slots.push('IN');
+    else slots.push('UNKNOWN');
+  }
+  return slots;
+}
+
+/** POST /me/shifts/:id/check-in answers with the checks' share when they are on, for the phone to start. */
+export interface CheckInResult {
+  ok: true;
+  presence: StartedShare | null;
 }
