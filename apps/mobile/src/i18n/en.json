@@ -1867,5 +1867,25 @@
       "AFTERNOON": "Afternoon",
       "EVENING": "Evening"
     }
+  },
+  "addressSearch": {
+    "label": "Find the address",
+    "placeholder": "House number and street, a landmark, or the town",
+    "searching": "Searching…",
+    "noMatches": "Nothing found. Try the street or the town name, or move the map yourself.",
+    "mapSearchUnavailable": "Only towns could be searched just now.",
+    "error": "The search did not work. Try again, or move the map yourself.",
+    "precision": {
+      "ADDRESS": "Address",
+      "STREET": "Street",
+      "AREA": "Area",
+      "TOWN": "Town"
+    },
+    "next": {
+      "ADDRESS": "Found it. Check the pin is on the right house, and drag it if not.",
+      "STREET": "Found the street. Now drag the pin onto the house.",
+      "AREA": "Found the area. Zoom in and drag the pin onto the house.",
+      "TOWN": "Found the town. Zoom in and drag the pin onto the house."
+    }
   }
 }

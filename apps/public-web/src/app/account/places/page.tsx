@@ -2,12 +2,14 @@
 
 import { useState } from 'react';
 import { LocateFixed, MapPin, Star } from 'lucide-react';
-import { CARE_LOCATIONS_MAX, CARE_LOCATION_LABEL_MAX, type CareLocation, type GeoPoint } from '@care-platform/shared';
+import { CARE_LOCATIONS_MAX, CARE_LOCATION_LABEL_MAX, zoomForPrecision, type AddressSearchResult, type CareLocation, type GeoPoint } from '@care-platform/shared';
 import { useTranslation } from '@/lib/i18n';
-import { ApiError } from '@/lib/api/client';
+import { api, ApiError } from '@/lib/api/client';
 import { useMyCareLocations, useRemoveCareLocation, useSaveCareLocation } from '@/lib/hooks/use-client-care';
 import { devicePosition } from '@/lib/device-position';
 import { PinPicker } from '@/components/map/pin-picker';
+import { AddressSearch } from '@/components/map/address-search';
+import { useAddressSearchLabels } from '@/components/map/address-search-labels';
 import { LoadingState, ErrorState } from '@/components/common/states';
 import { Button } from '@/components/ui/button';
 import { Input, Label } from '@/components/ui/input';
@@ -21,8 +23,10 @@ type Editing = { id?: string; point: GeoPoint | null; label: string; start: GeoP
  * shown to caregivers - the office still shares the address.
  */
 export default function CarePlacesPage() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { data, isLoading, isError, refetch } = useMyCareLocations();
+  const [focus, setFocus] = useState<(GeoPoint & { zoom: number }) | null>(null);
+  const searchLabels = useAddressSearchLabels();
   const save = useSaveCareLocation();
   const remove = useRemoveCareLocation();
   const [editing, setEditing] = useState<Editing | null>(null);
@@ -71,7 +75,18 @@ export default function CarePlacesPage() {
               <LocateFixed className="mr-2 h-4 w-4" aria-hidden />
               {locating ? t('common.loading') : t('account.places.useMyLocation')}
             </Button>
-            <PinPicker value={editing.point} start={editing.start} onChange={(point) => setEditing({ ...editing, point })} labels={labels} className="relative h-80 w-full overflow-hidden rounded border border-ink/10" />
+            <div className="max-w-xl">
+              <AddressSearch
+                labels={searchLabels}
+                search={(q) => api.get<AddressSearchResult>(`/geo/address-search?${new URLSearchParams({ q, locale })}`)}
+                onPick={(m) => {
+                  const point = { latitude: m.latitude, longitude: m.longitude };
+                  setEditing({ ...editing, point });
+                  setFocus({ ...point, zoom: zoomForPrecision(m.precision) });
+                }}
+              />
+            </div>
+            <PinPicker value={editing.point} start={editing.start} focus={focus} onChange={(point) => setEditing({ ...editing, point })} labels={labels} className="relative h-80 w-full overflow-hidden rounded border border-ink/10" />
             <div className="max-w-sm">
               <Label htmlFor="place-label">{t('account.places.label')}</Label>
               <Input id="place-label" value={editing.label} maxLength={CARE_LOCATION_LABEL_MAX} placeholder={t('account.places.labelPlaceholder')} onChange={(e) => setEditing({ ...editing, label: e.target.value })} />
