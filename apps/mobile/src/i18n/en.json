@@ -518,6 +518,11 @@
     "due": "Due",
     "back": "Back to invoices",
     "print": "Print / save PDF",
+    "pdf": {
+      "download": "Download PDF",
+      "preparing": "Preparing the PDF…",
+      "error": "We couldn't make the PDF. Please try again."
+    },
     "pay": {
       "title": "Pay {amount} online",
       "hint": "Securely by card or mobile wallet through PayHere.",
