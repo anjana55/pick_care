@@ -152,7 +152,7 @@ export class AnnouncementsService {
     return this.get(id);
   }
 
-  /** One WhatsApp update each, in the language their app is set to (English otherwise). Never throws. */
+  /** One WhatsApp update each, in the language their app is set to (English otherwise), skipping anyone who turned reminder messages off. Never throws. */
   private async whatsappAll(userIds: string[], text: NotificationText, id: string) {
     try {
       const wa = await this.whatsappSettings.getResolved();
@@ -163,7 +163,7 @@ export class AnnouncementsService {
       let sent = 0;
       for (let i = 0; i < userIds.length; i += 500) {
         const batch = userIds.slice(i, i + 500);
-        const people = await this.db.select({ id: users.id, phone: users.phone }).from(users).where(and(inArray(users.id, batch), isNotNull(users.phone)));
+        const people = await this.db.select({ id: users.id, phone: users.phone }).from(users).where(and(inArray(users.id, batch), isNotNull(users.phone), eq(users.reminderMessagesEnabled, true)));
         const locales = await this.db
           .select({ userId: deviceTokens.userId, locale: deviceTokens.locale })
           .from(deviceTokens)

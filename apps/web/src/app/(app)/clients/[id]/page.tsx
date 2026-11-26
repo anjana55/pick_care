@@ -23,6 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { ClientProfileFields } from '@/components/clients/client-profile-fields';
 import { ClientOverview } from '@/components/clients/client-overview';
+import { CommunicationPreferencesCard } from '@/components/accounts/communication-preferences-card';
 import { ClientLifecyclePanels, ClientStatusMove } from '@/components/clients/client-lifecycle';
 import { RelatedRequests } from '@/components/requests/related-requests';
 import { RelatedBookings } from '@/components/bookings/related-bookings';
@@ -241,7 +242,10 @@ export default function ClientDetailPage() {
               </div>
             </form>
           ) : (
-            <ClientOverview client={client} />
+            <>
+              <ClientOverview client={client} />
+              {canEdit && <CommunicationPreferencesCard subject={{ kind: 'CLIENT', id: client.id }} canEdit={canEdit} />}
+            </>
           )}
         </TabsContent>
 

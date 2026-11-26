@@ -56,3 +56,4 @@ export * from './types/caregiver-ref';
 export * from './types/signup';
 export * from './types/agreements';
 export * from './types/intake-from-search';
+export * from './types/communication-preferences';

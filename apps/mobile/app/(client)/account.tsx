@@ -60,6 +60,8 @@ export default function Account() {
             <Divider />
             <MenuRow icon="location-outline" label={t('places.title')} onPress={() => router.push('/care-places')} />
             <Divider />
+            <MenuRow icon="notifications-outline" label={t('commsPrefs.title')} onPress={() => router.push('/communication-preferences')} />
+            <Divider />
             <MenuRow icon="call-outline" label={t('talk.title')} onPress={() => router.push('/talk')} />
           </Card>
         ) : null}

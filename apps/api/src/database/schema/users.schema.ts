@@ -31,6 +31,14 @@ export const users = mysqlTable(
     // CAREGIVER accounts, which start unverified.
     emailVerifiedAt: datetime('email_verified_at'),
     lastLoginAt: datetime('last_login_at'),
+    // Communication preferences (clients and caregivers; see
+    // packages/shared/src/types/communication-preferences.ts). The written
+    // channel itself is preferred_contact_method on caregivers / patients.
+    // pushEnabled false: no app push; the bell still keeps every notice.
+    pushEnabled: boolean('push_enabled').notNull().default(true),
+    // false: optional WhatsApp/email reminders and announcements go to the
+    // bell and push only. Payment reminders and first notices always go.
+    reminderMessagesEnabled: boolean('reminder_messages_enabled').notNull().default(true),
     createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
     updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
   },

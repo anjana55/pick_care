@@ -61,6 +61,7 @@ import { MobileAppModule } from './mobile-app/mobile-app.module';
 import { AccountDeletionModule } from './account-deletion/account-deletion.module';
 import { ReviewsCoreModule, ReviewsModule } from './reviews/reviews.module';
 import { NotificationsCoreModule, NotificationsModule } from './notifications/notifications.module';
+import { CommunicationPreferencesModule } from './communication-preferences/communication-preferences.module';
 
 @Module({
   imports: [
@@ -116,6 +117,7 @@ import { NotificationsCoreModule, NotificationsModule } from './notifications/no
     CorrectionsModule,
     ReviewsModule,
     NotificationsModule,
+    CommunicationPreferencesModule,
     CarePlansModule,
     InsightsModule,
     AiModule,

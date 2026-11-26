@@ -145,11 +145,33 @@ export class NotificationsService {
       written.clear();
       this.logger.error(`Notification (${label}) not kept: ${(err as Error).message}`);
     }
-    if (opts.push !== false) this.push.notify(ids, build, path, label, await this.extras(ids, written));
+    if (opts.push !== false) {
+      // Communication preferences: someone who turned push off still gets the bell row above.
+      const pushIds = await this.withPushOn(ids);
+      if (pushIds.length) this.push.notify(pushIds, build, path, label, await this.extras(pushIds, written));
+    }
     return written;
   }
 
   /** Each person's icon badge and the row the push is about - for notices to a few people. */
+  /** These people, less anyone who turned push off. A lookup failure keeps everyone (push was the default). */
+  private async withPushOn(ids: string[]): Promise<string[]> {
+    try {
+      const off = new Set<string>();
+      for (let i = 0; i < ids.length; i += INSERT_CHUNK) {
+        const rows = await this.db
+          .select({ id: users.id })
+          .from(users)
+          .where(and(inArray(users.id, ids.slice(i, i + INSERT_CHUNK)), eq(users.pushEnabled, false)));
+        for (const r of rows) off.add(r.id);
+      }
+      return off.size ? ids.filter((id) => !off.has(id)) : ids;
+    } catch (err) {
+      this.logger.warn(`Push preferences not read: ${(err as Error).message}`);
+      return ids;
+    }
+  }
+
   private async extras(ids: string[], written: Map<string, string>): Promise<PushExtras | undefined> {
     const out: PushExtras = new Map();
     for (const [userId, notificationId] of written) out.set(userId, { notificationId });

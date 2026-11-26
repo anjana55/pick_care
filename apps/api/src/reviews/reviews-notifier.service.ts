@@ -55,11 +55,19 @@ export class ReviewsNotifier {
       const who = await this.client(p.patientId);
       if (!who) return false;
       this.notices.notify([who.userId], (lang) => fromNotice(reviewAskNotice(stage, lang, p.reference)), `/bookings/${p.bookingId}/rate/${p.caregiverPublicId}`, `review ${stage.toLowerCase()} ${p.reference}`);
+      // Communication preferences: the reminder is optional, so it stays in the bell and push when reminder messages are off.
+      if (stage === 'REMINDER' && !(await this.remindersByMessage(who.userId))) return true;
       return await this.deliverToClient(who, p.language, text, path, `review ${stage.toLowerCase()} ${p.reference}`);
     } catch (err) {
       this.logger.error(`Review request failed: ${(err as Error).message}`);
       return false;
     }
+  }
+
+  private async remindersByMessage(userId: string | null | undefined): Promise<boolean> {
+    if (!userId) return true;
+    const [u] = await this.db.select({ on: users.reminderMessagesEnabled }).from(users).where(eq(users.id, userId)).limit(1);
+    return u?.on ?? true;
   }
 
   /** Staff did not publish the written part of a review: tell the client why. */

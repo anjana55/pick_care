@@ -34,6 +34,8 @@ const REJECTED_LOOKBACK_DAYS = 30;
 const OVERDUE_STAFF_DAYS = 7;
 /** These reminders also go by the person's usual channel (WhatsApp or email); the rest are push and bell only. */
 const USUAL_CHANNEL: ReadonlySet<ReminderKind> = new Set(['INVOICE_DUE', 'DOCUMENT_REJECTED']);
+/** Of those, the ones that go even when the person turned reminder messages off (money). */
+const ALWAYS_BY_MESSAGE: ReadonlySet<ReminderKind> = new Set(['INVOICE_DUE']);
 /** Logged once per message sent, so the daily cap counts messages rather than items. */
 const MESSAGE_STAGE = 'MESSAGE';
 const STAFF = 'staff';
@@ -261,7 +263,9 @@ export class ReminderSweepService implements OnApplicationBootstrap, OnModuleDes
       const lines = locked.map((c) => c.line);
       const path = lines.length === 1 ? lines[0].todo.path : '/notifications';
       this.notices.notify([userId], (lang) => digestNotice(lines, lang), path, `reminder ${lines.map((l) => l.kind).join(',')}`, { category: 'REMINDER' });
-      if (lines.some((l) => USUAL_CHANNEL.has(l.kind))) await this.usualChannel(userId, lines);
+      const byMessage = lines.filter((l) => USUAL_CHANNEL.has(l.kind));
+      // Payment reminders always go; the others follow the person's "reminders by WhatsApp/email" switch.
+      if (byMessage.some((l) => ALWAYS_BY_MESSAGE.has(l.kind)) || (byMessage.length && (await this.remindersByMessage(userId)))) await this.usualChannel(userId, lines);
       return true;
     } catch (err) {
       this.logger.error(`Reminder failed: ${(err as Error).message}`);
@@ -271,6 +275,12 @@ export class ReminderSweepService implements OnApplicationBootstrap, OnModuleDes
 
   private publicUrl(path: string) {
     return `${(this.config.get<string>('PUBLIC_WEB_URL') ?? 'http://localhost:3002').replace(/\/+$/, '')}${path}`;
+  }
+
+  /** Communication preferences: false when the person turned optional reminder messages off. */
+  private async remindersByMessage(userId: string): Promise<boolean> {
+    const [u] = await this.db.select({ on: users.reminderMessagesEnabled }).from(users).where(eq(users.id, userId)).limit(1);
+    return u?.on ?? true;
   }
 
   /** The person's WhatsApp or email, as their other notices go, in the language they use. */
