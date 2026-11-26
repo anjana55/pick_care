@@ -82,7 +82,8 @@ export function PushRegistration({ api = defaultApi, getPushToken = defaultGetPu
     // ...and while it is open or in the background.
     const sub = n.addNotificationResponseReceivedListener((r) => open(r.notification.request.content.data));
     // A push arriving means the bell has news: refresh it now.
-    const received = n.addNotificationReceivedListener(() => void queryClient.invalidateQueries({ queryKey: notificationsKey(userId) }));
+    // A notification means something changed (a booking to check again, a shift moved): refetch what is on screen, not only the bell.
+    const received = n.addNotificationReceivedListener(() => void queryClient.invalidateQueries());
     return () => {
       clearTimeout(startup);
       sub.remove();

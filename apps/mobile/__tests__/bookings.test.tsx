@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import type { CareChecklistItem, CareChecklistShift, ClientBooking, ClientBookingProposal, ClientCareDay } from '@care-platform/shared';
 import en from '../src/i18n/en.json';
 import Bookings from '../app/(client)/bookings';
@@ -362,3 +362,55 @@ describe('today’s care', () => {
     expect(await screen.findByText('This day is closed')).toBeTruthy();
   });
 });
+
+// The bug: staff moved a draft's start a day earlier and asked the client again, but the
+// app went on showing the dates it had loaded before - it never fetched again.
+describe('a draft changed while the app is open', () => {
+  const proposal = (startDate: string): ClientBookingProposal => ({
+    id: 'p-5', reference: 'BK-EARLY', status: 'ASKED', scheduleType: 'DAY', daysOfWeek: [1, 2, 3, 4, 5, 6, 7], shiftStartTime: '08:00', shiftEndTime: '17:00',
+    startDate, endDate: '2026-12-20', shiftCount: 10, rateType: 'DAILY', rateAmount: '3500.00', billingTiming: 'AFTER', firstInvoice: null, caregiver: null,
+    askedAt: '2026-11-26T06:00:00.000Z', answeredAt: null, note: null,
+  });
+  const dates = (start: string) => new RegExp(`^${formatDate(start, 'en')} – `);
+
+  // Every listener the app puts on AppState (the bell, the app lock, React Query), so a change reaches them all.
+  let listeners: ((s: string) => void)[] = [];
+  const appState = (s: string) => listeners.forEach((fn) => fn(s));
+  beforeEach(() => {
+    listeners = [];
+    jest.spyOn(require('react-native').AppState, 'addEventListener').mockImplementation(((_: string, fn: (s: string) => void) => {
+      listeners.push(fn);
+      return { remove: () => (listeners = listeners.filter((l) => l !== fn)) };
+    }) as never);
+  });
+  afterEach(() => jest.restoreAllMocks());
+
+  it('shows the new dates when the client comes back to the app', async () => {
+    await client();
+    let start = '2026-12-11';
+    serveApi({
+      'GET /me/bookings': () => ({ status: 200, body: [] }),
+      'GET /me/booking-proposals': () => ({ status: 200, body: [proposal(start)] }),
+      'GET /me/care': () => ({ status: 200, body: day({ hasCarePlans: false }) }),
+    });
+    const { useRefetchOnAppForeground } = require('../src/api/app-focus');
+    const Foreground = () => (useRefetchOnAppForeground(), null);
+    await render(
+      <AppProviders>
+        <Foreground />
+        <Bookings />
+      </AppProviders>,
+    );
+    expect(await screen.findByText(dates('2026-12-11'))).toBeTruthy();
+
+    // Staff start it a day earlier while the app sits in the background.
+    start = '2026-12-10';
+    await act(async () => appState('background'));
+    await act(async () => appState('active'));
+    expect(await screen.findByText(dates('2026-12-10'))).toBeTruthy();
+  });
+});
+
+function formatDate(value: string, locale: string) {
+  return jest.requireActual('../src/ui/dates').formatDate(value, locale);
+}

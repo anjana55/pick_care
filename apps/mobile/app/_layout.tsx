@@ -12,6 +12,7 @@ import { BrandingProvider, useBranding } from '@/branding/BrandingProvider';
 import { FONT_ASSETS } from '@/ui/fonts';
 import { createQueryClient } from '@/api/query-client';
 import { PushRegistration } from '@/push/PushRegistration';
+import { useRefetchOnAppForeground } from '@/api/app-focus';
 import { UpdateGate } from '@/app-config/UpdateGate';
 // Defines the background location task as the app starts: the phone may wake the app just to hand it locations.
 import '@/location/tracker';
@@ -50,6 +51,7 @@ function ShowWhenReady({ children }: { children: ReactNode }) {
 
 export default function RootLayout() {
   const [queryClient] = useState(createQueryClient);
+  useRefetchOnAppForeground();
   return (
     // Known insets on the first frame, instead of a blank one while they are measured.
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>

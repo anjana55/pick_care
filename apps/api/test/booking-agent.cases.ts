@@ -5,10 +5,10 @@ import { JwtService } from '@nestjs/jwt';
 import { ThrottlerStorage } from '@nestjs/throttler';
 import { and, eq, sql } from 'drizzle-orm';
 import request from 'supertest';
-import { addDays, colomboToday, type CaregiverCareOffer, type ClientBookingProposal } from '@care-platform/shared';
+import { addDays, colomboToday, isoWeekday, type CaregiverCareOffer, type ClientBookingProposal } from '@care-platform/shared';
 import { AppModule } from '../src/app.module';
 import { DRIZZLE, type Database } from '../src/database/database.module';
-import { agentDecisions, bookingEvents, bookingShifts, bookings, careRequests, caregivers, jobs, patients, requestOffers } from '../src/database/schema';
+import { agentDecisions, bookingEvents, bookingShifts, bookings, careRequests, caregivers, jobs, notifications, patients, requestOffers } from '../src/database/schema';
 import { BookingAgentService, type DraftBookingProposal } from '../src/bookings/booking-agent.service';
 import { AutomationService } from '../src/automation/automation.service';
 import { BOOKING_CONFIRM_JOB, BOOKING_REQUEST_JOB } from '../src/bookings/booking-agent-jobs';
@@ -82,7 +82,7 @@ describe('Booking agent (e2e)', () => {
     await api().post(`/me/care-offers/${offer.id}/accept`).set(bearer(caregiver.token)).expect(200);
     const [patient] = await db.select({ userId: patients.userId }).from(patients).where(eq(patients.id, reg.body.patientId));
     const clientToken = jwt.sign({ sub: patient.userId, role: 'PATIENT_GUARDIAN', patientId: reg.body.patientId }, { secret: accessSecret, expiresIn: '10m' });
-    return { id, reference: res.body.reference as string, caregiver, patientId: reg.body.patientId as string, clientToken };
+    return { id, reference: res.body.reference as string, caregiver, patientId: reg.body.patientId as string, clientToken, clientUserId: patient.userId! };
   }
 
   const mode = (m: string) => api().patch('/settings/automation/functions/BOOKING').set(bearer(adminToken)).send({ mode: m }).expect(200);
@@ -96,6 +96,9 @@ describe('Booking agent (e2e)', () => {
   const confirmDecisions = (bookingId: string) =>
     db.select().from(agentDecisions).where(and(eq(agentDecisions.caseType, 'BOOKING'), eq(agentDecisions.caseId, bookingId), eq(agentDecisions.action, 'booking.confirm')));
   const bookingPanel = async (id: string) => (await api().get(`/automation/cases/BOOKING/${id}`).set(bearer(staffToken)).expect(200)).body;
+  /** The weekday shifts the default pattern makes: the first on or after its start, the last on or before its end. */
+  const weekdayOnOrAfter = (d: string) => (isoWeekday(d) <= 5 ? d : addDays(d, 8 - isoWeekday(d)));
+  const weekdayOnOrBefore = (d: string) => (isoWeekday(d) <= 5 ? d : addDays(d, 5 - isoWeekday(d)));
   const pattern = (over: Record<string, unknown> = {}) => ({ scheduleType: 'DAY', daysOfWeek: [1, 2, 3, 4, 5], shiftStartTime: '08:00', shiftEndTime: '17:00', startDate: inFiveDays, endDate: addDays(inFiveDays, 13), ...over });
   const queued = (requestId: string) => db.select().from(jobs).where(and(eq(jobs.type, BOOKING_REQUEST_JOB), sql`JSON_EXTRACT(${jobs.payload}, '$.requestId') = ${requestId}`));
 
@@ -300,7 +303,7 @@ describe('Booking agent (e2e)', () => {
       const [mine] = await proposalsOf(req.clientToken);
       expect(mine).toMatchObject({
         id: draft.id, reference: draft.reference, status: 'ASKED', scheduleType: 'DAY', daysOfWeek: [1, 2, 3, 4, 5], shiftStartTime: '08:00', shiftEndTime: '17:00',
-        startDate: inFiveDays, endDate: addDays(inFiveDays, 13), shiftCount: 10, rateType: 'DAILY', rateAmount: '3450.00', billingTiming: 'AFTER', answeredAt: null, note: null,
+        startDate: weekdayOnOrAfter(inFiveDays), endDate: weekdayOnOrBefore(addDays(inFiveDays, 13)), shiftCount: 10, rateType: 'DAILY', rateAmount: '3450.00', billingTiming: 'AFTER', answeredAt: null, note: null,
       });
       // What the caregiver is paid and the office's notes are not the client's to see.
       expect(Object.keys(mine).sort()).toEqual(['answeredAt', 'askedAt', 'billingTiming', 'caregiver', 'daysOfWeek', 'endDate', 'firstInvoice', 'id', 'note', 'rateAmount', 'rateType', 'reference', 'scheduleType', 'shiftCount', 'shiftEndTime', 'shiftStartTime', 'startDate', 'status']);
@@ -360,6 +363,42 @@ describe('Booking agent (e2e)', () => {
       expect(ahead).toMatchObject({ billingTiming: 'ADVANCE', clientReviewStatus: null });
       await api().post(`/bookings/${draft.id}/ask-client`).set(bearer(staffToken)).expect(200);
       expect((await proposalsOf(req.clientToken))[0]).toMatchObject({ status: 'ASKED', billingTiming: 'ADVANCE' });
+    });
+
+    // The bug: the client asked to start a day earlier, staff added that day, asked again - and the client still saw the old dates.
+    it('shows the client the dates the roster covers now, after staff add, move or remove a shift by hand', async () => {
+      await mode('MANUAL');
+      const req = await matched();
+      const draft = await staffDraft(req);
+      const first = weekdayOnOrAfter(inFiveDays);
+      const last = weekdayOnOrBefore(addDays(inFiveDays, 13));
+      await api().post(`/bookings/${draft.id}/ask-client`).set(bearer(staffToken)).expect(200);
+      expect((await proposalsOf(req.clientToken))[0]).toMatchObject({ startDate: first, endDate: last, shiftCount: 10 });
+      await api().post(`/me/booking-proposals/${draft.id}/request-changes`).set(bearer(req.clientToken)).send({ note: 'Please start one day earlier' }).expect(200);
+
+      // Staff add the day before, and ask again.
+      const dayBefore = addDays(first, -1);
+      await api().post(`/bookings/${draft.id}/shifts`).set(bearer(staffToken)).send({ start: `${dayBefore}T08:00`, end: `${dayBefore}T17:00` }).expect(201);
+      await api().post(`/bookings/${draft.id}/ask-client`).set(bearer(staffToken)).expect(200);
+      expect((await proposalsOf(req.clientToken))[0]).toMatchObject({ status: 'ASKED', startDate: dayBefore, endDate: last, shiftCount: 11 });
+      // The message asking them to check names the new first day too.
+      // (The bell row is written just after the answer goes back, so wait for it.)
+      let asks: (typeof notifications.$inferSelect)[] = [];
+      for (let i = 0; i < 20 && asks.length < 2; i++) {
+        asks = await db.select().from(notifications).where(and(eq(notifications.userId, req.clientUserId), eq(notifications.path, '/bookings'))).orderBy(notifications.createdAt);
+        if (asks.length < 2) await new Promise((r) => setTimeout(r, 100));
+      }
+      expect(JSON.stringify(asks.at(-1)?.text)).toContain(dayBefore);
+      expect(JSON.stringify(asks[0]?.text)).toContain(first);
+
+      // Removing the last day brings the end in.
+      const shifts = (await api().get(`/bookings/${draft.id}`).set(bearer(staffToken)).expect(200)).body.shifts as { id: string; startsAt: string }[];
+      const lastShift = shifts.reduce((a, b) => (a.startsAt > b.startsAt ? a : b));
+      await api().delete(`/bookings/${draft.id}/shifts/${lastShift.id}`).set(bearer(staffToken)).expect(200);
+      await api().post(`/bookings/${draft.id}/ask-client`).set(bearer(staffToken)).expect(200);
+      const [now] = await proposalsOf(req.clientToken);
+      expect(now.endDate < last).toBe(true);
+      expect(now).toMatchObject({ startDate: dayBefore, shiftCount: 10 });
     });
 
     it('will not ask without a price, or once it is no longer a draft', async () => {
