@@ -1,5 +1,6 @@
+import { useCallback, useRef } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import type { ClientBooking, MyIssueReport } from '@care-platform/shared';
 import { useTranslation } from '@/i18n';
@@ -40,6 +41,15 @@ export default function Bookings() {
   const queryClient = useQueryClient();
   // Pulling down refreshes the bookings, the drafts to check and the day's checklist together.
   const refresh = () => void queryClient.invalidateQueries({ queryKey: ['client-care', client?.userId ?? 'none'] });
+  // Tabs stay mounted, so coming back to Bookings from another tab would show what was loaded before.
+  // Fetch again each time it comes into view (not the first time: that load is already under way).
+  const seen = useRef(false);
+  useFocusEffect(
+    useCallback(() => {
+      if (seen.current) void queryClient.invalidateQueries({ queryKey: ['client-care', client?.userId ?? 'none'] });
+      seen.current = true;
+    }, [queryClient, client?.userId]),
+  );
 
   const head = (
     <View style={styles.head}>

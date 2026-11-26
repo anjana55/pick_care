@@ -8,6 +8,7 @@ import { EmailService } from '../email/email.service';
 import { WhatsappSettingsService } from '../whatsapp/whatsapp-settings.service';
 import { WhatsappProviderService } from '../whatsapp/whatsapp-provider.service';
 import { normalizePhone } from '../common/utils/phone.util';
+import { draftShiftRanges } from './draft-range';
 import { chooseClientChannel } from '../care-requests/care-request-notifier.service';
 import { CLIENT_CTA, CLIENT_FOOTER } from '../care-requests/notification-messages';
 import { bookingCaregiverNotice, bookingClientCheckNotice, bookingClientNotice } from './booking-messages';
@@ -64,7 +65,9 @@ export class BookingNotifier {
         .where(eq(bookings.id, id))
         .limit(1);
       if (!b) return 'NONE';
-      const vars = { ref: b.reference, date: String(b.startDate).slice(0, 10) };
+      // The first day of the roster as it is now, not the pattern's start: a shift may have been added before it.
+      const range = (await draftShiftRanges(this.db, [id])).get(id);
+      const vars = { ref: b.reference, date: range?.startDate ?? String(b.startDate).slice(0, 10) };
       this.notices.notify([b.patientUserId], (lang) => fromNotice(bookingClientCheckNotice(lang, vars)), '/bookings', `booking check ${b.reference}`);
       const [account] = b.patientUserId ? await this.db.select({ email: users.email, phone: users.phone }).from(users).where(eq(users.id, b.patientUserId)).limit(1) : [];
       const wa = await this.whatsappSettings.getResolved();

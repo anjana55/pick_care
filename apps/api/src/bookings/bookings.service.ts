@@ -61,6 +61,7 @@ import { nudgeBookingConfirm } from './booking-agent-jobs';
 import { nudgeBilling } from '../billing/billing-agent-jobs';
 import { CarePlansService } from '../care-plans/care-plans.service';
 import { buildLines } from '../billing/line-builder';
+import { draftShiftRanges } from './draft-range';
 import { planRoster } from './roster-plan';
 import {
   AddShiftDto,
@@ -1107,13 +1108,15 @@ export class BookingsService {
       .orderBy(desc(bookings.clientAskedAt))
       .limit(20);
     if (!rows.length) return [];
-    const [counts, profiles] = await Promise.all([
+    const [counts, profiles, ranges] = await Promise.all([
       this.db
         .select({ bookingId: bookingShifts.bookingId, n: count() })
         .from(bookingShifts)
         .where(and(inArray(bookingShifts.bookingId, rows.map((r) => r.id)), eq(bookingShifts.status, 'DRAFT')))
         .groupBy(bookingShifts.bookingId),
       this.publicSearch.profilesFor(rows.map((r) => r.caregiverId), locale),
+      // The dates the roster really covers, which a shift added or moved by hand can change.
+      draftShiftRanges(this.db, rows.map((r) => r.id)),
     ]);
     // Billed in advance and accepted: the first invoice, which the client pays to have the booking confirmed.
     const firstIds = new Map<string, string>();
@@ -1131,8 +1134,8 @@ export class BookingsService {
       daysOfWeek: r.daysOfWeek.split(',').map(Number) as IsoWeekday[],
       shiftStartTime: r.shiftStartTime,
       shiftEndTime: r.shiftEndTime,
-      startDate: r.startDate,
-      endDate: r.endDate,
+      startDate: ranges.get(r.id)?.startDate ?? r.startDate,
+      endDate: ranges.get(r.id)?.endDate ?? r.endDate,
       shiftCount: counts.find((c) => c.bookingId === r.id)?.n ?? 0,
       rateType: r.rateType,
       rateAmount: r.rateAmount,

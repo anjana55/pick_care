@@ -1,4 +1,4 @@
-import { cloneElement, createElement, type ReactElement } from 'react';
+import { cloneElement, createElement, type ReactElement, useEffect } from 'react';
 import { Text } from 'react-native';
 
 /**
@@ -45,5 +45,7 @@ export function expoRouterMock() {
     Stack: () => createElement(require('../app/index').default),
     useRouter: () => mockRouter,
     useLocalSearchParams: () => mockRouter.params,
+    // A screen in a test is in view once, when it renders.
+    useFocusEffect: (effect: () => void | (() => void)) => useEffect(effect, [effect]),
   };
 }
