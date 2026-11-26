@@ -10,6 +10,7 @@ import { formatDate, fmtDay, fmtTime } from '@/ui/dates';
 import { Text } from '@/ui/Text';
 import { tint, type IconName } from '@/ui/visual';
 import { useMarkRead } from './api';
+import { useAuth } from '@/auth/AuthProvider';
 
 export const TODO_ICONS: Record<TodoKind, IconName> = {
   PAY_INVOICE: 'receipt-outline',
@@ -63,6 +64,7 @@ export function useTodoText() {
 
 /** Things still waiting on the person: a big card each, with one big button. Urgent ones first, in a warning colour. */
 export function TodoList({ items, onOpen }: { items: TodoItem[]; onOpen?: () => void }) {
+  const role = useAuth().user?.role;
   const { t, locale } = useTranslation();
   const colors = useColors();
   const router = useRouter();
@@ -91,7 +93,7 @@ export function TodoList({ items, onOpen }: { items: TodoItem[]; onOpen?: () => 
               accessibilityLabel={`${t(`notifications.action.${item.kind}`)}: ${text(item)}`}
               onPress={() => {
                 onOpen?.();
-                router.push(screenFor(item.path) as never);
+                router.push(screenFor(item.path, role) as never);
               }}
               style={({ pressed }) => [styles.action, { backgroundColor: colors.deep, opacity: pressed ? 0.85 : 1 }]}
             >
@@ -116,15 +118,17 @@ export function NotificationList({ items }: { items: NotificationItem[] }) {
   const colors = useColors();
   const router = useRouter();
   const markRead = useMarkRead();
+  const role = useAuth().user?.role;
   if (!items.length) return <Text style={{ fontSize: 17, color: colors.muted }}>{t('notifications.empty')}</Text>;
   return (
     <View style={[styles.list, { backgroundColor: colors.surface, borderColor: colors.border }]}>
       {pinImportant(items).map((item, i) => {
         const unread = !item.readAt;
-        const goesSomewhere = item.path !== '/notifications';
+        // Already on Notifications: a notice whose screen is this one (an announcement, a caregiver's request update) just marks read.
+        const target = screenFor(item.path, role);
         const open = () => {
           if (unread) markRead.mutate({ ids: [item.id] });
-          if (goesSomewhere) router.push(screenFor(item.path) as never);
+          if (target !== '/notifications') router.push(target as never);
         };
         return (
           <View key={item.id} style={[i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border }, unread && { backgroundColor: tint(colors.brand, 0.06) }]}>

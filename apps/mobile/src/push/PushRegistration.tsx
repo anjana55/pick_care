@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -32,6 +32,9 @@ export function PushRegistration({ api = defaultApi, getPushToken = defaultGetPu
   const router = useRouter();
   const queryClient = useQueryClient();
   const userId = user?.userId ?? null;
+  // Read when a push is tapped, so the listener below always uses who is signed in now.
+  const roleRef = useRef(user?.role ?? null);
+  roleRef.current = user?.role ?? null;
   const summary = useNotificationsSummary();
   const badge = userId ? (summary.data?.badge ?? null) : 0;
 
@@ -69,7 +72,7 @@ export function PushRegistration({ api = defaultApi, getPushToken = defaultGetPu
     const open = (data: Record<string, unknown> | undefined) => {
       // The bell row this push is about is read now it has been opened.
       if (typeof data?.notificationId === 'string') api.post('/me/notifications/read', { ids: [data.notificationId] }).catch(() => undefined);
-      router.push(screenFor(data?.path) as never);
+      router.push(screenFor(data?.path, roleRef.current) as never);
     };
     // A notification tapped while the app was closed...
     // (on the next tick, once the navigator below has mounted).

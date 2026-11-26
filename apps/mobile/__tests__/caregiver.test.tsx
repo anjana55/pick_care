@@ -391,9 +391,9 @@ describe('reminders and notifications', () => {
   });
 
   it('open the caregiver’s Shifts and Payments', () => {
-    expect(screenFor('/shifts')).toBe('/shifts');
-    expect(screenFor('/payments')).toBe('/payments');
-    expect(screenFor('/shifts/x')).toBe('/home');
+    expect(screenFor('/shifts', 'CAREGIVER')).toBe('/shifts');
+    expect(screenFor('/payments', 'CAREGIVER')).toBe('/payments');
+    expect(screenFor('/shifts/x', 'CAREGIVER')).toBe('/home');
   });
 });
 
