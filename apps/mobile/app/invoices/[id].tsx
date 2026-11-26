@@ -42,7 +42,7 @@ export default function InvoiceScreen() {
   const start = useStartOnlinePayment(id ?? '');
   const [checkout, setCheckout] = useState<PayhereCheckout | null>(null);
   const [email, setEmail] = useState('');
-  const [pdf, setPdf] = useState<'idle' | 'busy' | 'failed'>('idle');
+  const [pdf, setPdf] = useState<'idle' | 'busy' | 'failed' | 'unsupported'>('idle');
   // Opened from "Pay now": start the online payment once, when nothing more is needed (no email to ask for).
   const autoStarted = useRef(false);
   useEffect(() => {
@@ -109,16 +109,13 @@ export default function InvoiceScreen() {
 
   /**
    * The invoice as a PDF, to the share sheet ("Save to Files", Drive, WhatsApp,
-   * email). A build made before PDFs were added opens the website's invoice,
-   * which prints and saves as PDF.
+   * email). A build made before PDFs were added (the code can arrive by an
+   * over-the-air update) says to update the app. It never sends the person to
+   * the website: they aren't signed in there, so it would only ask them to.
    */
   const downloadPdf = async () => {
     setPdf('busy');
-    const outcome = await shareInvoicePdf(invoice, t, locale, colors.brand);
-    if (outcome === 'unsupported') {
-      Linking.openURL(`${config.siteUrl}/account/invoices/${invoice.id}`).catch(() => undefined);
-    }
-    setPdf(outcome === 'failed' ? 'failed' : 'idle');
+    setPdf(await shareInvoicePdf(invoice, t, locale, colors.brand).then((o) => (o === 'shared' ? 'idle' : o)));
   };
 
   return (
@@ -180,7 +177,7 @@ export default function InvoiceScreen() {
           busy={pdf === 'busy'}
           onPress={downloadPdf}
         />
-        <FormError message={pdf === 'failed' ? t('invoices.pdf.error') : null} />
+        <FormError message={pdf === 'failed' ? t('invoices.pdf.error') : pdf === 'unsupported' ? t('invoices.pdf.unsupported') : null} />
 
         <InvoiceView invoice={invoice} locale={locale} />
       </ScrollView>
