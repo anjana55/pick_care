@@ -5,6 +5,7 @@ import type { TodoItem } from '@care-platform/shared';
 import { useTranslation } from '@/i18n';
 import { useColors } from '@/theme';
 import { screenFor } from '@/push/notifications';
+import { useAuth } from '@/auth/AuthProvider';
 import { formatDate } from '@/ui/dates';
 import { Text } from '@/ui/Text';
 import { tint } from '@/ui/visual';
@@ -22,6 +23,7 @@ export function NextForYou({ items, style }: { items: TodoItem[]; style?: StyleP
   const { t, locale } = useTranslation();
   const colors = useColors();
   const router = useRouter();
+  const role = useAuth().user?.role;
   const text = useTodoText();
   const item = items[0];
   if (!item) return null;
@@ -47,7 +49,7 @@ export function NextForYou({ items, style }: { items: TodoItem[]; style?: StyleP
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={`${action}: ${text(item)}`}
-        onPress={() => router.push(screenFor(item.path) as never)}
+        onPress={() => router.push(screenFor(item.path, role) as never)}
         style={({ pressed }) => [styles.action, { backgroundColor: colors.deep, opacity: pressed ? 0.85 : 1 }]}
       >
         <Text style={[styles.actionText, { color: colors.brandText }]}>{action}</Text>

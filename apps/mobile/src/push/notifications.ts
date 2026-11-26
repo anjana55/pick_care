@@ -72,37 +72,50 @@ export async function getPushToken(): Promise<string | null> {
 }
 
 /**
- * Where a tapped notification goes. The API sends the screen it is about
- * (/bookings/{id}, /care, /requests/{id}, /shifts, /invoices/{id}, ...).
- * Bookings and the 8 pm care reminder open Bookings, requests open My
- * requests, an invoice opens that invoice, shifts and payouts open the
- * caregiver's Shifts and Payments, documents open Documents, announcements
- * and reminder digests open Notifications; the rest open home (a client's
- * home is Find, a caregiver's is Today).
+ * Where a tapped notification goes, for the person signed in. The API sends
+ * the screen it is about (/bookings/{id}, /care, /requests/{id}, /shifts,
+ * /invoices/{id}, ...), and the same path can mean different things to a
+ * client and a caregiver, so the role decides (as webPathFor does on the
+ * website). A screen the other side's app area has is never opened: it would
+ * show that side's sign-in prompt, as if the person had been signed out.
+ *
+ * Client: bookings and the 8 pm care reminder open Bookings, requests open
+ * My requests, an invoice opens that invoice, "How was your care?" opens the
+ * rate screen.
+ * Caregiver: bookings, care and shift changes open Shifts; payouts Payments;
+ * documents Documents; praise Ratings; job offers Offers. A care request
+ * about them ("a family has asked for you", "our team is on it") has no
+ * screen on their side: our team phones them, so it opens Notifications,
+ * where the message is.
+ * Both: announcements and reminder digests open Notifications; anything else
+ * opens home (a client's home is Find, a caregiver's is Today).
  */
-const SCREENS: [RegExp, string][] = [
+const CLIENT_SCREENS: [RegExp, string][] = [
   [/^\/(bookings(\/[^/]+)?|care)$/, '/bookings'],
   [/^\/requests(\/[^/]+)?$/, '/requests'],
-  // The caregiver's side: shift changes and new shifts, and payouts.
-  [/^\/shifts$/, '/shifts'],
-  [/^\/payments$/, '/payments'],
-  // A caregiver's document checked or expiring.
-  [/^\/documents$/, '/documents'],
   // A correction to a client's bills.
   [/^\/invoices$/, '/invoices'],
-  // Announcements and reminder digests open the bell.
+  [/^\/notifications$/, '/notifications'],
+];
+const CAREGIVER_SCREENS: [RegExp, string][] = [
+  [/^\/(shifts|bookings(\/[^/]+)?|care)$/, '/shifts'],
+  [/^\/payments$/, '/payments'],
+  [/^\/documents$/, '/documents'],
+  [/^\/me\/ratings$/, '/ratings'],
+  [/^\/care-offers$/, '/offers'],
+  [/^\/requests(\/[^/]+)?$/, '/notifications'],
   [/^\/notifications$/, '/notifications'],
 ];
 /** An invoice notice opens that invoice (ids are uuids: nothing else gets through). */
 const INVOICE = /^\/invoices\/[0-9a-fA-F-]{36}$/;
 /** "How was your care?" opens the rate screen for that booking and caregiver. */
 const RATE = /^\/bookings\/[0-9a-fA-F-]{36}\/rate\/[A-Za-z0-9_-]{1,36}$/;
-export function screenFor(path: unknown): string {
+
+export type AppRole = 'PATIENT_GUARDIAN' | 'CAREGIVER' | (string & {});
+
+export function screenFor(path: unknown, role: AppRole | null | undefined): string {
   if (typeof path !== 'string') return '/home';
+  if (role === 'CAREGIVER') return CAREGIVER_SCREENS.find(([re]) => re.test(path))?.[1] ?? '/home';
   if (INVOICE.test(path) || RATE.test(path)) return path;
-  // A caregiver's praise notice opens their ratings.
-  if (path === '/me/ratings') return '/ratings';
-  // A job offer (new, or no longer open) opens the caregiver's offers.
-  if (path === '/care-offers') return '/offers';
-  return SCREENS.find(([re]) => re.test(path))?.[1] ?? '/home';
+  return CLIENT_SCREENS.find(([re]) => re.test(path))?.[1] ?? '/home';
 }

@@ -115,8 +115,8 @@ describe('links and notifications', () => {
     const { screenFor } = jest.requireActual('../src/push/notifications');
     expect(appScreenFor(`/account/bookings/${BOOKING}/rate/${CG}`)).toBe(`/bookings/${BOOKING}/rate/${CG}`);
     expect(appScreenFor('/caregiver/ratings')).toBe('/ratings');
-    expect(screenFor(`/bookings/${BOOKING}/rate/${CG}`)).toBe(`/bookings/${BOOKING}/rate/${CG}`);
-    expect(screenFor('/me/ratings')).toBe('/ratings');
-    expect(screenFor(`/bookings/${BOOKING}/rate/../../admin`)).toBe('/home');
+    expect(screenFor(`/bookings/${BOOKING}/rate/${CG}`, 'PATIENT_GUARDIAN')).toBe(`/bookings/${BOOKING}/rate/${CG}`);
+    expect(screenFor('/me/ratings', 'CAREGIVER')).toBe('/ratings');
+    expect(screenFor(`/bookings/${BOOKING}/rate/../../admin`, 'PATIENT_GUARDIAN')).toBe('/home');
   });
 });

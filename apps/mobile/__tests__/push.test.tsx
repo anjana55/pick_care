@@ -107,6 +107,7 @@ describe('push registration', () => {
 
 describe('tapping a notification', () => {
   it('opens the app on the screen it is about', async () => {
+    await tokenStore.set(tokensFor('PATIENT_GUARDIAN'));
     serveApi({});
     await showApp(async () => null);
     await act(async () => mockTapListeners.forEach((fn) => fn(tap('/bookings/b-1'))));
@@ -125,11 +126,31 @@ describe('tapping a notification', () => {
   });
 
   it('marks the bell row it was about read', async () => {
+    await tokenStore.set(tokensFor('CAREGIVER'));
     const calls = serveApi({ 'POST /me/notifications/read': () => ({ status: 200, body: { marked: 1 } }) });
     await showApp(async () => null);
     await act(async () => mockTapListeners.forEach((fn) => fn({ notification: { request: { content: { data: { path: '/documents', notificationId: 'n-7' } } } } })));
     expect(mockRouter.push).toHaveBeenCalledWith('/documents');
     await waitFor(() => expect(calls.find((c) => c.route === 'POST /me/notifications/read')?.body).toEqual({ ids: ['n-7'] }));
+  });
+
+  // The bug: a caregiver tapping "a family has asked for you" landed on the
+  // client's My requests, which showed "Sign up to contact this caregiver".
+  it('opens a caregiver’s care request notice on their own side, never the client’s My requests', async () => {
+    await tokenStore.set(tokensFor('CAREGIVER'));
+    serveApi({});
+    await showApp(async () => null);
+    await act(async () => mockTapListeners.forEach((fn) => fn(tap('/requests/r-1'))));
+    expect(mockRouter.push).toHaveBeenCalledWith('/notifications');
+    expect(mockRouter.push).not.toHaveBeenCalledWith('/requests');
+  });
+
+  it('opens a client’s care request notice on My requests', async () => {
+    await tokenStore.set(tokensFor('PATIENT_GUARDIAN'));
+    serveApi({});
+    await showApp(async () => null);
+    await act(async () => mockTapListeners.forEach((fn) => fn(tap('/requests/r-1'))));
+    expect(mockRouter.push).toHaveBeenCalledWith('/requests');
   });
 });
 
@@ -141,15 +162,34 @@ describe('where push works', () => {
 
   it('opens the screen a notice is about, and only screens the app has', () => {
     const { screenFor } = jest.requireActual('../src/push/notifications');
-    expect(screenFor('/home')).toBe('/home');
-    expect(screenFor('/bookings/b-1')).toBe('/bookings');
-    expect(screenFor('/care')).toBe('/bookings');
-    expect(screenFor('/requests/r-1')).toBe('/requests');
-    expect(screenFor('/bookings/b-1/../../admin')).toBe('/home');
-    expect(screenFor('/invoices/9')).toBe('/home');
-    expect(screenFor('/documents')).toBe('/documents');
-    expect(screenFor('/invoices')).toBe('/invoices');
-    expect(screenFor('/notifications')).toBe('/notifications');
-    expect(screenFor(undefined)).toBe('/home');
+    const client = (p: unknown) => screenFor(p, 'PATIENT_GUARDIAN');
+    expect(client('/home')).toBe('/home');
+    expect(client('/bookings/b-1')).toBe('/bookings');
+    expect(client('/care')).toBe('/bookings');
+    expect(client('/requests/r-1')).toBe('/requests');
+    expect(client('/bookings/b-1/../../admin')).toBe('/home');
+    expect(client('/invoices/9')).toBe('/home');
+    expect(client('/invoices')).toBe('/invoices');
+    expect(client('/notifications')).toBe('/notifications');
+    expect(client(undefined)).toBe('/home');
+    // A client never opens a caregiver-only screen.
+    for (const p of ['/shifts', '/payments', '/documents', '/me/ratings', '/care-offers']) expect(client(p)).toBe('/home');
+  });
+
+  it('sends a caregiver only to screens on their side', () => {
+    const { screenFor } = jest.requireActual('../src/push/notifications');
+    const caregiver = (p: unknown) => screenFor(p, 'CAREGIVER');
+    expect(caregiver('/requests/r-1')).toBe('/notifications');
+    expect(caregiver('/requests')).toBe('/notifications');
+    expect(caregiver('/bookings/b-1')).toBe('/shifts');
+    expect(caregiver('/care')).toBe('/shifts');
+    expect(caregiver('/shifts')).toBe('/shifts');
+    expect(caregiver('/documents')).toBe('/documents');
+    expect(caregiver('/payments')).toBe('/payments');
+    expect(caregiver('/me/ratings')).toBe('/ratings');
+    expect(caregiver('/care-offers')).toBe('/offers');
+    expect(caregiver('/notifications')).toBe('/notifications');
+    // Client-only screens are never opened for a caregiver.
+    for (const p of ['/invoices', '/invoices/9e0c1b2a-0000-4000-8000-000000000000', '/bookings/9e0c1b2a-0000-4000-8000-000000000000/rate/CG-1']) expect(caregiver(p)).toBe('/home');
   });
 });

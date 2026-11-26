@@ -147,7 +147,7 @@ describe('job offers in the app', () => {
   });
 
   it('opens from its notification and from a link to the website', () => {
-    expect(screenFor('/care-offers')).toBe('/offers');
+    expect(screenFor('/care-offers', 'CAREGIVER')).toBe('/offers');
     expect(appScreenFor('/caregiver/care-offers')).toBe('/offers');
   });
 });

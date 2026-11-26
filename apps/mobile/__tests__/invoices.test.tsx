@@ -221,8 +221,10 @@ describe('paying an invoice with PayHere', () => {
   });
 
   it('opens the invoice a notification is about', () => {
-    expect(screenFor(`/invoices/${INV}`)).toBe(`/invoices/${INV}`);
-    expect(screenFor('/invoices/../../etc')).toBe('/home');
+    expect(screenFor(`/invoices/${INV}`, 'PATIENT_GUARDIAN')).toBe(`/invoices/${INV}`);
+    expect(screenFor('/invoices/../../etc', 'PATIENT_GUARDIAN')).toBe('/home');
+    // Not a caregiver's: they have no invoices.
+    expect(screenFor(`/invoices/${INV}`, 'CAREGIVER')).toBe('/home');
   });
 });
 
