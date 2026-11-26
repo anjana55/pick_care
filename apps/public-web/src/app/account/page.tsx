@@ -25,7 +25,7 @@ const TILES: Tile[] = [
   { key: 'bills', href: '/account/invoices', label: 'account.nav.invoices', icon: ReceiptText, todos: ['PAY_INVOICE'] },
   { key: 'requests', href: '/account/requests', label: 'account.nav.requests', icon: MessagesSquare, unread: 'REQUEST' },
   { key: 'saved', href: '/account/saved', label: 'account.nav.saved', icon: Heart },
-  { key: 'places', href: '/account/places', label: 'account.nav.places', icon: MapPin },
+  { key: 'places', href: '/account/places', label: 'account.nav.places', icon: MapPin, todos: ['PIN_HOME'] },
 ];
 
 /**

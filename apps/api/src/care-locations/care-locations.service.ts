@@ -1,18 +1,19 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { randomUUID as uuid } from 'crypto';
-import { and, asc, desc, eq, isNotNull } from 'drizzle-orm';
+import { and, asc, desc, eq, isNotNull, isNull } from 'drizzle-orm';
 import {
   CARE_LOCATIONS_MAX,
   CARE_LOCATION_LABEL_MAX,
   insideSriLanka,
   type BookingCareLocation,
   type CareLocation,
+  type CareLocationSuggestion,
   type CareLocationInput,
   type CareLocationUpdate,
   type GeoPoint,
 } from '@care-platform/shared';
 import { DRIZZLE, type Database } from '../database/database.module';
-import { bookings, careLocations } from '../database/schema';
+import { bookingShifts, bookings, careLocations, patients } from '../database/schema';
 
 type Row = typeof careLocations.$inferSelect;
 type Who = { kind: 'CLIENT'; userId: string } | { kind: 'STAFF'; userId: string };
@@ -229,6 +230,20 @@ export class CareLocationsService {
     } catch (err) {
       this.logger.warn(`Booking ${bookingId}: could not keep a suggested place - ${(err as Error).message}`);
     }
+  }
+
+  /** Staff: every place suggested from a check-in and not confirmed yet, newest first, with a booking to open it on. */
+  async suggestions(): Promise<CareLocationSuggestion[]> {
+    const rows = await this.db
+      .select({ place: careLocations, clientName: patients.fullName, bookingId: bookingShifts.bookingId, reference: bookings.reference })
+      .from(careLocations)
+      .innerJoin(patients, eq(careLocations.patientId, patients.id))
+      .leftJoin(bookingShifts, eq(careLocations.fromShiftId, bookingShifts.id))
+      .leftJoin(bookings, eq(bookingShifts.bookingId, bookings.id))
+      .where(isNull(careLocations.confirmedAt))
+      .orderBy(desc(careLocations.createdAt))
+      .limit(200);
+    return rows.map((r) => ({ ...toCareLocation(r.place), patientId: r.place.patientId, clientName: r.clientName, bookingId: r.bookingId ?? null, bookingReference: r.reference ?? null, suggestedAt: new Date(r.place.createdAt).toISOString() }));
   }
 
   /** For the client's own routes. */

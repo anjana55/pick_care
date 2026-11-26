@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { AlertCircle, CalendarClock, ClipboardCheck, FileUp, Receipt, Star } from 'lucide-react';
+import { AlertCircle, CalendarClock, ClipboardCheck, FileUp, Receipt, Star, MapPin } from 'lucide-react';
 import { webPathFor, type TodoItem, type TodoKind } from '@care-platform/shared';
 import { useTranslation } from '@/lib/i18n';
 import { fmtDate } from '@/lib/colombo-time';
@@ -11,6 +11,7 @@ const ICONS: Record<TodoKind, typeof Receipt> = {
   PAY_INVOICE: Receipt,
   RATE_CAREGIVER: Star,
   TICK_OFF_CARE: ClipboardCheck,
+  PIN_HOME: MapPin,
   UPLOAD_DOCUMENT: FileUp,
   DOCUMENT_REJECTED: AlertCircle,
   DOCUMENT_EXPIRING: CalendarClock,

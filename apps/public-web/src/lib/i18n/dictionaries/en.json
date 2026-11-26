@@ -2599,7 +2599,8 @@
       "DOCUMENT_EXPIRING": "Your {document} expires in {days} days",
       "DOCUMENT_EXPIRING_TODAY": "Your {document} expires today",
       "DOCUMENT_EXPIRED": "Your {document} has expired",
-      "SHIFT_TODAY": "Shift today at {time} ({reference})"
+      "SHIFT_TODAY": "Shift today at {time} ({reference})",
+      "PIN_HOME": "Put a pin on the home, so the office can see the caregiver reached the right door"
     },
     "due": "Due {date}",
     "action": {
@@ -2609,7 +2610,8 @@
       "UPLOAD_DOCUMENT": "Upload",
       "DOCUMENT_REJECTED": "Upload again",
       "DOCUMENT_EXPIRING": "Upload new",
-      "SHIFT_TODAY": "View shift"
+      "SHIFT_TODAY": "View shift",
+      "PIN_HOME": "Put a pin"
     },
     "document": {
       "identity": "proof of identity",

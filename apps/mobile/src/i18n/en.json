@@ -1447,7 +1447,8 @@
       "DOCUMENT_EXPIRING": "Your {document} expires in {days} days",
       "DOCUMENT_EXPIRING_TODAY": "Your {document} expires today",
       "DOCUMENT_EXPIRED": "Your {document} has expired",
-      "SHIFT_TODAY": "Shift today at {time} ({reference})"
+      "SHIFT_TODAY": "Shift today at {time} ({reference})",
+      "PIN_HOME": "Put a pin on the home, so the office can see the caregiver reached the right door"
     },
     "due": "Due {date}",
     "action": {
@@ -1457,7 +1458,8 @@
       "UPLOAD_DOCUMENT": "Upload",
       "DOCUMENT_REJECTED": "Upload again",
       "DOCUMENT_EXPIRING": "Upload new",
-      "SHIFT_TODAY": "View shift"
+      "SHIFT_TODAY": "View shift",
+      "PIN_HOME": "Put a pin"
     },
     "document": {
       "identity": "proof of identity",
@@ -1887,5 +1889,16 @@
       "AREA": "Found the area. Zoom in and drag the pin onto the house.",
       "TOWN": "Found the town. Zoom in and drag the pin onto the house."
     }
+  },
+  "visitChecks": {
+    "notice": "While you're checked in, Pick Care checks your location every {minutes} minutes. Only the office sees it.",
+    "running": "Location checked every {minutes} minutes until you check out.",
+    "notThisPhone": "Your location isn't being checked from this phone.",
+    "askTitle": "Still with the client?",
+    "askBody": "Your phone shows you away from the home. Let the office know:",
+    "withClient": "I'm with the client",
+    "outForClient": "I've gone out for the client (pharmacy, hospital)",
+    "notificationTitle": "Checked in",
+    "notificationBody": "Location checked every {minutes} min until you check out."
   }
 }

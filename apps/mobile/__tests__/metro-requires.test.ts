@@ -1,3 +1,4 @@
+// @ts-nocheck - this test reads the source files with Node's fs and path; the app's tsconfig has no Node types (Jest runs it on Node).
 import { readdirSync, readFileSync, statSync } from 'fs';
 import { join } from 'path';
 

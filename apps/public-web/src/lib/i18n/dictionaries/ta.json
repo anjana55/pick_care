@@ -2599,7 +2599,8 @@
       "DOCUMENT_EXPIRING": "உங்கள் {document} {days} நாட்களில் காலாவதியாகும்",
       "DOCUMENT_EXPIRING_TODAY": "உங்கள் {document} இன்று காலாவதியாகும்",
       "DOCUMENT_EXPIRED": "உங்கள் {document} காலாவதியாகிவிட்டது",
-      "SHIFT_TODAY": "இன்று {time} மணிக்கு பணி ({reference})"
+      "SHIFT_TODAY": "இன்று {time} மணிக்கு பணி ({reference})",
+      "PIN_HOME": "பராமரிப்பாளர் சரியான வாசலுக்கு வந்ததை அலுவலகம் பார்க்கும்படி வீட்டின் மீது ஒரு குறியை வையுங்கள்"
     },
     "due": "செலுத்த வேண்டிய தேதி {date}",
     "action": {
@@ -2609,7 +2610,8 @@
       "UPLOAD_DOCUMENT": "பதிவேற்று",
       "DOCUMENT_REJECTED": "மீண்டும் பதிவேற்று",
       "DOCUMENT_EXPIRING": "புதியதைப் பதிவேற்று",
-      "SHIFT_TODAY": "பணியைக் காண்க"
+      "SHIFT_TODAY": "பணியைக் காண்க",
+      "PIN_HOME": "குறியை வை"
     },
     "document": {
       "identity": "அடையாளச் சான்று",

@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
-import type { CheckInSettings, StaffCheckIn, StaffCheckInInput, StaffLiveShare, TodayVisits } from '@care-platform/shared';
+import type { CheckInSettings, StaffCheckIn, StaffCheckInInput, StaffLiveShare, StaffPresenceDetail, TodayVisits } from '@care-platform/shared';
 import { api } from '@/lib/api/client';
 
 const KEY = ['visits'] as const;
@@ -74,4 +74,9 @@ export function useLiveVisits(enabled: boolean) {
     refetchInterval: 20_000,
     gcTime: 0,
   });
+}
+
+/** The checks during one visit, with their points, for the map behind the dot strip (GPS tracking C). Audited by the API. */
+export function useVisitPresence(shiftId: string, enabled: boolean) {
+  return useQuery({ queryKey: ['visits', 'presence', shiftId], queryFn: () => api.get<StaffPresenceDetail | null>(`/visits/${shiftId}/presence`), enabled, staleTime: 60_000 });
 }

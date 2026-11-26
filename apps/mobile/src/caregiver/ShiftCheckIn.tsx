@@ -9,6 +9,7 @@ import { fmtTime } from '@/ui/dates';
 import { useNearHome, useShiftCheckIn, useShiftCheckOut } from './api';
 import { phonePosition, type Position } from './position';
 import { OnMyWay, endTripFor } from './OnMyWay';
+import { VisitChecks, endVisitFor, startVisitChecks } from './VisitChecks';
 
 /**
  * Check-in for one of the caregiver's shifts, as on the website: while it is
@@ -41,6 +42,7 @@ export function ShiftCheckIn({ shift, locate = phonePosition }: { shift: Caregiv
     return (
       <View style={{ gap: 8 }}>
         <Text style={{ fontSize: 14, fontWeight: '600', color: colors.brand }}>{t('checkIn.caregiver.in', { time: fmtTime(c.checkedInAt) })}</Text>
+        <VisitChecks shift={shift} />
         {shift.status === 'SCHEDULED' ? (
           <Button
             variant="secondary"
@@ -49,7 +51,14 @@ export function ShiftCheckIn({ shift, locate = phonePosition }: { shift: Caregiv
             onPress={async () => {
               setBusy(true);
               const position = await locate();
-              checkOut.mutate({ shiftId: shift.id, ...position }, { onSettled: () => setBusy(false) });
+              checkOut.mutate(
+                { shiftId: shift.id, ...position },
+                {
+                  // Checked out: the checks during the visit stop.
+                  onSuccess: () => void endVisitFor(shift.id),
+                  onSettled: () => setBusy(false),
+                },
+              );
             }}
           />
         ) : null}
@@ -91,10 +100,15 @@ export function ShiftCheckIn({ shift, locate = phonePosition }: { shift: Caregiv
     checkIn.mutate(
       { shiftId: shift.id, code, ...position },
       {
-        onSuccess: () => {
+        onSuccess: (result) => {
           setOpen(false);
-          // Arrived: stop sharing the trip.
-          void endTripFor(shift.id);
+          // Arrived: the trip ends; with checks during the visit on, they take over on this phone.
+          if (result?.presence) {
+            void startVisitChecks(result.presence, shift.id, {
+              title: t('visitChecks.notificationTitle'),
+              body: t('visitChecks.notificationBody', { minutes: result.presence.everyMinutes ?? 30 }),
+            });
+          } else void endTripFor(shift.id);
         },
         onSettled: () => setBusy(false),
       },
@@ -111,6 +125,7 @@ export function ShiftCheckIn({ shift, locate = phonePosition }: { shift: Caregiv
           {t('checkIn.caregiver.notAtHome')}
         </Text>
       ) : null}
+      {c.presence ? <Text style={{ fontSize: 14, lineHeight: 20, color: colors.muted }}>{t('visitChecks.notice', { minutes: c.presence.everyMinutes })}</Text> : null}
       <Field
         label={t('checkIn.caregiver.codeLabel')}
         hint={t('checkIn.caregiver.codeHint')}

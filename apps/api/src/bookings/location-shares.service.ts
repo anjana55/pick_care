@@ -1,7 +1,7 @@
 import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, Logger, NotFoundException, OnApplicationBootstrap, OnModuleDestroy, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createHash, randomBytes, randomUUID as uuid, timingSafeEqual } from 'crypto';
-import { and, asc, eq, gt, gte, inArray, isNull, lt, lte } from 'drizzle-orm';
+import { timingSafeEqual } from 'crypto';
+import { and, asc, desc, eq, gt, gte, inArray, isNotNull, isNull, lt, lte } from 'drizzle-orm';
 import {
   LOCATION_MAX_SPEED_KMH,
   LOCATION_POINTS_BATCH_MAX,
@@ -10,6 +10,10 @@ import {
   distanceMetres,
   etaFrom,
   insideSriLanka,
+  isFarFromHome,
+  presenceSlots,
+  type PresenceReply,
+  type StaffPresenceDetail,
   toColombo,
   type ClientLive,
   type GeoPoint,
@@ -25,12 +29,11 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { JobsService } from '../jobs/jobs.service';
 import { CareLocationsService } from '../care-locations/care-locations.service';
 import { CheckInService } from './check-in.service';
-import { closeShares, type ShareRow } from './location-shares.db';
+import { closeShares, hashToken, latestShiftShares, openShare, presenceOf, type ShareRow } from './location-shares.db';
 
 export const LOCATION_SWEEP_JOB = 'location-shares.sweep';
 const SWEEP_MS = 2 * 60_000;
 
-const hash = (token: string) => createHash('sha256').update(token).digest('hex');
 const iso = (d: Date | string | null | undefined) => (d ? new Date(d).toISOString() : null);
 const round6 = (n: number) => Math.round(n * 1e6) / 1e6;
 
@@ -116,22 +119,10 @@ export class LocationSharesService implements OnApplicationBootstrap, OnModuleDe
    */
   async startOnMyWay(user: AuthenticatedUser, shiftId: string, now = new Date()): Promise<StartedShare> {
     const { shift, end } = await this.shiftForOnMyWay(user, shiftId, now);
-    await closeShares(this.db, shiftId, 'STOPPED', now, 'ON_THE_WAY');
-    const token = randomBytes(24).toString('base64url');
-    const id = uuid();
     const endsBy = new Date(Math.min(end, now.getTime() + ON_MY_WAY_CAP_HOURS * 3_600_000));
-    await this.db.insert(locationShares).values({
-      id,
-      kind: 'ON_THE_WAY',
-      shiftId,
-      bookingId: shift.bookingId,
-      caregiverId: user.caregiverId!,
-      uploadTokenHash: hash(token),
-      startedAt: now,
-      endsBy,
-    });
+    const started = await openShare(this.db, { kind: 'ON_THE_WAY', shiftId, bookingId: shift.bookingId, caregiverId: user.caregiverId!, endsBy }, now);
     await this.tellClientOnTheWay(shiftId, shift.patientUserId, user.caregiverId!, shift.startsAt, shift.bookingId);
-    return { shareId: id, uploadToken: token, kind: 'ON_THE_WAY', endsBy: endsBy.toISOString() };
+    return started;
   }
 
   async stop(user: AuthenticatedUser, shareId: string, now = new Date()): Promise<void> {
@@ -167,7 +158,7 @@ export class LocationSharesService implements OnApplicationBootstrap, OnModuleDe
     if (!token) throw new UnauthorizedException('Missing upload token');
     const [row] = await this.db.select().from(locationShares).where(eq(locationShares.id, shareId)).limit(1);
     const want = row ? Buffer.from(row.uploadTokenHash, 'hex') : Buffer.alloc(32);
-    const got = Buffer.from(hash(token), 'hex');
+    const got = Buffer.from(hashToken(token), 'hex');
     if (!row || !timingSafeEqual(want, got)) throw new UnauthorizedException('Not a valid upload token');
     return row;
   }
@@ -211,6 +202,13 @@ export class LocationSharesService implements OnApplicationBootstrap, OnModuleDe
     }
     if (kept.length && lastKept) {
       const pin = await this.places.pointForBooking(share.bookingId);
+      const { farMetres } = await this.checkIns.settings();
+      // Each point: how far from the home, and whether it is inside the home's circle (allowing for its accuracy).
+      for (const k of kept) {
+        const d = pin ? Math.round(distanceMetres(pin, { latitude: k.latitude as number, longitude: k.longitude as number })) : null;
+        k.distanceM = d;
+        k.inside = d === null ? null : !isFarFromHome(d, k.accuracyM ?? null, farMetres);
+      }
       await this.db.insert(locationPoints).values(kept);
       await this.db
         .update(locationShares)
@@ -226,6 +224,53 @@ export class LocationSharesService implements OnApplicationBootstrap, OnModuleDe
         .where(eq(locationShares.id, shareId));
     }
     return { accepted: kept.length, open };
+  }
+
+  // --- checks during a visit (C) ------------------------------------------------------------
+
+  /** The caregiver's own checked-in visit, or a clear reason why not. */
+  private async checkedInVisit(user: AuthenticatedUser, shiftId: string, now: Date) {
+    const settings = await this.checkIns.settings();
+    if (!settings.enabled || !settings.liveEnabled || !settings.presenceEnabled) throw new ForbiddenException('Location checks during visits are turned off');
+    const shift = await this.checkIns.caregiverShift(user, shiftId);
+    const [row] = await this.db.select({ inAt: shiftCheckins.checkedInAt, outAt: shiftCheckins.checkedOutAt }).from(shiftCheckins).where(eq(shiftCheckins.shiftId, shiftId)).limit(1);
+    if (!row?.inAt) throw new ConflictException('Check in first');
+    if (row.outAt) throw new ConflictException('You have already checked out');
+    return { settings, shift, now };
+  }
+
+  /** "Share from this phone" while checked in: a new share (the old one, on another phone, stops). */
+  async restartPresence(user: AuthenticatedUser, shiftId: string, now = new Date()): Promise<StartedShare> {
+    const { settings, shift } = await this.checkedInVisit(user, shiftId, now);
+    const started = await this.checkIns.openPresence(settings, shift, user, now);
+    if (!started) throw new ConflictException('This shift has ended');
+    return started;
+  }
+
+  /** The caregiver answers "Still with …?": noted for staff, and nobody is told about this spell away. */
+  async reply(user: AuthenticatedUser, shiftId: string, reply: PresenceReply, now = new Date()): Promise<void> {
+    await this.checkedInVisit(user, shiftId, now);
+    const [share] = await this.db
+      .select({ id: locationShares.id })
+      .from(locationShares)
+      .where(and(eq(locationShares.shiftId, shiftId), eq(locationShares.kind, 'ON_SHIFT'), isNull(locationShares.endedAt)))
+      .orderBy(desc(locationShares.startedAt))
+      .limit(1);
+    if (!share) throw new ConflictException('Location checks are not running for this visit');
+    await this.db.update(locationShares).set({ awayReply: reply, awayRepliedAt: now }).where(eq(locationShares.id, share.id));
+  }
+
+  /** Staff: the checks during one visit, with the points for the map. */
+  async staffPresence(shiftId: string, now = new Date()): Promise<StaffPresenceDetail | null> {
+    const shares = await latestShiftShares(this.db, [shiftId]);
+    const share = shares.get(shiftId);
+    if (!share) return null;
+    const points = await this.db.select().from(locationPoints).where(eq(locationPoints.shareId, share.id)).orderBy(asc(locationPoints.at)).limit(500);
+    return {
+      ...(await presenceOf(this.db, share, now)),
+      home: await this.places.pointForBooking(share.bookingId),
+      points: points.map((p) => ({ at: new Date(p.at).toISOString(), latitude: Number(p.latitude), longitude: Number(p.longitude), accuracyM: p.accuracyM ?? null, inside: p.inside ?? null, mocked: p.mocked })),
+    };
   }
 
   // --- who sees what -------------------------------------------------------------------
@@ -338,6 +383,16 @@ export class LocationSharesService implements OnApplicationBootstrap, OnModuleDe
         await this.db.update(locationShares).set({ endedAt: now, endReason: 'TURNED_OFF' }).where(inArray(locationShares.id, open.map((o) => o.id)));
         closed += open.length;
       }
+    }
+    // Closed visit checks: keep the dot strip and counts, so they outlive the points.
+    const unsummed = await this.db
+      .select()
+      .from(locationShares)
+      .where(and(eq(locationShares.kind, 'ON_SHIFT'), isNotNull(locationShares.endedAt), isNull(locationShares.summary)))
+      .limit(200);
+    for (const share of unsummed) {
+      const p = await presenceOf(this.db, share, now);
+      await this.db.update(locationShares).set({ summary: { slots: p.slots, inside: p.inside, away: p.away, none: p.none, mocked: p.mocked } }).where(eq(locationShares.id, share.id));
     }
     const reminded = settings.enabled && settings.liveEnabled ? await this.remindOnMyWay(now, settings.onMyWayMinutes) : 0;
     const cutoff = new Date(now.getTime() - settings.locationRetentionDays * 86_400_000);

@@ -1,4 +1,16 @@
-import { DEFAULT_LOCATION_RETENTION_DAYS, DEFAULT_ON_MY_WAY_MINUTES, LOCATION_RETENTION_LIMITS, ON_MY_WAY_MINUTES_LIMITS, type CaregiverOnMyWay } from './location-shares';
+import {
+  DEFAULT_LOCATION_RETENTION_DAYS,
+  DEFAULT_ON_MY_WAY_MINUTES,
+  DEFAULT_PRESENCE,
+  LOCATION_RETENTION_LIMITS,
+  ON_MY_WAY_MINUTES_LIMITS,
+  PRESENCE_AWAY_POINTS_LIMITS,
+  PRESENCE_EVERY_LIMITS,
+  PRESENCE_SILENT_LIMITS,
+  type CaregiverOnMyWay,
+  type CaregiverPresence,
+  type StaffPresence,
+} from './location-shares';
 import type { ShiftStatus } from './bookings';
 import { haversineKm, type GeoPoint } from './geo';
 
@@ -38,6 +50,14 @@ export interface CheckInSettings {
   onMyWayMinutes: number;
   /** Raw location points are deleted after this many days. */
   locationRetentionDays: number;
+  /** Location checks during a visit (needs live location on). Off by default. */
+  presenceEnabled: boolean;
+  /** Minutes between checks while checked in. */
+  presenceEveryMinutes: number;
+  /** This many checks in a row outside the home's circle: "Still with …?", then staff. */
+  presenceAwayPoints: number;
+  /** No check for this many intervals: staff see "no location". */
+  presenceSilentMultiplier: number;
 }
 
 export const DEFAULT_CHECK_IN_SETTINGS: CheckInSettings = {
@@ -48,6 +68,10 @@ export const DEFAULT_CHECK_IN_SETTINGS: CheckInSettings = {
   liveEnabled: false,
   onMyWayMinutes: DEFAULT_ON_MY_WAY_MINUTES,
   locationRetentionDays: DEFAULT_LOCATION_RETENTION_DAYS,
+  presenceEnabled: false,
+  presenceEveryMinutes: DEFAULT_PRESENCE.everyMinutes,
+  presenceAwayPoints: DEFAULT_PRESENCE.awayPoints,
+  presenceSilentMultiplier: DEFAULT_PRESENCE.silentMultiplier,
 };
 export const CHECK_IN_SETTINGS_LIMITS = {
   earlyMinutes: { min: 0, max: 240 },
@@ -55,6 +79,9 @@ export const CHECK_IN_SETTINGS_LIMITS = {
   farMetres: { min: 50, max: 2000 },
   onMyWayMinutes: ON_MY_WAY_MINUTES_LIMITS,
   locationRetentionDays: LOCATION_RETENTION_LIMITS,
+  presenceEveryMinutes: PRESENCE_EVERY_LIMITS,
+  presenceAwayPoints: PRESENCE_AWAY_POINTS_LIMITS,
+  presenceSilentMultiplier: PRESENCE_SILENT_LIMITS,
 } as const;
 
 /**
@@ -130,6 +157,8 @@ export interface CaregiverCheckIn {
   codeLocked: boolean;
   /** "On my way": null when live location is off, or the shift is past it (checked in, ended). */
   onMyWay: CaregiverOnMyWay | null;
+  /** Location checks during the visit: null when they are off or the visit is over. */
+  presence: CaregiverPresence | null;
 }
 
 /** A client's view of one visit (on a shift in GET /me/bookings). Null when check-in is off. */
@@ -168,6 +197,8 @@ export interface StaffCheckIn {
   outByName: string | null;
   outNote: string | null;
   outLocation: (GeoPoint & { accuracyM: number | null }) | null;
+  /** Location checks during this visit; null when there were none. */
+  presence: StaffPresence | null;
   /** An open "On my way" share for this shift, with its last ETA; null when there is none. */
   onTheWay: { shareId: string; etaMinutes: number | null; arriving: boolean; updatedAt: string | null } | null;
   /** Metres from the booking's place at check-out; null when either is missing. */

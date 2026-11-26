@@ -77,3 +77,13 @@ export interface NearHomeAnswer {
   /** True within the check-in radius, false outside it, null when the booking has no confirmed place or the fix is too poor to say. */
   atHome: boolean | null;
 }
+
+/** GET /care-locations/suggestions (staff): places taken from a first check-in, waiting to be confirmed. */
+export interface CareLocationSuggestion extends CareLocation {
+  patientId: string;
+  clientName: string;
+  /** The booking whose check-in suggested it, to confirm it on. */
+  bookingId: string | null;
+  bookingReference: string | null;
+  suggestedAt: string;
+}

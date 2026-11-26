@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { and, asc, eq, gte, isNull, lt } from 'drizzle-orm';
+import { and, asc, eq, gte, inArray, isNotNull, isNull, lt } from 'drizzle-orm';
 import {
   CORE_DOCUMENTS,
   TODO_EXPIRY_DAYS,
@@ -12,7 +12,7 @@ import {
   type TodoItem,
 } from '@care-platform/shared';
 import { DRIZZLE, type Database } from '../database/database.module';
-import { bookingShifts, bookings, caregiverDocuments, invoices, patients, caregivers } from '../database/schema';
+import { bookingShifts, bookings, caregiverDocuments, careLocations, checkInSettings, invoices, patients, caregivers } from '../database/schema';
 import type { AuthenticatedUser } from '../common/decorators/current-user.decorator';
 import { CarePlansService } from '../care-plans/care-plans.service';
 import { ReviewsService } from '../reviews/reviews.service';
@@ -89,6 +89,7 @@ export class TodosService implements OnModuleInit {
       this.safe('invoices', () => this.invoicesToPay(patientId, now)),
       this.safe('ratings', () => this.caregiversToRate(user)),
       this.safe('care', () => this.careToTick(patientId, now)),
+      this.safe('place', () => this.homeToPin(patientId)),
     ]);
     return sortTodos(parts.flat()).slice(0, MAX_TODOS);
   }
@@ -137,6 +138,21 @@ export class TodosService implements OnModuleInit {
     if (!count) return [];
     const today = colomboToday(now);
     return [{ key: `care:${today}`, kind: 'TICK_OFF_CARE', path: '/care', urgent: true, dueOn: today, params: { count } }];
+  }
+
+  /**
+   * With check-in on and a booking under way or coming, a client with no
+   * place on the map is asked to pin the home: check-ins (and On my way) are
+   * measured from it.
+   */
+  async homeToPin(patientId: string): Promise<TodoItem[]> {
+    const [settings] = await this.db.select({ enabled: checkInSettings.enabled }).from(checkInSettings).limit(1);
+    if (!settings?.enabled) return [];
+    const [place] = await this.db.select({ id: careLocations.id }).from(careLocations).where(and(eq(careLocations.patientId, patientId), isNotNull(careLocations.confirmedAt))).limit(1);
+    if (place) return [];
+    const [booking] = await this.db.select({ id: bookings.id }).from(bookings).where(and(eq(bookings.patientId, patientId), inArray(bookings.status, ['DRAFT', 'CONFIRMED']))).limit(1);
+    if (!booking) return [];
+    return [{ key: 'place:home', kind: 'PIN_HOME', path: '/care-places', urgent: false, dueOn: null, params: {} }];
   }
 
   // --- caregivers -------------------------------------------------------------------

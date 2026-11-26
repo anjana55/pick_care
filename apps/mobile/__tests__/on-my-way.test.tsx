@@ -3,6 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 import type { CaregiverShift, ClientBooking, ClientLive } from '@care-platform/shared';
 import en from '../src/i18n/en.json';
 import { OnMyWay, type OnMyWayDeps } from '../src/caregiver/OnMyWay';
+import { VisitChecks, visitSession, type VisitChecksDeps } from '../src/caregiver/VisitChecks';
 import { OnTheWay, liveHtml } from '../src/care/OnTheWay';
 import { visitSoon } from '../src/care/bookings-api';
 import { flushOutbox } from '../src/location/outbox';
@@ -35,7 +36,7 @@ const shift = (onMyWay: CaregiverShift['checkIn'] extends infer C ? (C extends {
   scheduleType: 'DAY',
   area: 'Colombo',
   hasCarePlan: false,
-  checkIn: { state: 'UPCOMING', opensAt: new Date(NOW - 20 * MIN).toISOString(), checkedInAt: null, checkedOutAt: null, codeLocked: false, onMyWay },
+  checkIn: { state: 'UPCOMING', opensAt: new Date(NOW - 20 * MIN).toISOString(), checkedInAt: null, checkedOutAt: null, codeLocked: false, onMyWay, presence: null },
 });
 
 const deps = (over: Partial<OnMyWayDeps> = {}): OnMyWayDeps => ({
@@ -200,5 +201,61 @@ describe('on the way (client)', () => {
     const html = liveHtml('https://tiles.example/style.json', { latitude: 6.95, longitude: 79.85 }, { latitude: 6.9271, longitude: 79.8452 }, '#1F6A74');
     expect(html).toContain('var cg=[79.85,6.95], home=[79.8452,6.9271]');
     expect(html).toContain('interactive:false');
+  });
+});
+
+describe('checks during a visit (caregiver)', () => {
+  const checkedIn = (presence: { everyMinutes: number; shareId: string | null; askedAt: string | null }): CaregiverShift => {
+    const s = shift(null);
+    return { ...s, checkIn: { ...s.checkIn!, state: 'IN', checkedInAt: new Date(NOW - 30 * MIN).toISOString(), presence } };
+  };
+  const vdeps = (over: Partial<VisitChecksDeps> = {}): VisitChecksDeps => ({
+    start: jest.fn(async () => 'started' as const),
+    tracking: jest.fn(async () => true),
+    session: jest.fn(async () => ({ id: 'vs-1', kind: 'SHIFT', everyMinutes: 30, startedAt: NOW, endsBy: NOW + 8 * 3_600_000, sink: 'SERVER', uploadToken: 't', shiftId: 's-1', notification: { title: '', body: '' } }) as TrackSession),
+    ...over,
+  });
+
+  beforeEach(async () => {
+    await tokenStore.set(tokensFor('CAREGIVER', { caregiverId: 'cg-1' }));
+  });
+
+  it('says the checks are running on this phone', async () => {
+    await show(<VisitChecks shift={checkedIn({ everyMinutes: 30, shareId: 'vs-1', askedAt: null })} deps={vdeps()} />);
+    expect(await screen.findByText('Location checked every 30 minutes until you check out.')).toBeTruthy();
+  });
+
+  it('starts again by itself when the phone stopped tracking (iOS, app swiped away)', async () => {
+    const d = vdeps({ tracking: jest.fn(async () => false) });
+    await show(<VisitChecks shift={checkedIn({ everyMinutes: 30, shareId: 'vs-1', askedAt: null })} deps={d} />);
+    expect(await screen.findByText('Location checked every 30 minutes until you check out.')).toBeTruthy();
+    expect(d.start).toHaveBeenCalledWith(expect.objectContaining({ id: 'vs-1', kind: 'SHIFT' }));
+  });
+
+  it('offers "Share from this phone" when another phone runs them, and starts from a fresh share', async () => {
+    const calls = serveApi({
+      'POST /me/shifts/s-1/presence/restart': () => ({ status: 200, body: { shareId: 'vs-2', uploadToken: 'tok2', kind: 'ON_SHIFT', everyMinutes: 30, endsBy: new Date(NOW + 8 * 3_600_000).toISOString() } }),
+      'GET /me/shifts': () => ({ status: 200, body: [] }),
+    });
+    const d = vdeps({ session: jest.fn(async () => null) });
+    await show(<VisitChecks shift={checkedIn({ everyMinutes: 30, shareId: 'vs-1', askedAt: null })} deps={d} />);
+    await fireEvent.press(await screen.findByRole('button', { name: en.onMyWay.again }));
+    await screen.findByRole('button', { name: en.onMyWay.again });
+    expect(calls.map((c) => c.route)).toContain('POST /me/shifts/s-1/presence/restart');
+    expect(d.start).toHaveBeenCalledWith(expect.objectContaining({ id: 'vs-2', kind: 'SHIFT', everyMinutes: 30, uploadToken: 'tok2', sink: 'SERVER' }));
+  });
+
+  it('answers "Still with the client?"', async () => {
+    const calls = serveApi({ 'POST /me/shifts/s-1/presence/reply': () => ({ status: 200, body: { ok: true } }), 'GET /me/shifts': () => ({ status: 200, body: [] }) });
+    await show(<VisitChecks shift={checkedIn({ everyMinutes: 30, shareId: 'vs-1', askedAt: new Date(NOW).toISOString() })} deps={vdeps()} />);
+    expect(await screen.findByText(en.visitChecks.askTitle)).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: en.visitChecks.outForClient }));
+    await screen.findByText(en.visitChecks.askTitle);
+    expect(calls.find((c) => c.route === 'POST /me/shifts/s-1/presence/reply')!.body).toEqual({ reply: 'OUT_FOR_CLIENT' });
+  });
+
+  it('builds the phone session from the check-in answer', () => {
+    const session = visitSession({ shareId: 'vs-9', uploadToken: 'x', kind: 'ON_SHIFT', everyMinutes: 15, endsBy: new Date(NOW + MIN).toISOString() }, 's-1', { title: 'a', body: 'b' }, NOW);
+    expect(session).toEqual({ id: 'vs-9', kind: 'SHIFT', everyMinutes: 15, startedAt: NOW, endsBy: NOW + MIN, sink: 'SERVER', uploadToken: 'x', shiftId: 's-1', notification: { title: 'a', body: 'b' } });
   });
 });

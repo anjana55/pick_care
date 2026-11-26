@@ -54,6 +54,7 @@ export const TODO_KINDS = [
   'PAY_INVOICE',
   'RATE_CAREGIVER',
   'TICK_OFF_CARE',
+  'PIN_HOME',
   // Caregivers
   'UPLOAD_DOCUMENT',
   'DOCUMENT_REJECTED',
@@ -178,6 +179,7 @@ export function webPathFor(path: string, role: 'PATIENT_GUARDIAN' | 'CAREGIVER' 
   if (/^\/bookings(\/|$)/.test(path) || path === '/care') return '/account/bookings';
   if (/^\/invoices(\/|$)/.test(path)) return '/account/invoices';
   if (/^\/requests(\/|$)/.test(path)) return '/account/requests';
+  if (path === '/care-places') return '/account/places';
   return home;
 }
 

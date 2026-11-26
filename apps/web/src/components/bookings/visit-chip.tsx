@@ -4,6 +4,7 @@ import type { StaffCheckIn, VisitState } from '@care-platform/shared';
 import { useTranslation } from '@/lib/i18n/provider';
 import { fmtTime } from '@/lib/colombo-time';
 import { cn } from '@/lib/utils';
+import { PresenceStrip } from './presence-strip';
 
 const TONE: Record<VisitState, string> = {
   UPCOMING: 'bg-ink/5 text-ink/60',
@@ -33,7 +34,7 @@ export function VisitChip({ checkIn, minutesLate }: { checkIn: StaffCheckIn; min
 }
 
 /** The small print under a visit: who recorded it, anything odd about it. Nothing when there is nothing to say. */
-export function VisitNotes({ checkIn }: { checkIn: StaffCheckIn }) {
+export function VisitNotes({ checkIn, shiftId, withMap = false }: { checkIn: StaffCheckIn; shiftId: string; withMap?: boolean }) {
   const { t, locale } = useTranslation();
   const lines: { text: string; warn?: boolean }[] = [];
   if (checkIn.onTheWay) {
@@ -53,7 +54,7 @@ export function VisitNotes({ checkIn }: { checkIn: StaffCheckIn }) {
   if (checkIn.outMocked) lines.push({ text: t('visits.note.mockedOut'), warn: true });
   if (checkIn.codeLocked) lines.push({ text: t('visits.note.locked'), warn: true });
   else if (!checkIn.checkedInAt && checkIn.wrongCodes > 0) lines.push({ text: t('visits.note.wrongCodes', { n: checkIn.wrongCodes }) });
-  if (!lines.length && !checkIn.inLocation) return null;
+  if (!lines.length && !checkIn.inLocation && !checkIn.presence) return null;
   return (
     <ul className="mt-1 space-y-0.5 text-xs text-ink/60">
       {lines.map((line) => (
@@ -61,6 +62,11 @@ export function VisitNotes({ checkIn }: { checkIn: StaffCheckIn }) {
           {line.text}
         </li>
       ))}
+      {checkIn.presence && (
+        <li>
+          <PresenceStrip shiftId={shiftId} presence={checkIn.presence} withMap={withMap} />
+        </li>
+      )}
       {checkIn.inLocation && (
         <li>
           <a className="text-brand-dark hover:underline" target="_blank" rel="noreferrer" href={`https://www.openstreetmap.org/?mlat=${checkIn.inLocation.latitude}&mlon=${checkIn.inLocation.longitude}#map=17/${checkIn.inLocation.latitude}/${checkIn.inLocation.longitude}`}>

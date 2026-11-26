@@ -29,7 +29,7 @@ describe('Check-in: "you\'re at the client\'s home"', () => {
     scheduleType: 'DAY',
     area: 'Colombo',
     hasCarePlan: false,
-    checkIn: { state: 'DUE', opensAt: new Date().toISOString(), checkedInAt: null, checkedOutAt: null, codeLocked: false, onMyWay: null },
+    checkIn: { state: 'DUE', opensAt: new Date().toISOString(), checkedInAt: null, checkedOutAt: null, codeLocked: false, onMyWay: null, presence: null },
   };
 
   it('asks once on opening, says the phone is at the home, and checks in with that same fix', async () => {

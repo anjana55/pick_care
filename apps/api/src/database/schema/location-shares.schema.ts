@@ -1,6 +1,6 @@
-import { bigint, boolean, datetime, decimal, index, int, mysqlEnum, mysqlTable, primaryKey, varchar } from 'drizzle-orm/mysql-core';
+import { bigint, boolean, datetime, decimal, index, int, json, mysqlEnum, mysqlTable, primaryKey, varchar } from 'drizzle-orm/mysql-core';
 import { sql } from 'drizzle-orm';
-import { locationShareEndReasons, locationShareKinds } from '@care-platform/shared';
+import { locationShareEndReasons, locationShareKinds, presenceReplies, type PresenceSlot } from '@care-platform/shared';
 
 /**
  * A caregiver sharing where they are, started by their own tap (GPS tracking
@@ -36,6 +36,12 @@ export const locationShares = mysqlTable(
     /** Straight-line metres to the booking's place at the last point; null with no place. */
     lastDistanceM: int('last_distance_m'),
     points: int('points').notNull().default(0),
+    // ON_SHIFT (GPS tracking C): "Still with …?" asked, and the caregiver's answer.
+    awayAskedAt: datetime('away_asked_at'),
+    awayReply: mysqlEnum('away_reply', presenceReplies),
+    awayRepliedAt: datetime('away_replied_at'),
+    /** ON_SHIFT, written when it closes: the dot strip and counts, so they outlive the points. */
+    summary: json('summary').$type<{ slots: PresenceSlot[]; inside: number; away: number; none: number; mocked: number }>(),
     createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
@@ -57,6 +63,9 @@ export const locationPoints = mysqlTable(
     /** Metres a second, as the phone reported. */
     speed: decimal('speed', { precision: 6, scale: 1, mode: 'number' }),
     mocked: boolean('mocked').notNull().default(false),
+    /** Inside the home's circle (allowing for accuracy); null with no place on the map. */
+    inside: boolean('inside'),
+    distanceM: int('distance_m'),
     receivedAt: datetime('received_at').notNull().default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({

@@ -146,7 +146,8 @@
       "pausedForPayment": "Bookings with visits paused: unpaid invoice",
       "peopleWaiting": "People who asked to talk to someone",
       "readyToVerify": "Caregivers ready to verify (file complete)",
-      "photosToApprove": "Photos to approve"
+      "photosToApprove": "Photos to approve",
+      "placesToConfirm": "Places to confirm on the map"
     },
     "severity": {
       "act": "Act today",
@@ -4396,7 +4397,15 @@
       "onMyWay": "\"On my way\" opens (minutes before the start)",
       "onMyWayHint": "Between {min} and {max}. Caregivers are also reminded then.",
       "retention": "Keep location points (days)",
-      "retentionHint": "Between {min} and {max}. After that the points are deleted; each visit keeps only when the trip started and ended."
+      "retentionHint": "Between {min} and {max}. After that the points are deleted; each visit keeps only when the trip started and ended.",
+      "presence": "Location checks during visits",
+      "presenceHint": "While checked in, the caregiver's phone sends its position at the interval below. Staff only. Staff are told when the caregiver seems away and does not answer \"Still with the client?\", or the checks stop. Nothing changes hours or pay. Needs live location on.",
+      "presenceEvery": "Check location every (minutes)",
+      "presenceEveryHint": "Between {min} and {max}. Applies from each caregiver's next check-in.",
+      "presenceAway": "Away after (checks in a row)",
+      "presenceAwayHint": "Between {min} and {max}. This many checks in a row outside the home's circle and the caregiver is asked \"Still with the client?\".",
+      "presenceSilent": "No location after (intervals)",
+      "presenceSilentHint": "Between {min} and {max}. No check for this many intervals shows \"No location\" to staff. Phones lose signal, so it is a soft note, with no email."
     },
     "coverPanel": {
       "find": "Find cover",
@@ -4436,6 +4445,26 @@
       "map": "Map of caregivers on their way",
       "stale": "Location not updating",
       "mocked": "simulated position"
+    },
+    "presence": {
+      "summary": "Location checks every {every} min: {inside} at the home · {away} away · {none} missing",
+      "running": "running",
+      "strip": "Location checks during the visit, one per interval",
+      "slot": {
+        "IN": "At the home",
+        "AWAY": "Away from the home",
+        "NONE": "No check",
+        "UNKNOWN": "No place on the map to compare"
+      },
+      "reply": {
+        "WITH_CLIENT": "Asked whether still with the client: said yes ({time})",
+        "OUT_FOR_CLIENT": "Asked whether still with the client: had gone out for the client ({time})"
+      },
+      "stopped": "Location checks turned off by the caregiver at {time}",
+      "mocked": "{n} simulated position(s)",
+      "showMap": "Show the checks on a map",
+      "hideMap": "Hide map",
+      "map": "Map of the location checks during the visit"
     }
   },
   "peopleWaiting": {
@@ -4622,5 +4651,12 @@
       "AREA": "Found the area. Zoom in and drag the pin onto the house.",
       "TOWN": "Found the town. Zoom in and drag the pin onto the house."
     }
+  },
+  "placesToConfirm": {
+    "title": "Places to confirm",
+    "subtitle": "Taken from a client's first check-in with a position. Check-ins are not measured from a place until it is confirmed: open the booking to confirm, move or discard it.",
+    "none": "Nothing to confirm.",
+    "from": "From a check-in on {when}",
+    "open": "Open booking {reference}"
   }
 }

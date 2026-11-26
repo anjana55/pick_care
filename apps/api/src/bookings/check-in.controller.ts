@@ -5,6 +5,7 @@ import { Audit } from '../common/decorators/audit.decorator';
 import { CurrentUser, type AuthenticatedUser } from '../common/decorators/current-user.decorator';
 import { CheckInService } from './check-in.service';
 import { CheckInDto, PositionDto, StaffCheckInDto, UpdateCheckInSettingsDto } from './dto/check-in.dto';
+import type { CheckInResult } from '@care-platform/shared';
 
 /** A caregiver checks in to their own shift with the client's arrival code, and out when they leave. */
 @ApiTags('check-in')
@@ -16,9 +17,9 @@ export class MyCheckInController {
 
   @Post(':id/check-in')
   @HttpCode(200)
-  async checkIn(@Param('id', ParseUUIDPipe) id: string, @Body() dto: CheckInDto, @CurrentUser() user: AuthenticatedUser) {
-    await this.checkIns.checkIn(user, id, dto);
-    return { ok: true };
+  /** With location checks on, the answer carries their share for the phone to start sending to. */
+  checkIn(@Param('id', ParseUUIDPipe) id: string, @Body() dto: CheckInDto, @CurrentUser() user: AuthenticatedUser): Promise<CheckInResult> {
+    return this.checkIns.checkIn(user, id, dto);
   }
 
   /** "You're at the client's home": yes, no or can't say - never where the home is. */

@@ -9,6 +9,7 @@ import type {
   CaregiverRateCard,
   CaregiverShift,
   CheckInInput,
+  CheckInResult,
   NearHomeAnswer,
   CreateIssueReportBody,
   DocumentType,
@@ -92,7 +93,7 @@ export function useShiftCheckIn() {
   const queryClient = useQueryClient();
   const me = useCaregiver();
   return useMutation({
-    mutationFn: ({ shiftId, ...body }: CheckInInput & { shiftId: string }) => api.post<{ ok: true }>(`/me/shifts/${encodeURIComponent(shiftId)}/check-in`, body),
+    mutationFn: ({ shiftId, ...body }: CheckInInput & { shiftId: string }) => api.post<CheckInResult>(`/me/shifts/${encodeURIComponent(shiftId)}/check-in`, body),
     // Also after a refusal: a wrong code may have locked it, and the list should say so.
     onSettled: () => queryClient.invalidateQueries({ queryKey: [...key(me?.userId), 'shifts'] }),
   });

@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { CareLocationsService } from './care-locations.service';
-import { BookingCareLocationController, MyCareLocationsController, PatientCareLocationsController } from './care-locations.controller';
+import { BookingCareLocationController, CareLocationSuggestionsController, MyCareLocationsController, PatientCareLocationsController } from './care-locations.controller';
 
 @Module({
-  controllers: [MyCareLocationsController, PatientCareLocationsController, BookingCareLocationController],
+  controllers: [MyCareLocationsController, PatientCareLocationsController, BookingCareLocationController, CareLocationSuggestionsController],
   providers: [CareLocationsService],
   exports: [CareLocationsService],
 })

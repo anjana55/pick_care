@@ -96,6 +96,7 @@ const CLIENT_SCREENS: [RegExp, string][] = [
   // A correction to a client's bills.
   [/^\/invoices$/, '/invoices'],
   [/^\/notifications$/, '/notifications'],
+  [/^\/care-places$/, '/care-places'],
 ];
 const CAREGIVER_SCREENS: [RegExp, string][] = [
   [/^\/(shifts|bookings(\/[^/]+)?|care)$/, '/shifts'],

@@ -146,6 +146,8 @@ export interface BusinessInsights {
     pausedForPayment: number;
     /** Clients and caregivers who asked to talk to a person and have not been answered. */
     peopleWaiting: number;
+    /** Places on the map suggested from a first check-in, waiting for staff to confirm. */
+    placesToConfirm: number;
     /** Applicants whose verification file the onboarding agent marked ready for staff to check. */
     readyToVerify: number;
     /** Caregivers' profile photos waiting for staff approval. */

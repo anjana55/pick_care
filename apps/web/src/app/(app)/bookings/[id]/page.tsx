@@ -34,6 +34,7 @@ import { PhoneLink } from '@/components/clients/contact-links';
 import { CaregiverPicker } from '@/components/requests/caregiver-picker';
 import { BookingStatusBadge, ShiftStatusBadge } from '@/components/bookings/booking-badges';
 import { VisitChip } from '@/components/bookings/visit-chip';
+import { PresenceStrip } from '@/components/bookings/presence-strip';
 import { BookingCareLocationPanel } from '@/components/bookings/booking-care-location';
 import { RelatedInvoices } from '@/components/billing/related-invoices';
 import { EditBookingPanel } from '@/components/bookings/edit-booking-panel';
@@ -761,6 +762,7 @@ function ShiftRow({ booking, shift }: { booking: BookingDetail; shift: BookingSh
             </div>
             {/* Check-in, once there is something to say: due, late, there, gone, or never recorded. */}
             {shift.checkIn && shift.checkIn.state !== 'UPCOMING' && (shift.status === 'SCHEDULED' || shift.status === 'COMPLETED') && <VisitChip checkIn={shift.checkIn} />}
+            {shift.checkIn?.presence && <PresenceStrip shiftId={shift.id} presence={shift.checkIn.presence} withMap />}
             <ShiftStatusBadge status={shift.status} label={t(`bookings.shiftStatus.${shift.status}`)} />
             {open && (
               <div className="flex items-center gap-1">

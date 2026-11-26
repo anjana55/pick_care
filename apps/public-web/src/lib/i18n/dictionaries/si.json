@@ -2599,7 +2599,8 @@
       "DOCUMENT_EXPIRING": "ඔබගේ {document} දින {days}කින් කල් ඉකුත් වේ",
       "DOCUMENT_EXPIRING_TODAY": "ඔබගේ {document} අද කල් ඉකුත් වේ",
       "DOCUMENT_EXPIRED": "ඔබගේ {document} කල් ඉකුත් වී ඇත",
-      "SHIFT_TODAY": "අද {time} ට සේවා කාලය ({reference})"
+      "SHIFT_TODAY": "අද {time} ට සේවා කාලය ({reference})",
+      "PIN_HOME": "රැකවරණ සේවකයා නිවැරදි දොරටුවට පැමිණි බව කාර්යාලයට දැකිය හැකි වන සේ නිවස මත සලකුණක් තබන්න"
     },
     "due": "ගෙවිය යුතු දිනය {date}",
     "action": {
@@ -2609,7 +2610,8 @@
       "UPLOAD_DOCUMENT": "උඩුගත කරන්න",
       "DOCUMENT_REJECTED": "නැවත උඩුගත කරන්න",
       "DOCUMENT_EXPIRING": "අලුත් එක උඩුගත කරන්න",
-      "SHIFT_TODAY": "සේවා කාලය බලන්න"
+      "SHIFT_TODAY": "සේවා කාලය බලන්න",
+      "PIN_HOME": "සලකුණ තබන්න"
     },
     "document": {
       "identity": "අනන්‍යතා සාධනය",

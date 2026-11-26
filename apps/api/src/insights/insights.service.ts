@@ -29,6 +29,7 @@ import {
   payoutStatements,
   onboardingFiles,
   talkRequests,
+  careLocations,
 } from '../database/schema';
 import { fold, median, periodFor, ratio, round2, type DailyValue } from './periods';
 import { CheckInService } from '../bookings/check-in.service';
@@ -507,6 +508,8 @@ export class InsightsService {
       .where(and(eq(bookings.status, 'DRAFT'), eq(bookings.billingTiming, 'ADVANCE')));
     const [paused] = await this.db.select({ n: count() }).from(bookings).where(and(eq(bookings.status, 'CONFIRMED'), isNotNull(bookings.paymentHoldInvoiceId)));
     const [waiting] = await this.db.select({ n: count() }).from(talkRequests).where(eq(talkRequests.status, 'OPEN'));
+    // Places suggested from a first check-in, waiting for staff to confirm (GPS tracking A).
+    const [places] = await this.db.select({ n: count() }).from(careLocations).where(isNull(careLocations.confirmedAt));
     // Caregivers' own photo uploads waiting for staff before going on their public profile.
     const [photos] = await this.db
       .select({ n: count() })
@@ -525,6 +528,7 @@ export class InsightsService {
       awaitingPayment: num(unpaidDrafts?.n),
       pausedForPayment: num(paused?.n),
       peopleWaiting: num(waiting?.n),
+      placesToConfirm: num(places?.n),
       readyToVerify: num(ready?.n),
       photosToApprove: num(photos?.n),
       unconfirmedShiftsNext7d: num(unconfirmed?.n),

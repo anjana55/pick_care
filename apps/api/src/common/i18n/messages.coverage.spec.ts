@@ -47,6 +47,7 @@ const EXEMPT_FILES: Record<string, string> = {
   'automation/dto/automation.dto.ts': 'Settings > Automation and the staff case controls (staff UI); no client or caregiver endpoint reaches it',
   'billing/billing-agent.service.ts': 'reasons from the billing agent, shown to staff on approval (staff UI); no client or caregiver endpoint reaches it',
   'bookings/live-care-agent.service.ts': 'reasons from the live-care agent, shown to staff on approval (staff UI); no client or caregiver endpoint reaches it',
+  'bookings/presence-agent.service.ts': 'reasons from the live-care agent (location checks during a visit), shown to staff on approval (staff UI); no client or caregiver endpoint reaches it',
   'bookings/booking-agent.service.ts': 'reasons from the booking agent, shown to staff on approval (staff UI); no client or caregiver endpoint reaches it',
   'billing/payment-reminders.service.ts': 'executor errors shown to staff on the Agent proposals page; the reminders themselves carry their own Sinhala and Tamil',
   'onboarding/onboarding-agent.service.ts': 'reasons and executor errors for staff; the three strings a referee can see are translated above',
