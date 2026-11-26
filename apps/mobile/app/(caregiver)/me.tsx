@@ -61,6 +61,8 @@ export default function Me() {
           <Divider />
           <MenuRow icon="star-outline" label={t('portal.nav.ratings')} onPress={() => router.navigate('/ratings')} />
           <Divider />
+          <MenuRow icon="notifications-outline" label={t('commsPrefs.title')} onPress={() => router.push('/communication-preferences')} />
+          <Divider />
           <MenuRow icon="call-outline" label={t('talk.title')} onPress={() => router.push('/talk')} />
         </Card>
 

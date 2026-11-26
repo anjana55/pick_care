@@ -306,6 +306,16 @@ const ENTRIES: Triple[] = [
 
   // --- clients (patients/guardians) ----------------------------------------
   ['Client not found', 'සේවාලාභියා හමු නොවීය', 'வாடிக்கையாளர் கிடைக்கவில்லை'],
+  // Communication preferences.
+  ['Caregiver profile not found', 'රැකවරණ සේවක පැතිකඩ හමු නොවීය', 'பராமரிப்பாளர் சுயவிவரம் கிடைக்கவில்லை'],
+  ['Client profile not found', 'සේවාලාභී පැතිකඩ හමු නොවීය', 'வாடிக்கையாளர் சுயவிவரம் கிடைக்கவில்லை'],
+  ['Preferred contact time is kept for clients only', 'කැමති සම්බන්ධ වීමේ වේලාව තබා ගන්නේ සේවාලාභීන් සඳහා පමණි', 'விருப்பமான தொடர்பு நேரம் வாடிக்கையாளர்களுக்கு மட்டுமே வைக்கப்படும்'],
+  ['WhatsApp cannot be the preferred contact method without a phone number', 'දුරකථන අංකයක් නොමැතිව WhatsApp කැමති සම්බන්ධතා ක්‍රමය විය නොහැක', 'தொலைபேசி எண் இல்லாமல் WhatsApp ஐ விருப்பமான தொடர்பு முறையாக வைக்க முடியாது'],
+  [
+    'This caregiver has no sign-in account yet, so app and reminder settings do not apply. Only the contact method can be changed',
+    'මෙම රැකවරණ සේවකයාට තවම පිවිසුම් ගිණුමක් නැත, එබැවින් යෙදුම් සහ සිහිකැඳවීම් සැකසුම් අදාළ නොවේ. වෙනස් කළ හැක්කේ සම්බන්ධතා ක්‍රමය පමණි',
+    'இந்தப் பராமரிப்பாளருக்கு இன்னும் உள்நுழைவு கணக்கு இல்லை, எனவே செயலி மற்றும் நினைவூட்டல் அமைப்புகள் பொருந்தாது. தொடர்பு முறையை மட்டுமே மாற்ற முடியும்',
+  ],
   ['Cannot change status from {from} to {to}. Allowed: {allowed}', 'තත්ත්වය {from} සිට {to} වෙත වෙනස් කළ නොහැක. අවසර ඇත්තේ: {allowed}', 'நிலையை {from} இலிருந்து {to} ஆக மாற்ற முடியாது. அனுமதிக்கப்பட்டவை: {allowed}'],
   ['Email cannot be the preferred contact method for an account without an email address', 'විද්‍යුත් ලිපිනයක් නොමැති ගිණුමකට විද්‍යුත් තැපෑල කැමති සම්බන්ධතා ක්‍රමය විය නොහැක', 'மின்னஞ்சல் முகவரி இல்லாத கணக்கிற்கு மின்னஞ்சலை விருப்பமான தொடர்பு முறையாக வைக்க முடியாது'],
   ['Choose both the district and the city where care is needed', 'රැකවරණය අවශ්‍ය දිස්ත්‍රික්කය සහ නගරය යන දෙකම තෝරන්න', 'பராமரிப்பு தேவைப்படும் மாவட்டம் மற்றும் நகரம் இரண்டையும் தேர்ந்தெடுக்கவும்'],

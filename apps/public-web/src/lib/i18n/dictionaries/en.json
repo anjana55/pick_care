@@ -2834,5 +2834,21 @@
     "stale": "Location not updating - their phone may have no signal",
     "map": "Map of your caregiver on the way",
     "home": "Home"
+  },
+  "commsPrefs": {
+    "title": "How we contact you",
+    "method": "Preferred contact method",
+    "time": "Best time to contact",
+    "push": "App notifications",
+    "pushHelp": "Alerts on your phone from the app. Everything also stays here under Notifications.",
+    "reminders": "Reminders and news by WhatsApp/email",
+    "remindersHelp": "Off: reminders and news come to the app and this page only, not by WhatsApp or email.",
+    "alwaysSent": "Messages about your bookings, shifts, invoices, payments and documents always come by your contact method.",
+    "phoneCallHint": "Our office will phone you. We still send important messages in writing too, so nothing is missed.",
+    "noEmail": "no email on file",
+    "intro": "Choose how we send you messages. Changes save straight away.",
+    "saved": "Saved",
+    "saveError": "Couldn't save. Please try again.",
+    "loadError": "Couldn't load your settings. Try again shortly."
   }
 }

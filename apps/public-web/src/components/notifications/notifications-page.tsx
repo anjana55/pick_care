@@ -5,6 +5,7 @@ import { useBellUser, useMarkRead, useNotifications, useNotificationsSummary } f
 import { Button } from '@/components/ui/button';
 import { TodoList } from './todo-list';
 import { NotificationList } from './notification-list';
+import { CommunicationPreferencesSection } from './communication-preferences';
 
 /** The full notifications page for a client or caregiver: To do, then the history, older ones on request. */
 export function NotificationsPage() {
@@ -47,6 +48,7 @@ export function NotificationsPage() {
           </div>
         )}
       </section>
+      <CommunicationPreferencesSection />
     </div>
   );
 }

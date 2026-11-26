@@ -414,6 +414,13 @@
       "when": 1795600843041,
       "tag": "0058_location_shares",
       "breakpoints": true
+    },
+    {
+      "idx": 59,
+      "version": "5",
+      "when": 1795664086243,
+      "tag": "0059_communication_preferences",
+      "breakpoints": true
     }
   ]
 }

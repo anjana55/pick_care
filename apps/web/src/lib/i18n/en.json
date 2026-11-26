@@ -4530,5 +4530,22 @@
     "discard": "Discard",
     "none": "No place on the map yet. Until there is one, check-ins are compared with this booking's first located check-in.",
     "add": "Add the place"
+  },
+  "commsPrefs": {
+    "title": "Communication preferences",
+    "method": "Preferred contact method",
+    "time": "Best time to contact",
+    "push": "App notifications",
+    "pushHelp": "Push alerts on their phone. The bell keeps every notice either way.",
+    "reminders": "Reminders and news by WhatsApp/email",
+    "remindersHelp": "Off: repeat reminders and staff announcements go to the app and bell only.",
+    "alwaysSent": "Booking, shift, invoice, payout and document notices, and payment reminders, always go by their contact method.",
+    "phoneCallHint": "Staff will phone them. Written notices still go by email or WhatsApp so nothing important is missed.",
+    "noEmail": "no email on file",
+    "noAccount": "No sign-in account yet, so app and reminder settings do not apply.",
+    "notSet": "Not set",
+    "on": "On",
+    "off": "Off",
+    "devices": "{count} phone(s) with the app"
   }
 }

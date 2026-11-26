@@ -40,6 +40,7 @@ import { useTranslation } from '@/lib/i18n/provider';
 import { RecordPager } from '@/components/ui/record-pager';
 import { useRouter } from 'next/navigation';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { CommunicationPreferencesCard } from '@/components/accounts/communication-preferences-card';
 import { CaregiverRatingsPanel } from '@/components/reviews/rating-panels';
 import { RelatedRequests } from '@/components/requests/related-requests';
 import { RelatedBookings } from '@/components/bookings/related-bookings';
@@ -427,6 +428,8 @@ export default function CaregiverProfilePage() {
               </CardContent>
             </Card>
           )}
+
+          {isAdminOrStaff && !isEditing && <CommunicationPreferencesCard subject={{ kind: 'CAREGIVER', id: caregiver.id }} canEdit={isAdminOrStaff} />}
 
           <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
             <Card>
