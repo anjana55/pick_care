@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { MapPin } from 'lucide-react';
-import type { CareLocation, GeoPoint } from '@care-platform/shared';
+import { zoomForPrecision, type AddressSearchResult, type CareLocation, type GeoPoint } from '@care-platform/shared';
 import { useTranslation } from '@/lib/i18n/provider';
-import { ApiError } from '@/lib/api/client';
+import { api, ApiError } from '@/lib/api/client';
 import {
   useAddCareLocation,
   useBookingCareLocation,
@@ -13,6 +13,8 @@ import {
   useUpdateCareLocation,
 } from '@/lib/hooks/use-care-locations';
 import { PinPicker } from '@/components/map/pin-picker';
+import { AddressSearch } from '@/components/map/address-search';
+import { useAddressSearchLabels } from '@/components/map/address-search-labels';
 import { Button } from '@/components/ui/button';
 import { Input, Label, Select } from '@/components/ui/input';
 
@@ -25,8 +27,10 @@ const osm = (p: GeoPoint) => `https://www.openstreetmap.org/?mlat=${p.latitude}&
  * booking uses. Caregivers never see the point.
  */
 export function BookingCareLocationPanel({ bookingId, patientId }: { bookingId: string; patientId: string }) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { data, isLoading } = useBookingCareLocation(bookingId);
+  const [focus, setFocus] = useState<(GeoPoint & { zoom: number }) | null>(null);
+  const searchLabels = useAddressSearchLabels();
   const add = useAddCareLocation(patientId);
   const update = useUpdateCareLocation(patientId);
   const remove = useRemoveCareLocation(patientId);
@@ -49,8 +53,17 @@ export function BookingCareLocationPanel({ bookingId, patientId }: { bookingId: 
     };
     return (
       <div className="mt-3 space-y-2 border-t border-border pt-3">
+        <AddressSearch
+          labels={searchLabels}
+          search={(q) => api.get<AddressSearchResult>(`/geo/address-search?${new URLSearchParams({ q, locale })}`)}
+          onPick={(m) => {
+            const point = { latitude: m.latitude, longitude: m.longitude };
+            setEditing({ ...editing, point });
+            setFocus({ ...point, zoom: zoomForPrecision(m.precision) });
+          }}
+        />
         <p className="text-xs text-ink/60">{t('careLocation.editHint')}</p>
-        <PinPicker value={editing.point} start={location ?? suggestion} onChange={(point) => setEditing({ ...editing, point })} labels={labels} />
+        <PinPicker value={editing.point} start={location ?? suggestion} focus={focus} onChange={(point) => setEditing({ ...editing, point })} labels={labels} />
         <div>
           <Label htmlFor="care-location-label">{t('careLocation.label')}</Label>
           <Input id="care-location-label" value={editing.label} maxLength={60} placeholder={t('careLocation.labelPlaceholder')} onChange={(e) => setEditing({ ...editing, label: e.target.value })} />

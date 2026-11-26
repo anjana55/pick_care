@@ -33,7 +33,7 @@ function start(maplibregl){
   map.on('error',function(e){if(!loaded&&!e.sourceId&&!e.tile)send({type:'failed'});});
   var r=function(n){return Math.round(n*1e6)/1e6;};
   map.on('moveend',function(){if(!${opts.editable ? 'true' : 'false'})return;var c=map.getCenter();send({type:'moved',latitude:r(c.lat),longitude:r(c.lng),zoom:map.getZoom()});});
-  window.goTo=function(p){map.jumpTo({center:[p.longitude,p.latitude],zoom:17});};
+  window.goTo=function(p){map.jumpTo({center:[p.longitude,p.latitude],zoom:p.zoom||17});};
   map.on('load',function(){loaded=true;send({type:'ready'});});
 }
 </script></body></html>`;
@@ -53,8 +53,8 @@ export function PinMap({
 }: {
   /** Where the map opens. */
   start: GeoPoint | null;
-  /** Move the map here (the phone's position arrived). */
-  goTo?: GeoPoint | null;
+  /** Move the map here (the phone's position arrived, or an address was found); zoom defaults to one house. */
+  goTo?: (GeoPoint & { zoom?: number }) | null;
   onMove?: (point: GeoPoint, zoomedIn: boolean) => void;
   height?: number;
 }) {

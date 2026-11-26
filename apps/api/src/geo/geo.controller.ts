@@ -1,8 +1,8 @@
-import { Body, Controller, Get, HttpCode, Inject, NotFoundException, Post, UnprocessableEntityException } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Inject, NotFoundException, Post, Query, UnprocessableEntityException } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { eq } from 'drizzle-orm';
-import { MAX_DEVICE_DISTANCE_FROM_CITY_KM, resolveLocale, type ClientSearchOrigin, type NearestCity } from '@care-platform/shared';
+import { MAX_DEVICE_DISTANCE_FROM_CITY_KM, resolveLocale, type AddressSearchResult, type ClientSearchOrigin, type NearestCity } from '@care-platform/shared';
 import { Public } from '../common/decorators/public.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser, type AuthenticatedUser } from '../common/decorators/current-user.decorator';
@@ -10,6 +10,8 @@ import { DRIZZLE, type Database } from '../database/database.module';
 import { patients } from '../database/schema';
 import { GeoService } from './geo.service';
 import { NearestCityDto } from './dto/nearest-city.dto';
+import { AddressSearchDto } from './dto/address-search.dto';
+import { AddressSearchService } from './address-search.service';
 
 /** "Use my location" on the public site: the visitor's point -> the city it is in (or nearest to). */
 @ApiTags('public-search')
@@ -50,5 +52,24 @@ export class ClientGeoController {
       .where(eq(patients.id, user.patientId))
       .limit(1);
     return { districtId: row?.districtId ?? null, cityId: row?.cityId ?? null };
+  }
+}
+
+/**
+ * "Find an address" above the pin maps: staff placing a client's house, and
+ * clients and caregivers on the website and in the app. Signed-in only, and
+ * throttled, because each search may call the map search outside.
+ */
+@ApiTags('geo')
+@ApiBearerAuth()
+@Roles('ADMIN', 'STAFF', 'PATIENT_GUARDIAN', 'CAREGIVER')
+@Controller('geo')
+export class AddressSearchController {
+  constructor(private readonly addresses: AddressSearchService) {}
+
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
+  @Get('address-search')
+  search(@Query() dto: AddressSearchDto): Promise<AddressSearchResult> {
+    return this.addresses.search(dto.q, resolveLocale(dto.locale));
   }
 }

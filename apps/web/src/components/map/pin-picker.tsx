@@ -26,6 +26,11 @@ interface PinPickerProps {
   value: GeoPoint | null;
   /** Where to look first when there is no pin yet (the client's city, the phone's position). */
   start?: GeoPoint | null;
+  /**
+   * Fly the map here, e.g. to an address the person searched for. A new
+   * object each time (even for the same place) flies again.
+   */
+  focus?: (GeoPoint & { zoom: number }) | null;
   /** Called when the pin is dropped, dragged or tapped somewhere new. Omit for a read-only map. */
   onChange?: (point: GeoPoint) => void;
   labels: PinPickerLabels;
@@ -45,7 +50,7 @@ function brandColor(): string {
  * the door. Read-only when there is no onChange. MapLibre with the same tiles
  * as the caregiver map; nothing about anyone else is drawn.
  */
-export function PinPicker({ value, start, onChange, labels, className }: PinPickerProps) {
+export function PinPicker({ value, start, focus, onChange, labels, className }: PinPickerProps) {
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
   const marker = useRef<Marker | null>(null);
@@ -126,6 +131,11 @@ export function PinPicker({ value, start, onChange, labels, className }: PinPick
   useEffect(() => {
     if (ready && !value && start && map.current) map.current.jumpTo({ center: [start.longitude, start.latitude], zoom: 16 });
   }, [ready, value, start]);
+
+  // A searched-for address: go there, close enough to see the houses.
+  useEffect(() => {
+    if (ready && focus && map.current) map.current.flyTo({ center: [focus.longitude, focus.latitude], zoom: focus.zoom, speed: 1.6 });
+  }, [ready, focus]);
 
   return (
     <div className={className ?? 'relative h-64 w-full overflow-hidden rounded border border-ink/10'}>

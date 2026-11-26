@@ -88,6 +88,11 @@ services:
       # The feature itself is managed by an admin in the app (Settings).
       SETTINGS_ENCRYPTION_KEY: ${SETTINGS_ENCRYPTION_KEY:-}
       WHATSAPP_ENABLED: ${WHATSAPP_ENABLED:-false}
+      # Address search on the pin maps - see .env.production.example.
+      GEOCODER_PROVIDER: ${GEOCODER_PROVIDER:-nominatim}
+      GEOCODER_URL: ${GEOCODER_URL:-}
+      GEOCODER_CONTACT: ${GEOCODER_CONTACT:-}
+      GEOCODER_GOOGLE_API_KEY: ${GEOCODER_GOOGLE_API_KEY:-}
       WHATSAPP_PROVIDER: ${WHATSAPP_PROVIDER:-META_CLOUD}
       WHATSAPP_API_VERSION: ${WHATSAPP_API_VERSION:-v21.0}
       WHATSAPP_PHONE_NUMBER_ID: ${WHATSAPP_PHONE_NUMBER_ID:-}

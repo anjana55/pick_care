@@ -95,6 +95,51 @@ describe('Where care happens', () => {
     expect(await screen.findByText(en.places.noLocation)).toBeTruthy();
   });
 
+  it('finds the house by its typed address, and saves the pin there', async () => {
+    await tokenStore.set(tokensFor('PATIENT_GUARDIAN', { patientId: 'p-1' }));
+    const calls = serveApi({
+      'GET /me/care-locations': () => ({ status: 200, body: [] }),
+      'GET /geo/address-search': () => ({
+        status: 200,
+        body: {
+          mapSearchUnavailable: false,
+          results: [
+            { label: '42 Temple Road', detail: 'Nugegoda, Colombo District', latitude: 6.8655, longitude: 79.9001, precision: 'ADDRESS', source: 'MAP' },
+            { label: 'Nugegoda', detail: 'Colombo', latitude: 6.8649, longitude: 79.8997, precision: 'TOWN', source: 'TOWNS' },
+          ],
+        },
+      }),
+      'POST /me/care-locations': (body) => ({ status: 201, body: { id: 'cl-1', label: 'Home', ...body, source: 'CLIENT_PIN', isDefault: true, confirmed: true, updatedAt: new Date().toISOString() } }),
+    });
+    await show(<CarePlaces locate={async () => ({})} />);
+    await fireEvent.press(await screen.findByRole('button', { name: en.places.addFirst }));
+    await fireEvent.changeText(screen.getByLabelText(en.addressSearch.label), '42 Temple Road Nugegoda');
+    await fireEvent.press(await screen.findByRole('button', { name: /^42 Temple Road, Nugegoda, Colombo District/ }, { timeout: 3000 }));
+    expect(calls.find((c) => c.route === 'GET /geo/address-search')!.query).toEqual({ q: '42 Temple Road Nugegoda', locale: 'en' });
+    expect(await screen.findByText(en.addressSearch.next.ADDRESS)).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: en.places.save }));
+    await screen.findByRole('button', { name: en.places.addFirst }).catch(() => undefined);
+    expect(calls.find((c) => c.route === 'POST /me/care-locations')!.body).toEqual({ latitude: 6.8655, longitude: 79.9001 });
+  });
+
+  it('asks to zoom in on the house when only the town was found', async () => {
+    await tokenStore.set(tokensFor('PATIENT_GUARDIAN', { patientId: 'p-1' }));
+    serveApi({
+      'GET /me/care-locations': () => ({ status: 200, body: [] }),
+      'GET /geo/address-search': () => ({
+        status: 200,
+        body: { mapSearchUnavailable: true, results: [{ label: 'Nugegoda', detail: 'Colombo', latitude: 6.8649, longitude: 79.8997, precision: 'TOWN', source: 'TOWNS' }] },
+      }),
+    });
+    await show(<CarePlaces locate={async () => ({})} />);
+    await fireEvent.press(await screen.findByRole('button', { name: en.places.addFirst }));
+    await fireEvent.changeText(screen.getByLabelText(en.addressSearch.label), 'Nugegoda');
+    expect(await screen.findByText(en.addressSearch.mapSearchUnavailable, {}, { timeout: 3000 })).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: /^Nugegoda, Colombo/ }));
+    expect(await screen.findByText(en.places.zoomIn)).toBeTruthy();
+    expect(screen.getByRole('button', { name: en.places.save })).toBeDisabled();
+  });
+
   it('builds a map page that opens at the place and only reports moves when it can be moved', () => {
     const editable = pinHtml('https://tiles.example/style.json', HOME, { editable: true, brand: '#1F6A74' });
     expect(editable).toContain('var at=[79.8452,6.9271]');
@@ -102,5 +147,7 @@ describe('Where care happens', () => {
     const fixed = pinHtml('https://tiles.example/style.json', null, { editable: false, brand: '#1F6A74' });
     expect(fixed).toContain('interactive:false');
     expect(fixed).toContain('var at=null');
+    // A found address can open wider than one house.
+    expect(editable).toContain('zoom:p.zoom||17');
   });
 });

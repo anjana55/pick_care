@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { Redirect } from 'expo-router';
-import { CARE_LOCATIONS_MAX, CARE_LOCATION_LABEL_MAX, type CareLocation, type GeoPoint } from '@care-platform/shared';
+import { CARE_LOCATIONS_MAX, CARE_LOCATION_LABEL_MAX, zoomForPrecision, type CareLocation, type GeoPoint } from '@care-platform/shared';
 import { ApiError } from '@/api';
 import { useAuth } from '@/auth/AuthProvider';
 import { useTranslation } from '@/i18n';
@@ -11,16 +11,18 @@ import { PageHeader } from '@/ui/PageHeader';
 import { Text } from '@/ui/Text';
 import { phonePosition, type Position } from '@/caregiver/position';
 import { PinMap } from '@/places/PinMap';
+import { AddressSearch } from '@/places/AddressSearch';
 import { useMyPlaces, useRemovePlace, useSavePlace } from '@/places/api';
 
-type Editing = { id?: string; start: GeoPoint | null; point: GeoPoint | null; zoomedIn: boolean; label: string; goTo: GeoPoint | null };
+type Editing = { id?: string; start: GeoPoint | null; point: GeoPoint | null; zoomedIn: boolean; label: string; goTo: (GeoPoint & { zoom?: number }) | null };
 
 /**
  * "Where care happens", as on the website: the client puts a pin on the home
  * (and any other house they have care at). The caregiver's check-in is
  * compared with it; caregivers never see it. Made for people who don't use
- * maps much: "Use where I am" when they are at the house, otherwise move the
- * map until the pin sits on it - one finger, nothing small to grab.
+ * maps much: "Use where I am" when they are at the house, or find the address
+ * by typing it; then move the map until the pin sits on it - one finger,
+ * nothing small to grab.
  */
 export default function CarePlacesScreen({ locate = phonePosition }: { locate?: () => Promise<Position> }) {
   const { t } = useTranslation();
@@ -65,6 +67,13 @@ export default function CarePlacesScreen({ locate = phonePosition }: { locate?: 
             <Text style={{ fontSize: 18, fontWeight: '700', color: colors.ink }}>{editing.id ? t('places.moveTitle') : t('places.addTitle')}</Text>
             <Text style={{ fontSize: 15, lineHeight: 22, color: colors.muted }}>{t('places.howTo')}</Text>
             <Button variant="secondary" label={locating ? t('common.loading') : t('places.useWhereIAm')} busy={locating} onPress={() => void here()} />
+            <AddressSearch
+              onPick={(m) => {
+                const zoom = zoomForPrecision(m.precision);
+                const point = { latitude: m.latitude, longitude: m.longitude };
+                setEditing((e) => (e ? { ...e, point, zoomedIn: zoom >= 15, goTo: { ...point, zoom } } : e));
+              }}
+            />
             <PinMap start={editing.start} goTo={editing.goTo} onMove={(point, zoomedIn) => setEditing((e) => (e ? { ...e, point, zoomedIn } : e))} />
             {editing.point && !editing.zoomedIn ? <Text style={{ fontSize: 14, color: colors.danger }}>{t('places.zoomIn')}</Text> : null}
             <Field label={t('places.label')} value={editing.label} placeholder={t('places.labelPlaceholder')} maxLength={CARE_LOCATION_LABEL_MAX} onChangeText={(label) => setEditing({ ...editing, label })} />
