@@ -1,10 +1,13 @@
-import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Query, Req } from '@nestjs/common';
+import type { Request } from 'express';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Audit } from '../common/decorators/audit.decorator';
 import { CurrentUser, type AuthenticatedUser } from '../common/decorators/current-user.decorator';
 import { OffersService } from './offers.service';
 import { DeclineOfferDto, SendOfferDto } from './dto/offers.dto';
+import { OfferCandidatesQueryDto } from './dto/offer-candidates.dto';
+import { OfferCandidatesService } from './offer-candidates.service';
 
 /** Offers on a request, for staff. */
 @ApiTags('care-requests')
@@ -69,5 +72,19 @@ export class MyOffersController {
   @Audit({ action: 'DECLINE_OFFER', entityType: 'RequestOffer' })
   decline(@Param('id', ParseUUIDPipe) id: string, @Body() dto: DeclineOfferDto, @CurrentUser() user: AuthenticatedUser) {
     return this.offers.decline(user, id, dto.reason);
+  }
+}
+
+/** Staff: find the right caregivers to offer a request to. */
+@ApiTags('care-requests')
+@ApiBearerAuth()
+@Controller('care-requests/:requestId/offer-candidates')
+@Roles('ADMIN', 'STAFF')
+export class OfferCandidatesController {
+  constructor(private readonly candidates: OfferCandidatesService) {}
+
+  @Get()
+  search(@Param('requestId', ParseUUIDPipe) requestId: string, @Query() query: OfferCandidatesQueryDto, @Req() req: Request & { lang?: string }) {
+    return this.candidates.search(requestId, query, req.lang);
   }
 }
