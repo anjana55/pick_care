@@ -93,3 +93,99 @@ export interface SendCareOfferInput {
   rateType?: PricingRateType;
   payRate?: number;
 }
+
+// --- Finding caregivers to offer a request to (staff) -----------------------
+
+/**
+ * How the staff offer search orders caregivers. MATCH is the matching agent's
+ * own score for this request (same rules, same reasons), so staff and the
+ * agent agree on who fits best.
+ */
+export const OFFER_CANDIDATE_SORTS = ['MATCH', 'RATING', 'RATE', 'NAME'] as const;
+export type OfferCandidateSort = (typeof OFFER_CANDIDATE_SORTS)[number];
+
+/** The filters, as sent. Each list is "any of" except skills and languages, which need all. */
+export interface OfferCandidateFilters {
+  search?: string;
+  districtIds?: number[];
+  skillIds?: string[];
+  languageIds?: string[];
+  gender?: string;
+  dayDuty?: boolean;
+  nightDuty?: boolean;
+  liveIn24h?: boolean;
+  /** Default: the statuses listed on the public site. */
+  statuses?: string[];
+  /** Only those who do the request's kind of care (on by default when the request has one). */
+  doesCareType?: boolean;
+  /** Only those with an app/website account, who can answer an offer themselves. */
+  hasAccount?: boolean;
+  /** Clients' average at least this (1-5); unrated caregivers are left out. */
+  minRating?: number;
+  /** Free by the request's start date (said so, or gave no date). */
+  freeByStart?: boolean;
+  /** No confirmed booking running when the care would start. */
+  noClash?: boolean;
+  /** Show caregivers already offered this request (shown with how they answered). */
+  includeOffered?: boolean;
+  sort?: OfferCandidateSort;
+  page?: number;
+  pageSize?: number;
+}
+
+/** What the request asks for, used to prefill the filters and explain the score. */
+export interface OfferCandidateRequestFacts {
+  careType: CareType | null;
+  districtId: number | null;
+  districtName: string | null;
+  cityName: string | null;
+  schedule: 'DAY' | 'NIGHT' | 'LIVE_IN_24H' | 'NOT_SURE' | null;
+  /** YYYY-MM-DD: the date asked for, or today when needed at once. */
+  startDate: string | null;
+  genderPreference: 'MALE' | 'FEMALE' | null;
+  /** Offers waiting now, and how many more can be sent. */
+  waitingOffers: number;
+  slotsLeft: number;
+}
+
+export interface OfferCandidate {
+  id: string;
+  fullName: string;
+  registrationNumber: string;
+  publicId: string;
+  status: string;
+  gender: string | null;
+  phone: string | null;
+  districtName: string | null;
+  cityName: string | null;
+  sameCity: boolean;
+  sameDistrict: boolean;
+  travelsToCity: boolean;
+  skills: string[];
+  languages: string[];
+  dayDuty: boolean;
+  nightDuty: boolean;
+  liveIn24h: boolean;
+  doesCareType: boolean | null;
+  hasAccount: boolean;
+  ratingAverage: number | null;
+  ratingCount: number;
+  ownRate: { amount: number; rateType: PricingRateType } | null;
+  availableFrom: string | null;
+  runningBookings: number;
+  /** The matching agent's score and its reasons, in plain English. */
+  score: number;
+  reasons: string[];
+  /** Their latest offer on this request, if any. */
+  offer: { status: CareOfferStatus } | null;
+}
+
+export interface OfferCandidatePage {
+  request: OfferCandidateRequestFacts;
+  items: OfferCandidate[];
+  total: number;
+  page: number;
+  pageSize: number;
+  /** More caregivers matched than are scored at once: narrow the filters. */
+  truncated: boolean;
+}

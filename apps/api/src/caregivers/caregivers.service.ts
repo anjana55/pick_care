@@ -1,5 +1,5 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, desc, eq, inArray, isNull, like, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNull, like, or, sql, type SQL } from 'drizzle-orm';
 import { randomUUID as uuid } from 'crypto';
 import { skillNameSql } from '../skills/skill-name';
 import { DRIZZLE, type Database } from '../database/database.module';
@@ -206,8 +206,14 @@ export class CaregiversService {
     return rows.map((r) => r.caregiverId);
   }
 
-  async findAll(query: CaregiverQueryDto, lang?: string) {
-    const conditions = [isNull(caregivers.deletedAt)];
+  /**
+   * The caregiver list's filters as WHERE conditions (search, status, gender,
+   * skills, languages, towns, districts, availability), with removed records
+   * left out. Shared with the offer-candidates search on a request, so both
+   * filter the same way.
+   */
+  async filterConditions(query: Pick<CaregiverQueryDto, 'search' | 'status' | 'gender' | 'skillIds' | 'languageIds' | 'locationIds' | 'districtIds' | 'dayDuty' | 'nightDuty' | 'liveIn24h'>): Promise<SQL[]> {
+    const conditions: SQL[] = [isNull(caregivers.deletedAt)];
 
     if (query.search) {
       const term = `%${query.search}%`;
@@ -243,6 +249,11 @@ export class CaregiversService {
       }
     }
 
+    return conditions;
+  }
+
+  async findAll(query: CaregiverQueryDto, lang?: string) {
+    const conditions = await this.filterConditions(query);
     const whereClause = and(...conditions);
 
     const sortColumn = {

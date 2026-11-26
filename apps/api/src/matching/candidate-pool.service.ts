@@ -15,6 +15,16 @@ const VERIFIED = new Set(['VERIFIED', 'ACTIVE']);
 const dayOf = (d: Date | string | null): string | null =>
   !d ? null : d instanceof Date ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` : String(d).slice(0, 10);
 
+/** One caregiver as facts() reads them: the row plus their availability record. */
+export interface CandidateRow {
+  id: string;
+  registrationNumber: string;
+  status: string;
+  districtId: number | null;
+  cityId: number | null;
+  avail: typeof availability.$inferSelect | null;
+}
+
 /**
  * Who could take a job: the hard checks, in code, and the facts the matching
  * rules score. Used by the matching agent (a new request) and by cover (one
@@ -70,6 +80,18 @@ export class CandidatePoolService {
     const column = CARE_TYPE_COLUMNS[match.careType as keyof typeof CARE_TYPE_COLUMNS];
     // No availability record yet means nothing has been narrowed down: every kind of care is on (as on the rate card).
     const fit = rows.filter((r) => !exclude.has(r.id) && (opts.anyCareType || !column || (r.avail ? Boolean(r.avail[column]) : true))).slice(0, POOL_LIMIT);
+    return this.facts(fit, match, now);
+  }
+
+  /**
+   * What the matching rules need to know about these caregivers for this
+   * request: where they live and travel, shifts, ratings, their own rate for
+   * the kind of care, when they are free, running bookings and recent offers.
+   * No checks: the pool above and the staff offer search each choose who to
+   * pass in. A request with no district or kind of care yet simply scores no
+   * points for those.
+   */
+  async facts(fit: CandidateRow[], match: MatchRequest, now = new Date()): Promise<MatchCandidate[]> {
     if (!fit.length) return [];
     const ids = fit.map((r) => r.id);
 

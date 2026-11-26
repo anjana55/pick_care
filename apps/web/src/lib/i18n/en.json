@@ -4547,5 +4547,60 @@
     "on": "On",
     "off": "Off",
     "devices": "{count} phone(s) with the app"
+  },
+  "offerFinder": {
+    "title": "Find caregivers for this request",
+    "status": "Status",
+    "statusHint": "Default: caregivers listed on the website",
+    "minRating": "Minimum rating",
+    "anyRating": "Any rating",
+    "ratingAtLeast": "★ {n} or more",
+    "switches": {
+      "doesCareType": "Does this kind of care",
+      "freeByStart": "Free by the start date",
+      "noClash": "No booking clash",
+      "hasAccount": "Can answer in the app",
+      "includeOffered": "Show already offered"
+    },
+    "resetToRequest": "Reset to the request",
+    "sort": "Sort by",
+    "sorts": {
+      "MATCH": "Best match",
+      "RATING": "Highest rated",
+      "RATE": "Lowest own rate",
+      "NAME": "Name"
+    },
+    "truncated": "Over 500 caregivers match. Only the first 500 are scored, so narrow the filters to be sure of the best matches.",
+    "count": "Caregivers found: {count}",
+    "slots": "{n} more offers can be sent",
+    "none": "No caregivers match. Try widening the filters or Reset to the request.",
+    "noun": "caregivers",
+    "selected": "Selected ({count})",
+    "send": "Offer to {count} selected",
+    "clearSelection": "Clear selection",
+    "noCareType": "Kind of care not set",
+    "noPlace": "No area set",
+    "schedules": {
+      "DAY": "Day shifts",
+      "NIGHT": "Night shifts",
+      "LIVE_IN_24H": "Live-in"
+    },
+    "from": "from {date}",
+    "prefers": {
+      "MALE": "prefers a male caregiver",
+      "FEMALE": "prefers a female caregiver"
+    },
+    "pick": "Select {name}",
+    "alreadyOffered": "Already offered: {status}",
+    "noAccount": "No app account",
+    "notThisCare": "Doesn't do this kind of care",
+    "travels": "Travels to this town",
+    "rating": "{avg} ({count} ratings)",
+    "unrated": "Not rated yet",
+    "ownRate": "Own rate LKR {amount} {unit}",
+    "noOwnRate": "No own rate",
+    "freeFrom": "Free from {date}",
+    "busy": "Booked then ({count})",
+    "score": "Match {n}"
   }
 }
