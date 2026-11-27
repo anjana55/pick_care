@@ -38,7 +38,10 @@ export default function EmployerVacanciesPage() {
           <p className="mt-1 max-w-2xl text-sm text-ink/60">{t('employer.vacancies.intro')}</p>
         </div>
         {verified && (
-          <Link href="/employer/vacancies/new" className="inline-flex items-center gap-2 rounded-DEFAULT bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark">
+          <Link
+            href="/employer/vacancies/new"
+            className="inline-flex items-center gap-2 rounded-DEFAULT bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark"
+          >
             <Plus className="h-4 w-4" aria-hidden />
             {t('employer.vacancies.new')}
           </Link>
@@ -77,7 +80,8 @@ function VacancyRow({ vacancy: v }: { vacancy: Vacancy }) {
         <div className="min-w-0">
           <h2 className="font-semibold text-ink">{v.title}</h2>
           <p className="mt-0.5 text-sm text-ink/60">
-            {[v.city, countries.name(v.country)].filter(Boolean).join(', ')} · {t(`careTypes.${v.careSetting}`)} · {t('vacancies.roles', { count: v.rolesCount })}
+            {[v.city, countries.name(v.country)].filter(Boolean).join(', ')} · {t(`careTypes.${v.careSetting}`)} ·{' '}
+            {t('vacancies.roles', { count: v.rolesCount })}
           </p>
           <p className="mt-0.5 text-xs tabular-nums text-ink/50">
             {v.reference} · {t('employer.vacancies.enquiry', { reference: v.enquiryReference })}
@@ -104,7 +108,10 @@ function VacancyRow({ vacancy: v }: { vacancy: Vacancy }) {
         )}
         <span className="ml-auto flex gap-2">
           {editable && (
-            <Link href={`/employer/vacancies/${v.id}`} className="inline-flex items-center gap-1 rounded border border-border px-3 py-1.5 text-sm font-medium text-ink hover:bg-paper">
+            <Link
+              href={`/employer/vacancies/${v.id}`}
+              className="inline-flex items-center gap-1 rounded border border-border px-3 py-1.5 text-sm font-medium text-ink hover:bg-paper"
+            >
               <Pencil className="h-3.5 w-3.5" aria-hidden />
               {t('employer.vacancies.edit')}
             </Link>

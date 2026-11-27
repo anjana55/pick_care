@@ -125,12 +125,20 @@ export default function BillingSettingsPage() {
         <CardContent className="grid gap-3 sm:grid-cols-2">
           <p className="text-sm text-ink/60 sm:col-span-2">{t('billingAdmin.businessHint')}</p>
           <div>
-            <Label htmlFor="bName" required>{t('billingAdmin.businessName')}</Label>
+            <Label htmlFor="bName" required>
+              {t('billingAdmin.businessName')}
+            </Label>
             <Input id="bName" maxLength={200} value={draft.businessName} onChange={(e) => set('businessName', e.target.value)} />
           </div>
           <div>
             <Label htmlFor="bReg">{t('billingAdmin.registrationNumber')}</Label>
-            <Input id="bReg" maxLength={60} value={draft.registrationNumber} onChange={(e) => set('registrationNumber', e.target.value)} placeholder="PV 00000" />
+            <Input
+              id="bReg"
+              maxLength={60}
+              value={draft.registrationNumber}
+              onChange={(e) => set('registrationNumber', e.target.value)}
+              placeholder="PV 00000"
+            />
           </div>
           <div className="sm:col-span-2">
             <Label htmlFor="bAddress">{t('billingAdmin.address')}</Label>
@@ -154,20 +162,44 @@ export default function BillingSettingsPage() {
         <CardContent className="grid gap-3 sm:grid-cols-3">
           <div>
             <Label htmlFor="prefix">{t('billingAdmin.prefix')}</Label>
-            <Input id="prefix" maxLength={8} value={draft.invoicePrefix} onChange={(e) => set('invoicePrefix', e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))} />
+            <Input
+              id="prefix"
+              maxLength={8}
+              value={draft.invoicePrefix}
+              onChange={(e) => set('invoicePrefix', e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
+            />
           </div>
           <div>
             <Label htmlFor="nextNo">{t('billingAdmin.nextNumber')}</Label>
-            <Input id="nextNo" type="number" min={settings.nextInvoiceNumber} value={draft.nextInvoiceNumber} onChange={(e) => set('nextInvoiceNumber', Number(e.target.value))} />
+            <Input
+              id="nextNo"
+              type="number"
+              min={settings.nextInvoiceNumber}
+              value={draft.nextInvoiceNumber}
+              onChange={(e) => set('nextInvoiceNumber', Number(e.target.value))}
+            />
           </div>
           <div>
             <Label htmlFor="terms">{t('billingAdmin.terms')}</Label>
-            <Input id="terms" type="number" min={0} max={120} value={draft.paymentTermsDays} onChange={(e) => set('paymentTermsDays', Number(e.target.value))} />
+            <Input
+              id="terms"
+              type="number"
+              min={0}
+              max={120}
+              value={draft.paymentTermsDays}
+              onChange={(e) => set('paymentTermsDays', Number(e.target.value))}
+            />
           </div>
           <p className="text-xs text-ink/50 sm:col-span-3">{t('billingAdmin.numberingHint', { example: exampleNumber })}</p>
           <div className="sm:col-span-3">
             <Label htmlFor="defaultTiming">{t('billingAdmin.defaultTiming')}</Label>
-            <Select id="defaultTiming" className="sm:max-w-sm" value={draft.defaultBillingTiming} aria-describedby="defaultTimingHint" onChange={(e) => set('defaultBillingTiming', e.target.value as BillingTiming)}>
+            <Select
+              id="defaultTiming"
+              className="sm:max-w-sm"
+              value={draft.defaultBillingTiming}
+              aria-describedby="defaultTimingHint"
+              onChange={(e) => set('defaultBillingTiming', e.target.value as BillingTiming)}
+            >
               {BILLING_TIMINGS.map((b) => (
                 <option key={b} value={b}>
                   {t(`bookings.billingTiming.${b}`)}
@@ -196,7 +228,14 @@ export default function BillingSettingsPage() {
           </div>
           <div className="sm:col-span-3">
             <Label htmlFor="footer">{t('billingAdmin.footer')}</Label>
-            <Textarea id="footer" rows={3} maxLength={2000} value={draft.invoiceFooter} onChange={(e) => set('invoiceFooter', e.target.value)} placeholder={t('billingAdmin.footerPlaceholder')} />
+            <Textarea
+              id="footer"
+              rows={3}
+              maxLength={2000}
+              value={draft.invoiceFooter}
+              onChange={(e) => set('invoiceFooter', e.target.value)}
+              placeholder={t('billingAdmin.footerPlaceholder')}
+            />
           </div>
         </CardContent>
       </Card>
@@ -253,7 +292,13 @@ export default function BillingSettingsPage() {
             </div>
             <div>
               <Label htmlFor="phMerchant">{t('billingAdmin.merchantId')}</Label>
-              <Input id="phMerchant" inputMode="numeric" maxLength={40} value={draft.payhereMerchantId} onChange={(e) => set('payhereMerchantId', e.target.value.trim())} />
+              <Input
+                id="phMerchant"
+                inputMode="numeric"
+                maxLength={40}
+                value={draft.payhereMerchantId}
+                onChange={(e) => set('payhereMerchantId', e.target.value.trim())}
+              />
             </div>
             <div className="sm:col-span-2">
               <Label htmlFor="phSecret">{t('billingAdmin.merchantSecret')}</Label>
@@ -264,11 +309,20 @@ export default function BillingSettingsPage() {
                 maxLength={255}
                 value={draft.payhereMerchantSecret}
                 onChange={(e) => set('payhereMerchantSecret', e.target.value)}
-                placeholder={settings.payhereMerchantSecretSet ? t('billingAdmin.secretStored', { last4: settings.payhereMerchantSecretLast4 ?? '' }) : t('billingAdmin.secretNone')}
+                placeholder={
+                  settings.payhereMerchantSecretSet
+                    ? t('billingAdmin.secretStored', { last4: settings.payhereMerchantSecretLast4 ?? '' })
+                    : t('billingAdmin.secretNone')
+                }
               />
               {settings.payhereMerchantSecretSet && (
                 <label className="mt-1 flex items-center gap-2 text-xs text-ink/60">
-                  <input type="checkbox" className="accent-brand" checked={draft.clearPayhereMerchantSecret} onChange={(e) => set('clearPayhereMerchantSecret', e.target.checked)} />
+                  <input
+                    type="checkbox"
+                    className="accent-brand"
+                    checked={draft.clearPayhereMerchantSecret}
+                    onChange={(e) => set('clearPayhereMerchantSecret', e.target.checked)}
+                  />
                   {t('billingAdmin.clearSecret')}
                 </label>
               )}
@@ -276,7 +330,13 @@ export default function BillingSettingsPage() {
             </div>
             <div className="sm:col-span-2">
               <Label htmlFor="phNotify">{t('billingAdmin.notifyBase')}</Label>
-              <Input id="phNotify" maxLength={255} value={draft.payhereNotifyBaseUrl} onChange={(e) => set('payhereNotifyBaseUrl', e.target.value)} placeholder="https://pickcare.lk/api" />
+              <Input
+                id="phNotify"
+                maxLength={255}
+                value={draft.payhereNotifyBaseUrl}
+                onChange={(e) => set('payhereNotifyBaseUrl', e.target.value)}
+                placeholder="https://pickcare.lk/api"
+              />
               <div className="mt-1 flex items-center gap-2 text-xs text-ink/50">
                 <span>
                   {t('billingAdmin.notifyUrl')} <code className="rounded bg-paper px-1">{settings.payhereNotifyUrl}</code>

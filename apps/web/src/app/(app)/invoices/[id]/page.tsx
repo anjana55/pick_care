@@ -75,8 +75,8 @@ export default function InvoicePage() {
       <div className="print:hidden">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3 print:hidden">
           <Link href="/invoices" className="inline-flex items-center gap-1 text-sm text-ink/60 hover:text-ink">
-          <ChevronLeft size={16} />
-          {t('billing.invoices.back')}
+            <ChevronLeft size={16} />
+            {t('billing.invoices.back')}
           </Link>
           <RecordPager kind="invoices" id={id} />
         </div>
@@ -225,7 +225,9 @@ function DraftEditor({ invoice }: { invoice: InvoiceDetail }) {
           </CardHeader>
           <CardContent className="grid gap-3 sm:grid-cols-2">
             <div>
-              <Label htmlFor="billToName" required>{t('billing.invoice.name')}</Label>
+              <Label htmlFor="billToName" required>
+                {t('billing.invoice.name')}
+              </Label>
               <Input id="billToName" maxLength={200} value={h.billToName} onChange={(e) => set({ billToName: e.target.value })} />
             </div>
             <div>
@@ -249,7 +251,9 @@ function DraftEditor({ invoice }: { invoice: InvoiceDetail }) {
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             {invoice.periodStart && invoice.periodEnd && (
-              <p className="text-ink/70">{t('billing.invoice.periodLine', { from: fmtDate(invoice.periodStart, locale), to: fmtDate(invoice.periodEnd, locale) })}</p>
+              <p className="text-ink/70">
+                {t('billing.invoice.periodLine', { from: fmtDate(invoice.periodStart, locale), to: fmtDate(invoice.periodEnd, locale) })}
+              </p>
             )}
             <div>
               <Label htmlFor="invLanguage">{t('billing.newInvoice.language')}</Label>
@@ -263,7 +267,14 @@ function DraftEditor({ invoice }: { invoice: InvoiceDetail }) {
             </div>
             <div>
               <Label htmlFor="invNotes">{t('billing.invoice.notes')}</Label>
-              <Textarea id="invNotes" rows={3} maxLength={2000} value={h.notes} onChange={(e) => set({ notes: e.target.value })} placeholder={t('billing.invoice.notesPlaceholder')} />
+              <Textarea
+                id="invNotes"
+                rows={3}
+                maxLength={2000}
+                value={h.notes}
+                onChange={(e) => set({ notes: e.target.value })}
+                placeholder={t('billing.invoice.notesPlaceholder')}
+              />
             </div>
           </CardContent>
         </Card>
@@ -275,7 +286,13 @@ function DraftEditor({ invoice }: { invoice: InvoiceDetail }) {
             {t('billing.invoice.lines')} <span className="font-normal text-ink/50">({rows.length})</span>
           </CardTitle>
           {invoice.basis !== 'MANUAL' && (
-            <Button size="sm" variant="secondary" disabled={addShifts.isPending || dirty} onClick={() => addShifts.mutate(undefined)} title={dirty ? t('billing.invoice.saveFirst') : undefined}>
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={addShifts.isPending || dirty}
+              onClick={() => addShifts.mutate(undefined)}
+              title={dirty ? t('billing.invoice.saveFirst') : undefined}
+            >
               <RefreshCw size={14} aria-hidden />
               {t('billing.invoice.addShifts')}
             </Button>
@@ -303,12 +320,25 @@ function DraftEditor({ invoice }: { invoice: InvoiceDetail }) {
               </div>
               <div>
                 <Label htmlFor="discountValue">{h.discountType === 'PERCENT' ? '%' : 'LKR'}</Label>
-                <Input id="discountValue" inputMode="decimal" disabled={!h.discountType} value={h.discountValue} onChange={(e) => set({ discountValue: e.target.value })} />
+                <Input
+                  id="discountValue"
+                  inputMode="decimal"
+                  disabled={!h.discountType}
+                  value={h.discountValue}
+                  onChange={(e) => set({ discountValue: e.target.value })}
+                />
                 {tried && discountBad && <p className="mt-1 text-xs text-danger">{t('billing.lines.badDiscount')}</p>}
               </div>
               <div>
                 <Label htmlFor="discountReason">{t('billing.invoice.discountReason')}</Label>
-                <Input id="discountReason" maxLength={200} disabled={!h.discountType} value={h.discountReason} onChange={(e) => set({ discountReason: e.target.value })} placeholder={t('billing.invoice.discountReasonPlaceholder')} />
+                <Input
+                  id="discountReason"
+                  maxLength={200}
+                  disabled={!h.discountType}
+                  value={h.discountReason}
+                  onChange={(e) => set({ discountReason: e.target.value })}
+                  placeholder={t('billing.invoice.discountReasonPlaceholder')}
+                />
               </div>
             </div>
             <label className={cn('flex items-start gap-3 text-sm', !invoice.tax.available && !header.applyTax && 'opacity-60')}>
@@ -320,8 +350,12 @@ function DraftEditor({ invoice }: { invoice: InvoiceDetail }) {
                 onChange={(e) => set({ applyTax: e.target.checked })}
               />
               <span>
-                <span className="font-medium text-ink">{t('billing.invoice.applyTax', { name: invoice.taxName ?? invoice.tax.name, rate: Number(invoice.taxRate ?? invoice.tax.rate) })}</span>
-                <span className="block text-xs text-ink/50">{invoice.tax.available || header.applyTax ? t('billing.invoice.taxHint') : t('billing.invoice.taxOff')}</span>
+                <span className="font-medium text-ink">
+                  {t('billing.invoice.applyTax', { name: invoice.taxName ?? invoice.tax.name, rate: Number(invoice.taxRate ?? invoice.tax.rate) })}
+                </span>
+                <span className="block text-xs text-ink/50">
+                  {invoice.tax.available || header.applyTax ? t('billing.invoice.taxHint') : t('billing.invoice.taxOff')}
+                </span>
               </span>
             </label>
           </CardContent>
@@ -582,11 +616,15 @@ function PaymentsCard({ invoice }: { invoice: InvoiceDetail }) {
             <p className="text-sm font-medium text-ink">{t(kind === 'PAYMENT' ? 'billing.payments.record' : 'billing.payments.refund')}</p>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <Label htmlFor="payAmount" required>{t('billing.payments.amount')}</Label>
+                <Label htmlFor="payAmount" required>
+                  {t('billing.payments.amount')}
+                </Label>
                 <Input id="payAmount" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} />
               </div>
               <div>
-                <Label htmlFor="payOn" required>{t('billing.payments.date')}</Label>
+                <Label htmlFor="payOn" required>
+                  {t('billing.payments.date')}
+                </Label>
                 <Input id="payOn" type="date" max={colomboToday()} value={paidOn} onChange={(e) => setPaidOn(e.target.value)} />
               </div>
               <PaymentHowFields idPrefix="pay" value={how} onChange={setHow} />
@@ -643,7 +681,12 @@ function OnlinePaymentsCard({ invoice }: { invoice: InvoiceDetail }) {
                   {c.mode === 'SANDBOX' && ` · ${t('billing.online.sandbox')}`}
                 </p>
               </div>
-              <span className={cn('rounded px-2 py-0.5 text-xs font-medium', c.status === 'SUCCESS' ? 'bg-brand text-white' : c.status === 'PENDING' ? 'bg-paper text-ink/60' : 'bg-danger-light text-danger')}>
+              <span
+                className={cn(
+                  'rounded px-2 py-0.5 text-xs font-medium',
+                  c.status === 'SUCCESS' ? 'bg-brand text-white' : c.status === 'PENDING' ? 'bg-paper text-ink/60' : 'bg-danger-light text-danger',
+                )}
+              >
                 {t(`billing.online.status.${c.status}`)}
               </span>
             </li>
@@ -671,7 +714,14 @@ function HistoryCard({ invoice }: { invoice: InvoiceDetail }) {
             if (note.trim()) addNote.mutate(note.trim(), { onSuccess: () => setNote('') });
           }}
         >
-          <Textarea rows={2} maxLength={2000} placeholder={t('requests.detail.notePlaceholder')} value={note} onChange={(e) => setNote(e.target.value)} aria-label={t('requests.detail.addNote')} />
+          <Textarea
+            rows={2}
+            maxLength={2000}
+            placeholder={t('requests.detail.notePlaceholder')}
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            aria-label={t('requests.detail.addNote')}
+          />
           <Button type="submit" size="sm" variant="secondary" className="mt-2" disabled={!note.trim() || addNote.isPending}>
             {t('requests.detail.addNote')}
           </Button>

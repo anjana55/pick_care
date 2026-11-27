@@ -92,7 +92,15 @@ export default function NotificationSettingsPage() {
   const number = (key: 'dailyReminderCap' | 'retentionDays', label: string, hint: string) => (
     <div>
       <Label htmlFor={key}>{label}</Label>
-      <Input id={key} inputMode="numeric" value={draft[key]} aria-invalid={bad[key]} aria-describedby={`${key}-hint`} onChange={(e) => change({ [key]: e.target.value } as Partial<Draft>)} className="max-w-[8rem]" />
+      <Input
+        id={key}
+        inputMode="numeric"
+        value={draft[key]}
+        aria-invalid={bad[key]}
+        aria-describedby={`${key}-hint`}
+        onChange={(e) => change({ [key]: e.target.value } as Partial<Draft>)}
+        className="max-w-[8rem]"
+      />
       <p id={`${key}-hint`} className={`mt-1 text-xs ${bad[key] ? 'text-danger' : 'text-ink/50'}`}>
         {hint}
       </p>

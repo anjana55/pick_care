@@ -40,7 +40,10 @@ export function RatesSection() {
     if (!changed.length || blocked) return;
     save.mutate(
       changed.map((l) => ({ careType: l.careType, amount: valueOf(l).trim() === '' ? null : Number(valueOf(l)) })),
-      { onSuccess: () => (setDrafts({}), setSaved(true), setError(null)), onError: (err) => setError(err instanceof ApiError ? err.message : t('portal.saveError')) },
+      {
+        onSuccess: () => (setDrafts({}), setSaved(true), setError(null)),
+        onError: (err) => setError(err instanceof ApiError ? err.message : t('portal.saveError')),
+      },
     );
   };
 

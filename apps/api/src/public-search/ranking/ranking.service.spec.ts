@@ -81,11 +81,7 @@ describe('RankingService', () => {
   });
 
   it('matches a stated medical condition against a relevant skill/care-type', () => {
-    const { reasons, score } = service.score(
-      candidate({ matchedConditionCount: 1 }),
-      request({ patient: { medicalConditions: ["Parkinson's"] } }),
-      CONTEXT,
-    );
+    const { reasons, score } = service.score(candidate({ matchedConditionCount: 1 }), request({ patient: { medicalConditions: ["Parkinson's"] } }), CONTEXT);
     expect(score).toBeGreaterThan(0);
     expect(reasons.some((r) => r.includes('relevant experience'))).toBe(true);
   });

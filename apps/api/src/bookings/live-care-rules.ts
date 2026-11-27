@@ -58,7 +58,9 @@ export function liveStep(visit: LiveVisit, settings: Pick<CheckInSettings, 'earl
   if (visit.checkedInAt && visit.checkedOutAt) {
     const there = minutes(ms(visit.checkedInAt), ms(visit.checkedOutAt));
     const of = minutes(start, end);
-    return there >= of * COMPLETE_MIN_SHARE ? { step: 'complete', minutesThere: there, ofMinutes: of } : { step: 'flag', kind: 'LEFT_EARLY', minutes: there, ofMinutes: of };
+    return there >= of * COMPLETE_MIN_SHARE
+      ? { step: 'complete', minutesThere: there, ofMinutes: of }
+      : { step: 'flag', kind: 'LEFT_EARLY', minutes: there, ofMinutes: of };
   }
   if (visit.checkedInAt) return { step: 'none' }; // there now; nothing to do until they leave
 

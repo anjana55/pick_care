@@ -79,10 +79,7 @@ export interface ReleasedIdentity {
  *
  * Returns what was released, for the audit log - the only place it survives.
  */
-export async function releaseCaregiverIdentity(
-  db: Database,
-  params: { caregiverId: string; userId: string | null },
-): Promise<ReleasedIdentity> {
+export async function releaseCaregiverIdentity(db: Database, params: { caregiverId: string; userId: string | null }): Promise<ReleasedIdentity> {
   if (params.userId) return releaseLogin(db, { userId: params.userId, caregiverId: params.caregiverId });
   await voidOutstandingCredentials(db, { userId: null, caregiverId: params.caregiverId });
   return { releasedEmail: null, releasedPhone: null, unlinkedProviders: [] };
@@ -94,19 +91,9 @@ export async function releaseCaregiverIdentity(
  * and Facebook links deleted, and every session and outstanding code voided.
  * The email and phone are then free to register again.
  */
-export async function releaseLogin(
-  db: Database,
-  params: { userId: string; caregiverId?: string | null },
-): Promise<ReleasedIdentity> {
-  const [user] = await db
-    .select({ email: users.email, phone: users.phone })
-    .from(users)
-    .where(eq(users.id, params.userId))
-    .limit(1);
-  const links = await db
-    .select({ provider: socialAccounts.provider })
-    .from(socialAccounts)
-    .where(eq(socialAccounts.userId, params.userId));
+export async function releaseLogin(db: Database, params: { userId: string; caregiverId?: string | null }): Promise<ReleasedIdentity> {
+  const [user] = await db.select({ email: users.email, phone: users.phone }).from(users).where(eq(users.id, params.userId)).limit(1);
+  const links = await db.select({ provider: socialAccounts.provider }).from(socialAccounts).where(eq(socialAccounts.userId, params.userId));
 
   await voidOutstandingCredentials(db, { userId: params.userId, caregiverId: params.caregiverId ?? null, phone: user?.phone });
   await db.delete(socialAccounts).where(eq(socialAccounts.userId, params.userId));
@@ -166,9 +153,7 @@ export function isClaimable(params: {
 
 /** Loads a caregiver's login, its provider links and whether it can be claimed. */
 export async function loadAccountState(db: Database, caregiver: { id: string; userId: string | null; deletedAt: Date | null }) {
-  const [user] = caregiver.userId
-    ? await db.select().from(users).where(eq(users.id, caregiver.userId)).limit(1)
-    : [];
+  const [user] = caregiver.userId ? await db.select().from(users).where(eq(users.id, caregiver.userId)).limit(1) : [];
   const links = caregiver.userId
     ? await db
         .select({

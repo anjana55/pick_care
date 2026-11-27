@@ -204,7 +204,12 @@ export class InvoicesService {
         : Promise.resolve([]),
       this.settings.getResolved(),
     ]);
-    const names = await this.userNames([inv.createdByUserId, inv.issuedByUserId, ...events.map((e) => e.actorUserId), ...payments.map((p) => p.recordedByUserId)]);
+    const names = await this.userNames([
+      inv.createdByUserId,
+      inv.issuedByUserId,
+      ...events.map((e) => e.actorUserId),
+      ...payments.map((p) => p.recordedByUserId),
+    ]);
     const accounts = await this.bankAccounts.labels(payments.map((p) => p.bankAccountId));
     const totals = computeTotals({ lines, discountType: inv.discountType, discountValue: inv.discountValue, taxRate: inv.taxRate });
     const balance = fromCents(toCents(inv.total) - toCents(inv.amountPaid));
@@ -225,10 +230,25 @@ export class InvoicesService {
         bankAccount: p.bankAccountId ? (accounts.get(p.bankAccountId) ?? null) : null,
         recordedBy: p.recordedByUserId ? (names.get(p.recordedByUserId) ?? null) : null,
       })),
-      checkouts: checkouts.map((c) => ({ id: c.id, amount: c.amount, status: c.status, mode: c.mode, method: c.method, paymentId: c.paymentId, createdAt: c.createdAt, updatedAt: c.updatedAt })),
+      checkouts: checkouts.map((c) => ({
+        id: c.id,
+        amount: c.amount,
+        status: c.status,
+        mode: c.mode,
+        method: c.method,
+        paymentId: c.paymentId,
+        createdAt: c.createdAt,
+        updatedAt: c.updatedAt,
+      })),
       createdBy: inv.createdByUserId ? (names.get(inv.createdByUserId) ?? null) : null,
       issuedBy: inv.issuedByUserId ? (names.get(inv.issuedByUserId) ?? null) : null,
-      events: events.map((e) => ({ id: e.id, type: e.type, note: e.note, createdAt: e.createdAt, actor: e.actorUserId ? (names.get(e.actorUserId) ?? null) : null })),
+      events: events.map((e) => ({
+        id: e.id,
+        type: e.type,
+        note: e.note,
+        createdAt: e.createdAt,
+        actor: e.actorUserId ? (names.get(e.actorUserId) ?? null) : null,
+      })),
     };
   }
 
@@ -308,7 +328,11 @@ export class InvoicesService {
           lt(bookingShifts.startsAt, colomboToUtc(addDays(opts.to, 1), '00:00')),
         ),
       );
-    const { billedShiftIds, billedPeriods } = await this.billed(db, shifts.map((s) => s.id), opts.bookingIds);
+    const { billedShiftIds, billedPeriods } = await this.billed(
+      db,
+      shifts.map((s) => s.id),
+      opts.bookingIds,
+    );
     const built = buildLines({
       mode: 'INVOICE',
       language: opts.language,
@@ -330,12 +354,23 @@ export class InvoicesService {
    * billing agent to decide, and again just before it acts.
    */
   async previewBooking(bookingId: string, from: string, to: string, basis: 'COMPLETED' | 'SCHEDULED' = 'COMPLETED') {
-    const [b] = await this.db.select({ patientId: bookings.patientId, language: bookings.language, status: bookings.status }).from(bookings).where(eq(bookings.id, bookingId)).limit(1);
+    const [b] = await this.db
+      .select({ patientId: bookings.patientId, language: bookings.language, status: bookings.status })
+      .from(bookings)
+      .where(eq(bookings.id, bookingId))
+      .limit(1);
     if (!b) throw new NotFoundException('Booking not found');
     // A draft billed in advance has only draft shifts yet: they are what its first invoice is for.
     const statuses = b.status === 'DRAFT' && basis === 'SCHEDULED' ? [...BASIS_STATUSES[basis], 'DRAFT' as const] : BASIS_STATUSES[basis];
     const built = await this.linesFromShifts(this.db, { bookingIds: [bookingId], from, to, statuses, language: b.language, startAt: 0 });
-    const carried = await openAdjustmentLines(this.db, { side: 'CLIENT', partyId: b.patientId, bookingIds: [bookingId], language: b.language, startAt: built.lines.length, baseCents: linesCents(built.lines) });
+    const carried = await openAdjustmentLines(this.db, {
+      side: 'CLIENT',
+      partyId: b.patientId,
+      bookingIds: [bookingId],
+      language: b.language,
+      startAt: built.lines.length,
+      baseCents: linesCents(built.lines),
+    });
     return { lines: built.lines.length, corrections: carried.length, unpriced: built.unpriced, subtotalCents: linesCents([...built.lines, ...carried]) };
   }
 
@@ -371,7 +406,8 @@ export class InvoicesService {
       const [b] = await this.db.select().from(bookings).where(eq(bookings.id, dto.bookingId)).limit(1);
       if (!b) throw new NotFoundException('Booking not found');
       // A draft is billed only for payment before confirmation: a booking billed in advance, for the work booked.
-      if (b.status === 'DRAFT' && !(b.billingTiming === 'ADVANCE' && dto.basis === 'SCHEDULED')) throw new BadRequestException('Confirm the booking before billing it');
+      if (b.status === 'DRAFT' && !(b.billingTiming === 'ADVANCE' && dto.basis === 'SCHEDULED'))
+        throw new BadRequestException('Confirm the booking before billing it');
       draftBooking = b.status === 'DRAFT';
       patientId = b.patientId;
       bookingIds = [b.id];
@@ -410,9 +446,23 @@ export class InvoicesService {
       const built =
         dto.basis === 'MANUAL'
           ? { lines: [] as StoredLine[], skipped: 0, unpriced: 0 }
-          : await this.linesFromShifts(t, { bookingIds, from: dto.periodStart!, to: dto.periodEnd!, statuses: draftBooking ? [...BASIS_STATUSES[dto.basis], 'DRAFT'] : BASIS_STATUSES[dto.basis], language: lang, startAt: 0 });
+          : await this.linesFromShifts(t, {
+              bookingIds,
+              from: dto.periodStart!,
+              to: dto.periodEnd!,
+              statuses: draftBooking ? [...BASIS_STATUSES[dto.basis], 'DRAFT'] : BASIS_STATUSES[dto.basis],
+              language: lang,
+              startAt: 0,
+            });
       // Corrections waiting for this client (this booking's, on a booking invoice).
-      const carried = await openAdjustmentLines(t, { side: 'CLIENT', partyId: patientId!, bookingIds: dto.bookingId ? [dto.bookingId] : null, language: lang, startAt: built.lines.length, baseCents: linesCents(built.lines) });
+      const carried = await openAdjustmentLines(t, {
+        side: 'CLIENT',
+        partyId: patientId!,
+        bookingIds: dto.bookingId ? [dto.bookingId] : null,
+        language: lang,
+        startAt: built.lines.length,
+        baseCents: linesCents(built.lines),
+      });
       generated = { added: built.lines.length, skipped: built.skipped, unpriced: built.unpriced };
       await tx.insert(invoices).values({
         id,
@@ -424,7 +474,9 @@ export class InvoicesService {
         periodEnd: dto.periodEnd ?? null,
         language: lang,
         billToName: patient.fullName,
-        billToAddress: [patient.permanentAddress ?? patient.careAddress, place?.city ?? patient.city, place?.district ?? patient.district].filter(Boolean).join(', ') || null,
+        billToAddress:
+          [patient.permanentAddress ?? patient.careAddress, place?.city ?? patient.city, place?.district ?? patient.district].filter(Boolean).join(', ') ||
+          null,
         billToPhone: patient.phone,
         billToEmail: account?.email ?? null,
         taxName: settings.taxEnabled ? settings.taxName : null,
@@ -554,11 +606,20 @@ export class InvoicesService {
     await this.db.transaction(async (tx) => {
       const t = tx as unknown as Tx;
       const inv = await this.draftOrThrow(id, t, true);
-      if (inv.basis === 'MANUAL' || !inv.periodStart || !inv.periodEnd) throw new BadRequestException('This invoice is not billed from shifts - add lines by hand');
+      if (inv.basis === 'MANUAL' || !inv.periodStart || !inv.periodEnd)
+        throw new BadRequestException('This invoice is not billed from shifts - add lines by hand');
       const bookingIds = inv.bookingId
         ? [inv.bookingId]
-        : (await tx.select({ id: bookings.id }).from(bookings).where(and(eq(bookings.patientId, inv.patientId), ne(bookings.status, 'DRAFT')))).map((b) => b.id);
-      const [{ maxPos }] = await tx.select({ maxPos: sql<number>`COALESCE(MAX(${invoiceLines.position}), -1)` }).from(invoiceLines).where(eq(invoiceLines.invoiceId, id));
+        : (
+            await tx
+              .select({ id: bookings.id })
+              .from(bookings)
+              .where(and(eq(bookings.patientId, inv.patientId), ne(bookings.status, 'DRAFT')))
+          ).map((b) => b.id);
+      const [{ maxPos }] = await tx
+        .select({ maxPos: sql<number>`COALESCE(MAX(${invoiceLines.position}), -1)` })
+        .from(invoiceLines)
+        .where(eq(invoiceLines.invoiceId, id));
       const built = await this.linesFromShifts(t, {
         bookingIds,
         from: inv.periodStart,
@@ -580,7 +641,13 @@ export class InvoicesService {
       generated = { added: built.lines.length, skipped: built.skipped, unpriced: built.unpriced };
       await this.insertLines(t, id, [...built.lines, ...carried]);
       await this.recalc(t, id);
-      await this.event(t, id, 'LINES_CHANGED', actor, `${built.lines.length} lines added from shifts${carried.length ? `, ${carried.length} corrections carried` : ''}`);
+      await this.event(
+        t,
+        id,
+        'LINES_CHANGED',
+        actor,
+        `${built.lines.length} lines added from shifts${carried.length ? `, ${carried.length} corrections carried` : ''}`,
+      );
     });
     return { ...(await this.findOne(id)), generated };
   }
@@ -689,7 +756,11 @@ export class InvoicesService {
       notes: inv.notes,
       createdByUserId: actor.userId,
     });
-    await this.insertLines(t, copyId, lines.map((l, i) => ({ ...l, id: uuid(), position: i })));
+    await this.insertLines(
+      t,
+      copyId,
+      lines.map((l, i) => ({ ...l, id: uuid(), position: i })),
+    );
     await this.recalc(t, copyId);
     await this.event(t, copyId, 'CREATED', actor, note);
     return copyId;
@@ -713,7 +784,10 @@ export class InvoicesService {
         lines.map((l) => l.shiftId).filter((v): v is string => Boolean(v)),
         [...new Set(lines.map((l) => l.bookingId).filter((v): v is string => Boolean(v)))],
       );
-      const applied = await appliedAdjustments(t, lines.map((l) => l.adjustmentId).filter((v): v is string => Boolean(v)));
+      const applied = await appliedAdjustments(
+        t,
+        lines.map((l) => l.adjustmentId).filter((v): v is string => Boolean(v)),
+      );
       const free = lines.filter(
         (l) =>
           !(l.shiftId && billedShiftIds.has(l.shiftId)) &&
@@ -861,7 +935,9 @@ export class InvoicesService {
     ]);
     const totals = computeTotals({ lines, discountType: inv.discountType, discountValue: inv.discountValue, taxRate: inv.taxRate });
     const balance = fromCents(toCents(inv.total) - toCents(inv.amountPaid));
-    const discountLabel = inv.discountType ? [inv.discountType === 'PERCENT' ? `${Number(inv.discountValue)}%` : null, inv.discountReason].filter(Boolean).join(' · ') || null : null;
+    const discountLabel = inv.discountType
+      ? [inv.discountType === 'PERCENT' ? `${Number(inv.discountValue)}%` : null, inv.discountReason].filter(Boolean).join(' · ') || null
+      : null;
     return {
       id: inv.id,
       number: inv.number!,

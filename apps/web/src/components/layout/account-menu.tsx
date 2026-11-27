@@ -56,7 +56,10 @@ export function AccountMenu() {
         aria-label={t('nav.account')}
         className="flex items-center gap-2.5 rounded-lg py-1 pl-1 pr-2 hover:bg-paper"
       >
-        <span aria-hidden className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-light text-sm font-semibold uppercase text-brand-dark">
+        <span
+          aria-hidden
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-light text-sm font-semibold uppercase text-brand-dark"
+        >
           {name.replace(/^\+/, '').charAt(0) || '?'}
         </span>
         {/* Name and role only where there is room: on a phone the circle is the button. */}
@@ -68,7 +71,11 @@ export function AccountMenu() {
       </button>
 
       {open && (
-        <div role="menu" aria-label={t('nav.account')} className="absolute right-0 top-full z-40 mt-2 w-64 rounded-lg border border-border bg-white p-1.5 shadow-xl">
+        <div
+          role="menu"
+          aria-label={t('nav.account')}
+          className="absolute right-0 top-full z-40 mt-2 w-64 rounded-lg border border-border bg-white p-1.5 shadow-xl"
+        >
           <div className="border-b border-border px-3 pb-2.5 pt-1.5">
             <div className="truncate text-sm font-medium text-ink">{name}</div>
             <div className="text-xs text-ink/55">{role}</div>

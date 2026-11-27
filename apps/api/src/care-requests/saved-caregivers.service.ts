@@ -64,10 +64,7 @@ export class SavedCaregiversService {
     }
 
     // Saving twice is a no-op, not an error: the button may be pressed from two tabs.
-    await this.db
-      .insert(savedCaregivers)
-      .values({ patientId, caregiverId: caregiver.id })
-      .onDuplicateKeyUpdate({ set: { patientId } });
+    await this.db.insert(savedCaregivers).values({ patientId, caregiverId: caregiver.id }).onDuplicateKeyUpdate({ set: { patientId } });
     return { saved: true };
   }
 
@@ -76,9 +73,7 @@ export class SavedCaregiversService {
     const patientId = await this.patientId(user);
     const [caregiver] = await this.db.select({ id: caregivers.id }).from(caregivers).where(eq(caregivers.publicId, publicId)).limit(1);
     if (caregiver) {
-      await this.db
-        .delete(savedCaregivers)
-        .where(and(eq(savedCaregivers.patientId, patientId), eq(savedCaregivers.caregiverId, caregiver.id)));
+      await this.db.delete(savedCaregivers).where(and(eq(savedCaregivers.patientId, patientId), eq(savedCaregivers.caregiverId, caregiver.id)));
     }
     return { saved: false };
   }

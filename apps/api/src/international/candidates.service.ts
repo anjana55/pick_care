@@ -213,18 +213,16 @@ export class CandidatesService {
       createdAt: iso(e.createdAt),
       candidates: candidates
         .filter((c) => c.enquiryId === e.id)
-        .map(
-          (c): EmployerCandidate => ({
-            id: c.id,
-            status: c.status,
-            interviewAt: c.interviewAt ? iso(c.interviewAt) : null,
-            messageToEmployer: c.messageToEmployer,
-            // A caregiver who stopped sharing is not shown at all - only that someone is no longer available.
-            talent: cards.get(c.caregiverId) ?? null,
-            interviews: interviews.get(c.id) ?? [],
-            offer: offers.get(c.id) ?? null,
-          }),
-        ),
+        .map((c): EmployerCandidate => ({
+          id: c.id,
+          status: c.status,
+          interviewAt: c.interviewAt ? iso(c.interviewAt) : null,
+          messageToEmployer: c.messageToEmployer,
+          // A caregiver who stopped sharing is not shown at all - only that someone is no longer available.
+          talent: cards.get(c.caregiverId) ?? null,
+          interviews: interviews.get(c.id) ?? [],
+          offer: offers.get(c.id) ?? null,
+        })),
     }));
   }
 
@@ -277,7 +275,9 @@ export class CandidatesService {
       .update(enquiryCandidates)
       .set({ status: move.to, ...(dto.message ? { employerMessage: dto.message } : {}), updatedAt: new Date() })
       .where(eq(enquiryCandidates.id, candidateId));
-    const what = { REQUEST_INTERVIEW: 'asked to interview a caregiver', SELECT: 'wants to hire a caregiver', DECLINE: 'is not proceeding with a caregiver' }[dto.action];
+    const what = { REQUEST_INTERVIEW: 'asked to interview a caregiver', SELECT: 'wants to hire a caregiver', DECLINE: 'is not proceeding with a caregiver' }[
+      dto.action
+    ];
     void this.notifyStaffOfRequest(enquiry, what);
     return this.ownEnquiries(employerId, locale);
   }
@@ -339,7 +339,10 @@ export class CandidatesService {
           }
         : {
             subject: `Interview arranged - ${enquiry.reference}`,
-            paragraphs: [`An interview has been arranged for your enquiry ${enquiry.reference}.`, 'Sign in to your employer account for the date, time and details.'],
+            paragraphs: [
+              `An interview has been arranged for your enquiry ${enquiry.reference}.`,
+              'Sign in to your employer account for the date, time and details.',
+            ],
           };
     await this.notifier.toAddress(enquiry.email, `employer ${what} ${enquiry.reference}`, { ...notice, cta: { label: 'Open', url } });
   }
@@ -390,7 +393,12 @@ function countryName(code: string): string {
   }
 }
 
-function toStaffCandidate(c: CandidateRow, registrationNumber: string, fullName: string, slug: string | null): Omit<StaffCandidate, 'placementId' | 'interviews' | 'offer'> {
+function toStaffCandidate(
+  c: CandidateRow,
+  registrationNumber: string,
+  fullName: string,
+  slug: string | null,
+): Omit<StaffCandidate, 'placementId' | 'interviews' | 'offer'> {
   return {
     id: c.id,
     caregiverId: c.caregiverId,
@@ -408,4 +416,3 @@ function toStaffCandidate(c: CandidateRow, registrationNumber: string, fullName:
     updatedAt: iso(c.updatedAt),
   };
 }
-

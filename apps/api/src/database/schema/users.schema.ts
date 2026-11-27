@@ -39,8 +39,12 @@ export const users = mysqlTable(
     // false: optional WhatsApp/email reminders and announcements go to the
     // bell and push only. Payment reminders and first notices always go.
     reminderMessagesEnabled: boolean('reminder_messages_enabled').notNull().default(true),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     emailIdx: index('users_email_idx').on(table.email),
@@ -55,7 +59,9 @@ export const refreshTokens = mysqlTable(
     tokenHash: varchar('token_hash', { length: 255 }).notNull(),
     expiresAt: datetime('expires_at').notNull(),
     revoked: boolean('revoked').notNull().default(false),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     userIdx: index('refresh_tokens_user_idx').on(table.userId),
@@ -78,7 +84,9 @@ export const emailVerificationTokens = mysqlTable(
     tokenHash: varchar('token_hash', { length: 255 }).notNull(),
     expiresAt: datetime('expires_at').notNull(),
     usedAt: datetime('used_at'),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     userIdx: index('email_verification_tokens_user_idx').on(table.userId),
@@ -103,7 +111,9 @@ export const passwordResetTokens = mysqlTable(
     expiresAt: datetime('expires_at').notNull(),
     usedAt: datetime('used_at'),
     requestedBy: varchar('requested_by', { length: 36 }),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     userIdx: index('password_reset_tokens_user_idx').on(table.userId),

@@ -129,14 +129,19 @@ export function ActivityEditor({
         </div>
       )}
 
-      {value.length === 0 && <p className="rounded border border-dashed border-border px-4 py-6 text-center text-sm text-ink/50">{t('carePlans.editor.empty')}</p>}
+      {value.length === 0 && (
+        <p className="rounded border border-dashed border-border px-4 py-6 text-center text-sm text-ink/50">{t('carePlans.editor.empty')}</p>
+      )}
 
       <ol className="space-y-3">
         {value.map((d, i) => {
           const problem = problems[d.key];
           const fallback = d.title.en || d.title.si || d.title.ta || '';
           return (
-            <li key={d.key} className={cn('rounded-lg border bg-white p-3', problem ? 'border-danger/50' : 'border-border', d.isCritical && 'border-l-4 border-l-accent')}>
+            <li
+              key={d.key}
+              className={cn('rounded-lg border bg-white p-3', problem ? 'border-danger/50' : 'border-border', d.isCritical && 'border-l-4 border-l-accent')}
+            >
               <div className="flex flex-wrap items-start gap-2">
                 <span className="mt-2 w-6 shrink-0 text-right text-xs tabular-nums text-ink/40">{i + 1}.</span>
                 <div className="min-w-[12rem] flex-1">
@@ -148,7 +153,12 @@ export function ActivityEditor({
                     onChange={(e) => set(d.key, { title: { ...d.title, [textLocale]: e.target.value } })}
                   />
                 </div>
-                <Select aria-label={t('carePlans.editor.category')} className="w-44" value={d.category} onChange={(e) => set(d.key, { category: e.target.value as DraftActivity['category'] })}>
+                <Select
+                  aria-label={t('carePlans.editor.category')}
+                  className="w-44"
+                  value={d.category}
+                  onChange={(e) => set(d.key, { category: e.target.value as DraftActivity['category'] })}
+                >
                   {careActivityCategoryValues.map((c) => (
                     <option key={c} value={c}>
                       {t(`carePlans.category.${c}`)}
@@ -159,17 +169,36 @@ export function ActivityEditor({
                   <Button type="button" size="sm" variant="ghost" aria-label={t('carePlans.editor.moveUp')} disabled={i === 0} onClick={() => move(i, -1)}>
                     <ArrowUp size={14} />
                   </Button>
-                  <Button type="button" size="sm" variant="ghost" aria-label={t('carePlans.editor.moveDown')} disabled={i === value.length - 1} onClick={() => move(i, 1)}>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    aria-label={t('carePlans.editor.moveDown')}
+                    disabled={i === value.length - 1}
+                    onClick={() => move(i, 1)}
+                  >
                     <ArrowDown size={14} />
                   </Button>
-                  <Button type="button" size="sm" variant="ghost" aria-label={t('carePlans.editor.remove')} onClick={() => onChange(value.filter((x) => x.key !== d.key))}>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    aria-label={t('carePlans.editor.remove')}
+                    onClick={() => onChange(value.filter((x) => x.key !== d.key))}
+                  >
                     <Trash2 size={14} className="text-danger" />
                   </Button>
                 </div>
               </div>
 
               <div className="mt-2 grid gap-2 pl-8 sm:grid-cols-[11rem_1fr]">
-                <Select aria-label={t('carePlans.editor.timing')} value={d.timing} onChange={(e) => set(d.key, { timing: e.target.value as DraftActivity['timing'], slot: e.target.value === 'SLOT' ? (d.slot ?? 'MORNING') : d.slot })}>
+                <Select
+                  aria-label={t('carePlans.editor.timing')}
+                  value={d.timing}
+                  onChange={(e) =>
+                    set(d.key, { timing: e.target.value as DraftActivity['timing'], slot: e.target.value === 'SLOT' ? (d.slot ?? 'MORNING') : d.slot })
+                  }
+                >
                   {careActivityTimingValues.map((v) => (
                     <option key={v} value={v}>
                       {t(`carePlans.timing.${v}`)}
@@ -178,7 +207,12 @@ export function ActivityEditor({
                 </Select>
                 <div className="flex flex-wrap items-center gap-2">
                   {d.timing === 'SLOT' && (
-                    <Select aria-label={t('carePlans.editor.slot')} className="w-56" value={d.slot ?? 'MORNING'} onChange={(e) => set(d.key, { slot: e.target.value as DraftActivity['slot'] })}>
+                    <Select
+                      aria-label={t('carePlans.editor.slot')}
+                      className="w-56"
+                      value={d.slot ?? 'MORNING'}
+                      onChange={(e) => set(d.key, { slot: e.target.value as DraftActivity['slot'] })}
+                    >
                       {careSlotValues.map((s) => (
                         <option key={s} value={s}>
                           {t(`carePlans.slot.${s}`)}
@@ -248,7 +282,10 @@ export function ActivityEditor({
                   type="button"
                   aria-pressed={!d.daysOfWeek}
                   onClick={() => set(d.key, { daysOfWeek: null })}
-                  className={cn('rounded-full border px-2.5 py-0.5 text-xs', !d.daysOfWeek ? 'border-brand bg-brand-light text-brand-dark' : 'border-border text-ink/60')}
+                  className={cn(
+                    'rounded-full border px-2.5 py-0.5 text-xs',
+                    !d.daysOfWeek ? 'border-brand bg-brand-light text-brand-dark' : 'border-border text-ink/60',
+                  )}
                 >
                   {t('carePlans.editor.everyShift')}
                 </button>
@@ -264,7 +301,10 @@ export function ActivityEditor({
                         const next = (on ? current.filter((x) => x !== wd) : [...current, wd]).sort() as IsoWeekday[];
                         set(d.key, { daysOfWeek: next.length === 0 || next.length === 7 ? null : next });
                       }}
-                      className={cn('rounded-full border px-2.5 py-0.5 text-xs', on ? 'border-brand bg-brand-light text-brand-dark' : 'border-border text-ink/60')}
+                      className={cn(
+                        'rounded-full border px-2.5 py-0.5 text-xs',
+                        on ? 'border-brand bg-brand-light text-brand-dark' : 'border-border text-ink/60',
+                      )}
                     >
                       {fmtWeekday(wd, locale)}
                     </button>
@@ -305,6 +345,10 @@ export function whenText(a: CareActivityFields, t: (k: string, v?: Record<string
   const when = a.timing === 'AT_TIMES' ? a.times.join(', ') : a.timing === 'SLOT' && a.slot ? t(`carePlans.slot.${a.slot}`) : t('carePlans.timing.ANY');
   const days = a.daysOfWeek ? a.daysOfWeek.map((d) => fmtWeekday(d, locale)).join(' ') : t('carePlans.editor.everyShift');
   const reminder =
-    a.reminderMinutesBefore === null ? null : a.reminderMinutesBefore === 0 ? t('carePlans.reminder.atTimeShort') : t('carePlans.reminder.beforeShort', { minutes: a.reminderMinutesBefore });
+    a.reminderMinutesBefore === null
+      ? null
+      : a.reminderMinutesBefore === 0
+        ? t('carePlans.reminder.atTimeShort')
+        : t('carePlans.reminder.beforeShort', { minutes: a.reminderMinutesBefore });
   return [when, days, reminder].filter(Boolean).join(' · ');
 }

@@ -59,7 +59,10 @@ export class ReviewsService {
 
   /** Adds each caregiver's public profile, for showing who the rating is about. */
   async toReviewable(entries: BookingReviewEntry[], enabled: boolean, locale?: string): Promise<ReviewableCaregiver[]> {
-    const profiles = await this.publicSearch.profilesFor(entries.map((e) => e.caregiverId), locale);
+    const profiles = await this.publicSearch.profilesFor(
+      entries.map((e) => e.caregiverId),
+      locale,
+    );
     return entries.map((e) => reviewableView(e, profiles.get(e.caregiverId) ?? null, enabled));
   }
 
@@ -107,7 +110,8 @@ export class ReviewsService {
     const comment = dto.comment?.trim() || null;
     const privateNote = dto.privateNote?.trim() || null;
     if (comment && comment.length < MIN_REVIEW_COMMENT) throw new BadRequestException('Please write a little more in your review, or leave it empty');
-    if (findContactDetails(comment)) throw new BadRequestException('Please leave phone numbers, email addresses and links out of your review - contact goes through our office');
+    if (findContactDetails(comment))
+      throw new BadRequestException('Please leave phone numbers, email addresses and links out of your review - contact goes through our office');
 
     const now = new Date();
     let reviewId = '';
@@ -127,9 +131,23 @@ export class ReviewsService {
       // Unchanged text keeps its state (an approved review stays approved); new text waits for staff.
       const textChanged = (existing?.comment ?? null) !== comment;
       const commentFields = !comment
-        ? { comment: null, commentLanguage: null, commentStatus: 'NONE' as const, commentRejectReason: null, commentReviewedByUserId: null, commentReviewedAt: null }
+        ? {
+            comment: null,
+            commentLanguage: null,
+            commentStatus: 'NONE' as const,
+            commentRejectReason: null,
+            commentReviewedByUserId: null,
+            commentReviewedAt: null,
+          }
         : textChanged
-          ? { comment, commentLanguage: detectReviewLanguage(comment), commentStatus: 'PENDING' as const, commentRejectReason: null, commentReviewedByUserId: null, commentReviewedAt: null }
+          ? {
+              comment,
+              commentLanguage: detectReviewLanguage(comment),
+              commentStatus: 'PENDING' as const,
+              commentRejectReason: null,
+              commentReviewedByUserId: null,
+              commentReviewedAt: null,
+            }
           : {};
       const fields = { rating: dto.rating, improvementTags: formatTags(tags), privateNote, ...commentFields, updatedAt: now };
 
@@ -292,11 +310,7 @@ export class ReviewsService {
         .innerJoin(bookings, eq(caregiverReviews.bookingId, bookings.id))
         .innerJoin(caregivers, eq(caregiverReviews.caregiverId, caregivers.id))
         .innerJoin(patients, eq(caregiverReviews.patientId, patients.id));
-    const [[{ total }], rows, counts] = await Promise.all([
-      base().where(where),
-      this.staffRows(where, pageSize, (page - 1) * pageSize),
-      this.counts(),
-    ]);
+    const [[{ total }], rows, counts] = await Promise.all([base().where(where), this.staffRows(where, pageSize, (page - 1) * pageSize), this.counts()]);
     return { items: await this.toStaff(rows), total: Number(total), page, pageSize, counts };
   }
 
@@ -318,7 +332,9 @@ export class ReviewsService {
       summary: stats ? { average: roundRating(stats.ratingSum, stats.ratingCount), count: stats.ratingCount } : null,
       shownPublicly: shownPublicly(stats?.ratingCount ?? 0, s),
       badgeCounts: stats?.badgeCounts ?? [],
-      improvementCounts: [...tagCounts].map(([tag, n]) => ({ tag: tag as StaffCaregiverRatings['improvementCounts'][number]['tag'], count: n })).sort((a, b) => b.count - a.count),
+      improvementCounts: [...tagCounts]
+        .map(([tag, n]) => ({ tag: tag as StaffCaregiverRatings['improvementCounts'][number]['tag'], count: n }))
+        .sort((a, b) => b.count - a.count),
       reviews,
     };
   }
@@ -357,7 +373,10 @@ export class ReviewsService {
       const t = tx as unknown as Tx;
       const r = await this.lock(t, id);
       if (r.hiddenAt) throw new ConflictException('This review is already hidden');
-      await t.update(caregiverReviews).set({ hiddenAt: new Date(), hiddenByUserId: actor.userId, hiddenReason: dto.reason.trim() }).where(eq(caregiverReviews.id, id));
+      await t
+        .update(caregiverReviews)
+        .set({ hiddenAt: new Date(), hiddenByUserId: actor.userId, hiddenReason: dto.reason.trim() })
+        .where(eq(caregiverReviews.id, id));
       await this.store.recompute(t, r.caregiverId);
     });
     return this.staffOne(id);
@@ -409,7 +428,11 @@ export class ReviewsService {
   private async toStaff(rows: Awaited<ReturnType<ReviewsService['staffRows']>>): Promise<StaffReview[]> {
     const badges = await this.store.badgesFor(rows.map((x) => x.r.id));
     const staffIds = [...new Set(rows.flatMap(({ r }) => [r.commentReviewedByUserId, r.hiddenByUserId]).filter((v): v is string => Boolean(v)))];
-    const names = new Map(staffIds.length ? (await this.db.select({ id: users.id, fullName: users.fullName }).from(users).where(inArray(users.id, staffIds))).map((u) => [u.id, u.fullName]) : []);
+    const names = new Map(
+      staffIds.length
+        ? (await this.db.select({ id: users.id, fullName: users.fullName }).from(users).where(inArray(users.id, staffIds))).map((u) => [u.id, u.fullName])
+        : [],
+    );
     const iso = (d: Date | null) => (d ? new Date(d).toISOString() : null);
     return rows.map(({ r, reference, caregiverName, caregiverPublicId, clientName }) => ({
       id: r.id,

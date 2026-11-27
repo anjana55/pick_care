@@ -58,12 +58,16 @@ describe('Caregiver import (e2e)', () => {
   };
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).overrideProvider(ThrottlerStorage).useValue(unlimitedThrottle).compile();
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+      .overrideProvider(ThrottlerStorage)
+      .useValue(unlimitedThrottle)
+      .compile();
     app = moduleRef.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
     await app.init();
     db = app.get<Database>(DRIZZLE);
-    adminToken = (await request(app.getHttpServer()).post('/auth/login').send({ email: 'admin@care-platform.local', password: SEED_PASSWORD })).body.accessToken;
+    adminToken = (await request(app.getHttpServer()).post('/auth/login').send({ email: 'admin@care-platform.local', password: SEED_PASSWORD })).body
+      .accessToken;
     expect(adminToken).toBeTruthy();
   });
 
@@ -82,7 +86,7 @@ describe('Caregiver import (e2e)', () => {
   });
 
   it('leaves a height or weight that is not a number blank, with a warning, and still adds the row', async () => {
-    const report = await importRows([row({ heightIn: "5' 2\"", weightKg: 'about 60', nic: '' })], false);
+    const report = await importRows([row({ heightIn: '5\' 2"', weightKg: 'about 60', nic: '' })], false);
     const [r] = report.rows;
     expect(r.outcome).toBe('CREATED');
     expect(r.warnings.map((w) => [w.code, w.column])).toEqual([

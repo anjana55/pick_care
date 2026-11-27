@@ -60,8 +60,7 @@ function CandidateEditor({ enquiryId, candidate: c }: { enquiryId: string; candi
   const [messageToEmployer, setMessageToEmployer] = useState(c.messageToEmployer ?? '');
   const [staffNote, setStaffNote] = useState(c.staffNote ?? '');
   const [saved, setSaved] = useState(false);
-  const dirty =
-    status !== c.status || messageToEmployer !== (c.messageToEmployer ?? '') || staffNote !== (c.staffNote ?? '');
+  const dirty = status !== c.status || messageToEmployer !== (c.messageToEmployer ?? '') || staffNote !== (c.staffNote ?? '');
 
   return (
     <div className="rounded-lg border border-border p-4">
@@ -85,7 +84,13 @@ function CandidateEditor({ enquiryId, candidate: c }: { enquiryId: string; candi
         </div>
         <span className="flex items-center gap-1">
           <span className={cn('rounded px-2 py-0.5 text-xs font-medium', STATUS_STYLES[c.status])}>{t(`international.candidates.status.${c.status}`)}</span>
-          <DeleteRecordButton compact path={`/international/candidates/${c.id}`} label={t('overseasAdmin.candidate.remove')} title={t('overseasAdmin.candidate.removeTitle', { name: c.fullName })} body={t('overseasAdmin.candidate.removeBody')} />
+          <DeleteRecordButton
+            compact
+            path={`/international/candidates/${c.id}`}
+            label={t('overseasAdmin.candidate.remove')}
+            title={t('overseasAdmin.candidate.removeTitle', { name: c.fullName })}
+            body={t('overseasAdmin.candidate.removeBody')}
+          />
         </span>
       </div>
       <InterviewsPanel enquiryId={enquiryId} candidate={c} />
@@ -95,7 +100,8 @@ function CandidateEditor({ enquiryId, candidate: c }: { enquiryId: string; candi
           className="mt-2 inline-flex items-center gap-1.5 rounded bg-paper px-2 py-1 text-xs font-medium text-ink hover:text-brand-dark"
         >
           <FileSignature size={12} aria-hidden />
-          {t('international.offers.ref', { reference: c.offer.reference })} · {c.offer.expired ? t('international.offers.expired') : t(`international.offers.status.${c.offer.status}`)}
+          {t('international.offers.ref', { reference: c.offer.reference })} ·{' '}
+          {c.offer.expired ? t('international.offers.expired') : t(`international.offers.status.${c.offer.status}`)}
         </Link>
       )}
       {c.employerMessage && (
@@ -123,7 +129,13 @@ function CandidateEditor({ enquiryId, candidate: c }: { enquiryId: string; candi
         </div>
         <div className="sm:col-span-2">
           <Label htmlFor={`me-${c.id}`}>{t('international.candidates.messageToEmployer')}</Label>
-          <Textarea id={`me-${c.id}`} rows={2} maxLength={1000} value={messageToEmployer} onChange={(e) => (setSaved(false), setMessageToEmployer(e.target.value))} />
+          <Textarea
+            id={`me-${c.id}`}
+            rows={2}
+            maxLength={1000}
+            value={messageToEmployer}
+            onChange={(e) => (setSaved(false), setMessageToEmployer(e.target.value))}
+          />
         </div>
         <div className="sm:col-span-2">
           <Label htmlFor={`sn-${c.id}`}>{t('international.detail.note')}</Label>
@@ -132,7 +144,10 @@ function CandidateEditor({ enquiryId, candidate: c }: { enquiryId: string; candi
       </div>
       {status === 'PLACED' && c.status !== 'PLACED' && <p className="mt-2 text-xs text-ink/60">{t('international.candidates.placedHint')}</p>}
       {c.placementId && (
-        <Link href={`/international/placements/${c.placementId}`} className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-brand-dark hover:underline">
+        <Link
+          href={`/international/placements/${c.placementId}`}
+          className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-brand-dark hover:underline"
+        >
           <Plane size={12} aria-hidden />
           {t('international.candidates.openPlacement')}
         </Link>
@@ -190,7 +205,9 @@ function ProposeForm({ enquiry, existing }: { enquiry: EmployerEnquiry; existing
         {t('international.candidates.sameCountry')}
       </label>
       <Select value={caregiverId} onChange={(e) => setCaregiverId(e.target.value)} aria-label={t('international.candidates.choose')}>
-        <option value="">{isLoading ? t('common.loading') : options.length ? t('international.candidates.choose') : t('international.candidates.noneAvailable')}</option>
+        <option value="">
+          {isLoading ? t('common.loading') : options.length ? t('international.candidates.choose') : t('international.candidates.noneAvailable')}
+        </option>
         {options.map((o) => (
           <option key={o.caregiverId} value={o.caregiverId}>
             {o.fullName} ({o.registrationNumber}) · {o.readiness.done}/{o.readiness.total}
@@ -198,7 +215,13 @@ function ProposeForm({ enquiry, existing }: { enquiry: EmployerEnquiry; existing
         ))}
       </Select>
       {chosen && <ReadinessBar report={chosen.readiness} />}
-      <Textarea rows={2} maxLength={1000} value={message} onChange={(e) => setMessage(e.target.value)} placeholder={t('international.candidates.messagePlaceholder')} />
+      <Textarea
+        rows={2}
+        maxLength={1000}
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        placeholder={t('international.candidates.messagePlaceholder')}
+      />
       {propose.isError && <p className="text-xs text-danger">{propose.error instanceof Error ? propose.error.message : t('common.actionFailed')}</p>}
       <Button type="submit" size="sm" disabled={!caregiverId || propose.isPending}>
         {t('international.candidates.proposeButton')}

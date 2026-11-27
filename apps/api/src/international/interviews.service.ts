@@ -38,7 +38,11 @@ export function checkWhen(at: Date, now = Date.now()): void {
 }
 
 /** The candidate's status and next interview, once interviews change. */
-export function candidateAfterInterviews(current: CandidateStatus, interviews: Pick<InterviewRow, 'status' | 'scheduledAt'>[], now = Date.now()): { status: CandidateStatus; interviewAt: Date | null } {
+export function candidateAfterInterviews(
+  current: CandidateStatus,
+  interviews: Pick<InterviewRow, 'status' | 'scheduledAt'>[],
+  now = Date.now(),
+): { status: CandidateStatus; interviewAt: Date | null } {
   const upcoming = interviews
     .filter((i) => i.status === 'SCHEDULED')
     .map((i) => new Date(i.scheduledAt))
@@ -226,7 +230,10 @@ export class InterviewsService {
     const next = candidateAfterInterviews(c.status, interviews);
     const sameTime = (c.interviewAt ? new Date(c.interviewAt).getTime() : null) === (next.interviewAt ? next.interviewAt.getTime() : null);
     if (next.status === c.status && sameTime) return;
-    await this.db.update(enquiryCandidates).set({ status: next.status, interviewAt: next.interviewAt, updatedAt: new Date() }).where(eq(enquiryCandidates.id, c.id));
+    await this.db
+      .update(enquiryCandidates)
+      .set({ status: next.status, interviewAt: next.interviewAt, updatedAt: new Date() })
+      .where(eq(enquiryCandidates.id, c.id));
   }
 
   private staffSelect() {
@@ -280,11 +287,18 @@ export class InterviewsService {
       ...(i.instructions ? [i.instructions] : []),
     ];
     const lead = { scheduled: 'An interview has been arranged', changed: 'An interview has been changed', cancelled: 'An interview has been cancelled' }[what];
-    const detail = what === 'cancelled' ? [`It was due on ${when}.`, ...(i.cancelReason ? [`Reason: ${i.cancelReason}`] : [])] : [`When: ${when}, for ${i.durationMinutes} minutes.`, ...how];
+    const detail =
+      what === 'cancelled'
+        ? [`It was due on ${when}.`, ...(i.cancelReason ? [`Reason: ${i.cancelReason}`] : [])]
+        : [`When: ${when}, for ${i.durationMinutes} minutes.`, ...how];
 
     await this.notifier.toAddress(e.email, `interview ${what} ${e.reference}`, {
       subject: `${lead} - ${e.reference}`,
-      paragraphs: [`${lead} for your enquiry ${e.reference} (round ${i.round}).`, ...detail, 'Your employer account shows it in your own time zone, with a calendar download.'],
+      paragraphs: [
+        `${lead} for your enquiry ${e.reference} (round ${i.round}).`,
+        ...detail,
+        'Your employer account shows it in your own time zone, with a calendar download.',
+      ],
       cta: { label: 'Open your account', url: this.notifier.publicUrl('/employer') },
     });
 

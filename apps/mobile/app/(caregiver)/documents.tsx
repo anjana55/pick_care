@@ -142,7 +142,6 @@ export default function Documents() {
         keyboardShouldPersistTaps="handled"
         refreshControl={<RefreshControl refreshing={documents.isRefetching} onRefresh={() => void documents.refetch()} />}
       >
-
         <View style={[styles.card, { borderColor: colors.border, backgroundColor: colors.surface }]}>
           <Text accessibilityRole="header" style={[styles.section, { color: colors.ink }]}>
             {t('portal.documents.needed')}
@@ -150,8 +149,22 @@ export default function Documents() {
           {CORE.map((item) => {
             const done = documents.isSuccess && !missing.includes(item.label);
             return (
-              <View key={item.label} style={styles.row} accessible accessibilityLabel={`${t(`portal.documents.core.${item.label}`)}: ${done ? t('portal.documents.haveIt') : t('portal.documents.missing')}`}>
-                <Text style={[styles.tick, done ? { backgroundColor: colors.brand, color: colors.brandText, borderColor: colors.brand } : { borderColor: colors.border, color: 'transparent' }]}>✓</Text>
+              <View
+                key={item.label}
+                style={styles.row}
+                accessible
+                accessibilityLabel={`${t(`portal.documents.core.${item.label}`)}: ${done ? t('portal.documents.haveIt') : t('portal.documents.missing')}`}
+              >
+                <Text
+                  style={[
+                    styles.tick,
+                    done
+                      ? { backgroundColor: colors.brand, color: colors.brandText, borderColor: colors.brand }
+                      : { borderColor: colors.border, color: 'transparent' },
+                  ]}
+                >
+                  ✓
+                </Text>
                 <Text style={{ flex: 1, fontSize: 15, color: done ? colors.ink : colors.muted }}>{t(`portal.documents.core.${item.label}`)}</Text>
               </View>
             );
@@ -199,7 +212,9 @@ export default function Documents() {
 
           {file ? (
             <View style={[styles.picked, { borderColor: colors.border }]}>
-              {file.mimeType.startsWith('image/') ? <Image source={{ uri: file.uri }} style={styles.thumb} resizeMode="cover" accessibilityIgnoresInvertColors /> : null}
+              {file.mimeType.startsWith('image/') ? (
+                <Image source={{ uri: file.uri }} style={styles.thumb} resizeMode="cover" accessibilityIgnoresInvertColors />
+              ) : null}
               <Text style={{ flex: 1, fontSize: 14, color: colors.ink }}>
                 {t('portal.documents.selected', { name: file.name, size: file.size ? fileSize(file.size) : '' })}
               </Text>
@@ -216,7 +231,13 @@ export default function Documents() {
               {notice}
             </Text>
           ) : null}
-          <Button icon="cloud-upload-outline" label={upload.isPending ? t('common.loading') : t('portal.documents.upload')} busy={upload.isPending} disabled={!file} onPress={() => !upload.isPending && onUpload()} />
+          <Button
+            icon="cloud-upload-outline"
+            label={upload.isPending ? t('common.loading') : t('portal.documents.upload')}
+            busy={upload.isPending}
+            disabled={!file}
+            onPress={() => !upload.isPending && onUpload()}
+          />
         </View>
 
         <View style={[styles.card, { borderColor: colors.border, backgroundColor: colors.surface }]}>
@@ -247,7 +268,13 @@ export default function Documents() {
                 {doc.originalFilename} · {fileSize(doc.sizeBytes)} · {formatDate(doc.createdAt, locale)}
               </Text>
               {doc.expiresOn ? (
-                <Text style={{ fontSize: 13, color: hasExpired(doc.expiresOn) ? colors.danger : colors.muted, fontWeight: hasExpired(doc.expiresOn) ? '600' : '400' }}>
+                <Text
+                  style={{
+                    fontSize: 13,
+                    color: hasExpired(doc.expiresOn) ? colors.danger : colors.muted,
+                    fontWeight: hasExpired(doc.expiresOn) ? '600' : '400',
+                  }}
+                >
                   {t('portal.documents.expires', { date: formatDate(doc.expiresOn, locale) })}
                 </Text>
               ) : null}

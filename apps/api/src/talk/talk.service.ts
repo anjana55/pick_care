@@ -50,12 +50,20 @@ export class TalkService {
     const missing = () => new NotFoundException('We could not find that - choose another, or leave it blank');
     if (type === 'REQUEST') {
       if (!user.patientId) throw missing();
-      const [r] = await this.db.select({ id: careRequests.id, reference: careRequests.reference }).from(careRequests).where(and(eq(careRequests.id, id), eq(careRequests.patientId, user.patientId))).limit(1);
+      const [r] = await this.db
+        .select({ id: careRequests.id, reference: careRequests.reference })
+        .from(careRequests)
+        .where(and(eq(careRequests.id, id), eq(careRequests.patientId, user.patientId)))
+        .limit(1);
       if (!r) throw missing();
       return { ref: { caseType: 'REQUEST', caseId: r.id }, reference: r.reference };
     }
     if (type === 'BOOKING') {
-      const [b] = await this.db.select({ id: bookings.id, reference: bookings.reference, patientId: bookings.patientId, caregiverId: bookings.caregiverId }).from(bookings).where(eq(bookings.id, id)).limit(1);
+      const [b] = await this.db
+        .select({ id: bookings.id, reference: bookings.reference, patientId: bookings.patientId, caregiverId: bookings.caregiverId })
+        .from(bookings)
+        .where(eq(bookings.id, id))
+        .limit(1);
       if (!b) throw missing();
       if (user.patientId ? b.patientId !== user.patientId : !(await this.worksOn(user.caregiverId, b.id, b.caregiverId))) throw missing();
       return { ref: { caseType: 'BOOKING', caseId: b.id }, reference: b.reference };
@@ -74,21 +82,40 @@ export class TalkService {
   private async worksOn(caregiverId: string | undefined, bookingId: string, booked: string): Promise<boolean> {
     if (!caregiverId) return false;
     if (booked === caregiverId) return true;
-    const [one] = await this.db.select({ id: bookingShifts.id }).from(bookingShifts).where(and(eq(bookingShifts.bookingId, bookingId), eq(bookingShifts.caregiverId, caregiverId))).limit(1);
+    const [one] = await this.db
+      .select({ id: bookingShifts.id })
+      .from(bookingShifts)
+      .where(and(eq(bookingShifts.bookingId, bookingId), eq(bookingShifts.caregiverId, caregiverId)))
+      .limit(1);
     return Boolean(one);
   }
 
   async ask(user: AuthenticatedUser, dto: TalkRequestDto): Promise<MyTalkRequest> {
     const role = this.role(user);
-    const [open] = await this.db.select({ n: count() }).from(talkRequests).where(and(eq(talkRequests.userId, user.userId), eq(talkRequests.status, 'OPEN')));
+    const [open] = await this.db
+      .select({ n: count() })
+      .from(talkRequests)
+      .where(and(eq(talkRequests.userId, user.userId), eq(talkRequests.status, 'OPEN')));
     if ((open?.n ?? 0) >= TALK_MAX_OPEN) throw new BadRequestException('We already have your messages - someone will contact you soon');
     const about = dto.about ? await this.caseFor(user, dto.about.type, dto.about.id) : null;
     const id = uuid();
-    await this.db.insert(talkRequests).values({ id, userId: user.userId, role, aboutType: dto.about?.type ?? null, aboutId: dto.about?.id ?? null, message: dto.message, contact: dto.contact });
+    await this.db.insert(talkRequests).values({
+      id,
+      userId: user.userId,
+      role,
+      aboutType: dto.about?.type ?? null,
+      aboutId: dto.about?.id ?? null,
+      message: dto.message,
+      contact: dto.contact,
+    });
     if (about) {
       // The agents step back from this case until staff hand it back.
       await this.automation
-        .takeOver(about.ref, { userId: user.userId, source: 'PERSON', reason: `${role === 'CLIENT' ? 'The client' : 'The caregiver'} asked to talk to a person` })
+        .takeOver(about.ref, {
+          userId: user.userId,
+          source: 'PERSON',
+          reason: `${role === 'CLIENT' ? 'The client' : 'The caregiver'} asked to talk to a person`,
+        })
         .catch((e) => this.logger.warn(`Talk to a person: could not take over ${about.ref.caseType} ${about.ref.caseId} - ${(e as Error).message}`));
     }
     await this.tellStaff(role, about?.reference ?? null, dto.contact);
@@ -102,7 +129,14 @@ export class TalkService {
   }
 
   private mine(r: typeof talkRequests.$inferSelect): MyTalkRequest {
-    return { id: r.id, createdAt: r.createdAt.toISOString(), message: r.message, contact: r.contact, status: r.status, handledAt: r.handledAt?.toISOString() ?? null };
+    return {
+      id: r.id,
+      createdAt: r.createdAt.toISOString(),
+      message: r.message,
+      contact: r.contact,
+      status: r.status,
+      handledAt: r.handledAt?.toISOString() ?? null,
+    };
   }
 
   /** Staff: open first (oldest first - longest waiting), then the latest handled. */
@@ -117,12 +151,32 @@ export class TalkService {
     const userIds = [...new Set(rows.flatMap((r) => [r.userId, r.handledByUserId].filter((x): x is string => Boolean(x))))];
     const [people, clients, carers, reqs, books, shifts] = await Promise.all([
       this.db.select({ id: users.id, email: users.email, name: users.fullName }).from(users).where(inArray(users.id, userIds)),
-      this.db.select({ id: patients.id, userId: patients.userId, name: patients.fullName, phone: patients.phone }).from(patients).where(inArray(patients.userId, userIds)),
-      this.db.select({ id: caregivers.id, userId: caregivers.userId, name: caregivers.fullName, phone: caregivers.primaryPhone }).from(caregivers).where(inArray(caregivers.userId, userIds)),
-      this.idsOf(rows, 'REQUEST').length ? this.db.select({ id: careRequests.id, reference: careRequests.reference }).from(careRequests).where(inArray(careRequests.id, this.idsOf(rows, 'REQUEST'))) : Promise.resolve([] as { id: string; reference: string }[]),
-      this.idsOf(rows, 'BOOKING').length ? this.db.select({ id: bookings.id, reference: bookings.reference }).from(bookings).where(inArray(bookings.id, this.idsOf(rows, 'BOOKING'))) : Promise.resolve([] as { id: string; reference: string }[]),
+      this.db
+        .select({ id: patients.id, userId: patients.userId, name: patients.fullName, phone: patients.phone })
+        .from(patients)
+        .where(inArray(patients.userId, userIds)),
+      this.db
+        .select({ id: caregivers.id, userId: caregivers.userId, name: caregivers.fullName, phone: caregivers.primaryPhone })
+        .from(caregivers)
+        .where(inArray(caregivers.userId, userIds)),
+      this.idsOf(rows, 'REQUEST').length
+        ? this.db
+            .select({ id: careRequests.id, reference: careRequests.reference })
+            .from(careRequests)
+            .where(inArray(careRequests.id, this.idsOf(rows, 'REQUEST')))
+        : Promise.resolve([] as { id: string; reference: string }[]),
+      this.idsOf(rows, 'BOOKING').length
+        ? this.db
+            .select({ id: bookings.id, reference: bookings.reference })
+            .from(bookings)
+            .where(inArray(bookings.id, this.idsOf(rows, 'BOOKING')))
+        : Promise.resolve([] as { id: string; reference: string }[]),
       this.idsOf(rows, 'SHIFT').length
-        ? this.db.select({ id: bookingShifts.id, bookingId: bookings.id, reference: bookings.reference }).from(bookingShifts).innerJoin(bookings, eq(bookings.id, bookingShifts.bookingId)).where(inArray(bookingShifts.id, this.idsOf(rows, 'SHIFT')))
+        ? this.db
+            .select({ id: bookingShifts.id, bookingId: bookings.id, reference: bookings.reference })
+            .from(bookingShifts)
+            .innerJoin(bookings, eq(bookings.id, bookingShifts.bookingId))
+            .where(inArray(bookingShifts.id, this.idsOf(rows, 'SHIFT')))
         : Promise.resolve([] as { id: string; bookingId: string; reference: string }[]),
     ]);
     return rows.map((r) => {
@@ -165,7 +219,10 @@ export class TalkService {
     const [r] = await this.db.select().from(talkRequests).where(eq(talkRequests.id, id)).limit(1);
     if (!r) throw new NotFoundException('This message was not found');
     if (r.status !== 'HANDLED') {
-      await this.db.update(talkRequests).set({ status: 'HANDLED', handledAt: new Date(), handledByUserId: staff.userId, staffNote: note?.trim() || null }).where(eq(talkRequests.id, id));
+      await this.db
+        .update(talkRequests)
+        .set({ status: 'HANDLED', handledAt: new Date(), handledByUserId: staff.userId, staffNote: note?.trim() || null })
+        .where(eq(talkRequests.id, id));
     }
     return (await this.list('ALL')).find((x) => x.id === id)!;
   }
@@ -184,8 +241,18 @@ export class TalkService {
     );
     const settings = await this.emailSettings.getResolved();
     const to = settings.requestAlertsTo
-      ? settings.requestAlertsTo.split(',').map((a) => a.trim()).filter(Boolean)
-      : (await this.db.select({ email: users.email }).from(users).where(and(inArray(users.role, ['ADMIN', 'STAFF']), eq(users.isActive, true)))).map((u) => u.email).filter((e): e is string => Boolean(e));
+      ? settings.requestAlertsTo
+          .split(',')
+          .map((a) => a.trim())
+          .filter(Boolean)
+      : (
+          await this.db
+            .select({ email: users.email })
+            .from(users)
+            .where(and(inArray(users.role, ['ADMIN', 'STAFF']), eq(users.isActive, true)))
+        )
+          .map((u) => u.email)
+          .filter((e): e is string => Boolean(e));
     if (!to.length) return;
     const who = role === 'CLIENT' ? 'A client' : 'A caregiver';
     const how = contact === 'CALL' ? 'a phone call' : contact === 'WHATSAPP' ? 'WhatsApp' : 'email';
@@ -205,7 +272,10 @@ export class TalkService {
               ],
             },
           ],
-          cta: { label: 'Open People waiting', url: `${(this.config.get<string>('CAREGIVER_WEB_URL') ?? 'http://localhost:3000/staff').replace(/\/+$/, '')}/people-waiting` },
+          cta: {
+            label: 'Open People waiting',
+            url: `${(this.config.get<string>('CAREGIVER_WEB_URL') ?? 'http://localhost:3000/staff').replace(/\/+$/, '')}/people-waiting`,
+          },
         },
         'talk to a person',
       );

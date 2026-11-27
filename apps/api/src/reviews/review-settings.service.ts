@@ -21,7 +21,10 @@ export class ReviewSettingsService {
   private async getRow(): Promise<Row> {
     const [existing] = await this.db.select().from(reviewSettings).where(eq(reviewSettings.id, SETTINGS_ID)).limit(1);
     if (existing) return existing;
-    await this.db.insert(reviewSettings).values({ id: SETTINGS_ID }).onDuplicateKeyUpdate({ set: { id: SETTINGS_ID } });
+    await this.db
+      .insert(reviewSettings)
+      .values({ id: SETTINGS_ID })
+      .onDuplicateKeyUpdate({ set: { id: SETTINGS_ID } });
     const [created] = await this.db.select().from(reviewSettings).where(eq(reviewSettings.id, SETTINGS_ID)).limit(1);
     return created;
   }

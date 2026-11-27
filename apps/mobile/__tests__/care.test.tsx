@@ -108,7 +108,10 @@ describe('contacting and saving a caregiver', () => {
     expect(await screen.findByRole('button', { name: `♥ ${en.care.saved}` })).toBeTruthy();
     await fireEvent.press(screen.getByRole('button', { name: `♥ ${en.care.saved}` }));
     expect(await screen.findByRole('button', { name: `♡ ${en.care.save}` })).toBeTruthy();
-    expect(calls.map((c) => c.route).filter((r) => r.includes('saved-caregivers'))).toEqual([`PUT /me/saved-caregivers/${ID}`, `DELETE /me/saved-caregivers/${ID}`]);
+    expect(calls.map((c) => c.route).filter((r) => r.includes('saved-caregivers'))).toEqual([
+      `PUT /me/saved-caregivers/${ID}`,
+      `DELETE /me/saved-caregivers/${ID}`,
+    ]);
     expect(calls.find((c) => c.route === 'GET /me/caregiver-relations')!.headers.Authorization).toMatch(/^Bearer /);
   });
 

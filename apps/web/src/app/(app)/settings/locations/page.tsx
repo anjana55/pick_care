@@ -106,9 +106,7 @@ export default function LocationsPage() {
 
             {citiesLoading && <p className="text-sm text-ink/50">{t('common.loading')}</p>}
 
-            {!citiesLoading && pageData && pageData.items.length === 0 && (
-              <p className="text-sm text-ink/50">No cities match those filters.</p>
-            )}
+            {!citiesLoading && pageData && pageData.items.length === 0 && <p className="text-sm text-ink/50">No cities match those filters.</p>}
 
             <div className="divide-y divide-border">
               {pageData?.items.map((c) => (
@@ -156,18 +154,15 @@ export default function LocationsPage() {
           <CardContent className="space-y-3 py-5 text-sm text-ink/70">
             <p className="font-medium text-ink">Reference data</p>
             <p>
-              Provinces, districts and cities are loaded from the official CSV set and are not edited
-              here. Their English, Sinhala and Tamil names, coordinates and postcodes all come from
-              that source, so the caregiver registration dropdowns and the public search filters
-              read from the same rows.
+              Provinces, districts and cities are loaded from the official CSV set and are not edited here. Their English, Sinhala and Tamil names, coordinates
+              and postcodes all come from that source, so the caregiver registration dropdowns and the public search filters read from the same rows.
             </p>
             {treeLoading ? (
               <p className="text-xs text-ink/40">{t('common.loading')}</p>
             ) : (
               <p className="text-xs text-ink/40">
-                {(tree ?? []).length} provinces &middot;{' '}
-                {(tree ?? []).reduce((n, p) => n + p.districts.length, 0)} districts &middot;{' '}
-                {pageData?.total ?? 0} cities shown
+                {(tree ?? []).length} provinces &middot; {(tree ?? []).reduce((n, p) => n + p.districts.length, 0)} districts &middot; {pageData?.total ?? 0}{' '}
+                cities shown
               </p>
             )}
           </CardContent>

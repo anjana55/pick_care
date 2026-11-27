@@ -14,7 +14,11 @@ export const COVER_CLOSE_JOB = 'cover.close';
  */
 export async function closeCoverOffers(db: Database, jobs: JobsService, shiftId: string): Promise<void> {
   try {
-    const [open] = await db.select({ id: requestOffers.id }).from(requestOffers).where(and(eq(requestOffers.shiftId, shiftId), eq(requestOffers.status, 'OFFERED'))).limit(1);
+    const [open] = await db
+      .select({ id: requestOffers.id })
+      .from(requestOffers)
+      .where(and(eq(requestOffers.shiftId, shiftId), eq(requestOffers.status, 'OFFERED')))
+      .limit(1);
     if (open) await jobs.enqueue(COVER_CLOSE_JOB, { shiftId }, { maxAttempts: 3 });
   } catch {
     /* the offers run out on their own within minutes */

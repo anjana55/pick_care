@@ -60,9 +60,21 @@ describe('Social sign-in for clients and the app (e2e)', () => {
     const res = await api().get('/auth/social/google/callback').query({ code: 'provider-code', state }).expect(302);
     return new URL(res.headers.location);
   }
-  const linkWith = async (pendingToken: string) => roundTrip((await api().get('/auth/social/google/authorize-url').query({ token: pendingToken }).expect(200)).body.url);
-  const signIn = async (query: Record<string, string>) => roundTrip((await api().get('/auth/social/google/login-url').query({ nonce: nonce(), ...query }).expect(200)).body.url);
-  const exchange = (code: string, verifier?: string) => api().post('/auth/social/exchange').send({ code, ...(verifier ? { verifier } : {}) });
+  const linkWith = async (pendingToken: string) =>
+    roundTrip((await api().get('/auth/social/google/authorize-url').query({ token: pendingToken }).expect(200)).body.url);
+  const signIn = async (query: Record<string, string>) =>
+    roundTrip(
+      (
+        await api()
+          .get('/auth/social/google/login-url')
+          .query({ nonce: nonce(), ...query })
+          .expect(200)
+      ).body.url,
+    );
+  const exchange = (code: string, verifier?: string) =>
+    api()
+      .post('/auth/social/exchange')
+      .send({ code, ...(verifier ? { verifier } : {}) });
 
   async function registerClient(email = newEmail()) {
     const password = 'ClientPass123';
@@ -111,12 +123,17 @@ describe('Social sign-in for clients and the app (e2e)', () => {
     adminToken = (await api().post('/auth/login').send({ email: 'admin@care-platform.local', password: SEED_PASSWORD })).body.accessToken;
     staffToken = (await api().post('/auth/login').send({ email: 'staff@care-platform.local', password: SEED_PASSWORD })).body.accessToken;
     await db.execute(sql`DELETE FROM social_auth_provider_settings`);
-    await api().patch('/settings/social-auth/google').set(bearer(adminToken)).send({ enabled: true, ...GOOGLE }).expect(200);
+    await api()
+      .patch('/settings/social-auth/google')
+      .set(bearer(adminToken))
+      .send({ enabled: true, ...GOOGLE })
+      .expect(200);
 
     global.fetch = jest.fn(async (input: any, init?: any) => {
       const url = String(input);
       if (url.includes('oauth2.googleapis.com/token')) return new Response(JSON.stringify({ access_token: 'provider-access-token' }), { status: 200 });
-      if (url.includes('openidconnect.googleapis.com/v1/userinfo')) return new Response(JSON.stringify({ ...profile, email_verified: true, name: 'E2E' }), { status: 200 });
+      if (url.includes('openidconnect.googleapis.com/v1/userinfo'))
+        return new Response(JSON.stringify({ ...profile, email_verified: true, name: 'E2E' }), { status: 200 });
       return realFetch(input, init);
     }) as never;
 
@@ -124,9 +141,17 @@ describe('Social sign-in for clients and the app (e2e)', () => {
     const districtId = tree.flatMap((p) => p.districts)[0].id;
     const cityId = (await api().get(`/public/meta/locations/cities?districtId=${districtId}&locale=en`).expect(200)).body[0].id;
     intake = {
-      registrantType: 'GUARDIAN', recipientName: 'Sunil Fernando', recipientRelationship: 'PARENT', recipientAge: 78,
-      recipientGender: 'MALE', preferredContactMethod: 'PHONE_CALL', districtId, cityId,
-      careNeeds: 'Needs help with bathing, meals and medication reminders.', careSchedule: 'DAY', careStart: 'WITHIN_WEEK',
+      registrantType: 'GUARDIAN',
+      recipientName: 'Sunil Fernando',
+      recipientRelationship: 'PARENT',
+      recipientAge: 78,
+      recipientGender: 'MALE',
+      preferredContactMethod: 'PHONE_CALL',
+      districtId,
+      cityId,
+      careNeeds: 'Needs help with bathing, meals and medication reminders.',
+      careSchedule: 'DAY',
+      careStart: 'WITHIN_WEEK',
     };
   });
 
@@ -218,10 +243,12 @@ describe('Social sign-in for clients and the app (e2e)', () => {
       const caregiver = await linkedCaregiver();
       const [caregiverUser] = await db.select({ id: users.id, email: users.email }).from(users).where(eq(users.email, caregiver.email)).limit(1);
       // A grant naming the client side for a caregiver's login - which the server never issues.
-      const forged = app.get(JwtService).sign(
-        { sub: caregiverUser.id, typ: 'caregiver-social-signup', side: 'client' },
-        { secret: app.get(ConfigService).get<string>('JWT_ACCESS_SECRET'), expiresIn: '15m' },
-      );
+      const forged = app
+        .get(JwtService)
+        .sign(
+          { sub: caregiverUser.id, typ: 'caregiver-social-signup', side: 'client' },
+          { secret: app.get(ConfigService).get<string>('JWT_ACCESS_SECRET'), expiresIn: '15m' },
+        );
       signInAs(`g-forged-${run}-${++n}`, caregiverUser.email!);
       const back = await linkWith(forged);
       expect(back.searchParams.get('error')).toBe('registration_gone');
@@ -277,7 +304,10 @@ describe('Social sign-in for clients and the app (e2e)', () => {
       expect(back.searchParams.get('flow')).toBe('login');
 
       // Declined on the provider's screen.
-      const started = await api().get('/auth/social/google/login-url').query({ nonce: nonce(), client: 'app', challenge: verifierAndChallenge().challenge }).expect(200);
+      const started = await api()
+        .get('/auth/social/google/login-url')
+        .query({ nonce: nonce(), client: 'app', challenge: verifierAndChallenge().challenge })
+        .expect(200);
       const state = new URL(started.body.url).searchParams.get('state')!;
       const declined = await api().get('/auth/social/google/callback').query({ error: 'access_denied', state }).expect(302);
       expect(declined.headers.location).toBe('pickcare://auth/callback?error=declined&flow=login');

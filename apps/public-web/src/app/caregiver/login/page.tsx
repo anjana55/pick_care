@@ -81,11 +81,15 @@ export default function CaregiverLoginPage() {
             <RequiredLegend label={t('common.requiredField')} />
             <div className="space-y-4">
               <div>
-                <Label htmlFor="email" required>{t('login.email')}</Label>
+                <Label htmlFor="email" required>
+                  {t('login.email')}
+                </Label>
                 <Input id="email" type="email" {...register('email', { required: true })} />
               </div>
               <div>
-                <Label htmlFor="password" required>{t('login.password')}</Label>
+                <Label htmlFor="password" required>
+                  {t('login.password')}
+                </Label>
                 <Input id="password" type="password" {...register('password', { required: true })} />
                 <div className="mt-1.5 text-right">
                   <Link href="/forgot-password?for=caregiver" className="text-xs font-medium text-brand-dark hover:underline">
@@ -96,7 +100,9 @@ export default function CaregiverLoginPage() {
 
               {serverError && (
                 <div>
-                  <p role="alert" className="text-sm text-danger">{serverError}</p>
+                  <p role="alert" className="text-sm text-danger">
+                    {serverError}
+                  </p>
                   <p className="mt-1 text-xs text-ink/40">{t('login.unverifiedHint')}</p>
                 </div>
               )}
@@ -145,11 +151,15 @@ export default function CaregiverLoginPage() {
           <div className="mt-6 space-y-1 border-t border-border pt-4 text-center text-xs text-ink/50">
             <p>
               {t('login.clientPrompt')}{' '}
-              <Link href="/login" className="font-medium text-brand-dark hover:underline">{t('login.clientLink')}</Link>
+              <Link href="/login" className="font-medium text-brand-dark hover:underline">
+                {t('login.clientLink')}
+              </Link>
             </p>
             <p>
               {t('login.staffPrompt')}{' '}
-              <a href="/staff/login" className="font-medium text-brand-dark hover:underline">{t('login.staffLink')}</a>
+              <a href="/staff/login" className="font-medium text-brand-dark hover:underline">
+                {t('login.staffLink')}
+              </a>
             </p>
           </div>
         </div>

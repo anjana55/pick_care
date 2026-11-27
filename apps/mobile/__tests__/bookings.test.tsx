@@ -81,7 +81,12 @@ const day = (over: Partial<ClientCareDay> = {}): ClientCareDay => ({
 });
 
 const client = () => tokenStore.set(tokensFor('PATIENT_GUARDIAN', { patientId: 'p-1' }));
-const show = () => render(<AppProviders><Bookings /></AppProviders>);
+const show = () =>
+  render(
+    <AppProviders>
+      <Bookings />
+    </AppProviders>,
+  );
 
 beforeEach(() => mockRouter.reset());
 
@@ -109,9 +114,25 @@ describe('bookings', () => {
   it('shows a draft the office asked the client to check, and sends their answer', async () => {
     await client();
     const proposal = (over: Partial<ClientBookingProposal> = {}): ClientBookingProposal => ({
-      id: 'p-1', reference: 'BK-CHECK', status: 'ASKED', scheduleType: 'DAY', daysOfWeek: [1, 2, 3, 4, 5], shiftStartTime: '08:00', shiftEndTime: '17:00',
-      startDate: '2026-11-16', endDate: '2026-11-29', shiftCount: 10, rateType: 'DAILY', rateAmount: '3450.00', billingTiming: 'ADVANCE', firstInvoice: null, caregiver: null,
-      askedAt: '2026-11-12T10:00:00.000Z', answeredAt: null, note: null, ...over,
+      id: 'p-1',
+      reference: 'BK-CHECK',
+      status: 'ASKED',
+      scheduleType: 'DAY',
+      daysOfWeek: [1, 2, 3, 4, 5],
+      shiftStartTime: '08:00',
+      shiftEndTime: '17:00',
+      startDate: '2026-11-16',
+      endDate: '2026-11-29',
+      shiftCount: 10,
+      rateType: 'DAILY',
+      rateAmount: '3450.00',
+      billingTiming: 'ADVANCE',
+      firstInvoice: null,
+      caregiver: null,
+      askedAt: '2026-11-12T10:00:00.000Z',
+      answeredAt: null,
+      note: null,
+      ...over,
     });
     let list = [proposal()];
     const calls = serveApi({
@@ -141,7 +162,9 @@ describe('bookings', () => {
     expect(screen.getByRole('button', { name: en.account.bookingCheck.send })).toBeDisabled();
     await fireEvent.changeText(box, ' Could the carer come at 9? ');
     await fireEvent.press(screen.getByRole('button', { name: en.account.bookingCheck.send }));
-    await waitFor(() => expect(calls.find((c) => c.route === 'POST /me/booking-proposals/p-1/request-changes')?.body).toEqual({ note: 'Could the carer come at 9?' }));
+    await waitFor(() =>
+      expect(calls.find((c) => c.route === 'POST /me/booking-proposals/p-1/request-changes')?.body).toEqual({ note: 'Could the carer come at 9?' }),
+    );
     expect(await screen.findByText(en.account.bookingCheck.title.CHANGES_REQUESTED)).toBeTruthy();
     expect(screen.getByText('Could the carer come at 9?')).toBeTruthy();
     expect(screen.queryByRole('button', { name: en.account.bookingCheck.accept })).toBeNull();
@@ -154,11 +177,28 @@ describe('bookings', () => {
       'GET /me/bookings': () => ({ status: 200, body: [] }),
       'GET /me/booking-proposals': () => ({
         status: 200,
-        body: [{
-          id: 'p-9', reference: 'BK-PAY', status: 'ACCEPTED', scheduleType: 'DAY', daysOfWeek: [1, 2, 3, 4, 5], shiftStartTime: '08:00', shiftEndTime: '17:00',
-          startDate: '2026-12-10', endDate: '2027-01-20', shiftCount: 30, rateType: 'DAILY', rateAmount: '3500.00', billingTiming: 'ADVANCE', firstInvoice: invoice, caregiver: null,
-          askedAt: '2026-11-12T10:00:00.000Z', answeredAt: '2026-11-12T11:00:00.000Z', note: null,
-        }],
+        body: [
+          {
+            id: 'p-9',
+            reference: 'BK-PAY',
+            status: 'ACCEPTED',
+            scheduleType: 'DAY',
+            daysOfWeek: [1, 2, 3, 4, 5],
+            shiftStartTime: '08:00',
+            shiftEndTime: '17:00',
+            startDate: '2026-12-10',
+            endDate: '2027-01-20',
+            shiftCount: 30,
+            rateType: 'DAILY',
+            rateAmount: '3500.00',
+            billingTiming: 'ADVANCE',
+            firstInvoice: invoice,
+            caregiver: null,
+            askedAt: '2026-11-12T10:00:00.000Z',
+            answeredAt: '2026-11-12T11:00:00.000Z',
+            note: null,
+          },
+        ],
       }),
       'GET /me/care': () => ({ status: 200, body: day({ hasCarePlans: false }) }),
     });
@@ -171,11 +211,28 @@ describe('bookings', () => {
 
   it('records the client accepting a draft, and shows an overnight plan the right way', async () => {
     await client();
-    let list: ClientBookingProposal[] = [{
-      id: 'p-2', reference: 'BK-NIGHT', status: 'ASKED', scheduleType: 'NIGHT', daysOfWeek: [1, 2, 3, 4, 5, 6, 7], shiftStartTime: '20:00', shiftEndTime: '08:00',
-      startDate: '2026-11-13', endDate: '2026-11-26', shiftCount: 14, rateType: null, rateAmount: null, billingTiming: 'AFTER', firstInvoice: null, caregiver: null,
-      askedAt: '2026-11-12T10:00:00.000Z', answeredAt: null, note: null,
-    }];
+    let list: ClientBookingProposal[] = [
+      {
+        id: 'p-2',
+        reference: 'BK-NIGHT',
+        status: 'ASKED',
+        scheduleType: 'NIGHT',
+        daysOfWeek: [1, 2, 3, 4, 5, 6, 7],
+        shiftStartTime: '20:00',
+        shiftEndTime: '08:00',
+        startDate: '2026-11-13',
+        endDate: '2026-11-26',
+        shiftCount: 14,
+        rateType: null,
+        rateAmount: null,
+        billingTiming: 'AFTER',
+        firstInvoice: null,
+        caregiver: null,
+        askedAt: '2026-11-12T10:00:00.000Z',
+        answeredAt: null,
+        note: null,
+      },
+    ];
     const calls = serveApi({
       'GET /me/bookings': () => ({ status: 200, body: [] }),
       'GET /me/booking-proposals': () => ({ status: 200, body: list }),
@@ -197,8 +254,17 @@ describe('bookings', () => {
 
   it('shows the arrival code for a visit about to start, and when the caregiver came and went', async () => {
     await client();
-    const visit = (id: string, startsAt: string, v: { arrivalCode: string | null; checkedInAt: string | null; checkedOutAt: string | null, onTheWay: false } | null) => ({
-      id, startsAt, endsAt: startsAt.replace('T02:30', 'T11:30'), status: 'SCHEDULED' as const, isCover: false, visit: v,
+    const visit = (
+      id: string,
+      startsAt: string,
+      v: { arrivalCode: string | null; checkedInAt: string | null; checkedOutAt: string | null; onTheWay: false } | null,
+    ) => ({
+      id,
+      startsAt,
+      endsAt: startsAt.replace('T02:30', 'T11:30'),
+      status: 'SCHEDULED' as const,
+      isCover: false,
+      visit: v,
     });
     serveApi({
       'GET /me/bookings': () => ({
@@ -207,7 +273,12 @@ describe('bookings', () => {
           booking({
             shifts: [
               visit('s-in', '2026-11-04T02:30:00.000Z', { arrivalCode: null, checkedInAt: '2026-11-04T02:29:00.000Z', checkedOutAt: null, onTheWay: false }),
-              visit('s-done', '2026-11-05T02:30:00.000Z', { arrivalCode: null, checkedInAt: '2026-11-05T02:33:00.000Z', checkedOutAt: '2026-11-05T11:31:00.000Z', onTheWay: false }),
+              visit('s-done', '2026-11-05T02:30:00.000Z', {
+                arrivalCode: null,
+                checkedInAt: '2026-11-05T02:33:00.000Z',
+                checkedOutAt: '2026-11-05T11:31:00.000Z',
+                onTheWay: false,
+              }),
               visit('s-soon', '2026-11-06T02:30:00.000Z', { arrivalCode: '0482', checkedInAt: null, checkedOutAt: null, onTheWay: false }),
               visit('s-off', '2026-11-07T02:30:00.000Z', null),
             ],
@@ -257,7 +328,9 @@ describe('today’s care', () => {
       'PUT /me/care/records': (body) => {
         current = {
           ...current,
-          items: current.items.map((i) => (i.activityId === body.activityId ? { ...i, status: body.status as 'DONE', source: 'CLIENT', reason: (body.reason as string) ?? null } : i)),
+          items: current.items.map((i) =>
+            i.activityId === body.activityId ? { ...i, status: body.status as 'DONE', source: 'CLIENT', reason: (body.reason as string) ?? null } : i,
+          ),
         };
         return { status: 200, body: current };
       },
@@ -298,7 +371,10 @@ describe('today’s care', () => {
             shift({
               locked: true,
               canMark: false,
-              items: [item({ status: 'DONE', source: 'AUTO' }), item({ activityId: 'a-2', title: 'Short walk', status: 'NOT_DONE', source: 'CLIENT', reason: 'Rain' })],
+              items: [
+                item({ status: 'DONE', source: 'AUTO' }),
+                item({ activityId: 'a-2', title: 'Short walk', status: 'NOT_DONE', source: 'CLIENT', reason: 'Rain' }),
+              ],
             }),
           ],
         }),
@@ -367,9 +443,24 @@ describe('today’s care', () => {
 // app went on showing the dates it had loaded before - it never fetched again.
 describe('a draft changed while the app is open', () => {
   const proposal = (startDate: string): ClientBookingProposal => ({
-    id: 'p-5', reference: 'BK-EARLY', status: 'ASKED', scheduleType: 'DAY', daysOfWeek: [1, 2, 3, 4, 5, 6, 7], shiftStartTime: '08:00', shiftEndTime: '17:00',
-    startDate, endDate: '2026-12-20', shiftCount: 10, rateType: 'DAILY', rateAmount: '3500.00', billingTiming: 'AFTER', firstInvoice: null, caregiver: null,
-    askedAt: '2026-11-26T06:00:00.000Z', answeredAt: null, note: null,
+    id: 'p-5',
+    reference: 'BK-EARLY',
+    status: 'ASKED',
+    scheduleType: 'DAY',
+    daysOfWeek: [1, 2, 3, 4, 5, 6, 7],
+    shiftStartTime: '08:00',
+    shiftEndTime: '17:00',
+    startDate,
+    endDate: '2026-12-20',
+    shiftCount: 10,
+    rateType: 'DAILY',
+    rateAmount: '3500.00',
+    billingTiming: 'AFTER',
+    firstInvoice: null,
+    caregiver: null,
+    askedAt: '2026-11-26T06:00:00.000Z',
+    answeredAt: null,
+    note: null,
   });
   const dates = (start: string) => new RegExp(`^${formatDate(start, 'en')} – `);
 

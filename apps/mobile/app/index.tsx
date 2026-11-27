@@ -66,8 +66,18 @@ export default function Welcome() {
 
         <View style={[styles.path, styles.signIn]}>
           <Text style={styles.pathLabel}>{t('welcome.haveAccount')}</Text>
-          <Button variant="secondary" icon="log-in-outline" label={t('signIn.client')} onPress={() => router.push({ pathname: '/sign-in', params: { role: 'client' } })} />
-          <Button variant="secondary" icon="medkit-outline" label={t('signIn.caregiver')} onPress={() => router.push({ pathname: '/sign-in', params: { role: 'caregiver' } })} />
+          <Button
+            variant="secondary"
+            icon="log-in-outline"
+            label={t('signIn.client')}
+            onPress={() => router.push({ pathname: '/sign-in', params: { role: 'client' } })}
+          />
+          <Button
+            variant="secondary"
+            icon="medkit-outline"
+            label={t('signIn.caregiver')}
+            onPress={() => router.push({ pathname: '/sign-in', params: { role: 'caregiver' } })}
+          />
         </View>
       </View>
     </ScrollView>

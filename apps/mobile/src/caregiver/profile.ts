@@ -45,7 +45,14 @@ export function contactDetailsOf(c: OwnCaregiver): ContactDetails {
  * What's wrong, as message keys under personalInfo.validation (the website's
  * messages): field → 'required' | 'invalid'. Empty when the form can be saved.
  */
-export function problemsIn(v: ContactDetails): Partial<Record<'permanentAddress' | 'district' | 'city' | 'secondaryPhone' | 'emergencyContactName' | 'emergencyContactNumber' | 'emergencyContactRelationship', 'required' | 'invalid'>> {
+export function problemsIn(
+  v: ContactDetails,
+): Partial<
+  Record<
+    'permanentAddress' | 'district' | 'city' | 'secondaryPhone' | 'emergencyContactName' | 'emergencyContactNumber' | 'emergencyContactRelationship',
+    'required' | 'invalid'
+  >
+> {
   const problems: ReturnType<typeof problemsIn> = {};
   const text = (field: 'permanentAddress' | 'emergencyContactName' | 'emergencyContactRelationship', min: number) => {
     const value = v[field].trim();

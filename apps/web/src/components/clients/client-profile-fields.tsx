@@ -56,30 +56,18 @@ export function ClientProfileFields({
   // order; a plain .sort() orders by code point, which puts them in an order no
   // Sinhala or Tamil reader would recognise.
   const districts = useMemo(
-    () =>
-      (locationTree ?? [])
-        .flatMap((p) => p.districts)
-        .sort((a, b) => a.name.localeCompare(b.name, locale)),
+    () => (locationTree ?? []).flatMap((p) => p.districts).sort((a, b) => a.name.localeCompare(b.name, locale)),
     [locationTree, locale],
   );
 
-  const { data: districtCities = [] } = useCities(
-    selectedDistrictId === '' ? null : Number(selectedDistrictId),
-    locale,
-  );
+  const { data: districtCities = [] } = useCities(selectedDistrictId === '' ? null : Number(selectedDistrictId), locale);
 
-  const cities = useMemo(
-    () => [...districtCities].sort((a, b) => a.name.localeCompare(b.name, locale)),
-    [districtCities, locale],
-  );
+  const cities = useMemo(() => [...districtCities].sort((a, b) => a.name.localeCompare(b.name, locale)), [districtCities, locale]);
 
   // Shown read-only under the city dropdown rather than typed into it: 47 of
   // the postcodes carry a leading zero and 101 of the 2155 cities have none, so
   // this renders as a blank line in the latter case rather than an error.
-  const selectedCity = useMemo(
-    () => districtCities.find((c) => String(c.id) === String(selectedCityId)),
-    [districtCities, selectedCityId],
-  );
+  const selectedCity = useMemo(() => districtCities.find((c) => String(c.id) === String(selectedCityId)), [districtCities, selectedCityId]);
 
   const genderOptions = [
     { value: '', label: t('personalInfo.options.select') },
@@ -98,7 +86,9 @@ export function ClientProfileFields({
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="sm:col-span-2">
-          <Label htmlFor="fullName" required>{t('personalInfo.fields.fullName')}</Label>
+          <Label htmlFor="fullName" required>
+            {t('personalInfo.fields.fullName')}
+          </Label>
           <Input id="fullName" {...register('fullName')} />
           <FieldError message={errors.fullName?.message as string | undefined} />
         </div>
@@ -213,13 +203,7 @@ export function ClientProfileFields({
             name="cityId"
             control={control}
             render={({ field }) => (
-              <Select
-                id="city"
-                ref={field.ref}
-                value={field.value ?? ''}
-                onChange={field.onChange}
-                disabled={!selectedDistrictId}
-              >
+              <Select id="city" ref={field.ref} value={field.value ?? ''} onChange={field.onChange} disabled={!selectedDistrictId}>
                 <option value="">{t('personalInfo.options.select')}</option>
                 {cities.map((c) => (
                   // 16 of the cities carry a second name in the source data;
@@ -236,9 +220,7 @@ export function ClientProfileFields({
           {/* Derived from the selected city by the API, so shown rather than
               submitted. A district with no city picked has nothing to show. */}
           <p className="mt-1 text-xs text-ink/60" aria-live="polite">
-            {selectedCity?.postcode
-              ? `${t('personalInfo.fields.postalCode')}: ${selectedCity.postcode}`
-              : ''}
+            {selectedCity?.postcode ? `${t('personalInfo.fields.postalCode')}: ${selectedCity.postcode}` : ''}
           </p>
         </div>
 

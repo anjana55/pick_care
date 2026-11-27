@@ -80,7 +80,9 @@ export class AutomationEndpointsService {
   async list(): Promise<AutomationEndpoint[]> {
     const [rows, functions] = await Promise.all([
       this.db.select().from(automationEndpoints).orderBy(asc(automationEndpoints.name)),
-      this.db.select({ key: automationFunctions.key, endpointId: automationFunctions.endpointId, fallbackEndpointId: automationFunctions.fallbackEndpointId }).from(automationFunctions),
+      this.db
+        .select({ key: automationFunctions.key, endpointId: automationFunctions.endpointId, fallbackEndpointId: automationFunctions.fallbackEndpointId })
+        .from(automationFunctions),
     ]);
     return rows.map((row) => {
       const { apiKey, ...e } = this.resolve(row);
@@ -125,7 +127,14 @@ export class AutomationEndpointsService {
     let apiKey = input.apiKey?.trim() || null;
     if (input.copyDefault) {
       const d = await this.aiSettings.getResolved();
-      base = { provider: d.provider, baseUrl: d.baseUrl, model: d.model, temperature: d.temperature === null ? null : d.temperature.toFixed(2), maxTokens: d.maxTokens, timeoutMs: d.timeoutMs };
+      base = {
+        provider: d.provider,
+        baseUrl: d.baseUrl,
+        model: d.model,
+        temperature: d.temperature === null ? null : d.temperature.toFixed(2),
+        maxTokens: d.maxTokens,
+        timeoutMs: d.timeoutMs,
+      };
       apiKey = apiKey ?? d.apiKey;
     }
     const values = { ...base, ...this.clean(input) };
@@ -161,7 +170,11 @@ export class AutomationEndpointsService {
       .update(automationEndpoints)
       .set({
         ...changes,
-        ...(input.clearApiKey ? { apiKeyEncrypted: null } : input.apiKey?.trim() ? { apiKeyEncrypted: encryptSecret(input.apiKey.trim(), this.encryptionKey) } : {}),
+        ...(input.clearApiKey
+          ? { apiKeyEncrypted: null }
+          : input.apiKey?.trim()
+            ? { apiKeyEncrypted: encryptSecret(input.apiKey.trim(), this.encryptionKey) }
+            : {}),
         updatedBy: userId,
         updatedAt: new Date(),
       })

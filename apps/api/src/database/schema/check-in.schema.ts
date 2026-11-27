@@ -27,8 +27,12 @@ export const checkInSettings = mysqlTable('check_in_settings', {
   presenceAwayPoints: int('presence_away_points').notNull().default(2),
   presenceSilentMultiplier: int('presence_silent_multiplier').notNull().default(2),
   updatedBy: varchar('updated_by', { length: 36 }),
-  createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+  createdAt: datetime('created_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: datetime('updated_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const checkInByEnum = ['CAREGIVER', 'STAFF'] as const;
@@ -75,8 +79,12 @@ export const shiftCheckins = mysqlTable(
     outDistanceM: int('out_distance_m'),
     outMocked: boolean('out_mocked').notNull().default(false),
 
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     // "Where did earlier visits on this booking check in?"

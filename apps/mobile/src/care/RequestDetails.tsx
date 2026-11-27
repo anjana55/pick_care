@@ -31,7 +31,8 @@ export function RequestDetails({ request }: { request: ClientCareRequest }) {
   const cities = useCities(needs('AREA') ? districtId : null, locale);
   if (!request.detailsNeeded?.length) return null;
 
-  const missing = (needs('CARE_TYPE') && !careType) || (needs('AREA') && !districtId) || (needs('SCHEDULE') && !schedule) || (needs('START_DATE') && !startDate);
+  const missing =
+    (needs('CARE_TYPE') && !careType) || (needs('AREA') && !districtId) || (needs('SCHEDULE') && !schedule) || (needs('START_DATE') && !startDate);
   const send = () => {
     setTried(true);
     if (missing) return;
@@ -45,17 +46,34 @@ export function RequestDetails({ request }: { request: ClientCareRequest }) {
       },
     });
   };
-  const error = save.error instanceof ApiError && save.error.message ? save.error.message : save.error ? t('care.actionError') : tried && missing ? t('account.requests.details.fillAll') : null;
+  const error =
+    save.error instanceof ApiError && save.error.message
+      ? save.error.message
+      : save.error
+        ? t('care.actionError')
+        : tried && missing
+          ? t('account.requests.details.fillAll')
+          : null;
 
   return (
     <View testID="request-details" style={{ gap: 10, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 12, marginTop: 4 }}>
       <Text style={{ fontSize: 16, fontWeight: '700', color: colors.ink }}>{t('account.requests.details.title')}</Text>
       <Text style={{ fontSize: 14, color: colors.muted }}>{t('account.requests.details.why')}</Text>
       {needs('CARE_TYPE') ? (
-        <Chips label={t('account.requests.details.careType')} choices={careTypeValues.map((v) => ({ value: v, label: t(`careTypes.${v}`) }))} selected={careType ? [careType] : []} onToggle={setCareType} />
+        <Chips
+          label={t('account.requests.details.careType')}
+          choices={careTypeValues.map((v) => ({ value: v, label: t(`careTypes.${v}`) }))}
+          selected={careType ? [careType] : []}
+          onToggle={setCareType}
+        />
       ) : null}
       {needs('SCHEDULE') ? (
-        <Chips label={t('account.requests.details.schedule')} choices={SCHEDULES.map((v) => ({ value: v, label: t(`account.requests.details.schedules.${v}`) }))} selected={schedule ? [schedule] : []} onToggle={setSchedule} />
+        <Chips
+          label={t('account.requests.details.schedule')}
+          choices={SCHEDULES.map((v) => ({ value: v, label: t(`account.requests.details.schedules.${v}`) }))}
+          selected={schedule ? [schedule] : []}
+          onToggle={setSchedule}
+        />
       ) : null}
       {needs('AREA') ? (
         <>
@@ -80,7 +98,15 @@ export function RequestDetails({ request }: { request: ClientCareRequest }) {
         </>
       ) : null}
       {needs('START_DATE') ? (
-        <DateField label={t('normalSearch.startDate')} value={startDate} onChange={setStartDate} today={colomboToday()} min={colomboToday()} max={addDays(colomboToday(), 365)} none={t('calendar.choose')} />
+        <DateField
+          label={t('normalSearch.startDate')}
+          value={startDate}
+          onChange={setStartDate}
+          today={colomboToday()}
+          min={colomboToday()}
+          max={addDays(colomboToday(), 365)}
+          none={t('calendar.choose')}
+        />
       ) : null}
       <FormError message={error} />
       <Button label={t('account.requests.details.send')} busy={save.isPending} onPress={send} />

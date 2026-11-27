@@ -16,26 +16,24 @@ import { Input } from './input';
  * field toggles on its own: revealing the new password does not reveal the
  * confirmation, which keeps the confirmation a genuine re-typing check.
  */
-export const PasswordInput = forwardRef<HTMLInputElement, Omit<InputHTMLAttributes<HTMLInputElement>, 'type'>>(
-  ({ className, ...props }, ref) => {
-    const { t } = useTranslation();
-    const [visible, setVisible] = useState(false);
-    const label = visible ? t('common.hidePassword') : t('common.showPassword');
-    return (
-      <div className="relative">
-        <Input ref={ref} type={visible ? 'text' : 'password'} className={cn('pr-10', className)} {...props} />
-        <button
-          type="button"
-          onClick={() => setVisible((v) => !v)}
-          aria-label={label}
-          aria-pressed={visible}
-          title={label}
-          className="absolute inset-y-0 right-0 flex w-10 items-center justify-center rounded-r-DEFAULT text-ink/50 hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-        >
-          {visible ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
-        </button>
-      </div>
-    );
-  },
-);
+export const PasswordInput = forwardRef<HTMLInputElement, Omit<InputHTMLAttributes<HTMLInputElement>, 'type'>>(({ className, ...props }, ref) => {
+  const { t } = useTranslation();
+  const [visible, setVisible] = useState(false);
+  const label = visible ? t('common.hidePassword') : t('common.showPassword');
+  return (
+    <div className="relative">
+      <Input ref={ref} type={visible ? 'text' : 'password'} className={cn('pr-10', className)} {...props} />
+      <button
+        type="button"
+        onClick={() => setVisible((v) => !v)}
+        aria-label={label}
+        aria-pressed={visible}
+        title={label}
+        className="absolute inset-y-0 right-0 flex w-10 items-center justify-center rounded-r-DEFAULT text-ink/50 hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+      >
+        {visible ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
+      </button>
+    </div>
+  );
+});
 PasswordInput.displayName = 'PasswordInput';

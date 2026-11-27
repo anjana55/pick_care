@@ -1,11 +1,5 @@
 import { JwtService } from '@nestjs/jwt';
-import {
-  decodePublicAuthUser,
-  isTokenExpired,
-  loginPortalValues,
-  publicRoleValues,
-  type PublicLoginPortal,
-} from '@care-platform/shared';
+import { decodePublicAuthUser, isTokenExpired, loginPortalValues, publicRoleValues, type PublicLoginPortal } from '@care-platform/shared';
 import { userRoleEnum, type UserRole } from '../../database/schema';
 import { LOGIN_PORTALS, PORTAL_ROLES } from './login-portal';
 import type { JwtPayload } from '../../auth/strategies/jwt.strategy';
@@ -18,13 +12,10 @@ import type { JwtPayload } from '../../auth/strategies/jwt.strategy';
  */
 describe('shared sign-in rules agree with the API', () => {
   const jwt = new JwtService({ secret: 'test-secret' });
-  const sign = (payload: JwtPayload, expiresIn: string | number = '15m') =>
-    jwt.sign(payload, { expiresIn: expiresIn as never });
+  const sign = (payload: JwtPayload, expiresIn: string | number = '15m') => jwt.sign(payload, { expiresIn: expiresIn as never });
   // The API's own answer to "who may sign in outside the staff app" - the
   // expectation below comes from here, never from the shared list under test.
-  const servedOutsideStaff = new Set<UserRole>(
-    LOGIN_PORTALS.filter((p) => p !== 'staff').flatMap((p) => PORTAL_ROLES[p]),
-  );
+  const servedOutsideStaff = new Set<UserRole>(LOGIN_PORTALS.filter((p) => p !== 'staff').flatMap((p) => PORTAL_ROLES[p]));
 
   it('uses the shared list of portals', () => {
     expect(LOGIN_PORTALS).toBe(loginPortalValues);

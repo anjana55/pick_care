@@ -94,7 +94,12 @@ function ReadinessCard() {
     if (data) setForm(data);
   }, [data]);
 
-  if (isLoading || !form) return <Card id="readiness" title={t('portal.workAbroad.readiness.title')}>{isError ? <p className="text-sm text-danger">{t('portal.loadError')}</p> : <div className="h-24 animate-pulse rounded bg-paper" />}</Card>;
+  if (isLoading || !form)
+    return (
+      <Card id="readiness" title={t('portal.workAbroad.readiness.title')}>
+        {isError ? <p className="text-sm text-danger">{t('portal.loadError')}</p> : <div className="h-24 animate-pulse rounded bg-paper" />}
+      </Card>
+    );
 
   const set = (patch: Partial<OverseasReadiness>) => {
     setNotice(null);
@@ -147,7 +152,13 @@ function ReadinessCard() {
               ))}
             </ul>
           )}
-          <Select id="wa-country" value="" onChange={(e) => addCountry(e.target.value)} disabled={form.targetCountries.length >= MAX_TARGET_COUNTRIES} className="sm:w-72">
+          <Select
+            id="wa-country"
+            value=""
+            onChange={(e) => addCountry(e.target.value)}
+            disabled={form.targetCountries.length >= MAX_TARGET_COUNTRIES}
+            className="sm:w-72"
+          >
             <option value="">{t('portal.workAbroad.readiness.addCountry')}</option>
             {countries.sorted
               .filter((c) => !form.targetCountries.includes(c.code))
@@ -165,7 +176,9 @@ function ReadinessCard() {
             <Select
               id="wa-passport"
               value={form.passportHeld === null ? '' : form.passportHeld ? 'yes' : 'no'}
-              onChange={(e) => set({ passportHeld: e.target.value === '' ? null : e.target.value === 'yes', ...(e.target.value !== 'yes' ? { passportExpiry: null } : {}) })}
+              onChange={(e) =>
+                set({ passportHeld: e.target.value === '' ? null : e.target.value === 'yes', ...(e.target.value !== 'yes' ? { passportExpiry: null } : {}) })
+              }
             >
               <option value="">—</option>
               <option value="yes">{t('portal.workAbroad.readiness.yes')}</option>
@@ -185,7 +198,11 @@ function ReadinessCard() {
         </div>
         <p className="text-xs text-ink/50">{t('portal.workAbroad.readiness.passportNote')}</p>
 
-        {save.isError && <p role="alert" className="text-sm text-danger">{errorText(save.error, t('portal.saveError'))}</p>}
+        {save.isError && (
+          <p role="alert" className="text-sm text-danger">
+            {errorText(save.error, t('portal.saveError'))}
+          </p>
+        )}
         <div className="flex items-center gap-3">
           <Button type="submit" disabled={save.isPending}>
             {t('portal.workAbroad.save')}
@@ -216,7 +233,11 @@ function TrainingCard() {
     <Card id="training" title={t('portal.workAbroad.training.title')} intro={t('portal.workAbroad.training.intro')}>
       {isLoading && <div className="h-24 animate-pulse rounded bg-paper" />}
       {!isLoading && programmes.length === 0 && <p className="text-sm text-ink/60">{t('workAbroad.training.empty')}</p>}
-      {interest.isError && <p role="alert" className="mb-3 text-sm text-danger">{errorText(interest.error, t('portal.saveError'))}</p>}
+      {interest.isError && (
+        <p role="alert" className="mb-3 text-sm text-danger">
+          {errorText(interest.error, t('portal.saveError'))}
+        </p>
+      )}
       <div className="grid gap-4 sm:grid-cols-2">
         {programmes.map((p) => {
           const status = statusOf(p.id);
@@ -266,7 +287,14 @@ function EnrolmentProgress({ enrolment: e }: { enrolment: CaregiverTrainingEnrol
     <div className="mt-3 space-y-2">
       {e.status === 'ENROLLED' && e.progressPercent !== null && (
         <div className="flex items-center gap-2">
-          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-paper" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={e.progressPercent} aria-label={t('portal.workAbroad.training.progress', { n: e.progressPercent })}>
+          <div
+            className="h-1.5 flex-1 overflow-hidden rounded-full bg-paper"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={e.progressPercent}
+            aria-label={t('portal.workAbroad.training.progress', { n: e.progressPercent })}
+          >
             <div className="h-full rounded-full bg-brand" style={{ width: `${e.progressPercent}%` }} />
           </div>
           <span className="text-xs tabular-nums text-ink/60">{t('portal.workAbroad.training.progress', { n: e.progressPercent })}</span>
@@ -274,7 +302,10 @@ function EnrolmentProgress({ enrolment: e }: { enrolment: CaregiverTrainingEnrol
       )}
       {e.status === 'COMPLETED' && e.score !== null && <p className="text-xs text-ink/70">{t('portal.workAbroad.training.score', { n: e.score })}</p>}
       {e.status === 'COMPLETED' && e.certificate && !e.certificate.revoked && (
-        <Link href={`/caregiver/work-abroad/certificates/${e.id}`} className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand hover:text-brand-dark">
+        <Link
+          href={`/caregiver/work-abroad/certificates/${e.id}`}
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand hover:text-brand-dark"
+        >
           <ExternalLink className="h-3.5 w-3.5" aria-hidden />
           {t('portal.workAbroad.training.certificate')}
         </Link>
@@ -395,7 +426,14 @@ function SharedProfileCard() {
                 <ImagePlus className="h-8 w-8" aria-hidden />
               </span>
             )}
-            <input ref={fileInput} type="file" accept=".jpg,.jpeg,.png,.webp" className="sr-only" id="wa-photo" onChange={(e) => onPhoto(e.target.files?.[0])} />
+            <input
+              ref={fileInput}
+              type="file"
+              accept=".jpg,.jpeg,.png,.webp"
+              className="sr-only"
+              id="wa-photo"
+              onChange={(e) => onPhoto(e.target.files?.[0])}
+            />
             <label htmlFor="wa-photo" className="cursor-pointer text-sm font-medium text-brand hover:text-brand-dark">
               {settings.hasPhoto ? t('portal.workAbroad.share.changePhoto') : t('portal.workAbroad.share.addPhoto')}
             </label>
@@ -432,7 +470,14 @@ function SharedProfileCard() {
             </div>
             <div>
               <Label htmlFor="wa-bio">{t('portal.workAbroad.share.bio')}</Label>
-              <Textarea id="wa-bio" rows={5} value={bio} onChange={(e) => setBio(e.target.value)} maxLength={SHARED_PROFILE_LIMITS.bio} placeholder={t('portal.workAbroad.share.bioPlaceholder')} />
+              <Textarea
+                id="wa-bio"
+                rows={5}
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                maxLength={SHARED_PROFILE_LIMITS.bio}
+                placeholder={t('portal.workAbroad.share.bioPlaceholder')}
+              />
               <p className="mt-1 flex justify-between gap-3 text-xs text-ink/50">
                 <span>{t('portal.workAbroad.share.bioHint')}</span>
                 <span>
@@ -447,7 +492,11 @@ function SharedProfileCard() {
           </form>
         </div>
 
-        {action.isError && <p role="alert" className="text-sm text-danger">{errorText(action.error, t('portal.saveError'))}</p>}
+        {action.isError && (
+          <p role="alert" className="text-sm text-danger">
+            {errorText(action.error, t('portal.saveError'))}
+          </p>
+        )}
         {notice && (
           <p role="status" className="flex items-center gap-1 text-sm text-brand-dark">
             <Check className="h-4 w-4" aria-hidden />
@@ -468,7 +517,12 @@ function SharedProfileCard() {
                     ))}
                   </ul>
                   <label className="mt-3 flex items-start gap-2.5 text-sm font-medium text-ink">
-                    <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 h-4 w-4 rounded border-border text-brand focus:ring-brand" />
+                    <input
+                      type="checkbox"
+                      checked={consent}
+                      onChange={(e) => setConsent(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 rounded border-border text-brand focus:ring-brand"
+                    />
                     {t('portal.workAbroad.share.consentAgree')}
                   </label>
                 </>
@@ -508,7 +562,11 @@ function SharedProfileCard() {
                       {copied ? t('talent.copied') : t('talent.copyLink')}
                     </Button>
                     {settings.isLive && (
-                      <Link href={`/talent/${settings.slug}`} target="_blank" className="inline-flex items-center gap-1 text-sm font-medium text-brand hover:text-brand-dark">
+                      <Link
+                        href={`/talent/${settings.slug}`}
+                        target="_blank"
+                        className="inline-flex items-center gap-1 text-sm font-medium text-brand hover:text-brand-dark"
+                      >
                         <ExternalLink className="h-4 w-4" aria-hidden />
                         {t('portal.workAbroad.share.view')}
                       </Link>
@@ -518,7 +576,13 @@ function SharedProfileCard() {
                 </div>
               )}
               <div className="flex flex-wrap gap-2">
-                <Button type="button" size="sm" variant="secondary" disabled={action.isPending} onClick={() => run({ kind: 'unshare' }, t('portal.workAbroad.share.pausedNotice'))}>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  disabled={action.isPending}
+                  onClick={() => run({ kind: 'unshare' }, t('portal.workAbroad.share.pausedNotice'))}
+                >
                   <Pause className="h-4 w-4" aria-hidden />
                   {t('portal.workAbroad.share.pause')}
                 </Button>
@@ -527,7 +591,9 @@ function SharedProfileCard() {
                   size="sm"
                   variant="ghost"
                   disabled={action.isPending}
-                  onClick={() => window.confirm(t('portal.workAbroad.share.newLinkConfirm')) && run({ kind: 'newLink' }, t('portal.workAbroad.share.newLinkNotice'))}
+                  onClick={() =>
+                    window.confirm(t('portal.workAbroad.share.newLinkConfirm')) && run({ kind: 'newLink' }, t('portal.workAbroad.share.newLinkNotice'))
+                  }
                 >
                   <Link2 className="h-4 w-4" aria-hidden />
                   {t('portal.workAbroad.share.newLink')}
@@ -541,7 +607,9 @@ function SharedProfileCard() {
               <button
                 type="button"
                 disabled={action.isPending}
-                onClick={() => window.confirm(t('portal.workAbroad.share.withdrawConfirm')) && run({ kind: 'withdrawConsent' }, t('portal.workAbroad.share.withdrawnNotice'))}
+                onClick={() =>
+                  window.confirm(t('portal.workAbroad.share.withdrawConfirm')) && run({ kind: 'withdrawConsent' }, t('portal.workAbroad.share.withdrawnNotice'))
+                }
                 className="inline-flex items-center gap-1.5 text-xs font-medium text-ink/60 hover:text-danger"
               >
                 <Trash2 className="h-3.5 w-3.5" aria-hidden />

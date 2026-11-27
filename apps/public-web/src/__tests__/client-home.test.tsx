@@ -59,7 +59,14 @@ describe('client home', () => {
       firstName: 'Amali',
       unreadBy: { REQUEST: 2 },
       todos: [
-        { key: 'invoice:1', kind: 'PAY_INVOICE', path: '/invoices/1', urgent: true, dueOn: '2026-11-01', params: { number: 'INV-7', amount: 'LKR 12,500.00', overdue: 1 } },
+        {
+          key: 'invoice:1',
+          kind: 'PAY_INVOICE',
+          path: '/invoices/1',
+          urgent: true,
+          dueOn: '2026-11-01',
+          params: { number: 'INV-7', amount: 'LKR 12,500.00', overdue: 1 },
+        },
         { key: 'care:1', kind: 'TICK_OFF_CARE', path: '/bookings', urgent: false, dueOn: null, params: { count: 3 } },
       ],
     });

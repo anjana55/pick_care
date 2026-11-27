@@ -31,7 +31,9 @@ export const socialAccounts = mysqlTable(
     // explain a later "email mismatch" rejection; users.email is the one the
     // app actually authenticates against.
     providerEmail: varchar('provider_email', { length: 255 }).notNull(),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     // One provider identity can never point at two users. Without this, an
@@ -73,7 +75,9 @@ export const authHandoffCodes = mysqlTable(
     // the app through its URL scheme, which another app could also claim; the
     // exchange then needs the verifier too (as OAuth's PKCE). Null on the web.
     codeChallenge: varchar('code_challenge', { length: 64 }),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     userIdx: index('auth_handoff_codes_user_idx').on(table.userId),
@@ -105,5 +109,7 @@ export const socialAuthProviderSettings = mysqlTable('social_auth_provider_setti
   // Facebook only: the Graph API version the app was created against.
   apiVersion: varchar('api_version', { length: 16 }),
   updatedBy: varchar('updated_by', { length: 36 }),
-  updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: datetime('updated_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
 });

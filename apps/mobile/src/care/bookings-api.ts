@@ -20,7 +20,11 @@ export function useMyBookings() {
 }
 
 export function visitSoon(bookings: ClientBooking[] | undefined, now = Date.now()): boolean {
-  return Boolean(bookings?.some((b) => b.shifts.some((s) => s.status === 'SCHEDULED' && !s.visit?.checkedInAt && Date.parse(s.startsAt) - now < 2 * 3_600_000 && Date.parse(s.endsAt) > now)));
+  return Boolean(
+    bookings?.some((b) =>
+      b.shifts.some((s) => s.status === 'SCHEDULED' && !s.visit?.checkedInAt && Date.parse(s.startsAt) - now < 2 * 3_600_000 && Date.parse(s.endsAt) > now),
+    ),
+  );
 }
 
 /** One day's checklist; null `date` is today (the API decides what today is, in Sri Lanka). */

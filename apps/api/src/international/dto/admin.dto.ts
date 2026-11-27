@@ -13,38 +13,60 @@ const blankToNull = ({ value }: { value: unknown }) => (typeof value === 'string
  */
 export class StaffEnquiryDto extends OmitType(CreateEmployerEnquiryDto, ['talentSlug', 'consent', 'website2', 'language'] as const) {
   /** The employer account it belongs to, if they have one. */
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @ValidateIf((_, v) => v !== null) @IsUUID()
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @ValidateIf((_, v) => v !== null)
+  @IsUUID()
   employerId?: string | null;
 
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @Transform(blankToNull) @ValidateIf((_, v) => v !== null) @IsString() @MaxLength(5000)
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @Transform(blankToNull)
+  @ValidateIf((_, v) => v !== null)
+  @IsString()
+  @MaxLength(5000)
   staffNote?: string | null;
 }
 
 /** An admin opening an employer account for an organisation, e.g. one met in person. */
 export class AdminCreateEmployerDto extends OmitType(UpdateEmployerAccountDto, [] as const) {
-  @ApiProperty() @Transform(trim) @IsEmail() @MaxLength(255)
+  @ApiProperty()
+  @Transform(trim)
+  @IsEmail()
+  @MaxLength(255)
   email!: string;
 
   /** Default true: email them a link to set their password (valid 24 hours). */
-  @ApiPropertyOptional({ default: true }) @IsOptional() @IsBoolean()
+  @ApiPropertyOptional({ default: true })
+  @IsOptional()
+  @IsBoolean()
   sendPasswordLink?: boolean;
 
   /** Default VERIFIED: an admin is creating it, so the organisation is known. */
-  @ApiPropertyOptional({ enum: ['VERIFIED', 'PENDING_REVIEW'] }) @IsOptional() @IsIn(['VERIFIED', 'PENDING_REVIEW'])
+  @ApiPropertyOptional({ enum: ['VERIFIED', 'PENDING_REVIEW'] })
+  @IsOptional()
+  @IsIn(['VERIFIED', 'PENDING_REVIEW'])
   status?: 'VERIFIED' | 'PENDING_REVIEW';
 }
 
 /** An admin correcting an employer account: any organisation detail, and the sign-in email. */
 export class AdminEditEmployerDto extends OmitType(UpdateEmployerAccountDto, [] as const) {
-  @ApiPropertyOptional() @IsOptional() @Transform(trim) @IsEmail() @MaxLength(255)
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(trim)
+  @IsEmail()
+  @MaxLength(255)
   email?: string;
 }
 
 /** Staff signing a caregiver up for a programme (they asked in person, or by phone). */
 export class EnrolCaregiverDto {
-  @ApiProperty() @IsUUID()
+  @ApiProperty()
+  @IsUUID()
   caregiverId!: string;
 
-  @ApiPropertyOptional({ enum: ['INTERESTED', 'ENROLLED'], default: 'ENROLLED' }) @IsOptional() @IsIn(['INTERESTED', 'ENROLLED'])
+  @ApiPropertyOptional({ enum: ['INTERESTED', 'ENROLLED'], default: 'ENROLLED' })
+  @IsOptional()
+  @IsIn(['INTERESTED', 'ENROLLED'])
   status?: 'INTERESTED' | 'ENROLLED';
 }

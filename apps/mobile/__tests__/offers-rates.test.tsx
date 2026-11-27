@@ -55,7 +55,10 @@ describe('job offers in the app', () => {
     const calls = serveApi({
       ...none,
       'GET /me/care-offers': () => ({ status: 200, body: [current] }),
-      [`POST /me/care-offers/${offer().id}/accept`]: () => ({ status: 200, body: [(current = offer({ status: 'ACCEPTED', respondedAt: '2026-11-11T10:30:00.000Z' }))] }),
+      [`POST /me/care-offers/${offer().id}/accept`]: () => ({
+        status: 200,
+        body: [(current = offer({ status: 'ACCEPTED', respondedAt: '2026-11-11T10:30:00.000Z' }))],
+      }),
     });
     await show(<Offers />);
 
@@ -100,12 +103,22 @@ describe('job offers in the app', () => {
   it('shows a cover offer as one shift with its day and time, and leads to the shift once taken', async () => {
     await caregiver();
     const cover = (over: Partial<CaregiverCareOffer> = {}) =>
-      offer({ kind: 'COVER', reference: 'BK-7HQ2', desiredStartDate: null, note: null, shift: { startsAt: '2026-11-16T03:00:00.000Z', endsAt: '2026-11-16T09:00:00.000Z' }, ...over });
+      offer({
+        kind: 'COVER',
+        reference: 'BK-7HQ2',
+        desiredStartDate: null,
+        note: null,
+        shift: { startsAt: '2026-11-16T03:00:00.000Z', endsAt: '2026-11-16T09:00:00.000Z' },
+        ...over,
+      });
     let current = cover();
     const calls = serveApi({
       ...none,
       'GET /me/care-offers': () => ({ status: 200, body: [current] }),
-      [`POST /me/care-offers/${offer().id}/accept`]: () => ({ status: 200, body: [(current = cover({ status: 'ACCEPTED', respondedAt: '2026-11-16T03:40:00.000Z' }))] }),
+      [`POST /me/care-offers/${offer().id}/accept`]: () => ({
+        status: 200,
+        body: [(current = cover({ status: 'ACCEPTED', respondedAt: '2026-11-16T03:40:00.000Z' }))],
+      }),
     });
     await show(<Offers />);
 
@@ -157,9 +170,21 @@ describe('your rates in the app', () => {
 
   it('shows the limits, what clients will see as you type, and saves only what changed', async () => {
     await caregiver();
-    const liveIn = line({ careType: 'LIVE_IN', pricing: { careType: 'LIVE_IN', enabled: true, rateType: 'MONTHLY', minRate: 60000, maxRate: 150000, feePercent: 12.5 }, amount: 85000, clientPrice: 95625 });
+    const liveIn = line({
+      careType: 'LIVE_IN',
+      pricing: { careType: 'LIVE_IN', enabled: true, rateType: 'MONTHLY', minRate: 60000, maxRate: 150000, feePercent: 12.5 },
+      amount: 85000,
+      clientPrice: 95625,
+    });
     const calls = serveApi({
-      [`GET /caregivers/${CG}/rates`]: () => ({ status: 200, body: card([line(), liveIn, line({ careType: 'HOSPITAL', pricing: { careType: 'HOSPITAL', enabled: false, rateType: 'DAILY', minRate: 0, maxRate: 0, feePercent: 0 } })]) }),
+      [`GET /caregivers/${CG}/rates`]: () => ({
+        status: 200,
+        body: card([
+          line(),
+          liveIn,
+          line({ careType: 'HOSPITAL', pricing: { careType: 'HOSPITAL', enabled: false, rateType: 'DAILY', minRate: 0, maxRate: 0, feePercent: 0 } }),
+        ]),
+      }),
       [`PUT /caregivers/${CG}/rates`]: () => ({ status: 200, body: card([line({ amount: 3000, clientPrice: 3450 }), liveIn]) }),
     });
     await show(<Rates />);
@@ -194,7 +219,12 @@ describe('your rates in the app', () => {
 
   it('says so when the office sets every rate', async () => {
     await caregiver();
-    serveApi({ [`GET /caregivers/${CG}/rates`]: () => ({ status: 200, body: card([line({ pricing: { careType: 'HOME_SHIFT', enabled: false, rateType: 'DAILY', minRate: 0, maxRate: 0, feePercent: 0 } })]) }) });
+    serveApi({
+      [`GET /caregivers/${CG}/rates`]: () => ({
+        status: 200,
+        body: card([line({ pricing: { careType: 'HOME_SHIFT', enabled: false, rateType: 'DAILY', minRate: 0, maxRate: 0, feePercent: 0 } })]),
+      }),
+    });
     await show(<Rates />);
     expect(await screen.findByText('For other kinds of care the office agrees the rate with you for each job.')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Save rates' })).toBeNull();

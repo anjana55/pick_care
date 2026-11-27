@@ -28,7 +28,8 @@ const DOCUMENTS: Record<string, Record<Lang, string>> = {
 
 export const documentName = (key: string | number | null | undefined, lang: Lang) => (DOCUMENTS[String(key)] ?? DOCUMENTS.OTHER)[lang];
 
-const fill = (s: string, vars: Record<string, string | number | null | undefined>) => s.replace(/\{(\w+)\}/g, (m, k: string) => (k === 'brand' ? m : String(vars[k] ?? '')));
+const fill = (s: string, vars: Record<string, string | number | null | undefined>) =>
+  s.replace(/\{(\w+)\}/g, (m, k: string) => (k === 'brand' ? m : String(vars[k] ?? '')));
 
 // --- a caregiver's document was checked ------------------------------------------------
 
@@ -134,7 +135,11 @@ const PHOTO_REVIEWED: Record<'APPROVED' | 'REJECTED', Record<Lang, PushText & { 
     ta: { title: 'புகைப்படம் அங்கீகரிக்கப்பட்டது', body: 'உங்கள் புதிய புகைப்படம் இப்போது உங்கள் பொது சுயவிவரத்தில் உள்ளது.' },
   },
   REJECTED: {
-    en: { title: 'Please choose another photo', body: 'Your photo could not be approved. Please upload a clear, recent photo of your face.', reason: 'Reason: {reason}' },
+    en: {
+      title: 'Please choose another photo',
+      body: 'Your photo could not be approved. Please upload a clear, recent photo of your face.',
+      reason: 'Reason: {reason}',
+    },
     si: {
       title: 'කරුණාකර වෙනත් ඡායාරූපයක් තෝරන්න',
       body: 'ඔබගේ ඡායාරූපය අනුමත කළ නොහැකි විය. කරුණාකර ඔබේ මුහුණේ පැහැදිලි, මෑත ඡායාරූපයක් උඩුගත කරන්න.',

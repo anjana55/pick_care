@@ -129,7 +129,9 @@ describe('tapping a notification', () => {
     await tokenStore.set(tokensFor('CAREGIVER'));
     const calls = serveApi({ 'POST /me/notifications/read': () => ({ status: 200, body: { marked: 1 } }) });
     await showApp(async () => null);
-    await act(async () => mockTapListeners.forEach((fn) => fn({ notification: { request: { content: { data: { path: '/documents', notificationId: 'n-7' } } } } })));
+    await act(async () =>
+      mockTapListeners.forEach((fn) => fn({ notification: { request: { content: { data: { path: '/documents', notificationId: 'n-7' } } } } })),
+    );
     expect(mockRouter.push).toHaveBeenCalledWith('/documents');
     await waitFor(() => expect(calls.find((c) => c.route === 'POST /me/notifications/read')?.body).toEqual({ ids: ['n-7'] }));
   });
@@ -190,6 +192,7 @@ describe('where push works', () => {
     expect(caregiver('/care-offers')).toBe('/offers');
     expect(caregiver('/notifications')).toBe('/notifications');
     // Client-only screens are never opened for a caregiver.
-    for (const p of ['/invoices', '/invoices/9e0c1b2a-0000-4000-8000-000000000000', '/bookings/9e0c1b2a-0000-4000-8000-000000000000/rate/CG-1']) expect(caregiver(p)).toBe('/home');
+    for (const p of ['/invoices', '/invoices/9e0c1b2a-0000-4000-8000-000000000000', '/bookings/9e0c1b2a-0000-4000-8000-000000000000/rate/CG-1'])
+      expect(caregiver(p)).toBe('/home');
   });
 });

@@ -30,7 +30,9 @@ describe('a request after the session has ended', () => {
 
   it('signs the visitor out and says the session expired, not "Unauthorized"', async () => {
     storeTokens({ accessToken: 'old-access', refreshToken: 'dead-refresh' });
-    fetchMock.mockImplementation((url: string) => (String(url).endsWith('/auth/refresh') ? respond(401, { message: 'Invalid refresh token' }) : respond(401, { message: 'Unauthorized' })));
+    fetchMock.mockImplementation((url: string) =>
+      String(url).endsWith('/auth/refresh') ? respond(401, { message: 'Invalid refresh token' }) : respond(401, { message: 'Unauthorized' }),
+    );
     const expired = jest.fn();
     window.addEventListener(SESSION_EXPIRED_EVENT, expired);
 
@@ -45,7 +47,7 @@ describe('a request after the session has ended', () => {
     window.removeEventListener(SESSION_EXPIRED_EVENT, expired);
   });
 
-  it('answers in the visitor\'s language', async () => {
+  it("answers in the visitor's language", async () => {
     window.localStorage.setItem('care-platform-public-locale', 'si');
     storeTokens({ accessToken: 'old-access', refreshToken: 'dead-refresh' });
     fetchMock.mockImplementation(() => respond(401));

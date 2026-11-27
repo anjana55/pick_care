@@ -30,12 +30,7 @@ export class QualificationsController {
   @Patch(':id')
   @CaregiverScope()
   @Audit({ action: 'UPDATE_QUALIFICATION', entityType: 'Qualification' })
-  update(
-    @Param('caregiverId') caregiverId: string,
-    @Param('id') id: string,
-    @Body() dto: UpdateQualificationDto,
-    @CurrentUser() user: AuthenticatedUser,
-  ) {
+  update(@Param('caregiverId') caregiverId: string, @Param('id') id: string, @Body() dto: UpdateQualificationDto, @CurrentUser() user: AuthenticatedUser) {
     return this.qualificationsService.update(caregiverId, id, dto, user.role);
   }
 

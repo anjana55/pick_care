@@ -72,7 +72,11 @@ export function RecordSection({
     setErrors(next);
     if (Object.keys(next).length) return;
     // Blank optional fields are left out: dates and numbers cannot be '' on the API.
-    const body = Object.fromEntries(Object.entries(editing.values).filter(([, v]) => v.trim() !== '').map(([k, v]) => [k, v.trim()]));
+    const body = Object.fromEntries(
+      Object.entries(editing.values)
+        .filter(([, v]) => v.trim() !== '')
+        .map(([k, v]) => [k, v.trim()]),
+    );
     try {
       await onSave(body, editing.id);
       setEditing(null);
@@ -143,11 +147,15 @@ export function RecordSection({
               };
               return (
                 <div key={f.name} className={f.wide || f.type === 'textarea' ? 'sm:col-span-2' : undefined}>
-                  <Label htmlFor={id} required={f.required}>{t(`${i18n}.fields.${f.name}`)}</Label>
+                  <Label htmlFor={id} required={f.required}>
+                    {t(`${i18n}.fields.${f.name}`)}
+                  </Label>
                   {f.type === 'select' ? (
                     <Select id={id} value={value} onChange={(e) => set(e.target.value)}>
                       {f.options!.map((o) => (
-                        <option key={o} value={o}>{t(`${f.optionLabelPrefix}.${o}`)}</option>
+                        <option key={o} value={o}>
+                          {t(`${f.optionLabelPrefix}.${o}`)}
+                        </option>
                       ))}
                     </Select>
                   ) : f.type === 'textarea' ? (
@@ -160,15 +168,31 @@ export function RecordSection({
               );
             })}
           </div>
-          {editingVerified && <p role="status" className="mt-3 text-xs text-amber-700">{t('portal.editResetsVerification')}</p>}
-          {serverError && <p role="alert" className="mt-3 text-sm text-danger">{serverError}</p>}
+          {editingVerified && (
+            <p role="status" className="mt-3 text-xs text-amber-700">
+              {t('portal.editResetsVerification')}
+            </p>
+          )}
+          {serverError && (
+            <p role="alert" className="mt-3 text-sm text-danger">
+              {serverError}
+            </p>
+          )}
           <div className="mt-4 flex gap-3">
-            <Button type="submit" disabled={saving}>{saving ? t('common.loading') : t('common.save')}</Button>
-            <Button type="button" variant="secondary" onClick={() => setEditing(null)}>{t('common.cancel')}</Button>
+            <Button type="submit" disabled={saving}>
+              {saving ? t('common.loading') : t('common.save')}
+            </Button>
+            <Button type="button" variant="secondary" onClick={() => setEditing(null)}>
+              {t('common.cancel')}
+            </Button>
           </div>
         </form>
       )}
-      {!editing && serverError && <p role="alert" className="mt-3 text-sm text-danger">{serverError}</p>}
+      {!editing && serverError && (
+        <p role="alert" className="mt-3 text-sm text-danger">
+          {serverError}
+        </p>
+      )}
     </section>
   );
 }

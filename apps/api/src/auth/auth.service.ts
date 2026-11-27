@@ -11,11 +11,7 @@ import { RegisterCaregiverDto } from './dto/register-caregiver.dto';
 import { canUsePortal, WrongPortalException, type LoginPortal } from '../common/auth/login-portal';
 import { RegisterPatientDto } from './dto/register-patient.dto';
 import { RegisterEmployerDto } from './dto/register-employer.dto';
-import {
-  generateRegistrationNumber,
-  assertUniqueContactFields,
-  selfRegisteredCaregiverValues,
-} from '../caregivers/caregiver-creation.util';
+import { generateRegistrationNumber, assertUniqueContactFields, selfRegisteredCaregiverValues } from '../caregivers/caregiver-creation.util';
 import { resolveLocationRefs } from '../common/utils/location.util';
 import { EmailService } from '../email/email.service';
 import { WhatsappSettingsService } from '../whatsapp/whatsapp-settings.service';
@@ -33,7 +29,6 @@ const VERIFICATION_TOKEN_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 @Injectable()
 export class AuthService {
-
   constructor(
     @Inject(DRIZZLE) private readonly db: Database,
     private readonly jwtService: JwtService,
@@ -305,11 +300,7 @@ export class AuthService {
    */
   async verifyEmail(token: string): Promise<{ accessToken: string; refreshToken: string } | { alreadyVerified: true; role: UserRole }> {
     const tokenHash = this.hashToken(token);
-    const [record] = await this.db
-      .select()
-      .from(emailVerificationTokens)
-      .where(eq(emailVerificationTokens.tokenHash, tokenHash))
-      .limit(1);
+    const [record] = await this.db.select().from(emailVerificationTokens).where(eq(emailVerificationTokens.tokenHash, tokenHash)).limit(1);
 
     if (record?.usedAt) {
       const [owner] = await this.db
@@ -548,5 +539,4 @@ export class AuthService {
   private frontendUrl(_role: UserRole): string {
     return (this.config.get<string>('PUBLIC_WEB_URL') ?? 'http://localhost:3002').replace(/\/+$/, '');
   }
-
 }

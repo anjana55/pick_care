@@ -55,10 +55,21 @@ export class PayoutsService {
     if (query.caregiverId) conditions.push(eq(payoutStatements.caregiverId, query.caregiverId));
     if (query.search?.trim()) {
       const term = `%${query.search.trim()}%`;
-      conditions.push(or(like(payoutStatements.reference, term), like(caregivers.fullName, term), like(caregivers.registrationNumber, term), ...caregiverRefCondition(query.search))!);
+      conditions.push(
+        or(
+          like(payoutStatements.reference, term),
+          like(caregivers.fullName, term),
+          like(caregivers.registrationNumber, term),
+          ...caregiverRefCondition(query.search),
+        )!,
+      );
     }
     const where = conditions.length ? and(...conditions) : undefined;
-    const [{ total }] = await this.db.select({ total: count() }).from(payoutStatements).innerJoin(caregivers, eq(payoutStatements.caregiverId, caregivers.id)).where(where);
+    const [{ total }] = await this.db
+      .select({ total: count() })
+      .from(payoutStatements)
+      .innerJoin(caregivers, eq(payoutStatements.caregiverId, caregivers.id))
+      .where(where);
     const rows = await this.db
       .select({
         id: payoutStatements.id,
@@ -126,7 +137,8 @@ export class PayoutsService {
     ]);
     const names = new Map<string, { id: string; fullName: string }>();
     const ids = [p.createdByUserId, p.approvedByUserId, p.paidByUserId].filter((v): v is string => Boolean(v));
-    if (ids.length) for (const u of await this.db.select({ id: users.id, fullName: users.fullName }).from(users).where(inArray(users.id, ids))) names.set(u.id, u);
+    if (ids.length)
+      for (const u of await this.db.select({ id: users.id, fullName: users.fullName }).from(users).where(inArray(users.id, ids))) names.set(u.id, u);
     const totals = computeTotals({ lines: lines.map((l) => ({ ...l.line, taxable: false })) });
     const accounts = await this.bankAccounts.labels([p.bankAccountId]);
     return {
@@ -192,7 +204,15 @@ export class PayoutsService {
           .select({ shiftId: payoutLines.shiftId })
           .from(payoutLines)
           .innerJoin(payoutStatements, eq(payoutLines.statementId, payoutStatements.id))
-          .where(and(inArray(payoutLines.shiftId, shifts.map((s) => s.id)), ne(payoutStatements.status, 'VOID')))
+          .where(
+            and(
+              inArray(
+                payoutLines.shiftId,
+                shifts.map((s) => s.id),
+              ),
+              ne(payoutStatements.status, 'VOID'),
+            ),
+          )
       ).map((r) => r.shiftId!),
     );
     const paidPeriods: BilledPeriod[] = (
@@ -232,9 +252,24 @@ export class PayoutsService {
    */
   async previewCaregiver(caregiverId: string, from: string, to: string) {
     const built = await this.linesFor(this.db, caregiverId, from, to, 0);
-    const carried = await openAdjustmentLines(this.db, { side: 'CAREGIVER', partyId: caregiverId, language: 'en', startAt: built.lines.length, baseCents: linesCents(built.lines) });
-    const days = built.lines.map((l) => l.serviceDate ?? l.periodStart).filter((d): d is string => Boolean(d)).sort();
-    return { lines: built.lines.length, corrections: carried.length, unpriced: built.unpriced, totalCents: linesCents([...built.lines, ...carried]), earliest: days[0] ?? null };
+    const carried = await openAdjustmentLines(this.db, {
+      side: 'CAREGIVER',
+      partyId: caregiverId,
+      language: 'en',
+      startAt: built.lines.length,
+      baseCents: linesCents(built.lines),
+    });
+    const days = built.lines
+      .map((l) => l.serviceDate ?? l.periodStart)
+      .filter((d): d is string => Boolean(d))
+      .sort();
+    return {
+      lines: built.lines.length,
+      corrections: carried.length,
+      unpriced: built.unpriced,
+      totalCents: linesCents([...built.lines, ...carried]),
+      earliest: days[0] ?? null,
+    };
   }
 
   async insertLines(db: Tx, statementId: string, lines: StoredLine[]) {
@@ -263,16 +298,32 @@ export class PayoutsService {
 
   async create(dto: CreatePayoutDto, actor: AuthenticatedUser) {
     this.validatePeriod(dto.periodStart, dto.periodEnd);
-    const [cg] = await this.db.select({ id: caregivers.id }).from(caregivers).where(and(eq(caregivers.id, dto.caregiverId), isNull(caregivers.deletedAt))).limit(1);
+    const [cg] = await this.db
+      .select({ id: caregivers.id })
+      .from(caregivers)
+      .where(and(eq(caregivers.id, dto.caregiverId), isNull(caregivers.deletedAt)))
+      .limit(1);
     if (!cg) throw new NotFoundException('Caregiver not found');
     const id = uuid();
     let generated = { added: 0, skipped: 0, unpriced: 0 };
     await this.db.transaction(async (tx) => {
       const t = tx as unknown as Tx;
       const built = await this.linesFor(t, dto.caregiverId, dto.periodStart, dto.periodEnd, 0);
-      const carried = await openAdjustmentLines(t, { side: 'CAREGIVER', partyId: dto.caregiverId, language: 'en', startAt: built.lines.length, baseCents: linesCents(built.lines) });
+      const carried = await openAdjustmentLines(t, {
+        side: 'CAREGIVER',
+        partyId: dto.caregiverId,
+        language: 'en',
+        startAt: built.lines.length,
+        baseCents: linesCents(built.lines),
+      });
       generated = { added: built.lines.length, skipped: built.skipped, unpriced: built.unpriced };
-      await this.insertStatement(t, { id, caregiverId: dto.caregiverId, periodStart: dto.periodStart, periodEnd: dto.periodEnd, createdByUserId: actor.userId });
+      await this.insertStatement(t, {
+        id,
+        caregiverId: dto.caregiverId,
+        periodStart: dto.periodStart,
+        periodEnd: dto.periodEnd,
+        createdByUserId: actor.userId,
+      });
       await this.insertLines(t, id, [...built.lines, ...carried]);
       await this.recalc(t, id);
     });
@@ -310,7 +361,13 @@ export class PayoutsService {
         // One pay run at a time per caregiver: the caregiver row is the lock.
         await t.execute(sql`SELECT id FROM caregivers WHERE id = ${caregiverId} FOR UPDATE`);
         const built = await this.linesFor(t, caregiverId, dto.periodStart, dto.periodEnd, 0);
-        const carried = await openAdjustmentLines(t, { side: 'CAREGIVER', partyId: caregiverId, language: 'en', startAt: built.lines.length, baseCents: linesCents(built.lines) });
+        const carried = await openAdjustmentLines(t, {
+          side: 'CAREGIVER',
+          partyId: caregiverId,
+          language: 'en',
+          startAt: built.lines.length,
+          baseCents: linesCents(built.lines),
+        });
         if (!built.lines.length && !carried.length) return;
         const id = uuid();
         await this.insertStatement(t, { id, caregiverId, periodStart: dto.periodStart, periodEnd: dto.periodEnd, createdByUserId: actor.userId });
@@ -326,7 +383,10 @@ export class PayoutsService {
     await this.db.transaction(async (tx) => {
       const p = await this.statementOrThrow(id, tx as unknown as Tx, true);
       if (p.status === 'VOID') throw new BadRequestException('This statement is void');
-      await tx.update(payoutStatements).set({ notes: dto.notes?.trim() || null, updatedAt: new Date() }).where(eq(payoutStatements.id, id));
+      await tx
+        .update(payoutStatements)
+        .set({ notes: dto.notes?.trim() || null, updatedAt: new Date() })
+        .where(eq(payoutStatements.id, id));
     });
     return this.findOne(id);
   }
@@ -349,7 +409,10 @@ export class PayoutsService {
     await this.db.transaction(async (tx) => {
       const t = tx as unknown as Tx;
       const p = await this.draftOrThrow(id, t, true);
-      const [{ maxPos }] = await tx.select({ maxPos: sql<number>`COALESCE(MAX(${payoutLines.position}), -1)` }).from(payoutLines).where(eq(payoutLines.statementId, id));
+      const [{ maxPos }] = await tx
+        .select({ maxPos: sql<number>`COALESCE(MAX(${payoutLines.position}), -1)` })
+        .from(payoutLines)
+        .where(eq(payoutLines.statementId, id));
       const built = await this.linesFor(t, p.caregiverId, p.periodStart, p.periodEnd, Number(maxPos) + 1);
       const carried = await openAdjustmentLines(t, {
         side: 'CAREGIVER',
@@ -373,7 +436,10 @@ export class PayoutsService {
       if (!n) throw new BadRequestException('Add at least one line before approving');
       if (Number(p.total) < 0) throw new BadRequestException('A statement cannot total less than zero - carry the deduction to the next one instead');
       const now = new Date();
-      await tx.update(payoutStatements).set({ status: 'APPROVED', approvedAt: now, approvedByUserId: actor.userId, updatedAt: now }).where(eq(payoutStatements.id, id));
+      await tx
+        .update(payoutStatements)
+        .set({ status: 'APPROVED', approvedAt: now, approvedByUserId: actor.userId, updatedAt: now })
+        .where(eq(payoutStatements.id, id));
     });
     return this.findOne(id);
   }
@@ -390,7 +456,10 @@ export class PayoutsService {
   async reopenIn(t: Tx, id: string) {
     const p = await this.statementOrThrow(id, t, true);
     if (p.status !== 'APPROVED') throw new BadRequestException('Only an approved statement can go back to draft');
-    await t.update(payoutStatements).set({ status: 'DRAFT', approvedAt: null, approvedByUserId: null, updatedAt: new Date() }).where(eq(payoutStatements.id, id));
+    await t
+      .update(payoutStatements)
+      .set({ status: 'DRAFT', approvedAt: null, approvedByUserId: null, updatedAt: new Date() })
+      .where(eq(payoutStatements.id, id));
   }
 
   async pay(id: string, dto: PayPayoutDto, actor: AuthenticatedUser) {
@@ -403,7 +472,17 @@ export class PayoutsService {
       const now = new Date();
       await tx
         .update(payoutStatements)
-        .set({ status: 'PAID', paidOn: dto.paidOn, paymentType: how.paymentType, paymentMethod: how.method, bankAccountId: how.bankAccountId, paymentReference: dto.reference ?? null, paidAt: now, paidByUserId: actor.userId, updatedAt: now })
+        .set({
+          status: 'PAID',
+          paidOn: dto.paidOn,
+          paymentType: how.paymentType,
+          paymentMethod: how.method,
+          bankAccountId: how.bankAccountId,
+          paymentReference: dto.reference ?? null,
+          paidAt: now,
+          paidByUserId: actor.userId,
+          updatedAt: now,
+        })
         .where(eq(payoutStatements.id, id));
     });
     if (dto.notify !== false) void this.notifier.payoutPaid(id);
@@ -416,7 +495,10 @@ export class PayoutsService {
       const p = await this.statementOrThrow(id, tx as unknown as Tx, true);
       if (p.status === 'PAID') throw new BadRequestException('A paid statement cannot be voided - add a deduction to the next one instead');
       if (p.status === 'VOID') throw new BadRequestException('This statement is already void');
-      await tx.update(payoutStatements).set({ status: 'VOID', voidedAt: new Date(), voidReason: reason.trim(), updatedAt: new Date() }).where(eq(payoutStatements.id, id));
+      await tx
+        .update(payoutStatements)
+        .set({ status: 'VOID', voidedAt: new Date(), voidReason: reason.trim(), updatedAt: new Date() })
+        .where(eq(payoutStatements.id, id));
     });
     return this.findOne(id);
   }
@@ -443,7 +525,12 @@ export class PayoutsService {
     const lines = await this.db
       .select()
       .from(payoutLines)
-      .where(inArray(payoutLines.statementId, rows.map((r) => r.id)))
+      .where(
+        inArray(
+          payoutLines.statementId,
+          rows.map((r) => r.id),
+        ),
+      )
       .orderBy(asc(payoutLines.position));
     return rows.map((r) => {
       const own = lines.filter((l) => l.statementId === r.id);

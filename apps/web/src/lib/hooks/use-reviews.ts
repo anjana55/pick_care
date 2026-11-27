@@ -40,7 +40,8 @@ export function useBookingRatings(bookingId: string, enabled = true) {
   });
 }
 
-export type ReviewAction = { id: string; action: 'approve-comment' } | { id: string; action: 'reject-comment' | 'hide'; reason: string } | { id: string; action: 'unhide' };
+export type ReviewAction =
+  { id: string; action: 'approve-comment' } | { id: string; action: 'reject-comment' | 'hide'; reason: string } | { id: string; action: 'unhide' };
 
 export function useReviewAction() {
   const queryClient = useQueryClient();

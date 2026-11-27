@@ -74,7 +74,9 @@ export default function PayoutsPage() {
         <CardHeader className="flex flex-wrap items-center justify-between gap-2">
           <CardTitle>{t('billing.payouts.runTitle')}</CardTitle>
           {summary && Number(summary.approvedTotal) > 0 && (
-            <span className="text-sm text-ink/60">{t('billing.payouts.toPay', { amount: formatLkr(summary.approvedTotal), count: summary.byStatus.APPROVED })}</span>
+            <span className="text-sm text-ink/60">
+              {t('billing.payouts.toPay', { amount: formatLkr(summary.approvedTotal), count: summary.byStatus.APPROVED })}
+            </span>
           )}
         </CardHeader>
         <CardContent className="space-y-3">
@@ -87,7 +89,10 @@ export default function PayoutsPage() {
               <Label htmlFor="runTo">{t('billing.newInvoice.to')}</Label>
               <Input id="runTo" type="date" min={periodStart} value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)} />
             </div>
-            <Button disabled={!periodOk || generate.isPending} onClick={() => generate.mutate({ periodStart, periodEnd }, { onSuccess: () => setTab('DRAFT') })}>
+            <Button
+              disabled={!periodOk || generate.isPending}
+              onClick={() => generate.mutate({ periodStart, periodEnd }, { onSuccess: () => setTab('DRAFT') })}
+            >
               <Wallet size={16} aria-hidden />
               {t('billing.payouts.run')}
             </Button>
@@ -167,12 +172,16 @@ export default function PayoutsPage() {
           <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-ink/50">{t('common.loading')}</td>
+                <td colSpan={6} className="px-4 py-8 text-center text-ink/50">
+                  {t('common.loading')}
+                </td>
               </tr>
             )}
             {!isLoading && data?.items.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-ink/50">{t('billing.payouts.empty')}</td>
+                <td colSpan={6} className="px-4 py-8 text-center text-ink/50">
+                  {t('billing.payouts.empty')}
+                </td>
               </tr>
             )}
             {data?.items.map((p) => (

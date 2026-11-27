@@ -196,11 +196,7 @@ function SaveToggle({
   variant: 'compact' | 'full';
 }) {
   const { t } = useTranslation();
-  const label = failed
-    ? t('care.actionError')
-    : shown
-      ? t('care.unsaveAria', { id: caregiverLabel })
-      : t('care.saveAria', { id: caregiverLabel });
+  const label = failed ? t('care.actionError') : shown ? t('care.unsaveAria', { id: caregiverLabel }) : t('care.saveAria', { id: caregiverLabel });
 
   if (variant === 'compact') {
     return (

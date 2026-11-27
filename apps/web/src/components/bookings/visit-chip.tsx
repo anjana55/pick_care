@@ -39,18 +39,31 @@ export function VisitNotes({ checkIn, shiftId, withMap = false }: { checkIn: Sta
   const lines: { text: string; warn?: boolean }[] = [];
   if (checkIn.onTheWay) {
     const o = checkIn.onTheWay;
-    lines.push({ text: o.arriving ? t('visits.note.arriving') : o.etaMinutes !== null ? t('visits.note.onTheWayEta', { minutes: o.etaMinutes }) : t('visits.note.onTheWay') });
+    lines.push({
+      text: o.arriving
+        ? t('visits.note.arriving')
+        : o.etaMinutes !== null
+          ? t('visits.note.onTheWayEta', { minutes: o.etaMinutes })
+          : t('visits.note.onTheWay'),
+    });
   }
-  if (checkIn.checkedInAt && checkIn.checkedOutAt) lines.push({ text: t('visits.note.inAndOut', { in: fmtTime(checkIn.checkedInAt, locale), out: fmtTime(checkIn.checkedOutAt, locale) }) });
-  if (checkIn.inBy === 'STAFF') lines.push({ text: t('visits.note.inByStaff', { name: checkIn.inByName ?? '—' }) + (checkIn.inNote ? ` — ${checkIn.inNote}` : '') });
-  if (checkIn.outBy === 'STAFF') lines.push({ text: t('visits.note.outByStaff', { name: checkIn.outByName ?? '—' }) + (checkIn.outNote ? ` — ${checkIn.outNote}` : '') });
+  if (checkIn.checkedInAt && checkIn.checkedOutAt)
+    lines.push({ text: t('visits.note.inAndOut', { in: fmtTime(checkIn.checkedInAt, locale), out: fmtTime(checkIn.checkedOutAt, locale) }) });
+  if (checkIn.inBy === 'STAFF')
+    lines.push({ text: t('visits.note.inByStaff', { name: checkIn.inByName ?? '—' }) + (checkIn.inNote ? ` — ${checkIn.inNote}` : '') });
+  if (checkIn.outBy === 'STAFF')
+    lines.push({ text: t('visits.note.outByStaff', { name: checkIn.outByName ?? '—' }) + (checkIn.outNote ? ` — ${checkIn.outNote}` : '') });
   if (checkIn.inBy === 'CAREGIVER' && !checkIn.inLocation) lines.push({ text: t('visits.note.noPosition') });
   const metres = (m: number) => (m >= 1000 ? `${(m / 1000).toFixed(1)} km` : `${m} m`);
   if (checkIn.inFar && checkIn.inDistanceM !== null) {
-    lines.push({ text: t(checkIn.inDistanceFrom === 'PIN' ? 'visits.note.farFromHome' : 'visits.note.far', { distance: metres(checkIn.inDistanceM) }), warn: true });
+    lines.push({
+      text: t(checkIn.inDistanceFrom === 'PIN' ? 'visits.note.farFromHome' : 'visits.note.far', { distance: metres(checkIn.inDistanceM) }),
+      warn: true,
+    });
   }
   if (checkIn.inMocked) lines.push({ text: t('visits.note.mockedIn'), warn: true });
-  if (checkIn.outFar && checkIn.outDistanceM !== null) lines.push({ text: t('visits.note.outFarFromHome', { distance: metres(checkIn.outDistanceM) }), warn: true });
+  if (checkIn.outFar && checkIn.outDistanceM !== null)
+    lines.push({ text: t('visits.note.outFarFromHome', { distance: metres(checkIn.outDistanceM) }), warn: true });
   if (checkIn.outMocked) lines.push({ text: t('visits.note.mockedOut'), warn: true });
   if (checkIn.codeLocked) lines.push({ text: t('visits.note.locked'), warn: true });
   else if (!checkIn.checkedInAt && checkIn.wrongCodes > 0) lines.push({ text: t('visits.note.wrongCodes', { n: checkIn.wrongCodes }) });
@@ -69,7 +82,12 @@ export function VisitNotes({ checkIn, shiftId, withMap = false }: { checkIn: Sta
       )}
       {checkIn.inLocation && (
         <li>
-          <a className="text-brand-dark hover:underline" target="_blank" rel="noreferrer" href={`https://www.openstreetmap.org/?mlat=${checkIn.inLocation.latitude}&mlon=${checkIn.inLocation.longitude}#map=17/${checkIn.inLocation.latitude}/${checkIn.inLocation.longitude}`}>
+          <a
+            className="text-brand-dark hover:underline"
+            target="_blank"
+            rel="noreferrer"
+            href={`https://www.openstreetmap.org/?mlat=${checkIn.inLocation.latitude}&mlon=${checkIn.inLocation.longitude}#map=17/${checkIn.inLocation.latitude}/${checkIn.inLocation.longitude}`}
+          >
             {t('visits.note.map')}
           </a>
         </li>

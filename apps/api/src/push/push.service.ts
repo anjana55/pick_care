@@ -117,7 +117,10 @@ export class PushService implements OnApplicationBootstrap, OnModuleDestroy {
 
   onApplicationBootstrap() {
     if (this.config.get<string>('NODE_ENV') === 'test' || !this.enabled()) return;
-    this.timer = setInterval(() => void this.checkReceipts().catch((e) => this.logger.warn(`Push receipts check failed: ${(e as Error).message}`)), RECEIPT_TICK_MS);
+    this.timer = setInterval(
+      () => void this.checkReceipts().catch((e) => this.logger.warn(`Push receipts check failed: ${(e as Error).message}`)),
+      RECEIPT_TICK_MS,
+    );
     this.timer.unref();
   }
 
@@ -167,12 +170,18 @@ export class PushService implements OnApplicationBootstrap, OnModuleDestroy {
 
   /** Signing out ends every session, so every phone stops getting this person's alerts. */
   async revokeAllForUser(userId: string) {
-    await this.db.update(deviceTokens).set({ revokedAt: new Date() }).where(and(eq(deviceTokens.userId, userId), isNull(deviceTokens.revokedAt)));
+    await this.db
+      .update(deviceTokens)
+      .set({ revokedAt: new Date() })
+      .where(and(eq(deviceTokens.userId, userId), isNull(deviceTokens.revokedAt)));
   }
 
   private async revokeTokens(tokens: string[]) {
     if (!tokens.length) return;
-    await this.db.update(deviceTokens).set({ revokedAt: new Date() }).where(and(inArray(deviceTokens.expoPushToken, tokens), isNull(deviceTokens.revokedAt)));
+    await this.db
+      .update(deviceTokens)
+      .set({ revokedAt: new Date() })
+      .where(and(inArray(deviceTokens.expoPushToken, tokens), isNull(deviceTokens.revokedAt)));
     this.logger.log(`Push: revoked ${tokens.length} token(s) Expo reports as no longer registered.`);
   }
 
@@ -188,7 +197,13 @@ export class PushService implements OnApplicationBootstrap, OnModuleDestroy {
   }
 
   /** notify(), awaitable: resolves to the number of phones Expo accepted the push for. Never throws. */
-  async send(userIds: (string | null | undefined)[], build: (lang: PushLanguage) => PushText, path: string, label: string, extras?: PushExtras): Promise<number> {
+  async send(
+    userIds: (string | null | undefined)[],
+    build: (lang: PushLanguage) => PushText,
+    path: string,
+    label: string,
+    extras?: PushExtras,
+  ): Promise<number> {
     try {
       const ids = [...new Set(userIds.filter((v): v is string => Boolean(v)))];
       if (!ids.length || !this.enabled()) return 0;

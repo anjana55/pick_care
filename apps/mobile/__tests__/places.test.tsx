@@ -70,7 +70,18 @@ describe('Where care happens', () => {
       'GET /me/care-locations': () => ({ status: 200, body: places }),
       'POST /me/care-locations': (sent) => {
         const body = sent as { latitude: number; longitude: number; label?: string };
-        places = [{ id: 'cl-1', label: body.label ?? 'Home', latitude: body.latitude, longitude: body.longitude, source: 'CLIENT_PIN', isDefault: true, confirmed: true, updatedAt: new Date().toISOString() }];
+        places = [
+          {
+            id: 'cl-1',
+            label: body.label ?? 'Home',
+            latitude: body.latitude,
+            longitude: body.longitude,
+            source: 'CLIENT_PIN',
+            isDefault: true,
+            confirmed: true,
+            updatedAt: new Date().toISOString(),
+          },
+        ];
         return { status: 201, body: places[0] };
       },
     });
@@ -109,7 +120,10 @@ describe('Where care happens', () => {
           ],
         },
       }),
-      'POST /me/care-locations': (body) => ({ status: 201, body: { id: 'cl-1', label: 'Home', ...body, source: 'CLIENT_PIN', isDefault: true, confirmed: true, updatedAt: new Date().toISOString() } }),
+      'POST /me/care-locations': (body) => ({
+        status: 201,
+        body: { id: 'cl-1', label: 'Home', ...body, source: 'CLIENT_PIN', isDefault: true, confirmed: true, updatedAt: new Date().toISOString() },
+      }),
     });
     await show(<CarePlaces locate={async () => ({})} />);
     await fireEvent.press(await screen.findByRole('button', { name: en.places.addFirst }));
@@ -128,7 +142,10 @@ describe('Where care happens', () => {
       'GET /me/care-locations': () => ({ status: 200, body: [] }),
       'GET /geo/address-search': () => ({
         status: 200,
-        body: { mapSearchUnavailable: true, results: [{ label: 'Nugegoda', detail: 'Colombo', latitude: 6.8649, longitude: 79.8997, precision: 'TOWN', source: 'TOWNS' }] },
+        body: {
+          mapSearchUnavailable: true,
+          results: [{ label: 'Nugegoda', detail: 'Colombo', latitude: 6.8649, longitude: 79.8997, precision: 'TOWN', source: 'TOWNS' }],
+        },
       }),
     });
     await show(<CarePlaces locate={async () => ({})} />);

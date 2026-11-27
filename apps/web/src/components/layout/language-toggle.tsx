@@ -19,9 +19,7 @@ export function LanguageToggle() {
         <button
           key={code}
           onClick={() => setLocale(code)}
-          className={`px-2.5 py-1.5 text-xs font-medium transition-colors ${
-            locale === code ? 'bg-brand text-white' : 'bg-white text-ink/60 hover:bg-paper'
-          }`}
+          className={`px-2.5 py-1.5 text-xs font-medium transition-colors ${locale === code ? 'bg-brand text-white' : 'bg-white text-ink/60 hover:bg-paper'}`}
           aria-pressed={locale === code}
         >
           {LABELS[code]}

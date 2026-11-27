@@ -47,7 +47,10 @@ export function Nearby({
   const colors = useColors();
   const labelFor = usePointLabel();
   const origin: SearchOrigin | null = response?.origin ?? null;
-  const radiusChoices = origin && !SEARCH_RADIUS_OPTIONS_KM.includes(origin.radiusKm as never) ? [...SEARCH_RADIUS_OPTIONS_KM, origin.radiusKm].sort((a, b) => a - b) : [...SEARCH_RADIUS_OPTIONS_KM];
+  const radiusChoices =
+    origin && !SEARCH_RADIUS_OPTIONS_KM.includes(origin.radiusKm as never)
+      ? [...SEARCH_RADIUS_OPTIONS_KM, origin.radiusKm].sort((a, b) => a - b)
+      : [...SEARCH_RADIUS_OPTIONS_KM];
   const shownRadius = origin?.radiusKm ?? radiusKm;
 
   let summary: string | null = null;

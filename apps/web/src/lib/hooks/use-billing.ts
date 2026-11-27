@@ -97,7 +97,8 @@ export interface InvoiceUpdate {
 }
 
 export const useUpdateInvoice = (id: string) => useInvoiceWrite(id, (v: InvoiceUpdate) => api.patch<InvoiceDetail>(`/invoices/${id}`, v));
-export const useReplaceInvoiceLines = (id: string) => useInvoiceWrite(id, (lines: BillingLineInput[]) => api.put<InvoiceDetail>(`/invoices/${id}/lines`, { lines }));
+export const useReplaceInvoiceLines = (id: string) =>
+  useInvoiceWrite(id, (lines: BillingLineInput[]) => api.put<InvoiceDetail>(`/invoices/${id}/lines`, { lines }));
 export const useAddInvoiceShiftLines = (id: string) => useInvoiceWrite(id, () => api.post<InvoiceDetail>(`/invoices/${id}/lines/from-shifts`, {}));
 export const useIssueInvoice = (id: string) =>
   useInvoiceWrite(id, (v: { issueDate?: string; dueDate?: string; notify?: boolean }) => api.post<InvoiceDetail>(`/invoices/${id}/issue`, v));
@@ -108,8 +109,17 @@ export const useAddInvoiceNote = (id: string) => useInvoiceWrite(id, (note: stri
 export const useRecordPayment = (id: string) =>
   useInvoiceWrite(
     id,
-    (v: { kind?: 'PAYMENT' | 'REFUND'; amount: string; paymentType: PaymentType; method?: PaymentMethod; bankAccountId?: string; paidOn: string; reference?: string; note?: string; notify?: boolean }) =>
-      api.post<InvoiceDetail>(`/invoices/${id}/payments`, v),
+    (v: {
+      kind?: 'PAYMENT' | 'REFUND';
+      amount: string;
+      paymentType: PaymentType;
+      method?: PaymentMethod;
+      bankAccountId?: string;
+      paidOn: string;
+      reference?: string;
+      note?: string;
+      notify?: boolean;
+    }) => api.post<InvoiceDetail>(`/invoices/${id}/payments`, v),
   );
 export const useDeletePayment = (id: string) => useInvoiceWrite(id, (paymentId: string) => api.delete<InvoiceDetail>(`/invoices/${id}/payments/${paymentId}`));
 
@@ -186,12 +196,15 @@ export function useGeneratePayouts() {
 }
 
 export const useUpdatePayout = (id: string) => usePayoutWrite(id, (notes: string) => api.patch<PayoutDetail>(`/payouts/${id}`, { notes }));
-export const useReplacePayoutLines = (id: string) => usePayoutWrite(id, (lines: BillingLineInput[]) => api.put<PayoutDetail>(`/payouts/${id}/lines`, { lines }));
+export const useReplacePayoutLines = (id: string) =>
+  usePayoutWrite(id, (lines: BillingLineInput[]) => api.put<PayoutDetail>(`/payouts/${id}/lines`, { lines }));
 export const useAddPayoutShiftLines = (id: string) => usePayoutWrite(id, () => api.post<PayoutDetail>(`/payouts/${id}/lines/from-shifts`, {}));
 export const useApprovePayout = (id: string) => usePayoutWrite(id, () => api.post<PayoutDetail>(`/payouts/${id}/approve`, {}));
 export const useReopenPayout = (id: string) => usePayoutWrite(id, () => api.post<PayoutDetail>(`/payouts/${id}/reopen`, {}));
 export const usePayPayout = (id: string) =>
-  usePayoutWrite(id, (v: { paidOn: string; paymentType: PaymentType; method?: PaymentMethod; bankAccountId?: string; reference?: string; notify?: boolean }) => api.post<PayoutDetail>(`/payouts/${id}/pay`, v));
+  usePayoutWrite(id, (v: { paidOn: string; paymentType: PaymentType; method?: PaymentMethod; bankAccountId?: string; reference?: string; notify?: boolean }) =>
+    api.post<PayoutDetail>(`/payouts/${id}/pay`, v),
+  );
 export const useVoidPayout = (id: string) => usePayoutWrite(id, (reason: string) => api.post<PayoutDetail>(`/payouts/${id}/void`, { reason }));
 
 export function useDeletePayout(id: string) {

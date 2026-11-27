@@ -50,7 +50,10 @@ export class ReviewStore {
   /** Adds a caregiver's totals up again from their visible reviews. Call inside the transaction that changed a review. */
   async recompute(db: Database, caregiverId: string): Promise<void> {
     const visible = and(eq(caregiverReviews.caregiverId, caregiverId), isNull(caregiverReviews.hiddenAt));
-    const [totals] = await db.select({ n: count(), total: sum(caregiverReviews.rating) }).from(caregiverReviews).where(visible);
+    const [totals] = await db
+      .select({ n: count(), total: sum(caregiverReviews.rating) })
+      .from(caregiverReviews)
+      .where(visible);
     const badges = await db
       .select({ badge: caregiverReviewBadges.badge, n: count() })
       .from(caregiverReviewBadges)
@@ -76,7 +79,11 @@ export class ReviewStore {
     if (!reviewIds.length) return out;
     const rows = await db.select().from(caregiverReviewBadges).where(inArray(caregiverReviewBadges.reviewId, reviewIds));
     for (const r of rows) out.set(r.reviewId, [...(out.get(r.reviewId) ?? []), r.badge]);
-    for (const [id, list] of out) out.set(id, sortBadgeCounts(list.map((badge) => ({ badge, count: 1 }))).map((b) => b.badge));
+    for (const [id, list] of out)
+      out.set(
+        id,
+        sortBadgeCounts(list.map((badge) => ({ badge, count: 1 }))).map((b) => b.badge),
+      );
     return out;
   }
 
@@ -112,10 +119,19 @@ export class ReviewStore {
         .from(bookings)
         .where(and(inArray(bookings.id, bookingIds), eq(bookings.patientId, patientId), ne(bookings.status, 'DRAFT'))),
       this.db
-        .select({ bookingId: bookingShifts.bookingId, caregiverId: bookingShifts.caregiverId, startsAt: bookingShifts.startsAt, endsAt: bookingShifts.endsAt, status: bookingShifts.status })
+        .select({
+          bookingId: bookingShifts.bookingId,
+          caregiverId: bookingShifts.caregiverId,
+          startsAt: bookingShifts.startsAt,
+          endsAt: bookingShifts.endsAt,
+          status: bookingShifts.status,
+        })
         .from(bookingShifts)
         .where(and(inArray(bookingShifts.bookingId, bookingIds), inArray(bookingShifts.status, ['SCHEDULED', 'COMPLETED']))),
-      this.db.select().from(caregiverReviews).where(and(eq(caregiverReviews.patientId, patientId), inArray(caregiverReviews.bookingId, bookingIds))),
+      this.db
+        .select()
+        .from(caregiverReviews)
+        .where(and(eq(caregiverReviews.patientId, patientId), inArray(caregiverReviews.bookingId, bookingIds))),
     ]);
     const caregiverIds = [...new Set(shifts.map((s) => s.caregiverId))];
     const [publicIds, badges] = await Promise.all([
@@ -136,7 +152,15 @@ export class ReviewStore {
         const publicId = publicIdOf.get(w.caregiverId);
         if (!publicId) return [];
         const r = reviews.find((x) => x.bookingId === b.id && x.caregiverId === w.caregiverId);
-        return [{ ...w, bookingId: b.id, bookingReference: b.reference, caregiverPublicId: publicId, review: r ? this.toMyReview(r, badges.get(r.id) ?? [], publicId) : null }];
+        return [
+          {
+            ...w,
+            bookingId: b.id,
+            bookingReference: b.reference,
+            caregiverPublicId: publicId,
+            review: r ? this.toMyReview(r, badges.get(r.id) ?? [], publicId) : null,
+          },
+        ];
       });
       if (entries.length) out.set(b.id, entries);
     }

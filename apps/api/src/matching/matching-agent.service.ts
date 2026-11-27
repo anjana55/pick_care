@@ -1,26 +1,9 @@
 import { BadRequestException, Inject, Injectable, Logger, OnApplicationBootstrap, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { and, eq, gte, inArray, isNull, ne, sql } from 'drizzle-orm';
-import {
-  CARE_OFFER_MINUTES,
-  MAX_OPEN_CARE_OFFERS,
-  colomboToday,
-  effectiveCareOfferStatus,
-  type AgentRunResult,
-  type CareType,
-} from '@care-platform/shared';
+import { CARE_OFFER_MINUTES, MAX_OPEN_CARE_OFFERS, colomboToday, effectiveCareOfferStatus, type AgentRunResult, type CareType } from '@care-platform/shared';
 import { DRIZZLE, type Database } from '../database/database.module';
-import {
-  OPEN_CARE_REQUEST_STATUSES,
-  agentDecisions,
-  bookings,
-  careRequests,
-  caregivers,
-  cities,
-  districts,
-  patients,
-  requestOffers,
-} from '../database/schema';
+import { OPEN_CARE_REQUEST_STATUSES, agentDecisions, bookings, careRequests, caregivers, cities, districts, patients, requestOffers } from '../database/schema';
 import { AutomationService, type ActionExecutor } from '../automation/automation.service';
 import { AgentModelService } from '../automation/agent-model.service';
 import { AiUnavailableError } from '../ai/ai-provider.service';
@@ -217,13 +200,18 @@ export class MatchingAgentService implements OnApplicationBootstrap, OnModuleDes
         .where(and(eq(agentDecisions.action, SEND), eq(agentDecisions.caseType, 'REQUEST'), eq(agentDecisions.caseId, request.id))),
     ]);
     const agentUser = (await this.automation.agentActor('MATCHING')).userId;
-    const agentOffered = offerRows.some((o) => o.sentByUserId === agentUser) || decisionRows.some((d) => d.outcome === 'PROPOSED' && d.staffVerdict === 'AGREED');
+    const agentOffered =
+      offerRows.some((o) => o.sentByUserId === agentUser) || decisionRows.some((d) => d.outcome === 'PROPOSED' && d.staffVerdict === 'AGREED');
 
     // Someone has the job (an offer was accepted, or staff chose a caregiver): the agent's part is over.
     if (request.caregiverId || !OPEN_CARE_REQUEST_STATUSES.includes(request.status)) {
       if (request.caregiverId && agentOffered && offerRows.some((o) => o.status === 'ACCEPTED')) {
         // Once the booking exists (drafted by the booking agent, or made by staff) the note about it is theirs to write.
-        const [booked] = await this.db.select({ id: bookings.id }).from(bookings).where(and(eq(bookings.careRequestId, request.id), ne(bookings.status, 'CANCELLED'))).limit(1);
+        const [booked] = await this.db
+          .select({ id: bookings.id })
+          .from(bookings)
+          .where(and(eq(bookings.careRequestId, request.id), ne(bookings.status, 'CANCELLED')))
+          .limit(1);
         if (booked || ['EXECUTE', 'PROPOSE'].includes((await this.automation.gate('booking.create_draft', ref)).outcome)) return 'nothing';
         await this.automation.setHandoverNote(ref, {
           done: 'A caregiver accepted the job offer and is attached to the request',
@@ -248,7 +236,8 @@ export class MatchingAgentService implements OnApplicationBootstrap, OnModuleDes
     const pending = decisionRows.filter((d) => d.outcome === 'PROPOSED' && d.staffVerdict === null).length;
     const shadowed = decisionRows.filter((d) => d.outcome === 'SHADOW').length;
     const used = offerRows.length + pending;
-    const room = gate.outcome === 'SHADOW' ? MATCH_WAVE - shadowed : Math.min(MATCH_WAVE - waiting - pending, MATCH_MAX_OFFERS - used, MAX_OPEN_CARE_OFFERS - waiting);
+    const room =
+      gate.outcome === 'SHADOW' ? MATCH_WAVE - shadowed : Math.min(MATCH_WAVE - waiting - pending, MATCH_MAX_OFFERS - used, MAX_OPEN_CARE_OFFERS - waiting);
     if (room <= 0) {
       if (gate.outcome !== 'SHADOW' && waiting + pending === 0 && used >= MATCH_MAX_OFFERS) {
         await this.automation.setHandoverNote(ref, {
@@ -261,7 +250,10 @@ export class MatchingAgentService implements OnApplicationBootstrap, OnModuleDes
       return 'nothing';
     }
 
-    const exclude = new Set<string>([...offerRows.map((o) => o.caregiverId), ...decisionRows.map((d) => (d.proposal as SendOfferProposal | null)?.caregiverId).filter((v): v is string => !!v)]);
+    const exclude = new Set<string>([
+      ...offerRows.map((o) => o.caregiverId),
+      ...decisionRows.map((d) => (d.proposal as SendOfferProposal | null)?.caregiverId).filter((v): v is string => !!v),
+    ]);
     const today = colomboToday(now);
     const match: MatchRequest = {
       careType: request.careType,
@@ -274,7 +266,9 @@ export class MatchingAgentService implements OnApplicationBootstrap, OnModuleDes
     const pool = await this.pools.pool(match, { genderPreference: request.genderPreference, exclude }, now);
     if (!pool.length) {
       await this.automation.setHandoverNote(ref, {
-        done: exclude.size ? `Offered the job to everyone who fits (${exclude.size}); nobody accepted` : 'Looked for caregivers who do this kind of care in the district and found none',
+        done: exclude.size
+          ? `Offered the job to everyone who fits (${exclude.size}); nobody accepted`
+          : 'Looked for caregivers who do this kind of care in the district and found none',
         waiting: 'Staff to find a caregiver another way',
         next: 'Will look again when the next caregiver who fits is listed',
       });
@@ -283,11 +277,20 @@ export class MatchingAgentService implements OnApplicationBootstrap, OnModuleDes
 
     const { ranked, model } = await this.rank(match, pool);
     const top = ranked.slice(0, MODEL_SHORTLIST);
-    const rankProposal: RankProposal = { requestId: request.id, requestReference: request.reference, eligible: pool.length, rankedBy: model ? 'rules+model' : 'rules', ranked: top };
+    const rankProposal: RankProposal = {
+      requestId: request.id,
+      requestReference: request.reference,
+      eligible: pool.length,
+      rankedBy: model ? 'rules+model' : 'rules',
+      ranked: top,
+    };
     const ranking = await this.automation.decide({
       action: RANK,
       case: ref,
-      reason: `${pool.length} caregiver${pool.length === 1 ? ' fits' : 's fit'}. Best first: ${top.slice(0, MATCH_WAVE).map((r) => `${r.registrationNumber} (${r.score})`).join(', ')}`,
+      reason: `${pool.length} caregiver${pool.length === 1 ? ' fits' : 's fit'}. Best first: ${top
+        .slice(0, MATCH_WAVE)
+        .map((r) => `${r.registrationNumber} (${r.score})`)
+        .join(', ')}`,
       proposal: rankProposal,
       model,
       promptVersion: model ? RANK_PROMPT_VERSION : null,
@@ -357,7 +360,9 @@ export class MatchingAgentService implements OnApplicationBootstrap, OnModuleDes
     if (!(await this.models.candidates('MATCHING', 'PERSONAL')).length) return { ranked, model: null };
     try {
       const [[city], [district]] = await Promise.all([
-        match.cityId ? this.db.select({ name: cities.nameEn }).from(cities).where(eq(cities.id, match.cityId)).limit(1) : Promise.resolve([] as { name: string }[]),
+        match.cityId
+          ? this.db.select({ name: cities.nameEn }).from(cities).where(eq(cities.id, match.cityId)).limit(1)
+          : Promise.resolve([] as { name: string }[]),
         this.db.select({ name: districts.nameEn }).from(districts).where(eq(districts.id, match.districtId)).limit(1),
       ]);
       const prompt = buildRankPrompt({ ...match, cityName: city?.name ?? null, districtName: district?.name ?? null }, pool, ranked);
@@ -412,12 +417,25 @@ export class MatchingAgentService implements OnApplicationBootstrap, OnModuleDes
     const requestIds = [...new Set(open.map((d) => d.caseId!).filter(Boolean))];
     const agentUser = (await this.automation.agentActor('MATCHING')).userId;
     const [requests, offers] = await Promise.all([
-      this.db.select({ id: careRequests.id, caregiverId: careRequests.caregiverId, assignedToUserId: careRequests.assignedToUserId }).from(careRequests).where(inArray(careRequests.id, requestIds)),
-      this.db.select({ requestId: requestOffers.requestId, caregiverId: requestOffers.caregiverId, sentByUserId: requestOffers.sentByUserId }).from(requestOffers).where(inArray(requestOffers.requestId, requestIds)),
+      this.db
+        .select({ id: careRequests.id, caregiverId: careRequests.caregiverId, assignedToUserId: careRequests.assignedToUserId })
+        .from(careRequests)
+        .where(inArray(careRequests.id, requestIds)),
+      this.db
+        .select({ requestId: requestOffers.requestId, caregiverId: requestOffers.caregiverId, sentByUserId: requestOffers.sentByUserId })
+        .from(requestOffers)
+        .where(inArray(requestOffers.requestId, requestIds)),
     ]);
     const chosenIds = new Set<string>([...requests.map((r) => r.caregiverId), ...offers.map((o) => o.caregiverId)].filter((v): v is string => !!v));
     const registration = chosenIds.size
-      ? new Map((await this.db.select({ id: caregivers.id, n: caregivers.registrationNumber }).from(caregivers).where(inArray(caregivers.id, [...chosenIds]))).map((c) => [c.id, c.n]))
+      ? new Map(
+          (
+            await this.db
+              .select({ id: caregivers.id, n: caregivers.registrationNumber })
+              .from(caregivers)
+              .where(inArray(caregivers.id, [...chosenIds]))
+          ).map((c) => [c.id, c.n]),
+        )
       : new Map<string, string>();
 
     let scored = 0;
@@ -436,7 +454,9 @@ export class MatchingAgentService implements OnApplicationBootstrap, OnModuleDes
         await this.automation.review(
           d.id,
           agreed ? 'AGREED' : 'DIFFERED',
-          agreed ? `Scored automatically: staff chose ${names}, who the agent also picked` : `Scored automatically: staff chose ${names}, who the agent did not pick`,
+          agreed
+            ? `Scored automatically: staff chose ${names}, who the agent also picked`
+            : `Scored automatically: staff chose ${names}, who the agent did not pick`,
           reviewer,
         );
         scored++;

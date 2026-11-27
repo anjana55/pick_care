@@ -31,12 +31,7 @@ export class VerificationController {
   @Patch(':id')
   @Roles('ADMIN', 'VERIFIER')
   @Audit({ action: 'UPDATE_VERIFICATION', entityType: 'Verification' })
-  update(
-    @Param('caregiverId') caregiverId: string,
-    @Param('id') id: string,
-    @Body() dto: UpdateVerificationDto,
-    @CurrentUser() user: AuthenticatedUser,
-  ) {
+  update(@Param('caregiverId') caregiverId: string, @Param('id') id: string, @Body() dto: UpdateVerificationDto, @CurrentUser() user: AuthenticatedUser) {
     return this.verificationService.update(caregiverId, id, dto, user.userId);
   }
 }

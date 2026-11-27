@@ -47,57 +47,59 @@ export default function LoginPage() {
             <p className="text-sm text-ink/60">{t('login.subtitle')}</p>
           </div>
 
-        <form onSubmit={onSubmit} className="rounded-lg border border-border bg-white p-6">
-          <RequiredLegend label={t('common.requiredField')} />
-          <div className="mb-4">
-            <Label htmlFor="email" required>{t('login.email')}</Label>
-            <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-          </div>
-          <div className="mb-5">
-            <Label htmlFor="password" required>{t('login.password')}</Label>
-            <Input
-              id="password"
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
-          {error && <p className="mb-4 text-sm text-danger">{error}</p>}
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? t('common.loading') : t('login.submit')}
-          </Button>
-        </form>
+          <form onSubmit={onSubmit} className="rounded-lg border border-border bg-white p-6">
+            <RequiredLegend label={t('common.requiredField')} />
+            <div className="mb-4">
+              <Label htmlFor="email" required>
+                {t('login.email')}
+              </Label>
+              <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+            </div>
+            <div className="mb-5">
+              <Label htmlFor="password" required>
+                {t('login.password')}
+              </Label>
+              <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+            </div>
+            {error && <p className="mb-4 text-sm text-danger">{error}</p>}
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? t('common.loading') : t('login.submit')}
+            </Button>
+          </form>
 
-        {/*
+          {/*
           A plain <a>, not <Link>: caregiver sign-up is served by the
           public-web container, not this one. next/link would resolve it
           through this app's router as /staff/caregiver/join and render a 404.
         */}
-        <p className="mt-6 text-center text-sm text-ink/60">
-          {t('login.newCaregiver')}{' '}
-          <a href="/caregiver/join" className="font-medium text-brand-dark hover:underline">
-            {t('register.title')}
-          </a>
-        </p>
+          <p className="mt-6 text-center text-sm text-ink/60">
+            {t('login.newCaregiver')}{' '}
+            <a href="/caregiver/join" className="font-medium text-brand-dark hover:underline">
+              {t('register.title')}
+            </a>
+          </p>
 
-        {/*
+          {/*
           Always shown, so it says nothing about any account. This sign-in only
           accepts office staff (the API refuses everyone else with "Invalid
           credentials"), so a caregiver or client who landed here needs a way to
           their own sign-in that does not depend on being told why they were turned
           away. Plain <a>: those pages belong to the public site, not this app.
         */}
-        <div className="mt-6 space-y-1 border-t border-border pt-4 text-center text-xs text-ink/50">
-          <p>
-            {t('login.caregiverPrompt')}{' '}
-            <a href="/caregiver/login" className="font-medium text-brand-dark hover:underline">{t('login.caregiverLink')}</a>
-          </p>
-          <p>
-            {t('login.clientPrompt')}{' '}
-            <a href="/login" className="font-medium text-brand-dark hover:underline">{t('login.clientLink')}</a>
-          </p>
-        </div>
+          <div className="mt-6 space-y-1 border-t border-border pt-4 text-center text-xs text-ink/50">
+            <p>
+              {t('login.caregiverPrompt')}{' '}
+              <a href="/caregiver/login" className="font-medium text-brand-dark hover:underline">
+                {t('login.caregiverLink')}
+              </a>
+            </p>
+            <p>
+              {t('login.clientPrompt')}{' '}
+              <a href="/login" className="font-medium text-brand-dark hover:underline">
+                {t('login.clientLink')}
+              </a>
+            </p>
+          </div>
         </div>
       </div>
     </div>

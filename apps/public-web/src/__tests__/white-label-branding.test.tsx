@@ -62,7 +62,11 @@ describe('white-label branding on the public site', () => {
   it('offers only the enabled languages, and hides the switcher when there is one', () => {
     const { unmount } = renderWith(GOLDEN, <LanguageSwitcher />);
     const group = screen.getByRole('group');
-    expect(within(group).getAllByRole('button').map((b) => b.textContent)).toEqual(['EN', 'සිං']);
+    expect(
+      within(group)
+        .getAllByRole('button')
+        .map((b) => b.textContent),
+    ).toEqual(['EN', 'සිං']);
     unmount();
 
     renderWith({ ...GOLDEN, enabledLocales: ['si'] }, <LanguageSwitcher />);

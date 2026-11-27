@@ -73,13 +73,15 @@ export default function Payments() {
                   {p.lines.map((l, i) => (
                     <View key={i} style={styles.line}>
                       <Text style={{ flex: 1, fontSize: 14, color: colors.ink }}>
-                        {l.serviceDate ? <Text style={{ color: colors.muted }}>{formatDate(l.serviceDate, locale)}  </Text> : null}
+                        {l.serviceDate ? <Text style={{ color: colors.muted }}>{formatDate(l.serviceDate, locale)} </Text> : null}
                         {l.description}
                       </Text>
                       <Text style={{ fontSize: 14, color: Number(l.amount) < 0 ? colors.danger : colors.ink }}>{formatLkr(l.amount)}</Text>
                     </View>
                   ))}
-                  {paid && p.paymentReference ? <Text style={{ fontSize: 13, color: colors.muted }}>{t('portal.payments.reference', { reference: p.paymentReference })}</Text> : null}
+                  {paid && p.paymentReference ? (
+                    <Text style={{ fontSize: 13, color: colors.muted }}>{t('portal.payments.reference', { reference: p.paymentReference })}</Text>
+                  ) : null}
                   {p.status === 'APPROVED' ? <Text style={{ fontSize: 13, color: colors.muted }}>{t('portal.payments.approvedHint')}</Text> : null}
                 </View>
               ) : null}

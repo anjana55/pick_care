@@ -99,12 +99,10 @@ describe('assertWhatsappNumberAvailable', () => {
     it('ignores the login being edited', async () => {
       // The same lookup that rejects above is narrowed by ne(users.id, ...).
       const { db, whereArgs } = stubDb({ user: [] });
-      await expect(
-        assertWhatsappNumberAvailable(db, E164, CC, { userId: LOGIN.id, patientId: PROFILE.id }),
-      ).resolves.toBeUndefined();
+      await expect(assertWhatsappNumberAvailable(db, E164, CC, { userId: LOGIN.id, patientId: PROFILE.id })).resolves.toBeUndefined();
 
       const usersLookup = render(whereArgs[0]);
-      expect(usersLookup).toContain('<>');   // Drizzle's SQL for ne()
+      expect(usersLookup).toContain('<>'); // Drizzle's SQL for ne()
       expect(usersLookup).toContain(LOGIN.id);
       // The equality on the number is still there - this narrows, not replaces.
       expect(usersLookup).toContain(`=`);
@@ -113,9 +111,7 @@ describe('assertWhatsappNumberAvailable', () => {
 
     it('ignores the client profile being edited', async () => {
       const { db, whereArgs } = stubDb({ patient: [] });
-      await expect(
-        assertWhatsappNumberAvailable(db, E164, CC, { userId: LOGIN.id, patientId: PROFILE.id }),
-      ).resolves.toBeUndefined();
+      await expect(assertWhatsappNumberAvailable(db, E164, CC, { userId: LOGIN.id, patientId: PROFILE.id })).resolves.toBeUndefined();
 
       // Third lookup: users, then caregivers, then patients.
       const patientsLookup = render(whereArgs[2]);
@@ -126,9 +122,7 @@ describe('assertWhatsappNumberAvailable', () => {
       // A PATIENT_GUARDIAN login has no caregivers row, so a hit there is always
       // a genuine collision rather than the row being edited.
       const { db, whereArgs } = stubDb({ caregiver: [] });
-      await expect(
-        assertWhatsappNumberAvailable(db, E164, CC, { userId: LOGIN.id, patientId: PROFILE.id }),
-      ).resolves.toBeUndefined();
+      await expect(assertWhatsappNumberAvailable(db, E164, CC, { userId: LOGIN.id, patientId: PROFILE.id })).resolves.toBeUndefined();
 
       expect(render(whereArgs[1])).not.toContain('<>');
     });

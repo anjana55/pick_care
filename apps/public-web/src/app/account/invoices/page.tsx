@@ -43,7 +43,10 @@ export default function MyInvoicesPage() {
           <ul className="space-y-3">
             {sorted.map((inv) => (
               <li key={inv.id}>
-                <Link href={`/account/invoices/${inv.id}`} className="block rounded-lg border border-border bg-white p-4 transition-colors hover:border-brand sm:p-5">
+                <Link
+                  href={`/account/invoices/${inv.id}`}
+                  className="block rounded-lg border border-border bg-white p-4 transition-colors hover:border-brand sm:p-5"
+                >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <p className="font-medium tabular-nums text-ink">{inv.number}</p>
@@ -54,8 +57,12 @@ export default function MyInvoicesPage() {
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      {inv.overdue && <span className="rounded-full bg-danger-light px-2.5 py-0.5 text-xs font-medium text-danger">{t('invoices.overdue')}</span>}
-                      <span className={`whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ${TONE[inv.status]}`}>{t(`invoices.status.${inv.status}`)}</span>
+                      {inv.overdue && (
+                        <span className="rounded-full bg-danger-light px-2.5 py-0.5 text-xs font-medium text-danger">{t('invoices.overdue')}</span>
+                      )}
+                      <span className={`whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ${TONE[inv.status]}`}>
+                        {t(`invoices.status.${inv.status}`)}
+                      </span>
                     </div>
                   </div>
                   <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-1 text-sm sm:grid-cols-3">

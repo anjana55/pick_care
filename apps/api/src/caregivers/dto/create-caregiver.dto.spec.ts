@@ -14,8 +14,7 @@ describe('caregiver DTO validation messages', () => {
   const options: ValidationPipeOptions = { whitelist: true, transform: true, forbidNonWhitelisted: false };
   const pipe = new ValidationPipe(options);
 
-  const validate = (body: unknown, dto: unknown = CreateCaregiverDto) =>
-    pipe.transform(body, { type: 'body', metatype: dto as never });
+  const validate = (body: unknown, dto: unknown = CreateCaregiverDto) => pipe.transform(body, { type: 'body', metatype: dto as never });
 
   async function errorsFor(body: unknown, dto?: unknown): Promise<string[]> {
     try {
@@ -67,15 +66,11 @@ describe('caregiver DTO validation messages', () => {
     });
 
     it('names the minimum length for a too-short address', async () => {
-      expect(await errorsFor({ ...valid, permanentAddress: 'abc' })).toEqual([
-        'Enter an address of at least 5 characters',
-      ]);
+      expect(await errorsFor({ ...valid, permanentAddress: 'abc' })).toEqual(['Enter an address of at least 5 characters']);
     });
 
     it('distinguishes a too-short phone from a missing one', async () => {
-      expect(await errorsFor({ ...valid, primaryPhone: '123' })).toEqual([
-        'Enter a valid phone number with at least 9 digits',
-      ]);
+      expect(await errorsFor({ ...valid, primaryPhone: '123' })).toEqual(['Enter a valid phone number with at least 9 digits']);
     });
 
     it('needs digits in a phone number, not just enough characters', async () => {
@@ -94,9 +89,7 @@ describe('caregiver DTO validation messages', () => {
     });
 
     it('asks for a description of the relationship rather than a length', async () => {
-      expect(await errorsFor({ ...valid, emergencyContactRelationship: 'x' })).toEqual([
-        'Describe how you are related to this contact',
-      ]);
+      expect(await errorsFor({ ...valid, emergencyContactRelationship: 'x' })).toEqual(['Describe how you are related to this contact']);
     });
   });
 
@@ -129,9 +122,7 @@ describe('caregiver DTO validation messages', () => {
 
   it('caps optional free-text fields with a readable limit', async () => {
     expect(await errorsFor({ ...valid, nic: '1'.repeat(21) })).toEqual(['NIC must be 20 characters or fewer']);
-    expect(await errorsFor({ ...valid, passportNumber: 'P'.repeat(21) })).toEqual([
-      'Passport number must be 20 characters or fewer',
-    ]);
+    expect(await errorsFor({ ...valid, passportNumber: 'P'.repeat(21) })).toEqual(['Passport number must be 20 characters or fewer']);
   });
 
   // Location arrives as ids, never as typed text: `district`, `city` and
@@ -147,16 +138,12 @@ describe('caregiver DTO validation messages', () => {
       expect(await errorsFor({ ...valid, districtId: 0 })).toEqual(['District id must be a valid district']);
       // @Type(() => Number) turns a non-numeric string into NaN, which fails
       // both @IsInt and @Min, so assert the type message is among them.
-      expect(await errorsFor({ ...valid, districtId: 'Colombo' as unknown as number })).toContain(
-        'District id must be a number',
-      );
+      expect(await errorsFor({ ...valid, districtId: 'Colombo' as unknown as number })).toContain('District id must be a number');
     });
 
     it('explains a city id that is not a positive number', async () => {
       expect(await errorsFor({ ...valid, cityId: -1 })).toEqual(['City id must be a valid city']);
-      expect(await errorsFor({ ...valid, cityId: 'Dehiwala' as unknown as number })).toContain(
-        'City id must be a number',
-      );
+      expect(await errorsFor({ ...valid, cityId: 'Dehiwala' as unknown as number })).toContain('City id must be a number');
     });
 
     it('ignores free-text location fields a client might still send', async () => {
@@ -181,15 +168,11 @@ describe('caregiver DTO validation messages', () => {
     });
 
     it('rejects a malformed email in plain English', async () => {
-      expect(await errorsFor({ ...registerBody, email: 'nope' }, RegisterCaregiverDto)).toEqual([
-        'Enter a valid email address',
-      ]);
+      expect(await errorsFor({ ...registerBody, email: 'nope' }, RegisterCaregiverDto)).toEqual(['Enter a valid email address']);
     });
 
     it('states the password length rule', async () => {
-      expect(await errorsFor({ ...registerBody, password: 'short' }, RegisterCaregiverDto)).toEqual([
-        'Password must be at least 8 characters',
-      ]);
+      expect(await errorsFor({ ...registerBody, password: 'short' }, RegisterCaregiverDto)).toEqual(['Password must be at least 8 characters']);
     });
 
     it('requires the consent checkbox', async () => {
@@ -199,9 +182,7 @@ describe('caregiver DTO validation messages', () => {
     });
 
     it('inherits the personal-info messages unchanged', async () => {
-      expect(await errorsFor({ ...registerBody, fullName: 'N' }, RegisterCaregiverDto)).toEqual([
-        'Enter a full name of at least 2 characters',
-      ]);
+      expect(await errorsFor({ ...registerBody, fullName: 'N' }, RegisterCaregiverDto)).toEqual(['Enter a full name of at least 2 characters']);
     });
   });
 });

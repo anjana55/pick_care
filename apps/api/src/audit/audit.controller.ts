@@ -11,12 +11,7 @@ export class AuditController {
 
   @Get()
   @Roles('ADMIN')
-  findAll(
-    @Query('page') page = '1',
-    @Query('pageSize') pageSize = '25',
-    @Query('entityType') entityType?: string,
-    @Query('entityId') entityId?: string,
-  ) {
+  findAll(@Query('page') page = '1', @Query('pageSize') pageSize = '25', @Query('entityType') entityType?: string, @Query('entityId') entityId?: string) {
     return this.auditService.findAll({
       page: Number(page),
       pageSize: Number(pageSize),

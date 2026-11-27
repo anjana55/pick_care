@@ -70,17 +70,7 @@ export default function Start() {
   const next = client && bookings.data ? nextVisit(bookings.data) : null;
   const todos = client ? (summary.data?.todos ?? []) : [];
   // A failed load counts as known (nothing to show) so the band never waits forever.
-  const band: Band = !client
-    ? 'search'
-    : summary.isPending
-      ? 'waiting'
-      : todos.length
-        ? 'todo'
-        : bookings.isPending
-          ? 'waiting'
-          : next
-            ? 'visit'
-            : 'search';
+  const band: Band = !client ? 'search' : summary.isPending ? 'waiting' : todos.length ? 'todo' : bookings.isPending ? 'waiting' : next ? 'visit' : 'search';
   // Whatever the band shows is left out of the cards, so nothing is there twice.
   const onTop: TileKey | undefined = band === 'todo' ? CARD_FOR[todos[0].kind] : band === 'search' ? 'find' : undefined;
   // "Today's care" only on a day with care, or while there is care to tick off.
@@ -157,7 +147,12 @@ export default function Start() {
                   <View style={[styles.art, { backgroundColor: tint(colors.brand, 0.14) }]}>
                     <HomeArt name={tile.key} width={92} />
                     {count > 0 ? (
-                      <View testID={`count-${tile.key}`} style={[styles.count, { backgroundColor: colors.deep }]} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+                      <View
+                        testID={`count-${tile.key}`}
+                        style={[styles.count, { backgroundColor: colors.deep }]}
+                        importantForAccessibility="no-hide-descendants"
+                        accessibilityElementsHidden
+                      >
                         <Text style={styles.countText}>{badgeLabel(count)}</Text>
                       </View>
                     ) : null}
@@ -166,7 +161,6 @@ export default function Start() {
               );
             })}
           </View>
-
         </View>
       </ScrollView>
     </View>
@@ -205,11 +199,33 @@ const styles = StyleSheet.create({
   top: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   body: { padding: 20, gap: 14 },
   section: { fontSize: 22, fontWeight: '800', marginTop: 4 },
-  card: { minHeight: 108, borderRadius: 20, borderWidth: 2, paddingVertical: 12, paddingLeft: 20, paddingRight: 12, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  card: {
+    minHeight: 108,
+    borderRadius: 20,
+    borderWidth: 2,
+    paddingVertical: 12,
+    paddingLeft: 20,
+    paddingRight: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
   cardLabel: { fontSize: 21, lineHeight: 27, fontWeight: '800' },
   cardHint: { fontSize: 16, lineHeight: 22 },
   art: { width: 108, height: 84, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  count: { position: 'absolute', top: -8, right: -8, minWidth: 32, height: 32, borderRadius: 16, paddingHorizontal: 6, alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: '#FFFFFF' },
+  count: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    minWidth: 32,
+    height: 32,
+    borderRadius: 16,
+    paddingHorizontal: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 3,
+    borderColor: '#FFFFFF',
+  },
   countText: { color: '#FFFFFF', fontSize: 16, fontWeight: '800', lineHeight: 20 },
   next: { borderRadius: 20, padding: 18, flexDirection: 'row', alignItems: 'center', gap: 14 },
   nextIcon: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center' },

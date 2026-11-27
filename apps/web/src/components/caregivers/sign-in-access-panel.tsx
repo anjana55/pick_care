@@ -87,11 +87,7 @@ export function SignInAccessPanel({
                 label={t('caregivers.signIn.phone')}
                 ok={Boolean(methods.phone && methods.phoneVerified)}
                 value={
-                  !methods.phone
-                    ? t('caregivers.signIn.none')
-                    : methods.phoneVerified
-                      ? t('caregivers.signIn.verified')
-                      : t('caregivers.signIn.unverified')
+                  !methods.phone ? t('caregivers.signIn.none') : methods.phoneVerified ? t('caregivers.signIn.verified') : t('caregivers.signIn.unverified')
                 }
                 detail={methods.phone}
               />
@@ -99,11 +95,7 @@ export function SignInAccessPanel({
                 label={t('caregivers.signIn.email')}
                 ok={Boolean(methods.email && methods.emailVerified)}
                 value={
-                  !methods.email
-                    ? t('caregivers.signIn.none')
-                    : methods.emailVerified
-                      ? t('caregivers.signIn.verified')
-                      : t('caregivers.signIn.unverified')
+                  !methods.email ? t('caregivers.signIn.none') : methods.emailVerified ? t('caregivers.signIn.verified') : t('caregivers.signIn.unverified')
                 }
                 detail={methods.email}
               />
@@ -154,7 +146,12 @@ export function SignInAccessPanel({
       </Card>
 
       {canReset && methods.hasAccount && (
-        <PasswordHelpCard path={`/caregivers/${caregiverId}/sign-in/password`} refresh={['caregiver-sign-in', caregiverId]} email={methods.email} hasPassword={methods.hasPassword} />
+        <PasswordHelpCard
+          path={`/caregivers/${caregiverId}/sign-in/password`}
+          refresh={['caregiver-sign-in', caregiverId]}
+          email={methods.email}
+          hasPassword={methods.hasPassword}
+        />
       )}
 
       {methods.claimable && (
@@ -179,8 +176,7 @@ export function SignInAccessPanel({
                   {issued.claimUrl}
                 </a>
                 <p className="mt-1 text-xs text-ink/60">
-                  {t('caregivers.signIn.claimUrlHint')}{' '}
-                  <span className="font-medium text-ink">{issued.registrationNumber}</span>
+                  {t('caregivers.signIn.claimUrlHint')} <span className="font-medium text-ink">{issued.registrationNumber}</span>
                 </p>
                 <p className="mt-2 text-xs text-ink/60">
                   {t('caregivers.signIn.codeExpires')} {formatDate(issued.expiresAt)}. {t('caregivers.signIn.codeShownOnce')}
@@ -218,22 +214,12 @@ export function SignInAccessPanel({
         />
       )}
 
-      {resetOpen && (
-        <ResetSignInModal caregiverId={caregiverId} methods={methods} onClose={() => setResetOpen(false)} />
-      )}
+      {resetOpen && <ResetSignInModal caregiverId={caregiverId} methods={methods} onClose={() => setResetOpen(false)} />}
     </div>
   );
 }
 
-function ResetSignInModal({
-  caregiverId,
-  methods,
-  onClose,
-}: {
-  caregiverId: string;
-  methods: CaregiverSignInMethods;
-  onClose: () => void;
-}) {
+function ResetSignInModal({ caregiverId, methods, onClose }: { caregiverId: string; methods: CaregiverSignInMethods; onClose: () => void }) {
   const { t } = useTranslation();
   const reset = useResetCaregiverSignIn(caregiverId);
   const [providers, setProviders] = useState<SocialProviderName[]>(methods.providers.map((p) => p.provider));
@@ -242,8 +228,7 @@ function ResetSignInModal({
   const [email, setEmail] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const toggleProvider = (p: SocialProviderName) =>
-    setProviders((cur) => (cur.includes(p) ? cur.filter((x) => x !== p) : [...cur, p]));
+  const toggleProvider = (p: SocialProviderName) => setProviders((cur) => (cur.includes(p) ? cur.filter((x) => x !== p) : [...cur, p]));
 
   const nothingChosen = providers.length === 0 && !password && !phone && !email;
 
@@ -282,9 +267,7 @@ function ResetSignInModal({
               hint={p.providerEmail}
             />
           ))}
-          {methods.hasPassword && (
-            <Check checked={password} onChange={() => setPassword((v) => !v)} label={t('caregivers.signIn.removePassword')} />
-          )}
+          {methods.hasPassword && <Check checked={password} onChange={() => setPassword((v) => !v)} label={t('caregivers.signIn.removePassword')} />}
           {methods.phone && (
             <Check
               checked={phone}

@@ -32,12 +32,7 @@ export class ExperiencesController {
   @Patch(':id')
   @CaregiverScope('ADMIN')
   @Audit({ action: 'UPDATE_EXPERIENCE', entityType: 'Experience' })
-  update(
-    @Param('caregiverId') caregiverId: string,
-    @Param('id') id: string,
-    @Body() dto: UpdateExperienceDto,
-    @CurrentUser() user: AuthenticatedUser,
-  ) {
+  update(@Param('caregiverId') caregiverId: string, @Param('id') id: string, @Body() dto: UpdateExperienceDto, @CurrentUser() user: AuthenticatedUser) {
     return this.experiencesService.update(caregiverId, id, dto, user.role);
   }
 

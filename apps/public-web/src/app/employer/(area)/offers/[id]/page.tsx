@@ -64,8 +64,12 @@ export default function EmployerOfferPage() {
           </div>
           <OfferStatusBadge status={o.status} expired={o.expired} />
         </div>
-        {o.status === 'SENT' && o.expiresOn && <p className="mt-2 text-sm text-brand-dark">{t('employer.offers.answerBy', { date: fmtDate(o.expiresOn, locale) })}</p>}
-        {o.status === 'DECLINED' && o.declineReason && <p className="mt-2 text-sm text-ink/70">{t('employer.offers.declinedBecause', { reason: o.declineReason })}</p>}
+        {o.status === 'SENT' && o.expiresOn && (
+          <p className="mt-2 text-sm text-brand-dark">{t('employer.offers.answerBy', { date: fmtDate(o.expiresOn, locale) })}</p>
+        )}
+        {o.status === 'DECLINED' && o.declineReason && (
+          <p className="mt-2 text-sm text-ink/70">{t('employer.offers.declinedBecause', { reason: o.declineReason })}</p>
+        )}
 
         {editing && account ? (
           <div className="mt-5">
@@ -102,7 +106,12 @@ export default function EmployerOfferPage() {
             (confirmWithdraw ? (
               <span className="flex flex-wrap items-center gap-2 text-sm">
                 {t('employer.offers.withdrawConfirm')}
-                <Button size="sm" variant="danger" disabled={withdraw.isPending} onClick={() => withdraw.mutate(o.id, { onSuccess: () => setConfirmWithdraw(false) })}>
+                <Button
+                  size="sm"
+                  variant="danger"
+                  disabled={withdraw.isPending}
+                  onClick={() => withdraw.mutate(o.id, { onSuccess: () => setConfirmWithdraw(false) })}
+                >
                   {t('employer.offers.withdrawYes')}
                 </Button>
                 <Button size="sm" variant="ghost" onClick={() => setConfirmWithdraw(false)}>

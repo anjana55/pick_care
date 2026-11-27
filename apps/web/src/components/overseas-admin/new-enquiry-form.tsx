@@ -48,7 +48,13 @@ export function NewEnquiryForm({ onCancel }: { onCancel: () => void }) {
   });
   const set = <K extends keyof typeof v>(k: K, value: (typeof v)[K]) => setV((x) => ({ ...x, [k]: value }));
   const countries = useMemo(() => COUNTRY_CODES.map((c) => ({ code: c, name: countryName(c, locale) })).sort((a, b) => a.name.localeCompare(b.name)), [locale]);
-  const ready = v.organisationName.trim().length >= 2 && v.contactName.trim().length >= 2 && v.email.trim() && v.country && v.careSettings.length > 0 && Number(v.rolesCount) >= 1;
+  const ready =
+    v.organisationName.trim().length >= 2 &&
+    v.contactName.trim().length >= 2 &&
+    v.email.trim() &&
+    v.country &&
+    v.careSettings.length > 0 &&
+    Number(v.rolesCount) >= 1;
   const opt = (s: string) => s.trim() || undefined;
 
   return (
@@ -87,11 +93,15 @@ export function NewEnquiryForm({ onCancel }: { onCancel: () => void }) {
       <fieldset className="grid gap-4 sm:grid-cols-2">
         <legend className="mb-2 text-sm font-semibold text-ink">{t('international.detail.employer')}</legend>
         <div>
-          <Label htmlFor="ne-org" required>{t('international.edit.organisation')}</Label>
+          <Label htmlFor="ne-org" required>
+            {t('international.edit.organisation')}
+          </Label>
           <Input id="ne-org" value={v.organisationName} onChange={(e) => set('organisationName', e.target.value)} maxLength={200} required />
         </div>
         <div>
-          <Label htmlFor="ne-type" required>{t('international.detail.type')}</Label>
+          <Label htmlFor="ne-type" required>
+            {t('international.detail.type')}
+          </Label>
           <Select id="ne-type" value={v.organisationType} onChange={(e) => set('organisationType', e.target.value as EmployerType)}>
             {employerTypeValues.map((k) => (
               <option key={k} value={k}>
@@ -101,7 +111,9 @@ export function NewEnquiryForm({ onCancel }: { onCancel: () => void }) {
           </Select>
         </div>
         <div>
-          <Label htmlFor="ne-country" required>{t('international.enquiries.country')}</Label>
+          <Label htmlFor="ne-country" required>
+            {t('international.enquiries.country')}
+          </Label>
           <Select id="ne-country" value={v.country} onChange={(e) => set('country', e.target.value as CountryCode)} required>
             <option value="">{t('overseasAdmin.chooseCountry')}</option>
             {countries.map((c) => (
@@ -112,11 +124,15 @@ export function NewEnquiryForm({ onCancel }: { onCancel: () => void }) {
           </Select>
         </div>
         <div>
-          <Label htmlFor="ne-contact" required>{t('international.detail.contact')}</Label>
+          <Label htmlFor="ne-contact" required>
+            {t('international.detail.contact')}
+          </Label>
           <Input id="ne-contact" value={v.contactName} onChange={(e) => set('contactName', e.target.value)} maxLength={150} required />
         </div>
         <div>
-          <Label htmlFor="ne-email" required>{t('international.detail.email')}</Label>
+          <Label htmlFor="ne-email" required>
+            {t('international.detail.email')}
+          </Label>
           <Input id="ne-email" type="email" value={v.email} onChange={(e) => set('email', e.target.value)} maxLength={255} required />
         </div>
         <div>
@@ -143,11 +159,15 @@ export function NewEnquiryForm({ onCancel }: { onCancel: () => void }) {
       <fieldset className="grid gap-4 sm:grid-cols-2">
         <legend className="mb-2 text-sm font-semibold text-ink">{t('international.detail.needs')}</legend>
         <div>
-          <Label htmlFor="ne-roles" required>{t('international.enquiries.roles')}</Label>
+          <Label htmlFor="ne-roles" required>
+            {t('international.enquiries.roles')}
+          </Label>
           <Input id="ne-roles" type="number" min={1} max={500} value={v.rolesCount} onChange={(e) => set('rolesCount', e.target.value)} required />
         </div>
         <div>
-          <Label htmlFor="ne-visa" required>{t('international.detail.visa')}</Label>
+          <Label htmlFor="ne-visa" required>
+            {t('international.detail.visa')}
+          </Label>
           <Select id="ne-visa" value={v.visaSponsorship} onChange={(e) => set('visaSponsorship', e.target.value as VisaSponsorship)}>
             {visaSponsorshipValues.map((k) => (
               <option key={k} value={k}>
@@ -166,7 +186,11 @@ export function NewEnquiryForm({ onCancel }: { onCancel: () => void }) {
           <div className="flex flex-wrap gap-x-4 gap-y-2">
             {careTypeValues.map((c) => (
               <label key={c} className="flex items-center gap-2 text-sm text-ink">
-                <input type="checkbox" checked={v.careSettings.includes(c)} onChange={(e) => set('careSettings', e.target.checked ? [...v.careSettings, c] : v.careSettings.filter((x) => x !== c))} />
+                <input
+                  type="checkbox"
+                  checked={v.careSettings.includes(c)}
+                  onChange={(e) => set('careSettings', e.target.checked ? [...v.careSettings, c] : v.careSettings.filter((x) => x !== c))}
+                />
                 {t(`careTypes.${c}`)}
               </label>
             ))}

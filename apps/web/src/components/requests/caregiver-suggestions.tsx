@@ -25,15 +25,7 @@ import type { CareRequestDetail } from '@/lib/api/types';
  * on a map, the search radius, and - for a picked caregiver - the cities they
  * travel to.
  */
-function NearbyMap({
-  data,
-  shown,
-  onRadiusChange,
-}: {
-  data: StaffSuggestionsResponse;
-  shown: string | null;
-  onRadiusChange: (km: number) => void;
-}) {
+function NearbyMap({ data, shown, onRadiusChange }: { data: StaffSuggestionsResponse; shown: string | null; onRadiusChange: (km: number) => void }) {
   const { t, locale } = useTranslation();
   const origin = data.origin;
   const highlightedItem = data.items.find((c) => c.caregiverId === shown) ?? null;
@@ -169,11 +161,13 @@ export function CaregiverSuggestions({ request }: { request: CareRequestDetail }
               <ul className="divide-y divide-border">
                 {data.items.map((c) => {
                   const attached = request.caregiver?.id === c.caregiverId;
-                  const shifts = [c.dayDuty && t('suggestions.shift.day'), c.nightDuty && t('suggestions.shift.night'), c.liveIn24h && t('suggestions.shift.liveIn')].filter(Boolean);
+                  const shifts = [
+                    c.dayDuty && t('suggestions.shift.day'),
+                    c.nightDuty && t('suggestions.shift.night'),
+                    c.liveIn24h && t('suggestions.shift.liveIn'),
+                  ].filter(Boolean);
                   const nearestServiceCity =
-                    c.reach === 'serviceArea'
-                      ? c.serviceArea.filter((a) => a.distanceKm !== null).sort((a, b) => a.distanceKm! - b.distanceKm!)[0]
-                      : undefined;
+                    c.reach === 'serviceArea' ? c.serviceArea.filter((a) => a.distanceKm !== null).sort((a, b) => a.distanceKm! - b.distanceKm!)[0] : undefined;
                   return (
                     <li key={c.caregiverId} className="flex flex-wrap items-start justify-between gap-3 py-3">
                       <div className="min-w-0 flex-1">
@@ -213,25 +207,25 @@ export function CaregiverSuggestions({ request }: { request: CareRequestDetail }
                         )}
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
-                      {c.homeLocation && data.origin && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          aria-pressed={shown === c.caregiverId}
-                          onClick={() => setShown(shown === c.caregiverId ? null : c.caregiverId)}
-                        >
-                          <MapPinned size={14} className="mr-1" aria-hidden />
-                          {shown === c.caregiverId ? t('suggestions.map.hideFromMap') : t('suggestions.map.showOnMap')}
-                        </Button>
-                      )}
-                      {request.canChangeCaregiver &&
-                        (attached ? (
-                          <span className="text-xs font-medium text-brand-dark">{t('suggestions.attached')}</span>
-                        ) : (
-                          <Button size="sm" variant="secondary" disabled={attach.isPending} onClick={() => attach.mutate(c.caregiverId)}>
-                            {request.caregiver ? t('suggestions.swap') : t('suggestions.attach')}
+                        {c.homeLocation && data.origin && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            aria-pressed={shown === c.caregiverId}
+                            onClick={() => setShown(shown === c.caregiverId ? null : c.caregiverId)}
+                          >
+                            <MapPinned size={14} className="mr-1" aria-hidden />
+                            {shown === c.caregiverId ? t('suggestions.map.hideFromMap') : t('suggestions.map.showOnMap')}
                           </Button>
-                        ))}
+                        )}
+                        {request.canChangeCaregiver &&
+                          (attached ? (
+                            <span className="text-xs font-medium text-brand-dark">{t('suggestions.attached')}</span>
+                          ) : (
+                            <Button size="sm" variant="secondary" disabled={attach.isPending} onClick={() => attach.mutate(c.caregiverId)}>
+                              {request.caregiver ? t('suggestions.swap') : t('suggestions.attach')}
+                            </Button>
+                          ))}
                       </div>
                     </li>
                   );

@@ -1,16 +1,6 @@
 import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { and, asc, eq, gte, inArray, isNotNull, isNull, lt } from 'drizzle-orm';
-import {
-  CORE_DOCUMENTS,
-  TODO_EXPIRY_DAYS,
-  addDays,
-  colomboToUtc,
-  colomboToday,
-  formatLkr,
-  toCents,
-  toColombo,
-  type TodoItem,
-} from '@care-platform/shared';
+import { CORE_DOCUMENTS, TODO_EXPIRY_DAYS, addDays, colomboToUtc, colomboToday, formatLkr, toCents, toColombo, type TodoItem } from '@care-platform/shared';
 import { DRIZZLE, type Database } from '../database/database.module';
 import { bookingShifts, bookings, caregiverDocuments, careLocations, checkInSettings, invoices, patients, caregivers } from '../database/schema';
 import type { AuthenticatedUser } from '../common/decorators/current-user.decorator';
@@ -68,7 +58,11 @@ export class TodosService implements OnModuleInit {
   async forUserId(userId: string, now = new Date()): Promise<TodoItem[]> {
     const [p] = await this.db.select({ id: patients.id }).from(patients).where(eq(patients.userId, userId)).limit(1);
     if (p) return this.forClient({ userId, role: 'PATIENT_GUARDIAN', patientId: p.id, email: null }, p.id, now);
-    const [c] = await this.db.select({ id: caregivers.id }).from(caregivers).where(and(eq(caregivers.userId, userId), isNull(caregivers.deletedAt))).limit(1);
+    const [c] = await this.db
+      .select({ id: caregivers.id })
+      .from(caregivers)
+      .where(and(eq(caregivers.userId, userId), isNull(caregivers.deletedAt)))
+      .limit(1);
     if (c) return this.forCaregiver(c.id, now);
     return [];
   }
@@ -148,9 +142,17 @@ export class TodosService implements OnModuleInit {
   async homeToPin(patientId: string): Promise<TodoItem[]> {
     const [settings] = await this.db.select({ enabled: checkInSettings.enabled }).from(checkInSettings).limit(1);
     if (!settings?.enabled) return [];
-    const [place] = await this.db.select({ id: careLocations.id }).from(careLocations).where(and(eq(careLocations.patientId, patientId), isNotNull(careLocations.confirmedAt))).limit(1);
+    const [place] = await this.db
+      .select({ id: careLocations.id })
+      .from(careLocations)
+      .where(and(eq(careLocations.patientId, patientId), isNotNull(careLocations.confirmedAt)))
+      .limit(1);
     if (place) return [];
-    const [booking] = await this.db.select({ id: bookings.id }).from(bookings).where(and(eq(bookings.patientId, patientId), inArray(bookings.status, ['DRAFT', 'CONFIRMED']))).limit(1);
+    const [booking] = await this.db
+      .select({ id: bookings.id })
+      .from(bookings)
+      .where(and(eq(bookings.patientId, patientId), inArray(bookings.status, ['DRAFT', 'CONFIRMED'])))
+      .limit(1);
     if (!booking) return [];
     return [{ key: 'place:home', kind: 'PIN_HOME', path: '/care-places', urgent: false, dueOn: null, params: {} }];
   }
@@ -158,7 +160,10 @@ export class TodosService implements OnModuleInit {
   // --- caregivers -------------------------------------------------------------------
 
   async forCaregiver(caregiverId: string, now = new Date()): Promise<TodoItem[]> {
-    const parts = await Promise.all([this.safe('documents', () => this.documents(caregiverId, now)), this.safe('shifts', () => this.shiftsToday(caregiverId, now))]);
+    const parts = await Promise.all([
+      this.safe('documents', () => this.documents(caregiverId, now)),
+      this.safe('shifts', () => this.shiftsToday(caregiverId, now)),
+    ]);
     return sortTodos(parts.flat()).slice(0, MAX_TODOS);
   }
 
@@ -243,4 +248,3 @@ export class TodosService implements OnModuleInit {
     }));
   }
 }
-

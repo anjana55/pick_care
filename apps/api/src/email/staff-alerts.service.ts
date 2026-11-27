@@ -41,7 +41,11 @@ export class StaffAlertsService {
       const to = await this.recipients();
       if (!to.length) return void this.logger.warn(`${a.subject} - but there is nobody to email`);
       const base = (this.config.get<string>('CAREGIVER_WEB_URL') ?? 'http://localhost:3000/staff').replace(/\/+$/, '');
-      await this.email.sendNotificationEmail(to, { subject: a.subject, blocks: [{ lang: 'en', heading: a.subject, paragraphs: a.paragraphs }], cta: { label: a.cta, url: `${base}${a.path}` } }, a.label);
+      await this.email.sendNotificationEmail(
+        to,
+        { subject: a.subject, blocks: [{ lang: 'en', heading: a.subject, paragraphs: a.paragraphs }], cta: { label: a.cta, url: `${base}${a.path}` } },
+        a.label,
+      );
     } catch (err) {
       this.logger.warn(`${a.label}: staff email failed - ${(err as Error).message}`);
     }

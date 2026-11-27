@@ -162,8 +162,7 @@ export function useUpdateCaregiver(id: string) {
 export function useAssignSkill(caregiverId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { skillId: string; proficiency: string; yearsOfExperience?: number }) =>
-      api.post(`/caregivers/${caregiverId}/skills`, data),
+    mutationFn: (data: { skillId: string; proficiency: string; yearsOfExperience?: number }) => api.post(`/caregivers/${caregiverId}/skills`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['caregiver', caregiverId] });
       queryClient.invalidateQueries({ queryKey: ['caregiver-skills', caregiverId] });
@@ -187,8 +186,7 @@ export function useRemoveSkill(caregiverId: string) {
 export function useAssignLanguage(caregiverId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { languageId: string; proficiency: string }) =>
-      api.post(`/caregivers/${caregiverId}/languages`, data),
+    mutationFn: (data: { languageId: string; proficiency: string }) => api.post(`/caregivers/${caregiverId}/languages`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['caregiver', caregiverId] });
       queryClient.invalidateQueries({ queryKey: ['caregiver-languages', caregiverId] });
@@ -347,8 +345,7 @@ export function useSetReferenceVerification(caregiverId: string) {
 export function useAddVerification(caregiverId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { verificationType: string; status?: string; notes?: string }) =>
-      api.post(`/caregivers/${caregiverId}/verifications`, data),
+    mutationFn: (data: { verificationType: string; status?: string; notes?: string }) => api.post(`/caregivers/${caregiverId}/verifications`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['verifications', caregiverId] });
     },

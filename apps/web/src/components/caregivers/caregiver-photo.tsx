@@ -104,16 +104,30 @@ export function CaregiverPhoto({ caregiverId, name, canEdit }: { caregiverId: st
   return (
     <div className="flex flex-wrap items-start gap-4">
       <div className={cn('flex items-start gap-3', busy && 'opacity-60')}>
-        <Round src={info?.hasPhoto ? approvedSrc : undefined} alt={info?.hasPhoto ? t('caregiverPhoto.alt', { name }) : t('caregiverPhoto.none')} size="h-16 w-16" />
+        <Round
+          src={info?.hasPhoto ? approvedSrc : undefined}
+          alt={info?.hasPhoto ? t('caregiverPhoto.alt', { name }) : t('caregiverPhoto.none')}
+          size="h-16 w-16"
+        />
         {canEdit && (
           <div className="flex flex-col items-start gap-1 pt-1 print:hidden">
             <input ref={input} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => onPick(e.target.files?.[0])} />
-            <button type="button" disabled={busy} onClick={() => input.current?.click()} className="inline-flex items-center gap-1.5 text-xs font-medium text-brand-dark hover:underline disabled:opacity-50">
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => input.current?.click()}
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-brand-dark hover:underline disabled:opacity-50"
+            >
               <Camera size={13} aria-hidden />
               {upload.isPending ? t('common.loading') : info?.hasPhoto ? t('caregiverPhoto.replace') : t('caregiverPhoto.upload')}
             </button>
             {(info?.hasPhoto || info?.pending) && (
-              <button type="button" disabled={busy} onClick={() => remove.mutate()} className="inline-flex items-center gap-1.5 text-xs font-medium text-ink/50 hover:text-danger disabled:opacity-50">
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => remove.mutate()}
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-ink/50 hover:text-danger disabled:opacity-50"
+              >
                 <Trash2 size={13} aria-hidden />
                 {t('caregiverPhoto.remove')}
               </button>
@@ -165,7 +179,12 @@ export function CaregiverPhoto({ caregiverId, name, canEdit }: { caregiverId: st
                   className="h-8 w-full rounded border border-border px-2 text-xs focus:border-brand focus:outline-none"
                 />
                 <div className="flex gap-2">
-                  <button type="button" disabled={busy} onClick={() => reject.mutate()} className="rounded bg-danger px-2.5 py-1 text-xs font-semibold text-white disabled:opacity-50">
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => reject.mutate()}
+                    className="rounded bg-danger px-2.5 py-1 text-xs font-semibold text-white disabled:opacity-50"
+                  >
                     {t('caregiverPhoto.confirmReject')}
                   </button>
                   <button type="button" onClick={() => setRejecting(false)} className="px-1 text-xs text-ink/50 hover:text-ink">

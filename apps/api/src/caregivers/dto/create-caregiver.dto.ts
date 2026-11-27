@@ -130,7 +130,8 @@ export class CreateCaregiverDto {
 
   @ApiPropertyOptional({
     enum: contactMethodEnum,
-    description: 'How staff should reach the caregiver first. Written notices go by WhatsApp when this is WHATSAPP and WhatsApp updates are on; otherwise email first, as before',
+    description:
+      'How staff should reach the caregiver first. Written notices go by WhatsApp when this is WHATSAPP and WhatsApp updates are on; otherwise email first, as before',
   })
   @IsOptional()
   @IsEnum(contactMethodEnum, { message: 'Choose how we should contact you' })

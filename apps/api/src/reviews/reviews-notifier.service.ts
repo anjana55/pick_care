@@ -48,13 +48,21 @@ export class ReviewsNotifier {
   }
 
   /** Ask the client to rate (first ask or the one reminder). Resolves false when nothing could be sent. */
-  async askClient(stage: 'ASK' | 'REMINDER', p: { patientId: string; bookingId: string; reference: string; language: CareRequestLanguage; caregiverPublicId: string }): Promise<boolean> {
+  async askClient(
+    stage: 'ASK' | 'REMINDER',
+    p: { patientId: string; bookingId: string; reference: string; language: CareRequestLanguage; caregiverPublicId: string },
+  ): Promise<boolean> {
     try {
       const path = ratePath(p.bookingId, p.caregiverPublicId);
       const text = reviewAskNotice(stage, p.language, p.reference);
       const who = await this.client(p.patientId);
       if (!who) return false;
-      this.notices.notify([who.userId], (lang) => fromNotice(reviewAskNotice(stage, lang, p.reference)), `/bookings/${p.bookingId}/rate/${p.caregiverPublicId}`, `review ${stage.toLowerCase()} ${p.reference}`);
+      this.notices.notify(
+        [who.userId],
+        (lang) => fromNotice(reviewAskNotice(stage, lang, p.reference)),
+        `/bookings/${p.bookingId}/rate/${p.caregiverPublicId}`,
+        `review ${stage.toLowerCase()} ${p.reference}`,
+      );
       // Communication preferences: the reminder is optional, so it stays in the bell and push when reminder messages are off.
       if (stage === 'REMINDER' && !(await this.remindersByMessage(who.userId))) return true;
       return await this.deliverToClient(who, p.language, text, path, `review ${stage.toLowerCase()} ${p.reference}`);
@@ -78,7 +86,12 @@ export class ReviewsNotifier {
       const who = await this.client(r.patientId);
       if (!who) return;
       const text = reviewRejectedNotice(r.language, r.reference, r.commentRejectReason);
-      this.notices.notify([who.userId], (lang) => fromNotice(reviewRejectedNotice(lang, r.reference, r.commentRejectReason!)), `/bookings/${r.bookingId}/rate/${r.caregiverPublicId}`, `review rejected ${r.reference}`);
+      this.notices.notify(
+        [who.userId],
+        (lang) => fromNotice(reviewRejectedNotice(lang, r.reference, r.commentRejectReason!)),
+        `/bookings/${r.bookingId}/rate/${r.caregiverPublicId}`,
+        `review rejected ${r.reference}`,
+      );
       await this.deliverToClient(who, r.language, text, ratePath(r.bookingId, r.caregiverPublicId), `review rejected ${r.reference}`);
     } catch (err) {
       this.logger.error(`Review rejection notice failed: ${(err as Error).message}`);
@@ -107,9 +120,15 @@ export class ReviewsNotifier {
         preferred: c.preferred as Parameters<typeof chooseClientChannel>[0]['preferred'],
       });
       if (channel === 'EMAIL') {
-        await this.email.sendNotificationEmail(account!.email!, { subject: msg.subject, blocks: msg.blocks, cta: { label: '{brand}', url: this.publicUrl('/caregiver/ratings') } }, 'caregiver praise');
+        await this.email.sendNotificationEmail(
+          account!.email!,
+          { subject: msg.subject, blocks: msg.blocks, cta: { label: '{brand}', url: this.publicUrl('/caregiver/ratings') } },
+          'caregiver praise',
+        );
       } else if (channel === 'WHATSAPP') {
-        await this.whatsapp.sendUpdate(wa, phone!, 'en', msg.whatsappText).catch((e) => this.logger.error(`WhatsApp caregiver praise failed: ${(e as Error).message}`));
+        await this.whatsapp
+          .sendUpdate(wa, phone!, 'en', msg.whatsappText)
+          .catch((e) => this.logger.error(`WhatsApp caregiver praise failed: ${(e as Error).message}`));
       }
     } catch (err) {
       this.logger.error(`Caregiver praise notice failed: ${(err as Error).message}`);
@@ -178,7 +197,14 @@ export class ReviewsNotifier {
 
   private async client(patientId: string) {
     const [p] = await this.db
-      .select({ userId: patients.userId, phone: patients.phone, preferred: patients.preferredContactMethod, email: users.email, accountPhone: users.phone, status: patients.status })
+      .select({
+        userId: patients.userId,
+        phone: patients.phone,
+        preferred: patients.preferredContactMethod,
+        email: users.email,
+        accountPhone: users.phone,
+        status: patients.status,
+      })
       .from(patients)
       .innerJoin(users, eq(patients.userId, users.id))
       .where(eq(patients.id, patientId))
@@ -203,13 +229,20 @@ export class ReviewsNotifier {
       preferred: who.preferred as Parameters<typeof chooseClientChannel>[0]['preferred'],
     });
     if (channel === 'WHATSAPP') {
-      await this.whatsapp.sendUpdate(wa, who.phone!, lang, `${text.heading}. ${text.body} ${this.publicUrl(path)}`).catch((e) => this.logger.error(`WhatsApp ${label} failed: ${(e as Error).message}`));
+      await this.whatsapp
+        .sendUpdate(wa, who.phone!, lang, `${text.heading}. ${text.body} ${this.publicUrl(path)}`)
+        .catch((e) => this.logger.error(`WhatsApp ${label} failed: ${(e as Error).message}`));
       return true;
     }
     if (channel === 'EMAIL') {
       await this.email.sendNotificationEmail(
         who.email!,
-        { subject: text.subject, blocks: [{ lang, heading: text.heading, paragraphs: [text.body] }], cta: { label: text.cta, url: this.publicUrl(path) }, footer: CLIENT_FOOTER[lang] },
+        {
+          subject: text.subject,
+          blocks: [{ lang, heading: text.heading, paragraphs: [text.body] }],
+          cta: { label: text.cta, url: this.publicUrl(path) },
+          footer: CLIENT_FOOTER[lang],
+        },
         label,
       );
       return true;

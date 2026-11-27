@@ -62,8 +62,15 @@ describe('Billing agent (e2e)', () => {
     const reg = await api()
       .post('/auth/register-caregiver/unified')
       .send({
-        phone, consentAccepted: true, fullName: `Billed Caregiver ${phone}`, permanentAddress: '1 Lake Road, Kandy',
-        dateOfBirth: '1988-01-20', gender: 'FEMALE', civilStatus: 'MARRIED', emergencyContactName: 'EC', emergencyContactNumber: '0770001111',
+        phone,
+        consentAccepted: true,
+        fullName: `Billed Caregiver ${phone}`,
+        permanentAddress: '1 Lake Road, Kandy',
+        dateOfBirth: '1988-01-20',
+        gender: 'FEMALE',
+        civilStatus: 'MARRIED',
+        emergencyContactName: 'EC',
+        emergencyContactNumber: '0770001111',
         emergencyContactRelationship: 'Husband',
       })
       .expect(201);
@@ -76,7 +83,14 @@ describe('Billing agent (e2e)', () => {
   async function newClient() {
     const reg = await api()
       .post('/auth/register-patient')
-      .send({ email: `agent-client-${run}-${++n}@example.com`, password: 'SelfRegPass123', fullName: 'Nimal Kumara Perera', phone: newPhone(), consentAccepted: true, ...intake })
+      .send({
+        email: `agent-client-${run}-${++n}@example.com`,
+        password: 'SelfRegPass123',
+        fullName: 'Nimal Kumara Perera',
+        phone: newPhone(),
+        consentAccepted: true,
+        ...intake,
+      })
       .expect(201);
     const [row] = await db.select().from(patients).where(eq(patients.id, reg.body.patientId));
     const token = jwt.sign({ sub: row.userId, role: 'PATIENT_GUARDIAN', patientId: row.id }, { secret: accessSecret, expiresIn: '10m' });
@@ -92,8 +106,19 @@ describe('Billing agent (e2e)', () => {
       .post('/bookings')
       .set(bearer(staffToken))
       .send({
-        patientId: client.patientId, caregiverId: cg.id, scheduleType: 'DAY', daysOfWeek: [1, 2, 3, 4, 5], shiftStartTime: '08:00', shiftEndTime: '17:00',
-        startDate: monday, endDate: addDays(monday, 4), rateType: 'DAILY', rateAmount: '3500.00', payRateType: 'DAILY', payRateAmount: '2500.00', ...rates,
+        patientId: client.patientId,
+        caregiverId: cg.id,
+        scheduleType: 'DAY',
+        daysOfWeek: [1, 2, 3, 4, 5],
+        shiftStartTime: '08:00',
+        shiftEndTime: '17:00',
+        startDate: monday,
+        endDate: addDays(monday, 4),
+        rateType: 'DAILY',
+        rateAmount: '3500.00',
+        payRateType: 'DAILY',
+        payRateAmount: '2500.00',
+        ...rates,
       })
       .expect(201);
     const confirmed = await api().post(`/bookings/${created.body.id}/confirm`).set(bearer(staffToken)).expect(200);
@@ -104,10 +129,18 @@ describe('Billing agent (e2e)', () => {
     api().patch(`/bookings/${bookingId}/shifts/${shiftId}`).set(bearer(staffToken)).send(body).expect(200);
   const mode = (m: string) => api().patch('/settings/automation/functions/BILLING').set(bearer(adminToken)).send({ mode: m }).expect(200);
   const decisionsFor = (bookingId: string) =>
-    db.select().from(agentDecisions).where(and(eq(agentDecisions.caseType, 'BOOKING'), eq(agentDecisions.caseId, bookingId))).orderBy(agentDecisions.createdAt);
+    db
+      .select()
+      .from(agentDecisions)
+      .where(and(eq(agentDecisions.caseType, 'BOOKING'), eq(agentDecisions.caseId, bookingId)))
+      .orderBy(agentDecisions.createdAt);
   const invoicesFor = (bookingId: string) => db.select().from(invoices).where(eq(invoices.bookingId, bookingId));
   /** Sweeps only this suite's bookings: other suites run at the same time and own theirs. */
-  const sweep = (...made: { booking: { id: string } }[]) => agent.sweep(new Date(), made.map((m) => m.booking.id));
+  const sweep = (...made: { booking: { id: string } }[]) =>
+    agent.sweep(
+      new Date(),
+      made.map((m) => m.booking.id),
+    );
   const bookingRow = async (id: string) => (await db.select().from(bookings).where(eq(bookings.id, id)))[0];
   const panel = async (bookingId: string) => (await api().get(`/automation/cases/BOOKING/${bookingId}`).set(bearer(staffToken)).expect(200)).body;
 
@@ -119,12 +152,19 @@ describe('Billing agent (e2e)', () => {
     return made;
   }
   const billByHand = async (bookingId: string, monday: string) => {
-    const draft = await api().post('/invoices').set(bearer(staffToken)).send({ bookingId, basis: 'COMPLETED', periodStart: monday, periodEnd: addDays(monday, 4) }).expect(201);
+    const draft = await api()
+      .post('/invoices')
+      .set(bearer(staffToken))
+      .send({ bookingId, basis: 'COMPLETED', periodStart: monday, periodEnd: addDays(monday, 4) })
+      .expect(201);
     return (await api().post(`/invoices/${draft.body.id}/issue`).set(bearer(staffToken)).send({ notify: false }).expect(200)).body;
   };
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).overrideProvider(ThrottlerStorage).useValue(unlimitedThrottle).compile();
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+      .overrideProvider(ThrottlerStorage)
+      .useValue(unlimitedThrottle)
+      .compile();
     app = moduleRef.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
     await app.init();
@@ -140,9 +180,17 @@ describe('Billing agent (e2e)', () => {
     const districtId = tree.flatMap((p) => p.districts)[0].id;
     const cityId = (await api().get(`/public/meta/locations/cities?districtId=${districtId}&locale=en`).expect(200)).body[0].id;
     intake = {
-      registrantType: 'GUARDIAN', recipientName: 'Sunil Fernando', recipientRelationship: 'PARENT', recipientAge: 78, recipientGender: 'MALE',
-      preferredContactMethod: 'PHONE_CALL', districtId, cityId, careNeeds: 'Needs help with bathing, meals and medication reminders.',
-      careSchedule: 'DAY', careStart: 'WITHIN_WEEK',
+      registrantType: 'GUARDIAN',
+      recipientName: 'Sunil Fernando',
+      recipientRelationship: 'PARENT',
+      recipientAge: 78,
+      recipientGender: 'MALE',
+      preferredContactMethod: 'PHONE_CALL',
+      districtId,
+      cityId,
+      careNeeds: 'Needs help with bathing, meals and medication reminders.',
+      careSchedule: 'DAY',
+      careStart: 'WITHIN_WEEK',
     };
     await api().patch('/settings/billing').set(bearer(adminToken)).send({ taxEnabled: false }).expect(200);
     await api().post('/settings/automation/master').set(bearer(adminToken)).send({ on: false }).expect(200);
@@ -172,7 +220,13 @@ describe('Billing agent (e2e)', () => {
     let d = await decisionsFor(same.booking.id);
     expect(d).toHaveLength(1);
     expect(d[0]).toMatchObject({ action: 'billing.issue_invoice', outcome: 'SHADOW', mode: 'SHADOW', tier: 1, staffVerdict: null, executedAt: null });
-    expect(d[0].proposal).toMatchObject({ bookingId: same.booking.id, periodStart: same.monday, periodEnd: addDays(same.monday, 4), lines: 5, subtotalCents: 1_750_000 });
+    expect(d[0].proposal).toMatchObject({
+      bookingId: same.booking.id,
+      periodStart: same.monday,
+      periodEnd: addDays(same.monday, 4),
+      lines: 5,
+      subtotalCents: 1_750_000,
+    });
     expect(d[0].reason).toMatch(/5 completed, unbilled lines .* LKR 17,500\.00 before tax/);
     // Nothing a person could see: no invoice, no note on the case, and the proposal names nobody.
     expect(await invoicesFor(same.booking.id)).toHaveLength(0);
@@ -238,7 +292,9 @@ describe('Billing agent (e2e)', () => {
     await sweep(declined, overtaken);
 
     const [a] = await decisionsFor(declined.booking.id);
-    const after = (await api().post(`/automation/decisions/${a.id}/decline`).set(bearer(staffToken)).send({ reason: 'Client has a credit to apply first' }).expect(200)).body;
+    const after = (
+      await api().post(`/automation/decisions/${a.id}/decline`).set(bearer(staffToken)).send({ reason: 'Client has a credit to apply first' }).expect(200)
+    ).body;
     expect(after).toMatchObject({ staffVerdict: 'DIFFERED', staffNote: 'Client has a credit to apply first', executedAt: null });
     await api().post(`/automation/decisions/${a.id}/approve`).set(bearer(staffToken)).expect(400);
     await sweep(declined, overtaken);
@@ -291,7 +347,11 @@ describe('Billing agent (e2e)', () => {
     expect(await invoicesFor(ok.booking.id)).toHaveLength(1);
 
     // Staff undo it: the verdict is recorded against the action.
-    await api().post(`/automation/decisions/${done.id}/review`).set(bearer(staffToken)).send({ verdict: 'REVERSED', note: 'Wrong rate agreed by phone' }).expect(200);
+    await api()
+      .post(`/automation/decisions/${done.id}/review`)
+      .set(bearer(staffToken))
+      .send({ verdict: 'REVERSED', note: 'Wrong rate agreed by phone' })
+      .expect(200);
   });
 
   it('bills a booking that is still running only up to the end of last month', async () => {
@@ -332,8 +392,19 @@ describe('Billing agent (e2e)', () => {
         .post('/bookings')
         .set(bearer(staffToken))
         .send({
-          patientId: client.patientId, caregiverId: cg.id, scheduleType: 'DAY', daysOfWeek: [1, 2, 3, 4, 5], shiftStartTime: '08:00', shiftEndTime: '17:00',
-          startDate: addDays(first, 9), endDate: addDays(nextFirst, 19), rateType: 'DAILY', rateAmount: '3500.00', payRateType: 'DAILY', payRateAmount: '2500.00', ...extra,
+          patientId: client.patientId,
+          caregiverId: cg.id,
+          scheduleType: 'DAY',
+          daysOfWeek: [1, 2, 3, 4, 5],
+          shiftStartTime: '08:00',
+          shiftEndTime: '17:00',
+          startDate: addDays(first, 9),
+          endDate: addDays(nextFirst, 19),
+          rateType: 'DAILY',
+          rateAmount: '3500.00',
+          payRateType: 'DAILY',
+          payRateAmount: '2500.00',
+          ...extra,
         })
         .expect(201);
       // Billed in advance, a booking is confirmed once its first invoice is paid. These cases are about the billing
@@ -364,11 +435,21 @@ describe('Billing agent (e2e)', () => {
       expect(await agent.sweep(early, [booking.id])).toMatchObject({ mode: 'AUTO', considered: 1, decided: 1 });
       let made1 = await invoicesFor(booking.id);
       expect(made1).toHaveLength(1);
-      expect(made1[0]).toMatchObject({ status: 'ISSUED', basis: 'SCHEDULED', subtotal: money(made.firstMonth), periodStart: addDays(first, 9), periodEnd: addDays(nextFirst, -1) });
+      expect(made1[0]).toMatchObject({
+        status: 'ISSUED',
+        basis: 'SCHEDULED',
+        subtotal: money(made.firstMonth),
+        periodStart: addDays(first, 9),
+        periodEnd: addDays(nextFirst, -1),
+      });
       const [decision] = await decisionsFor(booking.id);
       expect(decision).toMatchObject({ action: 'billing.issue_invoice', outcome: 'EXECUTED', executionError: null });
-      expect(decision.reason).toBe(`${made.firstMonth} booked, unbilled lines for ${addDays(first, 9)} to ${addDays(nextFirst, -1)}, billed in advance: LKR ${(made.firstMonth * 3500).toLocaleString('en-LK', { minimumFractionDigits: 2 })} before tax`);
-      expect((await panel(booking.id)).handoverNote.done).toBe(`Invoice ${made1[0].number} issued in advance for ${addDays(first, 9)} to ${addDays(nextFirst, -1)}`);
+      expect(decision.reason).toBe(
+        `${made.firstMonth} booked, unbilled lines for ${addDays(first, 9)} to ${addDays(nextFirst, -1)}, billed in advance: LKR ${(made.firstMonth * 3500).toLocaleString('en-LK', { minimumFractionDigits: 2 })} before tax`,
+      );
+      expect((await panel(booking.id)).handoverNote.done).toBe(
+        `Invoice ${made1[0].number} issued in advance for ${addDays(first, 9)} to ${addDays(nextFirst, -1)}`,
+      );
       // The client sees it like any other invoice.
       const mine = (await api().get('/me/invoices').set(bearer(made.client.token)).expect(200)).body as { number: string }[];
       expect(mine.some((i) => i.number === made1[0].number)).toBe(true);
@@ -382,10 +463,18 @@ describe('Billing agent (e2e)', () => {
       expect(await agent.sweep(at(addDays(nextFirst, -5)), [booking.id])).toMatchObject({ decided: 1 });
       made1 = (await invoicesFor(booking.id)).sort((a, b) => a.periodStart!.localeCompare(b.periodStart!));
       expect(made1).toHaveLength(2);
-      expect(made1[1]).toMatchObject({ status: 'ISSUED', basis: 'SCHEDULED', subtotal: money(made.secondMonth), periodStart: nextFirst, periodEnd: addDays(nextFirst, 19) });
+      expect(made1[1]).toMatchObject({
+        status: 'ISSUED',
+        basis: 'SCHEDULED',
+        subtotal: money(made.secondMonth),
+        periodStart: nextFirst,
+        periodEnd: addDays(nextFirst, 19),
+      });
 
       // Every shift is on exactly one invoice, and later passes find nothing left.
-      const lines = (await api().get(`/invoices/${made1[0].id}`).set(bearer(staffToken)).expect(200)).body.lines.length + (await api().get(`/invoices/${made1[1].id}`).set(bearer(staffToken)).expect(200)).body.lines.length;
+      const lines =
+        (await api().get(`/invoices/${made1[0].id}`).set(bearer(staffToken)).expect(200)).body.lines.length +
+        (await api().get(`/invoices/${made1[1].id}`).set(bearer(staffToken)).expect(200)).body.lines.length;
       expect(lines).toBe(booking.shifts.length);
       await agent.sweep(at(addDays(nextFirst, 3)), [booking.id]);
       await agent.sweep(at(addDays(nextFirst, 40)), [booking.id]);
@@ -451,7 +540,11 @@ describe('Billing agent (e2e)', () => {
       expect(logged).toMatchObject({ outcome: 'SHADOW', staffVerdict: null });
       expect(await invoicesFor(other.booking.id)).toHaveLength(0);
       // Staff bill the same month in advance by hand: the agent agrees with them.
-      const draft = await api().post('/invoices').set(bearer(staffToken)).send({ bookingId: other.booking.id, basis: 'SCHEDULED', periodStart: addDays(first, 9), periodEnd: addDays(nextFirst, -1) }).expect(201);
+      const draft = await api()
+        .post('/invoices')
+        .set(bearer(staffToken))
+        .send({ bookingId: other.booking.id, basis: 'SCHEDULED', periodStart: addDays(first, 9), periodEnd: addDays(nextFirst, -1) })
+        .expect(201);
       await api().post(`/invoices/${draft.body.id}/issue`).set(bearer(staffToken)).send({ notify: false }).expect(200);
       expect((await agent.sweep(today, [other.booking.id])).scored).toBe(1);
       expect((await decisionsFor(other.booking.id))[0]).toMatchObject({ staffVerdict: 'AGREED' });
@@ -511,8 +604,19 @@ describe('Billing agent (e2e)', () => {
           .post('/bookings')
           .set(bearer(staffToken))
           .send({
-            patientId: client.patientId, caregiverId: cg.id, scheduleType: 'DAY', daysOfWeek: [1, 2, 3, 4, 5], shiftStartTime: '08:00', shiftEndTime: '17:00',
-            startDate: addDays(first, 9), endDate: addDays(nextFirst, 19), rateType: 'DAILY', rateAmount: '3500.00', payRateType: 'DAILY', payRateAmount: '2500.00', billingTiming: 'ADVANCE',
+            patientId: client.patientId,
+            caregiverId: cg.id,
+            scheduleType: 'DAY',
+            daysOfWeek: [1, 2, 3, 4, 5],
+            shiftStartTime: '08:00',
+            shiftEndTime: '17:00',
+            startDate: addDays(first, 9),
+            endDate: addDays(nextFirst, 19),
+            rateType: 'DAILY',
+            rateAmount: '3500.00',
+            payRateType: 'DAILY',
+            payRateAmount: '2500.00',
+            billingTiming: 'ADVANCE',
           })
           .expect(201)
       ).body as { id: string; reference: string; shifts: { startsAt: string }[] };
@@ -525,7 +629,11 @@ describe('Billing agent (e2e)', () => {
     const confirm = (id: string, body: object = {}) => api().post(`/bookings/${id}/confirm`).set(bearer(staffToken)).send(body);
     const payInFull = async (invoiceId: string) => {
       const inv = (await api().get(`/invoices/${invoiceId}`).set(bearer(staffToken)).expect(200)).body as { balance: string };
-      return api().post(`/invoices/${invoiceId}/payments`).set(bearer(staffToken)).send({ paymentType: 'CASH', paidOn: colomboToday(), notify: false, amount: inv.balance }).expect(201);
+      return api()
+        .post(`/invoices/${invoiceId}/payments`)
+        .set(bearer(staffToken))
+        .send({ paymentType: 'CASH', paidOn: colomboToday(), notify: false, amount: inv.balance })
+        .expect(201);
     };
     const advance = () => app.get(AdvancePaymentService);
     const emailsLabelled = (prefix: string) => sendEmail.mock.calls.filter((c) => String(c[2]).startsWith(prefix));
@@ -541,25 +649,47 @@ describe('Billing agent (e2e)', () => {
       expect((await detail(b.id)).advancePayment).toEqual({ required: true, state: 'NOT_BILLED', invoice: null });
 
       // Not billed yet: confirming is refused, and says what to do.
-      expect((await confirm(b.id).expect(409)).body.message).toBe('This booking is billed in advance and its first invoice has not been sent. Send the invoice, or confirm without payment');
+      expect((await confirm(b.id).expect(409)).body.message).toBe(
+        'This booking is billed in advance and its first invoice has not been sent. Send the invoice, or confirm without payment',
+      );
 
       // Staff send the first invoice: the first month, for the work booked, issued to the client.
-      const sent = (await api().post(`/bookings/${b.id}/advance-invoice`).set(bearer(staffToken)).expect(201)).body as { id: string; number: string; status: string; basis: string; subtotal: string; periodStart: string; periodEnd: string };
-      expect(sent).toMatchObject({ status: 'ISSUED', basis: 'SCHEDULED', subtotal: (b.firstMonth * 3500).toFixed(2), periodStart: addDays(first, 9), periodEnd: addDays(nextFirst, -1) });
+      const sent = (await api().post(`/bookings/${b.id}/advance-invoice`).set(bearer(staffToken)).expect(201)).body as {
+        id: string;
+        number: string;
+        status: string;
+        basis: string;
+        subtotal: string;
+        periodStart: string;
+        periodEnd: string;
+      };
+      expect(sent).toMatchObject({
+        status: 'ISSUED',
+        basis: 'SCHEDULED',
+        subtotal: (b.firstMonth * 3500).toFixed(2),
+        periodStart: addDays(first, 9),
+        periodEnd: addDays(nextFirst, -1),
+      });
       await api().post(`/bookings/${b.id}/advance-invoice`).set(bearer(staffToken)).expect(409);
       const mine = (await api().get('/me/invoices').set(bearer(b.client.token)).expect(200)).body as { number: string }[];
       expect(mine.some((i) => i.number === sent.number)).toBe(true);
 
       // The client's card carries it, with what to pay, so they can pay it from there.
-      const [card] = (await api().get('/me/booking-proposals').set(bearer(b.client.token)).expect(200)).body as { firstInvoice: Record<string, unknown> | null }[];
+      const [card] = (await api().get('/me/booking-proposals').set(bearer(b.client.token)).expect(200)).body as {
+        firstInvoice: Record<string, unknown> | null;
+      }[];
       expect(card.firstInvoice).toMatchObject({ id: sent.id, number: sent.number, balance: sent.subtotal, canPayOnline: expect.any(Boolean) });
 
       // Sent and not paid: still refused. The shifts are still drafts, so no caregiver is booked.
       expect((await detail(b.id)).advancePayment).toMatchObject({ state: 'UNPAID', invoice: { id: sent.id, number: sent.number, status: 'ISSUED' } });
-      expect((await confirm(b.id).expect(409)).body.message).toBe('This booking is billed in advance and its first invoice has not been paid. Confirm without payment only if you have agreed that with the client');
+      expect((await confirm(b.id).expect(409)).body.message).toBe(
+        'This booking is billed in advance and its first invoice has not been paid. Confirm without payment only if you have agreed that with the client',
+      );
       expect((await bookingRow(b.id)).status).toBe('DRAFT');
       // Its shifts cannot be dropped from under the invoice, and the draft cannot be thrown away while it is out.
-      expect((await api().post(`/bookings/${b.id}/cancel`).set(bearer(staffToken)).send({ reason: 'Client changed their mind' }).expect(409)).body.message).toBe('This booking has its first invoice out - void the invoice first');
+      expect(
+        (await api().post(`/bookings/${b.id}/cancel`).set(bearer(staffToken)).send({ reason: 'Client changed their mind' }).expect(409)).body.message,
+      ).toBe('This booking has its first invoice out - void the invoice first');
 
       // Paid in full: staff are told it can be confirmed, and then it can.
       await payInFull(sent.id);
@@ -581,7 +711,10 @@ describe('Billing agent (e2e)', () => {
       const b = await acceptedDraft();
       await confirm(b.id, { withoutPayment: true }).expect(400);
       await confirm(b.id, { withoutPayment: true, reason: '  ' }).expect(400);
-      const done = (await confirm(b.id, { withoutPayment: true, reason: 'Client pays by bank transfer on Friday' }).expect(200)).body as { status: string; events: { type: string; note: string | null }[] };
+      const done = (await confirm(b.id, { withoutPayment: true, reason: 'Client pays by bank transfer on Friday' }).expect(200)).body as {
+        status: string;
+        events: { type: string; note: string | null }[];
+      };
       expect(done.status).toBe('CONFIRMED');
       expect(done.events.find((e) => e.type === 'CONFIRMED')?.note).toContain('confirmed without payment: Client pays by bank transfer on Friday');
     });
@@ -589,7 +722,11 @@ describe('Billing agent (e2e)', () => {
     it('alerts staff once when the first invoice is overdue or the booking is about to start, and not before', async () => {
       await mode('MANUAL');
       const b = await acceptedDraft();
-      const inv = (await api().post(`/bookings/${b.id}/advance-invoice`).set(bearer(staffToken)).expect(201)).body as { id: string; number: string; dueDate: string };
+      const inv = (await api().post(`/bookings/${b.id}/advance-invoice`).set(bearer(staffToken)).expect(201)).body as {
+        id: string;
+        number: string;
+        dueDate: string;
+      };
       // Before it is due and well before the booking starts: nothing.
       expect(await advance().alertUnpaid(new Date(`${inv.dueDate}T06:00:00Z`), [b.id])).toBe(0);
       // The day after it was due: one email, and a line in the booking's history.
@@ -599,7 +736,9 @@ describe('Billing agent (e2e)', () => {
       expect(mail).toHaveLength(1);
       expect((mail[0][1] as { subject: string }).subject).toBe(`Not paid, not confirmed: ${b.reference}`);
       expect(JSON.stringify(mail[0][1])).toContain(`invoice ${inv.number} was due on ${inv.dueDate}`);
-      expect(((await detail(b.id)).events as { note: string | null }[]).some((e) => e.note?.startsWith('Staff alerted: the first invoice is not paid'))).toBe(true);
+      expect(((await detail(b.id)).events as { note: string | null }[]).some((e) => e.note?.startsWith('Staff alerted: the first invoice is not paid'))).toBe(
+        true,
+      );
       // Once only, even as it gets closer to the start.
       expect(await advance().alertUnpaid(new Date(`${addDays(first, 8)}T06:00:00Z`), [b.id])).toBe(0);
       expect(emailsLabelled(`advance unpaid ${inv.id}`)).toHaveLength(1);
@@ -662,15 +801,38 @@ describe('Billing agent (e2e)', () => {
           .post('/bookings')
           .set(bearer(staffToken))
           .send({
-            patientId: client.patientId, caregiverId: cg.id, scheduleType: 'DAY', daysOfWeek: [1, 2, 3, 4, 5], shiftStartTime: '08:00', shiftEndTime: '17:00',
-            startDate: addDays(first, 9), endDate: addDays(nextFirst, 19), rateType: 'DAILY', rateAmount: '3500.00', payRateType: 'DAILY', payRateAmount: '2500.00', billingTiming: 'ADVANCE',
+            patientId: client.patientId,
+            caregiverId: cg.id,
+            scheduleType: 'DAY',
+            daysOfWeek: [1, 2, 3, 4, 5],
+            shiftStartTime: '08:00',
+            shiftEndTime: '17:00',
+            startDate: addDays(first, 9),
+            endDate: addDays(nextFirst, 19),
+            rateType: 'DAILY',
+            rateAmount: '3500.00',
+            payRateType: 'DAILY',
+            payRateAmount: '2500.00',
+            billingTiming: 'ADVANCE',
           })
           .expect(201)
       ).body as { id: string; reference: string };
-      await api().post(`/bookings/${created.id}/confirm`).set(bearer(staffToken)).send({ withoutPayment: true, reason: 'Paying on the first visit' }).expect(200);
+      await api()
+        .post(`/bookings/${created.id}/confirm`)
+        .set(bearer(staffToken))
+        .send({ withoutPayment: true, reason: 'Paying on the first visit' })
+        .expect(200);
       // A later month's invoice, issued and now past due (moved back in the database instead of waiting for it).
-      const draft = await api().post('/invoices').set(bearer(staffToken)).send({ bookingId: created.id, basis: 'SCHEDULED', periodStart: nextFirst, periodEnd: addDays(nextFirst, 19) }).expect(201);
-      const inv = (await api().post(`/invoices/${draft.body.id}/issue`).set(bearer(staffToken)).send({ notify: false }).expect(200)).body as { id: string; number: string; total: string };
+      const draft = await api()
+        .post('/invoices')
+        .set(bearer(staffToken))
+        .send({ bookingId: created.id, basis: 'SCHEDULED', periodStart: nextFirst, periodEnd: addDays(nextFirst, 19) })
+        .expect(201);
+      const inv = (await api().post(`/invoices/${draft.body.id}/issue`).set(bearer(staffToken)).send({ notify: false }).expect(200)).body as {
+        id: string;
+        number: string;
+        total: string;
+      };
       const due = addDays(colomboToday(), -1);
       await db.update(invoices).set({ dueDate: due }).where(eq(invoices.id, inv.id));
       const cgUser = (await db.select({ userId: caregivers.userId }).from(caregivers).where(eq(caregivers.id, cg.id)))[0].userId;
@@ -689,17 +851,24 @@ describe('Billing agent (e2e)', () => {
 
       const paused = await booking(b.id);
       expect(paused.paymentHold).toMatchObject({ invoiceId: b.inv.id, invoiceNumber: b.inv.number, dueDate: b.due, balance: b.inv.total });
-      expect(paused.events.some((e: { note: string | null }) => e.note === `Visits paused: invoice ${b.inv.number} was due on ${b.due} and is not paid`)).toBe(true);
+      expect(paused.events.some((e: { note: string | null }) => e.note === `Visits paused: invoice ${b.inv.number} was due on ${b.due} and is not paid`)).toBe(
+        true,
+      );
       // Staff are emailed; the caregiver is told not to go, without the reason; the client is told what to pay, and can pay it.
       expect(sendEmail.mock.calls.filter((c) => c[2] === `visits paused ${b.inv.id}`)).toHaveLength(1);
       const toCaregiver = told(`visits paused ${b.id}`).find((c) => (c[0] as (string | null)[]).includes(b.cgUser))!;
       const words = (toCaregiver[1] as (l: 'en') => { title: string; body: string })('en');
-      expect(words).toEqual({ title: 'Visits paused', body: `The office has paused the visits for booking ${b.reference}. Do not go until you hear they are back on.` });
+      expect(words).toEqual({
+        title: 'Visits paused',
+        body: `The office has paused the visits for booking ${b.reference}. Do not go until you hear they are back on.`,
+      });
       expect(JSON.stringify(words)).not.toMatch(/invoice|pay/i);
       expect(told(`visits paused ${b.id}`).some((c) => c[2] === `/invoices/${b.inv.id}`)).toBe(true);
       const shifts = (await api().get('/me/shifts').set(bearer(b.cg.token)).expect(200)).body as { bookingReference: string; paused: boolean }[];
       expect(shifts.filter((s) => s.bookingReference === b.reference).every((s) => s.paused)).toBe(true);
-      const mine = ((await api().get('/me/bookings').set(bearer(b.client.token)).expect(200)).body as { id: string; paymentHold: Record<string, unknown> | null }[]).find((x) => x.id === b.id)!;
+      const mine = (
+        (await api().get('/me/bookings').set(bearer(b.client.token)).expect(200)).body as { id: string; paymentHold: Record<string, unknown> | null }[]
+      ).find((x) => x.id === b.id)!;
       expect(mine.paymentHold).toMatchObject({ id: b.inv.id, number: b.inv.number, balance: b.inv.total, canPayOnline: expect.any(Boolean) });
       // No further month is billed while paused.
       await mode('AUTO');
@@ -707,7 +876,11 @@ describe('Billing agent (e2e)', () => {
       expect((await invoicesFor(b.id)).length).toBe(1);
 
       // Paid: visits resume and everyone is told.
-      await api().post(`/invoices/${b.inv.id}/payments`).set(bearer(staffToken)).send({ paymentType: 'CASH', paidOn: colomboToday(), notify: false, amount: b.inv.total }).expect(201);
+      await api()
+        .post(`/invoices/${b.inv.id}/payments`)
+        .set(bearer(staffToken))
+        .send({ paymentType: 'CASH', paidOn: colomboToday(), notify: false, amount: b.inv.total })
+        .expect(201);
       await app.get(JobsService).runDue(new Date(), [INVOICE_PAID_JOB]);
       expect((await booking(b.id)).paymentHold).toBeNull();
       expect(told(`visits resumed ${b.id}`).length).toBeGreaterThanOrEqual(2);
@@ -720,7 +893,9 @@ describe('Billing agent (e2e)', () => {
       const b = await overdueBooking();
       await hold().holdUnpaid(new Date(), [b.id]);
       await api().post(`/bookings/${b.id}/resume-visits`).set(bearer(staffToken)).send({}).expect(400);
-      const resumed = (await api().post(`/bookings/${b.id}/resume-visits`).set(bearer(staffToken)).send({ reason: 'Daughter paying in cash tomorrow' }).expect(200)).body;
+      const resumed = (
+        await api().post(`/bookings/${b.id}/resume-visits`).set(bearer(staffToken)).send({ reason: 'Daughter paying in cash tomorrow' }).expect(200)
+      ).body;
       expect(resumed.paymentHold).toBeNull();
       expect(resumed.events.some((e: { note: string | null }) => e.note === 'Visits resumed without payment: Daughter paying in cash tomorrow')).toBe(true);
       await api().post(`/bookings/${b.id}/resume-visits`).set(bearer(staffToken)).send({ reason: 'Again' }).expect(400);
@@ -744,7 +919,12 @@ describe('Billing agent (e2e)', () => {
       (await db.select().from(agentDecisions).where(eq(agentDecisions.action, action)).orderBy(agentDecisions.createdAt)).filter(
         (d) => (d.proposal as { caregiverId?: string } | null)?.caregiverId === caregiverId,
       );
-    const paySweep = (when: Date, ...made: { cg: { id: string } }[]) => agent.sweepPayouts(when, undefined, made.map((m) => m.cg.id));
+    const paySweep = (when: Date, ...made: { cg: { id: string } }[]) =>
+      agent.sweepPayouts(
+        when,
+        undefined,
+        made.map((m) => m.cg.id),
+      );
     const policy = (body: object) => api().patch('/settings/automation/actions/billing.approve_payout').set(bearer(adminToken)).send(body);
 
     /** A caregiver who worked five days last month (or earlier) at LKR 2,500 a day = LKR 12,500, none of it on a statement. */
@@ -773,7 +953,9 @@ describe('Billing agent (e2e)', () => {
       expect((await paySweep(new Date(), w)).decided).toBe(0);
 
       // Staff make the statement themselves. Fresh from their hands it is left alone; an hour on, the agent looks at it.
-      const made = (await api().post('/payouts').set(bearer(staffToken)).send({ caregiverId: w.cg.id, periodStart: w.monthOf, periodEnd: w.lastMonthEnd }).expect(201)).body;
+      const made = (
+        await api().post('/payouts').set(bearer(staffToken)).send({ caregiverId: w.cg.id, periodStart: w.monthOf, periodEnd: w.lastMonthEnd }).expect(201)
+      ).body;
       const soon = await paySweep(new Date(), w);
       expect(soon).toMatchObject({ scored: 1, decided: 0 });
       expect((await payDecisions(w.cg.id, 'billing.draft_payout'))[0]).toMatchObject({ staffVerdict: 'AGREED' });
@@ -848,7 +1030,11 @@ describe('Billing agent (e2e)', () => {
 
       // A limit of LKR 10,000: a LKR 12,500 statement is drafted and left for staff, with the reason.
       const over = (await policy({ limits: { maxAmount: 10000 } }).expect(200)).body;
-      expect(over.functions.flatMap((f: { actions: { key: string; limits: unknown }[] }) => f.actions).find((a: { key: string }) => a.key === 'billing.approve_payout').limits).toEqual({ maxAmount: 10000 });
+      expect(
+        over.functions
+          .flatMap((f: { actions: { key: string; limits: unknown }[] }) => f.actions)
+          .find((a: { key: string }) => a.key === 'billing.approve_payout').limits,
+      ).toEqual({ maxAmount: 10000 });
       const third = await workedLastMonth();
       const run = await paySweep(new Date(), third);
       expect(run.leftToStaff).toBe(1);
@@ -866,7 +1052,9 @@ describe('Billing agent (e2e)', () => {
     await mode('SHADOW');
     const ran = await api().post('/settings/automation/functions/BILLING/run').set(bearer(adminToken)).expect(200);
     expect(ran.body).toMatchObject({ function: 'BILLING', mode: 'SHADOW' });
-    expect((await api().post('/settings/automation/functions/ONBOARDING/run').set(bearer(adminToken)).expect(200)).body).toMatchObject({ function: 'ONBOARDING' });
+    expect((await api().post('/settings/automation/functions/ONBOARDING/run').set(bearer(adminToken)).expect(200)).body).toMatchObject({
+      function: 'ONBOARDING',
+    });
     await api().post('/settings/automation/functions/BILLING/run').set(bearer(staffToken)).expect(403);
     void automation;
     // "Run now" goes through every booking in the database, not just this suite's: allow for a full one.
@@ -890,14 +1078,26 @@ describe('Billing agent (e2e)', () => {
       const made = await finishedBooking(3);
       const monday = made.monday;
       const inv = (await billByHand(made.booking.id, monday)) as { id: string; number: string; total: string };
-      await db.update(invoices).set({ issueDate: addDays(colomboToday(), -1), dueDate: addDays(colomboToday(), days) }).where(eq(invoices.id, inv.id));
+      await db
+        .update(invoices)
+        .set({ issueDate: addDays(colomboToday(), -1), dueDate: addDays(colomboToday(), days) })
+        .where(eq(invoices.id, inv.id));
       if (advance) await db.execute(sql`UPDATE bookings SET billing_timing = 'ADVANCE' WHERE id = ${made.booking.id}`);
       return { ...inv, made, due: addDays(colomboToday(), days) };
     }
     const sentFor = (id: string) => notify.mock.calls.filter((c) => String(c[3]).startsWith(`payment reminder ${id} `));
     const words = (call: unknown[]) => (call[1] as (l: 'en') => { title: string; body: string })('en');
-    const remindersOf = (id: string) => db.select().from(agentDecisions).where(and(eq(agentDecisions.caseId, id), eq(agentDecisions.action, REMIND))).orderBy(agentDecisions.createdAt);
-    const moveDue = (id: string, days: number) => db.update(invoices).set({ dueDate: addDays(colomboToday(), days) }).where(eq(invoices.id, id));
+    const remindersOf = (id: string) =>
+      db
+        .select()
+        .from(agentDecisions)
+        .where(and(eq(agentDecisions.caseId, id), eq(agentDecisions.action, REMIND)))
+        .orderBy(agentDecisions.createdAt);
+    const moveDue = (id: string, days: number) =>
+      db
+        .update(invoices)
+        .set({ dueDate: addDays(colomboToday(), days) })
+        .where(eq(invoices.id, id));
 
     it('does nothing in Manual', async () => {
       await mode('MANUAL');
@@ -913,7 +1113,10 @@ describe('Billing agent (e2e)', () => {
       const [first] = sentFor(inv.id);
       expect(first[0]).toEqual([inv.made.client.userId]);
       expect(first[2]).toBe(`/invoices/${inv.id}`);
-      expect(words(first)).toEqual({ title: `Invoice ${inv.number} is due on ${inv.due}`, body: `${formatLkr(inv.total)} is due on ${inv.due}. You can pay it online from the invoice.` });
+      expect(words(first)).toEqual({
+        title: `Invoice ${inv.number} is due on ${inv.due}`,
+        body: `${formatLkr(inv.total)} is due on ${inv.due}. You can pay it online from the invoice.`,
+      });
       // The invoice has the client's email: they get it there too.
       expect(sendEmail.mock.calls.filter((c) => c[2] === `payment reminder ${inv.id} BEFORE`)).toHaveLength(1);
       await reminders().sweep(new Date(), [inv.id]);
@@ -937,7 +1140,9 @@ describe('Billing agent (e2e)', () => {
       await mode('AUTO');
       const inv = await issued(0, true);
       await reminders().sweep(new Date(), [inv.id]);
-      expect(words(sentFor(inv.id)[0]).body).toBe(`${formatLkr(inv.total)} is due today. You can pay it online from the invoice. If it is not paid, visits pause from tomorrow until it is.`);
+      expect(words(sentFor(inv.id)[0]).body).toBe(
+        `${formatLkr(inv.total)} is due today. You can pay it online from the invoice. If it is not paid, visits pause from tomorrow until it is.`,
+      );
       await moveDue(inv.id, -4);
       await reminders().sweep(new Date(), [inv.id]);
       expect(sentFor(inv.id)).toHaveLength(1);
@@ -946,7 +1151,11 @@ describe('Billing agent (e2e)', () => {
     it('never reminds about a paid invoice', async () => {
       await mode('AUTO');
       const inv = await issued(1);
-      await api().post(`/invoices/${inv.id}/payments`).set(bearer(staffToken)).send({ paymentType: 'CASH', paidOn: colomboToday(), notify: false, amount: inv.total }).expect(201);
+      await api()
+        .post(`/invoices/${inv.id}/payments`)
+        .set(bearer(staffToken))
+        .send({ paymentType: 'CASH', paidOn: colomboToday(), notify: false, amount: inv.total })
+        .expect(201);
       await reminders().sweep(new Date(), [inv.id]);
       expect(sentFor(inv.id)).toHaveLength(0);
     });
@@ -966,7 +1175,11 @@ describe('Billing agent (e2e)', () => {
       await reminders().sweep(new Date(), [b.id]);
       expect(sentFor(b.id)).toHaveLength(0);
       expect((await remindersOf(b.id))[0]).toMatchObject({ outcome: 'SHADOW', staffVerdict: null });
-      await api().post(`/invoices/${b.id}/payments`).set(bearer(staffToken)).send({ paymentType: 'CASH', paidOn: colomboToday(), notify: false, amount: b.total }).expect(201);
+      await api()
+        .post(`/invoices/${b.id}/payments`)
+        .set(bearer(staffToken))
+        .send({ paymentType: 'CASH', paidOn: colomboToday(), notify: false, amount: b.total })
+        .expect(201);
       await reminders().sweep(new Date(), [b.id]);
       expect((await remindersOf(b.id))[0]).toMatchObject({ staffVerdict: 'AGREED' });
       await mode('MANUAL');

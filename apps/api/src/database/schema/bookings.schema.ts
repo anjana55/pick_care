@@ -111,8 +111,12 @@ export const bookings = mysqlTable(
     /** What the client wants changed, in their words. */
     clientReviewNote: varchar('client_review_note', { length: 500 }),
 
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     patientIdx: index('bookings_patient_idx').on(table.patientId),
@@ -164,8 +168,12 @@ export const bookingShifts = mysqlTable(
     cantMakeNote: varchar('cant_make_note', { length: 200 }),
     cantMakeCaregiverId: varchar('cant_make_caregiver_id', { length: 36 }),
     updatedByUserId: varchar('updated_by_user_id', { length: 36 }),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     bookingIdx: index('booking_shifts_booking_idx').on(table.bookingId, table.startsAt),
@@ -212,7 +220,9 @@ export const bookingEvents = mysqlTable(
     type: mysqlEnum('type', bookingEventTypeEnum).notNull(),
     note: text('note'),
     actorUserId: varchar('actor_user_id', { length: 36 }),
-    createdAt: datetime('created_at', { fsp: 3 }).notNull().default(sql`CURRENT_TIMESTAMP(3)`),
+    createdAt: datetime('created_at', { fsp: 3 })
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP(3)`),
   },
   (table) => ({
     bookingIdx: index('booking_events_booking_idx').on(table.bookingId, table.createdAt),
@@ -237,7 +247,9 @@ export const bookingAmendments = mysqlTable(
     reason: varchar('reason', { length: 500 }).notNull(),
     summary: text('summary').notNull(),
     actorUserId: varchar('actor_user_id', { length: 36 }),
-    createdAt: datetime('created_at', { fsp: 3 }).notNull().default(sql`CURRENT_TIMESTAMP(3)`),
+    createdAt: datetime('created_at', { fsp: 3 })
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP(3)`),
   },
   (table) => ({
     bookingIdx: index('booking_amendments_booking_idx').on(table.bookingId, table.createdAt),
@@ -279,7 +291,9 @@ export const bookingIssueReports = mysqlTable(
     amendmentId: varchar('amendment_id', { length: 36 }),
     closedByUserId: varchar('closed_by_user_id', { length: 36 }),
     closedAt: datetime('closed_at'),
-    createdAt: datetime('created_at', { fsp: 3 }).notNull().default(sql`CURRENT_TIMESTAMP(3)`),
+    createdAt: datetime('created_at', { fsp: 3 })
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP(3)`),
   },
   (table) => ({
     bookingIdx: index('booking_issue_reports_booking_idx').on(table.bookingId, table.status),

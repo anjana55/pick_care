@@ -26,9 +26,13 @@ export const deviceTokens = mysqlTable(
     platform: mysqlEnum('platform', devicePlatformEnum).notNull(),
     appVersion: varchar('app_version', { length: 32 }),
     locale: mysqlEnum('locale', deviceLocaleEnum).notNull().default('en'),
-    lastSeenAt: datetime('last_seen_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    lastSeenAt: datetime('last_seen_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
     revokedAt: datetime('revoked_at'),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     userIdx: index('device_tokens_user_idx').on(table.userId),

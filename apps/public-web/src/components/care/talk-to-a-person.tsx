@@ -20,8 +20,12 @@ function useClientOptions(enabled: boolean): Option[] {
   const bookings = useMyBookings();
   return useMemo(() => {
     if (!enabled) return [];
-    const reqs = (requests.data ?? []).filter((r) => r.status === 'NEW' || r.status === 'IN_PROGRESS').map((r) => ({ value: `REQUEST:${r.id}`, label: t('talk.aboutRequest', { ref: r.reference }) }));
-    const books = (bookings.data ?? []).filter((b) => b.status === 'CONFIRMED' || b.status === 'DRAFT').map((b) => ({ value: `BOOKING:${b.id}`, label: t('talk.aboutBooking', { ref: b.reference, date: b.startDate }) }));
+    const reqs = (requests.data ?? [])
+      .filter((r) => r.status === 'NEW' || r.status === 'IN_PROGRESS')
+      .map((r) => ({ value: `REQUEST:${r.id}`, label: t('talk.aboutRequest', { ref: r.reference }) }));
+    const books = (bookings.data ?? [])
+      .filter((b) => b.status === 'CONFIRMED' || b.status === 'DRAFT')
+      .map((b) => ({ value: `BOOKING:${b.id}`, label: t('talk.aboutBooking', { ref: b.reference, date: b.startDate }) }));
     return [...reqs, ...books];
   }, [enabled, requests.data, bookings.data, t]);
 }
@@ -56,7 +60,14 @@ export function TalkToAPerson({ role }: { role: 'CLIENT' | 'CAREGIVER' }) {
   const [contact, setContact] = useState<TalkContactMethod>('CALL');
   const [about, setAbout] = useState('');
   const [sent, setSent] = useState(false);
-  const error = ask.error instanceof ApiError && ask.error.message ? (Array.isArray(ask.error.message) ? ask.error.message[0] : ask.error.message) : ask.error ? t('care.actionError') : null;
+  const error =
+    ask.error instanceof ApiError && ask.error.message
+      ? Array.isArray(ask.error.message)
+        ? ask.error.message[0]
+        : ask.error.message
+      : ask.error
+        ? t('care.actionError')
+        : null;
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,7 +103,9 @@ export function TalkToAPerson({ role }: { role: 'CLIENT' | 'CAREGIVER' }) {
         ) : (
           <form onSubmit={submit} className="mt-4 space-y-4">
             <div>
-              <Label htmlFor="talk-message" required>{t('talk.message')}</Label>
+              <Label htmlFor="talk-message" required>
+                {t('talk.message')}
+              </Label>
               <Textarea id="talk-message" rows={4} maxLength={TALK_MESSAGE_MAX} value={message} onChange={(e) => setMessage(e.target.value)} />
             </div>
             {options.length > 0 && (
@@ -101,7 +114,9 @@ export function TalkToAPerson({ role }: { role: 'CLIENT' | 'CAREGIVER' }) {
                 <Select id="talk-about" value={about} onChange={(e) => setAbout(e.target.value)}>
                   <option value="">{t('talk.aboutNone')}</option>
                   {options.map((o) => (
-                    <option key={o.value} value={o.value}>{o.label}</option>
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
                   ))}
                 </Select>
                 <p className="mt-1 text-xs text-ink/50">{t('talk.aboutHint')}</p>
@@ -111,21 +126,32 @@ export function TalkToAPerson({ role }: { role: 'CLIENT' | 'CAREGIVER' }) {
               <legend className="mb-2 text-sm font-medium text-ink">{t('talk.contact')}</legend>
               <div className="flex flex-wrap gap-2">
                 {TALK_CONTACT_METHODS.map((m) => (
-                  <label key={m} className={`cursor-pointer rounded-DEFAULT border px-3 py-2 text-sm focus-within:ring-2 focus-within:ring-brand/40 ${contact === m ? 'border-brand bg-brand-light text-brand-dark' : 'border-border text-ink/80'}`}>
+                  <label
+                    key={m}
+                    className={`cursor-pointer rounded-DEFAULT border px-3 py-2 text-sm focus-within:ring-2 focus-within:ring-brand/40 ${contact === m ? 'border-brand bg-brand-light text-brand-dark' : 'border-border text-ink/80'}`}
+                  >
                     <input type="radio" name="talk-contact" value={m} checked={contact === m} onChange={() => setContact(m)} className="sr-only" />
                     {t(`talk.contactMethods.${m}`)}
                   </label>
                 ))}
               </div>
             </fieldset>
-            {error && <p role="alert" className="text-sm text-danger">{error}</p>}
-            <Button type="submit" disabled={ask.isPending || message.trim().length < 5}>{t('talk.send')}</Button>
+            {error && (
+              <p role="alert" className="text-sm text-danger">
+                {error}
+              </p>
+            )}
+            <Button type="submit" disabled={ask.isPending || message.trim().length < 5}>
+              {t('talk.send')}
+            </Button>
           </form>
         )}
       </section>
       {(mine.data ?? []).length > 0 && (
         <section className="rounded-lg border border-border bg-white p-5" aria-labelledby="talk-mine">
-          <h2 id="talk-mine" className="text-base font-semibold text-ink">{t('talk.mine')}</h2>
+          <h2 id="talk-mine" className="text-base font-semibold text-ink">
+            {t('talk.mine')}
+          </h2>
           <ul className="mt-3 space-y-2 text-sm">
             {mine.data!.map((r) => (
               <li key={r.id} className="rounded-DEFAULT border border-border px-3 py-2">

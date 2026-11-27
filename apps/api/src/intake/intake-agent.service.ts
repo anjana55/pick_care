@@ -23,12 +23,18 @@ const LOOKBACK_DAYS = 30;
 const ASK_TEXT = {
   en: { title: 'A few details for your request', body: 'To find your caregiver we need: {what}. It takes a minute - open your request {reference}.' },
   si: { title: 'ඔබගේ ඉල්ලීමට විස්තර කිහිපයක්', body: 'ඔබට සත්කාරකයෙකු සොයා ගැනීමට අපට අවශ්‍යයි: {what}. එයට මිනිත්තුවක් ගත වේ - ඔබගේ {reference} ඉල්ලීම විවෘත කරන්න.' },
-  ta: { title: 'உங்கள் கோரிக்கைக்குச் சில விவரங்கள்', body: 'உங்களுக்கான பராமரிப்பாளரைக் கண்டுபிடிக்க எங்களுக்குத் தேவை: {what}. ஒரு நிமிடம் போதும் - உங்கள் கோரிக்கை {reference} ஐத் திறக்கவும்.' },
+  ta: {
+    title: 'உங்கள் கோரிக்கைக்குச் சில விவரங்கள்',
+    body: 'உங்களுக்கான பராமரிப்பாளரைக் கண்டுபிடிக்க எங்களுக்குத் தேவை: {what}. ஒரு நிமிடம் போதும் - உங்கள் கோரிக்கை {reference} ஐத் திறக்கவும்.',
+  },
 } as const;
 const REMIND_TEXT = {
   en: { title: 'Reminder: details for your request', body: 'We still need {what} to find your caregiver. Open your request {reference} - it takes a minute.' },
   si: { title: 'මතක් කිරීම: ඔබගේ ඉල්ලීමට විස්තර', body: 'ඔබට සත්කාරකයෙකු සොයා ගැනීමට අපට තවමත් {what} අවශ්‍යයි. ඔබගේ {reference} ඉල්ලීම විවෘත කරන්න - එයට මිනිත්තුවක් ගත වේ.' },
-  ta: { title: 'நினைவூட்டல்: உங்கள் கோரிக்கைக்கான விவரங்கள்', body: 'உங்கள் பராமரிப்பாளரைக் கண்டுபிடிக்க எங்களுக்கு இன்னும் {what} தேவை. உங்கள் கோரிக்கை {reference} ஐத் திறக்கவும் - ஒரு நிமிடம் போதும்.' },
+  ta: {
+    title: 'நினைவூட்டல்: உங்கள் கோரிக்கைக்கான விவரங்கள்',
+    body: 'உங்கள் பராமரிப்பாளரைக் கண்டுபிடிக்க எங்களுக்கு இன்னும் {what} தேவை. உங்கள் கோரிக்கை {reference} ஐத் திறக்கவும் - ஒரு நிமிடம் போதும்.',
+  },
 } as const;
 const GAP_WORDS: Record<'en' | 'si' | 'ta', Record<IntakeGap, string>> = {
   en: { CARE_TYPE: 'the kind of care', AREA: 'where care is needed', SCHEDULE: 'the time of day', START_DATE: 'the start date' },
@@ -100,7 +106,9 @@ export class IntakeAgentService implements OnApplicationBootstrap, OnModuleDestr
     });
     if (this.config.get<string>('NODE_ENV') === 'test') return;
     const queue = () =>
-      void this.jobs.enqueue(INTAKE_SWEEP_JOB, {}, { uniqueKey: `${INTAKE_SWEEP_JOB}:${Math.floor(Date.now() / SWEEP_MS)}`, maxAttempts: 2 }).catch((e) => this.logger.warn(`Intake sweep not queued: ${(e as Error).message}`));
+      void this.jobs
+        .enqueue(INTAKE_SWEEP_JOB, {}, { uniqueKey: `${INTAKE_SWEEP_JOB}:${Math.floor(Date.now() / SWEEP_MS)}`, maxAttempts: 2 })
+        .catch((e) => this.logger.warn(`Intake sweep not queued: ${(e as Error).message}`));
     this.timer = setInterval(queue, SWEEP_MS);
     this.timer.unref?.();
   }
@@ -212,7 +220,11 @@ export class IntakeAgentService implements OnApplicationBootstrap, OnModuleDestr
     if (r.detailsAnsweredAt) {
       if (r.detailsEscalatedAt) return 'nothing';
       await this.db.update(careRequests).set({ detailsEscalatedAt: now }).where(eq(careRequests.id, r.id));
-      await this.automation.setHandoverNote(ref, { done: 'The client answered', waiting: `Staff: still missing ${listGaps(gaps)}`, next: 'Nothing more from the intake agent' });
+      await this.automation.setHandoverNote(ref, {
+        done: 'The client answered',
+        waiting: `Staff: still missing ${listGaps(gaps)}`,
+        next: 'Nothing more from the intake agent',
+      });
       await this.staffAlerts.tell({
         subject: `Request ${r.reference} still incomplete`,
         paragraphs: [`The client answered, but ${listGaps(gaps)} is still missing.`, 'Phone the client to fill it in. The intake agent will not ask again.'],
@@ -239,7 +251,11 @@ export class IntakeAgentService implements OnApplicationBootstrap, OnModuleDestr
         return 'nothing';
       }
     } else if (decision.outcome === 'PROPOSE') {
-      await this.automation.setHandoverNote(ref, { done: `Found the request is missing ${listGaps(gaps)}`, waiting: 'Staff to approve asking the client', next: 'Ask the client once approved' });
+      await this.automation.setHandoverNote(ref, {
+        done: `Found the request is missing ${listGaps(gaps)}`,
+        waiting: 'Staff to approve asking the client',
+        next: 'Ask the client once approved',
+      });
     }
     return 'decided';
   }
@@ -261,16 +277,30 @@ export class IntakeAgentService implements OnApplicationBootstrap, OnModuleDestr
       .innerJoin(patients, eq(patients.id, careRequests.patientId))
       .where(eq(careRequests.id, p.requestId))
       .limit(1);
-    if (!r || !OPEN_CARE_REQUEST_STATUSES.includes(r.status as (typeof OPEN_CARE_REQUEST_STATUSES)[number])) throw new BadRequestException('This request is no longer open');
+    if (!r || !OPEN_CARE_REQUEST_STATUSES.includes(r.status as (typeof OPEN_CARE_REQUEST_STATUSES)[number]))
+      throw new BadRequestException('This request is no longer open');
     if (r.asked) throw new BadRequestException('The client has already been asked');
     const now = new Date();
-    await this.db.update(careRequests).set({ detailsAsked: p.gaps.join(','), detailsAskedAt: now, detailsAnsweredAt: null, detailsEscalatedAt: null, detailsRemindedAt: null }).where(eq(careRequests.id, p.requestId));
-    await this.db.insert(careRequestEvents).values({ id: uuid(), requestId: p.requestId, type: 'NOTE', note: `Asked the client for ${listGaps(p.gaps)}`, actorUserId: (await this.automation.agentActor('INTAKE')).userId });
+    await this.db
+      .update(careRequests)
+      .set({ detailsAsked: p.gaps.join(','), detailsAskedAt: now, detailsAnsweredAt: null, detailsEscalatedAt: null, detailsRemindedAt: null })
+      .where(eq(careRequests.id, p.requestId));
+    await this.db.insert(careRequestEvents).values({
+      id: uuid(),
+      requestId: p.requestId,
+      type: 'NOTE',
+      note: `Asked the client for ${listGaps(p.gaps)}`,
+      actorUserId: (await this.automation.agentActor('INTAKE')).userId,
+    });
 
     const told = await this.tellClient(r, p.requestId, p.requestReference, p.gaps, ASK_TEXT, `intake ask ${p.requestId}`);
     await this.automation.setHandoverNote(
       { caseType: 'REQUEST', caseId: p.requestId },
-      { done: `Asked the client for ${listGaps(p.gaps)}`, waiting: `The client to answer (up to ${INTAKE_ANSWER_HOURS} hours)`, next: 'Hand the complete request to matching; staff if there is no answer' },
+      {
+        done: `Asked the client for ${listGaps(p.gaps)}`,
+        waiting: `The client to answer (up to ${INTAKE_ANSWER_HOURS} hours)`,
+        next: 'Hand the complete request to matching; staff if there is no answer',
+      },
     );
     return { told };
   };
@@ -291,10 +321,20 @@ export class IntakeAgentService implements OnApplicationBootstrap, OnModuleDestr
     const gaps = (r.detailsAsked?.split(',') ?? []) as IntakeGap[];
     await this.db.update(careRequests).set({ detailsRemindedAt: now }).where(eq(careRequests.id, r.id));
     await this.tellClient(c, r.id, r.reference, gaps, REMIND_TEXT, `intake remind ${r.id}`);
-    await this.db.insert(careRequestEvents).values({ id: uuid(), requestId: r.id, type: 'NOTE', note: `Reminded the client about ${listGaps(gaps)}`, actorUserId: (await this.automation.agentActor('INTAKE')).userId });
+    await this.db.insert(careRequestEvents).values({
+      id: uuid(),
+      requestId: r.id,
+      type: 'NOTE',
+      note: `Reminded the client about ${listGaps(gaps)}`,
+      actorUserId: (await this.automation.agentActor('INTAKE')).userId,
+    });
     await this.automation.setHandoverNote(
       { caseType: 'REQUEST', caseId: r.id },
-      { done: `Asked the client for ${listGaps(gaps)}, and reminded them once`, waiting: `The client to answer (staff are told after ${INTAKE_ANSWER_HOURS} hours)`, next: 'Hand the complete request to matching; staff if there is no answer' },
+      {
+        done: `Asked the client for ${listGaps(gaps)}, and reminded them once`,
+        waiting: `The client to answer (staff are told after ${INTAKE_ANSWER_HOURS} hours)`,
+        next: 'Hand the complete request to matching; staff if there is no answer',
+      },
     );
   }
 
@@ -307,7 +347,10 @@ export class IntakeAgentService implements OnApplicationBootstrap, OnModuleDestr
     text: Record<'en' | 'si' | 'ta', { title: string; body: string }>,
     label: string,
   ): Promise<string[]> {
-    const words = (lang: 'en' | 'si' | 'ta') => ({ title: text[lang].title, body: text[lang].body.replace('{what}', gaps.map((g) => GAP_WORDS[lang][g]).join(', ')).replace('{reference}', reference) });
+    const words = (lang: 'en' | 'si' | 'ta') => ({
+      title: text[lang].title,
+      body: text[lang].body.replace('{what}', gaps.map((g) => GAP_WORDS[lang][g]).join(', ')).replace('{reference}', reference),
+    });
     this.notices.notify([c.userId], words, `/requests/${requestId}`, label);
     const told = ['bell'];
     try {
@@ -335,7 +378,9 @@ export class IntakeAgentService implements OnApplicationBootstrap, OnModuleDestr
     const open = await this.db
       .select()
       .from(agentDecisions)
-      .where(and(eq(agentDecisions.action, ASK), eq(agentDecisions.outcome, 'SHADOW'), isNull(agentDecisions.staffVerdict), eq(agentDecisions.caseType, 'REQUEST')))
+      .where(
+        and(eq(agentDecisions.action, ASK), eq(agentDecisions.outcome, 'SHADOW'), isNull(agentDecisions.staffVerdict), eq(agentDecisions.caseType, 'REQUEST')),
+      )
       .limit(500);
     const mine = open.filter((d) => !only?.length || only.includes(d.caseId!));
     if (!mine.length) return 0;
@@ -353,7 +398,12 @@ export class IntakeAgentService implements OnApplicationBootstrap, OnModuleDestr
       })
       .from(careRequests)
       .innerJoin(patients, eq(patients.id, careRequests.patientId))
-      .where(inArray(careRequests.id, mine.map((d) => d.caseId!)));
+      .where(
+        inArray(
+          careRequests.id,
+          mine.map((d) => d.caseId!),
+        ),
+      );
     let scored = 0;
     const agent = (await this.automation.agentActor('INTAKE')).userId;
     for (const d of mine) {
@@ -375,4 +425,3 @@ export class IntakeAgentService implements OnApplicationBootstrap, OnModuleDestr
     return scored;
   }
 }
-

@@ -27,7 +27,9 @@ export function ArrivalCodes({ bookings }: { bookings: ClientBooking[] }) {
           <Text accessibilityRole="header" style={[styles.title, { color: colors.ink }]}>
             {t('checkIn.client.title')}
           </Text>
-          <Text style={{ color: colors.muted }}>{t('checkIn.client.forVisit', { day: fmtDay(s.startsAt, locale), start: fmtTime(s.startsAt), end: fmtTime(s.endsAt) })}</Text>
+          <Text style={{ color: colors.muted }}>
+            {t('checkIn.client.forVisit', { day: fmtDay(s.startsAt, locale), start: fmtTime(s.startsAt), end: fmtTime(s.endsAt) })}
+          </Text>
           <Text accessibilityLabel={s.visit!.arrivalCode!.split('').join(' ')} style={[styles.code, { color: colors.brand }]}>
             {s.visit!.arrivalCode}
           </Text>

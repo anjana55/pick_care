@@ -45,13 +45,7 @@ const WIDTH: Record<NonNullable<SiteHeaderProps['maxWidth']>, string> = {
  * into six files, which is how the brand link ended up as a plain <span> on one
  * of them - there was no single place to fix it.
  */
-export function SiteHeader({
-  maxWidth = '5xl',
-  showBackLink = true,
-  backLabel,
-  backHref = '/',
-  className,
-}: SiteHeaderProps) {
+export function SiteHeader({ maxWidth = '5xl', showBackLink = true, backLabel, backHref = '/', className }: SiteHeaderProps) {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
   const signOut = () => {
@@ -63,10 +57,7 @@ export function SiteHeader({
     <header className={cn('sticky top-0 z-20 border-b border-border bg-white/90 backdrop-blur', className)}>
       <div className={cn('mx-auto flex items-center gap-3 px-4 py-3', WIDTH[maxWidth])}>
         {showBackLink ? (
-          <Link
-            href={backHref}
-            className="flex min-w-0 items-center gap-1.5 text-sm font-medium text-ink/60 transition-colors hover:text-brand"
-          >
+          <Link href={backHref} className="flex min-w-0 items-center gap-1.5 text-sm font-medium text-ink/60 transition-colors hover:text-brand">
             <ArrowLeft className="h-4 w-4 shrink-0" aria-hidden />
             <span className="truncate">{backLabel ?? t('nav.backHome')}</span>
           </Link>

@@ -196,7 +196,11 @@ describe('Today', () => {
         body: {
           unread: 0,
           badge: 3,
-          todos: [todo('UPLOAD_DOCUMENT', { document: 'identity' }), todo('SHIFT_TODAY', { time: '08:00', reference: 'BK-1' }), todo('DOCUMENT_EXPIRING', { document: 'police', days: '5' })],
+          todos: [
+            todo('UPLOAD_DOCUMENT', { document: 'identity' }),
+            todo('SHIFT_TODAY', { time: '08:00', reference: 'BK-1' }),
+            todo('DOCUMENT_EXPIRING', { document: 'police', days: '5' }),
+          ],
         },
       }),
     });
@@ -236,7 +240,10 @@ describe('Shifts', () => {
         return { status: 200, body: { ok: true } };
       },
       'POST /me/shifts/s-1/check-out': () => {
-        current = shift(1, 10 * 60_000, { hasCarePlan: false, checkIn: { ...open, state: 'OUT', checkedInAt: '2026-11-16T02:33:00.000Z', checkedOutAt: '2026-11-16T11:31:00.000Z' } });
+        current = shift(1, 10 * 60_000, {
+          hasCarePlan: false,
+          checkIn: { ...open, state: 'OUT', checkedInAt: '2026-11-16T02:33:00.000Z', checkedOutAt: '2026-11-16T11:31:00.000Z' },
+        });
         return { status: 200, body: { ok: true } };
       },
     });
@@ -362,7 +369,19 @@ describe('Payments', () => {
         paymentMethod: 'BANK_TRANSFER',
         paymentReference: 'TRX-889',
       },
-      { id: 'p-2', reference: 'PO-4', status: 'APPROVED', periodStart: '2026-11-01', periodEnd: '2026-11-30', lines: [], total: '9000.00', paidOn: null, paymentType: null, paymentMethod: null, paymentReference: null },
+      {
+        id: 'p-2',
+        reference: 'PO-4',
+        status: 'APPROVED',
+        periodStart: '2026-11-01',
+        periodEnd: '2026-11-30',
+        lines: [],
+        total: '9000.00',
+        paidOn: null,
+        paymentType: null,
+        paymentMethod: null,
+        paymentReference: null,
+      },
     ];
     serveApi({ 'GET /me/payouts': () => ({ status: 200, body: payouts }) });
     await show(<Payments />);

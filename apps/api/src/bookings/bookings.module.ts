@@ -18,7 +18,17 @@ import { CheckInSettingsController, MyCheckInController, VisitsController } from
 
 @Module({
   imports: [PublicSearchModule, EmailModule, WhatsappModule, CarePlansModule, CareLocationsModule, AuditModule],
-  controllers: [BookingsController, MyBookingsController, MyCheckInController, LiveVisitsController, VisitsController, CheckInSettingsController, MyLocationSharesController, LocationPointsController, MyBookingLiveController],
+  controllers: [
+    BookingsController,
+    MyBookingsController,
+    MyCheckInController,
+    LiveVisitsController,
+    VisitsController,
+    CheckInSettingsController,
+    MyLocationSharesController,
+    LocationPointsController,
+    MyBookingLiveController,
+  ],
   providers: [BookingsService, BookingNotifier, BookingAgentService, CheckInService, LiveCareAgentService, LocationSharesService, PresenceAgentService],
   // The assistant runs approved booking changes through BookingsService; corrections also tell people through BookingNotifier.
   exports: [BookingsService, BookingNotifier, BookingAgentService, CheckInService, LiveCareAgentService],

@@ -33,6 +33,10 @@ export const emailSettings = mysqlTable('email_settings', {
   // every active ADMIN and STAFF account that has an email address.
   requestAlertsTo: varchar('request_alerts_to', { length: 1000 }),
   updatedBy: varchar('updated_by', { length: 36 }),
-  createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+  createdAt: datetime('created_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: datetime('updated_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
 });

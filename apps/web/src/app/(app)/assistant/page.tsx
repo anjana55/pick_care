@@ -154,7 +154,11 @@ export default function AssistantPage() {
               <p className="mt-1 text-sm text-ink/60">{t('assistant.intro')}</p>
               <div className="mt-5 grid gap-2 sm:grid-cols-2">
                 {STARTERS.map((key) => (
-                  <button key={key} onClick={() => submit(t(key))} className="rounded-lg border border-border px-3 py-2 text-left text-sm text-ink/80 hover:border-brand hover:bg-paper">
+                  <button
+                    key={key}
+                    onClick={() => submit(t(key))}
+                    className="rounded-lg border border-border px-3 py-2 text-left text-sm text-ink/80 hover:border-brand hover:bg-paper"
+                  >
                     {t(key)}
                   </button>
                 ))}
@@ -163,7 +167,12 @@ export default function AssistantPage() {
           ) : (
             <div className="mx-auto max-w-3xl space-y-4">
               {messages.map((m) => (
-                <MessageView key={m.id} message={m} onDecide={(actionId, approve) => conversation && decide.mutate({ actionId, approve, conversationId: conversation.id })} deciding={decide.isPending ? decide.variables?.actionId : undefined} />
+                <MessageView
+                  key={m.id}
+                  message={m}
+                  onDecide={(actionId, approve) => conversation && decide.mutate({ actionId, approve, conversationId: conversation.id })}
+                  deciding={decide.isPending ? decide.variables?.actionId : undefined}
+                />
               ))}
               {pendingText && (
                 <>

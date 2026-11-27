@@ -8,8 +8,22 @@ import { tokenStore } from '@/api';
 
 jest.mock('expo-router', () => require('../test-utils/router').expoRouterMock());
 
-const show = () => render(<AppProviders><CommunicationPreferencesScreen /></AppProviders>);
-const base = { preferredContactMethod: 'WHATSAPP', preferredContactTime: null, pushEnabled: true, reminderMessagesEnabled: true, hasAccount: true, hasEmail: false, hasPhone: true, appDevices: 1 };
+const show = () =>
+  render(
+    <AppProviders>
+      <CommunicationPreferencesScreen />
+    </AppProviders>,
+  );
+const base = {
+  preferredContactMethod: 'WHATSAPP',
+  preferredContactTime: null,
+  pushEnabled: true,
+  reminderMessagesEnabled: true,
+  hasAccount: true,
+  hasEmail: false,
+  hasPhone: true,
+  appDevices: 1,
+};
 
 beforeEach(() => mockRouter.reset());
 
@@ -43,7 +57,10 @@ describe('How we contact you', () => {
     await tokenStore.set(tokensFor('CAREGIVER', { caregiverId: 'cg-1', phone: '+94771234567' }));
     serveApi({
       'GET /me/communication-preferences': () => ({ status: 200, body: base }),
-      'PATCH /me/communication-preferences': () => ({ status: 400, body: { message: 'WhatsApp cannot be the preferred contact method without a phone number' } }),
+      'PATCH /me/communication-preferences': () => ({
+        status: 400,
+        body: { message: 'WhatsApp cannot be the preferred contact method without a phone number' },
+      }),
     });
     await show();
     await fireEvent(await screen.findByLabelText(en.commsPrefs.reminders), 'valueChange', false);

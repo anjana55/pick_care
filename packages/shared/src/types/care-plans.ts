@@ -20,7 +20,16 @@ import { LOCALES, type Locale } from './locale';
  * Everything here is pure, so the API, both web apps and the tests apply one rule.
  */
 
-export const careActivityCategoryValues = ['PERSONAL_CARE', 'MEDICATION', 'MOBILITY', 'NUTRITION', 'VITAL_SIGNS', 'HOUSEHOLD', 'COMPANIONSHIP', 'OTHER'] as const;
+export const careActivityCategoryValues = [
+  'PERSONAL_CARE',
+  'MEDICATION',
+  'MOBILITY',
+  'NUTRITION',
+  'VITAL_SIGNS',
+  'HOUSEHOLD',
+  'COMPANIONSHIP',
+  'OTHER',
+] as const;
 export type CareActivityCategory = (typeof careActivityCategoryValues)[number];
 
 /** ANY: once, any time in the shift. SLOT: once, in a part of the day. AT_TIMES: once per listed time that falls in the shift. */
@@ -126,7 +135,11 @@ export function careActivityProblems(a: Partial<CareActivityFields>): string[] {
   if (!hasText(a.title)) out.push('title');
   if (!a.timing || !(careActivityTimingValues as readonly string[]).includes(a.timing)) out.push('timing');
   if (a.timing === 'SLOT' && (!a.slot || !(careSlotValues as readonly string[]).includes(a.slot))) out.push('slot');
-  if (a.timing === 'AT_TIMES' && (!a.times?.length || a.times.length > MAX_CARE_TIMES || a.times.some((t) => !isValidTime(t)) || new Set(a.times).size !== a.times.length)) out.push('times');
+  if (
+    a.timing === 'AT_TIMES' &&
+    (!a.times?.length || a.times.length > MAX_CARE_TIMES || a.times.some((t) => !isValidTime(t)) || new Set(a.times).size !== a.times.length)
+  )
+    out.push('times');
   if (a.daysOfWeek && (!a.daysOfWeek.length || a.daysOfWeek.some((d) => !Number.isInteger(d) || d < 1 || d > 7))) out.push('daysOfWeek');
   const r = a.reminderMinutesBefore;
   if (r !== null && r !== undefined && (!Number.isInteger(r) || r < 0 || r > MAX_CARE_REMINDER_MINUTES)) out.push('reminder');
@@ -180,7 +193,8 @@ export function sameCareDue(a: CareActivityFields, b: CareActivityFields): boole
 // --- occurrences and the cut-off ------------------------------------------------
 
 /** A plan activity as the occurrence rule needs it. */
-export interface CareActivityForShift extends Pick<CareActivityFields, 'timing' | 'slot' | 'times' | 'daysOfWeek'>, Partial<Pick<CareActivityFields, 'reminderMinutesBefore' | 'onTimeMinutes'>> {
+export interface CareActivityForShift
+  extends Pick<CareActivityFields, 'timing' | 'slot' | 'times' | 'daysOfWeek'>, Partial<Pick<CareActivityFields, 'reminderMinutesBefore' | 'onTimeMinutes'>> {
   id: string;
   sortOrder: number;
   /** 'YYYY-MM-DD', inclusive. */
@@ -298,9 +312,7 @@ export function careOccurrences(activities: CareActivityForShift[], shift: { sta
       }
     }
   }
-  return out
-    .sort((x, y) => x.dueAt.getTime() - y.dueAt.getTime() || x.order - y.order || x.dueKey.localeCompare(y.dueKey))
-    .map(({ order: _order, ...o }) => o);
+  return out.sort((x, y) => x.dueAt.getTime() - y.dueAt.getTime() || x.order - y.order || x.dueKey.localeCompare(y.dueKey)).map(({ order: _order, ...o }) => o);
 }
 
 // --- API shapes --------------------------------------------------------------------

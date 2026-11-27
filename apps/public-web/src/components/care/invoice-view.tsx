@@ -17,14 +17,18 @@ export function InvoiceView({ invoice }: { invoice: ClientInvoice }) {
 
   return (
     <article className="rounded-lg border border-border bg-white p-5 text-sm text-ink sm:p-8 print:border-0 print:p-0">
-      {invoice.status === 'VOID' && <p className="mb-6 rounded border border-danger px-3 py-2 text-center font-semibold uppercase tracking-wide text-danger">{t('invoices.doc.void')}</p>}
+      {invoice.status === 'VOID' && (
+        <p className="mb-6 rounded border border-danger px-3 py-2 text-center font-semibold uppercase tracking-wide text-danger">{t('invoices.doc.void')}</p>
+      )}
       <header className="flex flex-col gap-6 border-b border-border pb-6 sm:flex-row sm:items-start sm:justify-between print:flex-row">
         <div className="max-w-xs">
           <p className="text-lg font-semibold">{s.name}</p>
           {s.address && <p className="whitespace-pre-line text-ink/70">{s.address}</p>}
           <p className="text-ink/70">{[s.phone, s.email].filter(Boolean).join(' · ')}</p>
           {s.registrationNumber && <p className="text-ink/60">{t('invoices.doc.regNo', { number: s.registrationNumber })}</p>}
-          {taxed && s.taxRegistrationNumber && <p className="text-ink/60">{t('invoices.doc.taxRegNo', { name: invoice.taxName ?? '', number: s.taxRegistrationNumber })}</p>}
+          {taxed && s.taxRegistrationNumber && (
+            <p className="text-ink/60">{t('invoices.doc.taxRegNo', { name: invoice.taxName ?? '', number: s.taxRegistrationNumber })}</p>
+          )}
         </div>
         <div className="sm:text-right print:text-right">
           <p className="text-2xl font-semibold uppercase tracking-wide text-brand-dark">{taxed ? t('invoices.doc.taxInvoice') : t('invoices.doc.invoice')}</p>
@@ -68,7 +72,9 @@ export function InvoiceView({ invoice }: { invoice: ClientInvoice }) {
               <span className="whitespace-nowrap font-medium tabular-nums">{money(l.amount)}</span>
             </div>
             <p className="text-xs tabular-nums text-ink/50">
-              {[l.serviceDate ? fmtDate(l.serviceDate, locale) : null, `${Number(l.quantity)} ${t(`invoices.unit.${l.unit}`)} × ${money(l.unitPrice)}`].filter(Boolean).join(' · ')}
+              {[l.serviceDate ? fmtDate(l.serviceDate, locale) : null, `${Number(l.quantity)} ${t(`invoices.unit.${l.unit}`)} × ${money(l.unitPrice)}`]
+                .filter(Boolean)
+                .join(' · ')}
             </p>
             {Number(l.discount) > 0 && <p className="text-xs text-ink/50">{t('invoices.doc.lineDiscount', { amount: formatLkr(l.discount) })}</p>}
           </li>
@@ -91,7 +97,9 @@ export function InvoiceView({ invoice }: { invoice: ClientInvoice }) {
                 <td className="whitespace-nowrap py-2 pr-3 tabular-nums text-ink/70">{l.serviceDate ? fmtDate(l.serviceDate, locale) : ''}</td>
                 <td className="py-2 pr-3">
                   {l.description}
-                  {Number(l.discount) > 0 && <span className="block text-xs text-ink/50">{t('invoices.doc.lineDiscount', { amount: formatLkr(l.discount) })}</span>}
+                  {Number(l.discount) > 0 && (
+                    <span className="block text-xs text-ink/50">{t('invoices.doc.lineDiscount', { amount: formatLkr(l.discount) })}</span>
+                  )}
                 </td>
                 <td className="whitespace-nowrap py-2 pr-3 text-right tabular-nums">
                   {Number(l.quantity)} {t(`invoices.unit.${l.unit}`)}
@@ -107,7 +115,10 @@ export function InvoiceView({ invoice }: { invoice: ClientInvoice }) {
       <dl className="ml-auto mt-6 w-full max-w-sm break-inside-avoid border-t border-border pt-4">
         <Row label={t('invoices.doc.subtotal')} value={formatLkr(invoice.subtotal)} />
         {Number(invoice.discount) > 0 && (
-          <Row label={invoice.discountLabel ? `${t('invoices.doc.discount')} (${invoice.discountLabel})` : t('invoices.doc.discount')} value={`−${formatLkr(invoice.discount)}`} />
+          <Row
+            label={invoice.discountLabel ? `${t('invoices.doc.discount')} (${invoice.discountLabel})` : t('invoices.doc.discount')}
+            value={`−${formatLkr(invoice.discount)}`}
+          />
         )}
         {taxed && <Row label={`${invoice.taxName} ${Number(invoice.taxRate)}%`} value={formatLkr(invoice.tax)} />}
         <Row label={t('invoices.doc.total')} value={formatLkr(invoice.total)} strong />
@@ -115,7 +126,9 @@ export function InvoiceView({ invoice }: { invoice: ClientInvoice }) {
         {Number(invoice.amountPaid) !== 0 && <Row label={t('invoices.doc.balance')} value={formatLkr(invoice.balance)} strong />}
       </dl>
 
-      {invoice.status === 'PAID' && <p className="mt-4 text-right text-base font-semibold uppercase tracking-wide text-brand-dark">{t('invoices.doc.paidInFull')}</p>}
+      {invoice.status === 'PAID' && (
+        <p className="mt-4 text-right text-base font-semibold uppercase tracking-wide text-brand-dark">{t('invoices.doc.paidInFull')}</p>
+      )}
       {invoice.payments.length > 0 && (
         <section className="mt-6 break-inside-avoid">
           <p className="text-xs font-semibold uppercase tracking-wide text-ink/50">{t('invoices.doc.payments')}</p>
@@ -123,7 +136,8 @@ export function InvoiceView({ invoice }: { invoice: ClientInvoice }) {
             {invoice.payments.map((p, i) => (
               <li key={i} className="flex justify-between gap-3 tabular-nums">
                 <span>
-                  {fmtDate(p.paidOn, locale)} · {t(`invoices.paymentType.${p.paymentType}`)}{p.method && p.method !== 'CASH' ? ` (${t(`invoices.method.${p.method}`)})` : ''}
+                  {fmtDate(p.paidOn, locale)} · {t(`invoices.paymentType.${p.paymentType}`)}
+                  {p.method && p.method !== 'CASH' ? ` (${t(`invoices.method.${p.method}`)})` : ''}
                   {p.reference && ` · ${p.reference}`}
                 </span>
                 <span className="whitespace-nowrap">{formatLkr(p.amount)}</span>

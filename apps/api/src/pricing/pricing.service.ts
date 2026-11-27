@@ -35,7 +35,9 @@ export class PricingService {
     const byType = new Map(rows.map((r) => [r.careType, r]));
     return careTypeValues.map((careType) => {
       const r = byType.get(careType);
-      return r ? { careType, enabled: r.enabled, rateType: r.rateType, minRate: r.minRate, maxRate: r.maxRate, feePercent: r.feePercent } : defaultPricing(careType);
+      return r
+        ? { careType, enabled: r.enabled, rateType: r.rateType, minRate: r.minRate, maxRate: r.maxRate, feePercent: r.feePercent }
+        : defaultPricing(careType);
     });
   }
 
@@ -58,7 +60,11 @@ export class PricingService {
   // --- a caregiver's rate card ---------------------------------------------------
 
   private async caregiverOrThrow(caregiverId: string) {
-    const [row] = await this.db.select({ id: caregivers.id }).from(caregivers).where(and(eq(caregivers.id, caregiverId), isNull(caregivers.deletedAt))).limit(1);
+    const [row] = await this.db
+      .select({ id: caregivers.id })
+      .from(caregivers)
+      .where(and(eq(caregivers.id, caregiverId), isNull(caregivers.deletedAt)))
+      .limit(1);
     if (!row) throw new NotFoundException('Caregiver not found');
   }
 

@@ -210,8 +210,7 @@ function buildAnthropic(cfg: ProviderConfig, req: ChatRequest): HttpCall {
           : { type: 'image', source: { type: 'base64', media_type: a.mediaType, data: a.base64 } },
       );
       push('user', [...files, { type: 'text', text: m.content }]);
-    }
-    else if (m.role === 'tool') push('user', [{ type: 'tool_result', tool_use_id: m.toolCallId, content: m.content }]);
+    } else if (m.role === 'tool') push('user', [{ type: 'tool_result', tool_use_id: m.toolCallId, content: m.content }]);
     else if (m.role === 'assistant') {
       const blocks: Block[] = [];
       if (m.content) blocks.push({ type: 'text', text: m.content });
@@ -268,7 +267,10 @@ export function parseResponse(provider: AiProvider, data: unknown): ChatResult {
     case 'ANTHROPIC': {
       const blocks: any[] = Array.isArray(d.content) ? d.content : [];
       return {
-        content: blocks.filter((b) => b?.type === 'text').map((b) => b.text).join(''),
+        content: blocks
+          .filter((b) => b?.type === 'text')
+          .map((b) => b.text)
+          .join(''),
         toolCalls: blocks
           .filter((b) => b?.type === 'tool_use' && b.name)
           .map((b) => ({ id: b.id || localToolCallId(), name: b.name, arguments: parseArgs(b.input) })),

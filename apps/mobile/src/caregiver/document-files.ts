@@ -15,10 +15,7 @@ type FileSystem = typeof import('expo-file-system');
  * says "not on this version" rather than failing.
  */
 
-export type PickOutcome =
-  | { file: PickedFile }
-  | { canceled: true }
-  | { error: 'cameraDenied' | 'unsupported' | 'failed' };
+export type PickOutcome = { file: PickedFile } | { canceled: true } | { error: 'cameraDenied' | 'unsupported' | 'failed' };
 
 function imagePicker(): ImagePicker | null {
   if (!hasNativeModule('ExponentImagePicker')) return null;

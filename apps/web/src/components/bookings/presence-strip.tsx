@@ -39,10 +39,10 @@ export function PresenceStrip({ shiftId, presence, withMap = false }: { shiftId:
           ))}
         </ol>
       )}
-      {presence.reply && presence.repliedAt && (
-        <p>{t(`visits.presence.reply.${presence.reply}`, { time: fmtTime(presence.repliedAt, locale) })}</p>
+      {presence.reply && presence.repliedAt && <p>{t(`visits.presence.reply.${presence.reply}`, { time: fmtTime(presence.repliedAt, locale) })}</p>}
+      {presence.endReason === 'STOPPED' && presence.endedAt && (
+        <p className="text-danger">{t('visits.presence.stopped', { time: fmtTime(presence.endedAt, locale) })}</p>
       )}
-      {presence.endReason === 'STOPPED' && presence.endedAt && <p className="text-danger">{t('visits.presence.stopped', { time: fmtTime(presence.endedAt, locale) })}</p>}
       {presence.mocked > 0 && <p className="text-danger">{t('visits.presence.mocked', { n: presence.mocked })}</p>}
       {withMap && (
         <button type="button" className="text-brand-dark hover:underline" onClick={() => setOpen(!open)} aria-expanded={open}>
@@ -51,7 +51,12 @@ export function PresenceStrip({ shiftId, presence, withMap = false }: { shiftId:
       )}
       {open && data && (
         <LiveMap
-          caregivers={data.points.map((p, i) => ({ id: String(i), label: `${fmtTime(p.at, locale)} · ${p.inside === false ? label('AWAY') : p.inside ? label('IN') : label('UNKNOWN')}`, latitude: p.latitude, longitude: p.longitude }))}
+          caregivers={data.points.map((p, i) => ({
+            id: String(i),
+            label: `${fmtTime(p.at, locale)} · ${p.inside === false ? label('AWAY') : p.inside ? label('IN') : label('UNKNOWN')}`,
+            latitude: p.latitude,
+            longitude: p.longitude,
+          }))}
           homes={data.home ? [{ id: 'home', label: t('careLocation.pin'), ...data.home }] : []}
           label={t('visits.presence.map')}
           failedText={t('careLocation.mapFailed')}

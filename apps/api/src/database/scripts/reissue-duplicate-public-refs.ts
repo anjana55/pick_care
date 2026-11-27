@@ -24,9 +24,7 @@ import { generateUniquePublicId } from '../../caregivers/caregiver-ref.util';
  */
 async function main() {
   const apply = process.argv.includes('--apply');
-  const connection = await mysql.createConnection(
-    process.env.DATABASE_URL || 'mysql://care_app:care_app_password@localhost:3306/care_platform',
-  );
+  const connection = await mysql.createConnection(process.env.DATABASE_URL || 'mysql://care_app:care_app_password@localhost:3306/care_platform');
   const db = drizzle(connection);
 
   const ref = sql<string>`LEFT(${caregivers.publicId}, ${CAREGIVER_REF_LENGTH})`;

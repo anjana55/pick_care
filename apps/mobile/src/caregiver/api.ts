@@ -93,7 +93,8 @@ export function useShiftCheckIn() {
   const queryClient = useQueryClient();
   const me = useCaregiver();
   return useMutation({
-    mutationFn: ({ shiftId, ...body }: CheckInInput & { shiftId: string }) => api.post<CheckInResult>(`/me/shifts/${encodeURIComponent(shiftId)}/check-in`, body),
+    mutationFn: ({ shiftId, ...body }: CheckInInput & { shiftId: string }) =>
+      api.post<CheckInResult>(`/me/shifts/${encodeURIComponent(shiftId)}/check-in`, body),
     // Also after a refusal: a wrong code may have locked it, and the list should say so.
     onSettled: () => queryClient.invalidateQueries({ queryKey: [...key(me?.userId), 'shifts'] }),
   });
@@ -113,7 +114,9 @@ export function useCantMake() {
   const me = useCaregiver();
   return useMutation({
     mutationFn: ({ shiftId, note, undo }: { shiftId: string; note?: string; undo?: boolean }) =>
-      undo ? api.delete<{ ok: true }>(`/me/shifts/${encodeURIComponent(shiftId)}/cant-make`) : api.post<{ ok: true }>(`/me/shifts/${encodeURIComponent(shiftId)}/cant-make`, note ? { note } : {}),
+      undo
+        ? api.delete<{ ok: true }>(`/me/shifts/${encodeURIComponent(shiftId)}/cant-make`)
+        : api.post<{ ok: true }>(`/me/shifts/${encodeURIComponent(shiftId)}/cant-make`, note ? { note } : {}),
     onSettled: () => qc.invalidateQueries({ queryKey: [...key(me?.userId), 'shifts'] }),
   });
 }
@@ -122,7 +125,8 @@ export function useShiftCheckOut() {
   const queryClient = useQueryClient();
   const me = useCaregiver();
   return useMutation({
-    mutationFn: ({ shiftId, ...body }: Omit<CheckInInput, 'code'> & { shiftId: string }) => api.post<{ ok: true }>(`/me/shifts/${encodeURIComponent(shiftId)}/check-out`, body),
+    mutationFn: ({ shiftId, ...body }: Omit<CheckInInput, 'code'> & { shiftId: string }) =>
+      api.post<{ ok: true }>(`/me/shifts/${encodeURIComponent(shiftId)}/check-out`, body),
     onSettled: () => queryClient.invalidateQueries({ queryKey: [...key(me?.userId), 'shifts'] }),
   });
 }
@@ -269,7 +273,12 @@ export function useMyRecords<T extends Qualification | Experience>(kind: 'qualif
 /** The caregiver's job offers, waiting ones first. Refetched while open: an offer can be withdrawn or run out. */
 export function useCareOffers() {
   const me = useCaregiver();
-  return useQuery({ queryKey: [...key(me?.userId), 'care-offers'], queryFn: () => api.get<CaregiverCareOffer[]>('/me/care-offers'), enabled: Boolean(me), refetchInterval: 60_000 });
+  return useQuery({
+    queryKey: [...key(me?.userId), 'care-offers'],
+    queryFn: () => api.get<CaregiverCareOffer[]>('/me/care-offers'),
+    enabled: Boolean(me),
+    refetchInterval: 60_000,
+  });
 }
 
 /** How many offers are waiting, for the numbers on Home and Me. */
@@ -317,7 +326,8 @@ export function useSaveRates() {
   const me = useCaregiver();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (rates: { careType: CareType; amount: number | null }[]) => api.put<CaregiverRateCard>(`/caregivers/${encodeURIComponent(me!.caregiverId)}/rates`, { rates }),
+    mutationFn: (rates: { careType: CareType; amount: number | null }[]) =>
+      api.put<CaregiverRateCard>(`/caregivers/${encodeURIComponent(me!.caregiverId)}/rates`, { rates }),
     onSuccess: (data) => queryClient.setQueryData([...key(me?.userId), 'rates'], data),
   });
 }

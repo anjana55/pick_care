@@ -24,11 +24,7 @@ export function useAccountDeletionSummary(enabled = true) {
 /** The waiting request for one caregiver or client, if they asked to delete their account. */
 export function usePendingAccountDeletion(who: { caregiverId: string } | { patientId: string }, enabled = true) {
   const { data } = useQuery({ queryKey: KEY, queryFn: () => api.get<StaffAccountDeletion[]>('/account-deletions'), enabled });
-  return (
-    data?.find(
-      (r) => r.status === 'PENDING' && ('caregiverId' in who ? r.caregiverId === who.caregiverId : r.patientId === who.patientId),
-    ) ?? null
-  );
+  return data?.find((r) => r.status === 'PENDING' && ('caregiverId' in who ? r.caregiverId === who.caregiverId : r.patientId === who.patientId)) ?? null;
 }
 
 export function useCancelAccountDeletion() {

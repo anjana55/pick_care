@@ -83,7 +83,8 @@ export function presenceSteps(v: PresenceVisit, settings: PresenceSettings, now:
 }
 
 export function presenceReason(kind: PresenceFlagKind, minutes: number, who: string, startTime: string): string {
-  if (kind === 'AWAY_DURING_VISIT') return `${who} seems to have left the home during the ${startTime} visit ${minutes} min ago, and did not answer "Still with the client?"`;
+  if (kind === 'AWAY_DURING_VISIT')
+    return `${who} seems to have left the home during the ${startTime} visit ${minutes} min ago, and did not answer "Still with the client?"`;
   if (kind === 'NO_LOCATION_DURING_VISIT') return `No location from ${who}'s phone for ${minutes} min during the ${startTime} visit`;
   if (kind === 'SIMULATED_LOCATION') return `${who}'s phone said its position was simulated during the ${startTime} visit`;
   return `${who} turned off the location checks during the ${startTime} visit, ${minutes} min ago`;
@@ -92,7 +93,7 @@ export function presenceReason(kind: PresenceFlagKind, minutes: number, who: str
 export const PRESENCE_NEXT: Record<PresenceFlagKind, string> = {
   AWAY_DURING_VISIT: 'Staff to phone the caregiver, then the client if needed',
   NO_LOCATION_DURING_VISIT: 'Nothing unless something else looks wrong: the phone may be off or without signal',
-  SIMULATED_LOCATION: "Staff to check with the client that the visit is happening, and talk to the caregiver",
+  SIMULATED_LOCATION: 'Staff to check with the client that the visit is happening, and talk to the caregiver',
   LOCATION_STOPPED: 'Staff to check with the caregiver; turning the checks off is allowed',
 };
 

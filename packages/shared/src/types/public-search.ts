@@ -1,13 +1,7 @@
 import type { CaregiverRatingSummary } from './reviews';
 import { z } from 'zod';
 import { LOCALES, type Locale } from './locale';
-import {
-  MAX_SEARCH_RADIUS_KM,
-  type CaregiverHomeLocation,
-  type MapCityPoint,
-  type SearchOrigin,
-  type ServiceAreaCity,
-} from './geo';
+import { MAX_SEARCH_RADIUS_KM, type CaregiverHomeLocation, type MapCityPoint, type SearchOrigin, type ServiceAreaCity } from './geo';
 import { careTypeValues, type CareType } from './care-types';
 
 /**

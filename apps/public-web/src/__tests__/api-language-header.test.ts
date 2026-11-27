@@ -8,7 +8,15 @@ import { api, fetchBlob } from '@/lib/api/client';
 const KEY = 'care-platform-public-locale';
 const fetchMock = jest.fn();
 // jsdom has no Response; the client only needs these few members of it.
-const ok = () => ({ ok: true, status: 200, statusText: 'OK', headers: { get: () => 'application/json' }, json: async () => ({}), text: async () => '{}', blob: async () => new Blob(['x']) });
+const ok = () => ({
+  ok: true,
+  status: 200,
+  statusText: 'OK',
+  headers: { get: () => 'application/json' },
+  json: async () => ({}),
+  text: async () => '{}',
+  blob: async () => new Blob(['x']),
+});
 const headersOfLastCall = () => (fetchMock.mock.calls.at(-1)![1] as { headers: Record<string, string> }).headers;
 
 beforeEach(() => {

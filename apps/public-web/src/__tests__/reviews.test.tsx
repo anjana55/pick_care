@@ -82,7 +82,25 @@ beforeEach(() => {
 describe('rating a caregiver', () => {
   it('sends stars and praise badges, and offers badges only for 4-5 stars', async () => {
     get.mockResolvedValue(entry());
-    put.mockResolvedValue(entry({ review: { id: 'r1', bookingId: BOOKING, caregiverPublicId: PUBLIC_ID, rating: 5, badges: ['PUNCTUAL'], improvementTags: [], comment: null, commentStatus: 'NONE', commentRejectReason: null, privateNote: null, hidden: false, createdAt: '', updatedAt: 'x' } }));
+    put.mockResolvedValue(
+      entry({
+        review: {
+          id: 'r1',
+          bookingId: BOOKING,
+          caregiverPublicId: PUBLIC_ID,
+          rating: 5,
+          badges: ['PUNCTUAL'],
+          improvementTags: [],
+          comment: null,
+          commentStatus: 'NONE',
+          commentRejectReason: null,
+          privateNote: null,
+          hidden: false,
+          createdAt: '',
+          updatedAt: 'x',
+        },
+      }),
+    );
     renderUi(<RateCaregiverPage />);
 
     expect(await screen.findByRole('heading', { name: 'How was the care?' })).toBeInTheDocument();
@@ -105,7 +123,13 @@ describe('rating a caregiver', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Submit rating' }));
 
     await waitFor(() =>
-      expect(put).toHaveBeenCalledWith(`/me/bookings/${BOOKING}/reviews/${PUBLIC_ID}`, { rating: 5, badges: ['PUNCTUAL'], improvementTags: [], comment: null, privateNote: null }),
+      expect(put).toHaveBeenCalledWith(`/me/bookings/${BOOKING}/reviews/${PUBLIC_ID}`, {
+        rating: 5,
+        badges: ['PUNCTUAL'],
+        improvementTags: [],
+        comment: null,
+        privateNote: null,
+      }),
     );
     expect(await screen.findByText('Thank you - your rating has been saved.')).toBeInTheDocument();
   });
@@ -123,7 +147,21 @@ describe('rating a caregiver', () => {
   it('shows a given rating with the state of its written review, and can delete it', async () => {
     get.mockResolvedValue(
       entry({
-        review: { id: 'r1', bookingId: BOOKING, caregiverPublicId: PUBLIC_ID, rating: 4, badges: ['KIND_PATIENT'], improvementTags: [], comment: 'Kind and gentle every day.', commentStatus: 'REJECTED', commentRejectReason: 'It names another person', privateNote: null, hidden: false, createdAt: '', updatedAt: 'y' },
+        review: {
+          id: 'r1',
+          bookingId: BOOKING,
+          caregiverPublicId: PUBLIC_ID,
+          rating: 4,
+          badges: ['KIND_PATIENT'],
+          improvementTags: [],
+          comment: 'Kind and gentle every day.',
+          commentStatus: 'REJECTED',
+          commentRejectReason: 'It names another person',
+          privateNote: null,
+          hidden: false,
+          createdAt: '',
+          updatedAt: 'y',
+        },
       }),
     );
     del.mockResolvedValue(undefined);
@@ -160,8 +198,13 @@ describe('on the bookings page', () => {
 describe('reading ratings', () => {
   const page: PublicReviewsPage = {
     summary: { average: 4.7, count: 12, topBadges: [{ badge: 'KIND_PATIENT', count: 9 }] },
-    badgeCounts: [{ badge: 'KIND_PATIENT', count: 9 }, { badge: 'PUNCTUAL', count: 4 }],
-    items: [{ id: 'r1', rating: 5, badges: ['PUNCTUAL'], comment: 'Always early and cheerful.', commentLanguage: 'en', reviewerDistrict: 'Kandy', month: '2026-10' }],
+    badgeCounts: [
+      { badge: 'KIND_PATIENT', count: 9 },
+      { badge: 'PUNCTUAL', count: 4 },
+    ],
+    items: [
+      { id: 'r1', rating: 5, badges: ['PUNCTUAL'], comment: 'Always early and cheerful.', commentLanguage: 'en', reviewerDistrict: 'Kandy', month: '2026-10' },
+    ],
     total: 1,
     page: 1,
     pageSize: 10,
@@ -187,9 +230,15 @@ describe('reading ratings', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it("tells a caregiver their average and when it will show publicly", async () => {
+  it('tells a caregiver their average and when it will show publicly', async () => {
     auth = { user: CAREGIVER, loading: false };
-    get.mockResolvedValue({ summary: { average: 5, count: 2 }, shownPublicly: false, minRatingsToShow: 3, badgeCounts: [{ badge: 'TRUSTWORTHY', count: 2 }], reviews: [] });
+    get.mockResolvedValue({
+      summary: { average: 5, count: 2 },
+      shownPublicly: false,
+      minRatingsToShow: 3,
+      badgeCounts: [{ badge: 'TRUSTWORTHY', count: 2 }],
+      reviews: [],
+    });
     renderUi(<MyRatings />);
     expect(await screen.findByText('Your rating appears on your public profile once you have 3 ratings.')).toBeInTheDocument();
     expect(screen.getByText('Honest and trustworthy')).toBeInTheDocument();

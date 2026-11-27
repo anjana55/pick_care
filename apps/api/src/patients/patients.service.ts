@@ -45,15 +45,7 @@ import type { PhoneClientDto } from '../clients/phone-client.dto';
  * with UpdatePatientDto. Note `.has`, not `in`: `in` on a Set tests for a
  * property rather than for membership and silently rejects every field.
  */
-const UPDATABLE_COLUMNS: ReadonlySet<string> = new Set([
-  'fullName',
-  'permanentAddress',
-  'dateOfBirth',
-  'gender',
-  'nic',
-  'notes',
-  'preferredContactMethod',
-]);
+const UPDATABLE_COLUMNS: ReadonlySet<string> = new Set(['fullName', 'permanentAddress', 'dateOfBirth', 'gender', 'nic', 'notes', 'preferredContactMethod']);
 
 /**
  * The staff-facing view of registered patients/guardians.
@@ -335,9 +327,7 @@ export class PatientsService {
         if (!e164) {
           // Same wording as WhatsappAuthService.requirePhone, so "that is not
           // a usable number" reads identically wherever it is said.
-          throw new BadRequestException(
-            'Enter a valid phone number, including the country code if it is not a local number',
-          );
+          throw new BadRequestException('Enter a valid phone number, including the country code if it is not a local number');
         }
         // Compared as E.164 against the login's E.164, NOT against
         // patients.phone. Re-saving "0771234567" as "+94771234567" is the same
@@ -425,9 +415,7 @@ export class PatientsService {
 
     const allowed = CLIENT_STATUS_TRANSITIONS[target.status as ClientStatus] ?? [];
     if (!allowed.includes(dto.status)) {
-      throw new BadRequestException(
-        `Cannot change status from ${target.status} to ${dto.status}. Allowed: ${allowed.join(', ') || 'none'}`,
-      );
+      throw new BadRequestException(`Cannot change status from ${target.status} to ${dto.status}. Allowed: ${allowed.join(', ') || 'none'}`);
     }
 
     await assertNoPendingDeletion(this.db, { patientId: id });
@@ -467,7 +455,11 @@ export class PatientsService {
   async remove(id: string) {
     const target = await this.findOrThrow(id);
     // Issued invoices are accounting records and outlive the account.
-    const [kept] = await this.db.select({ id: invoices.id }).from(invoices).where(and(eq(invoices.patientId, id), ne(invoices.status, 'DRAFT'))).limit(1);
+    const [kept] = await this.db
+      .select({ id: invoices.id })
+      .from(invoices)
+      .where(and(eq(invoices.patientId, id), ne(invoices.status, 'DRAFT')))
+      .limit(1);
     if (kept) throw new BadRequestException('This client has issued invoices, which must be kept - deactivate the account instead');
 
     await this.db.transaction(async (tx) => {

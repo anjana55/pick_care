@@ -93,7 +93,11 @@ describe('NotificationsService', () => {
     expect(inserts).toHaveLength(2);
     expect(inserts.map((r) => r.userId)).toEqual(['u-1', 'u-2']);
     expect(inserts[0]).toMatchObject({ category: 'INVOICE', path: '/invoices/' + UUID, important: false });
-    expect(inserts[0].text).toEqual({ en: { title: 'T-en', body: 'B-en {brand}' }, si: { title: 'T-si', body: 'B-si {brand}' }, ta: { title: 'T-ta', body: 'B-ta {brand}' } });
+    expect(inserts[0].text).toEqual({
+      en: { title: 'T-en', body: 'B-en {brand}' },
+      si: { title: 'T-si', body: 'B-si {brand}' },
+      ta: { title: 'T-ta', body: 'B-ta {brand}' },
+    });
 
     const [ids, , path, , extras] = push.notify.mock.calls[0];
     expect(ids).toEqual(['u-1', 'u-2']);
@@ -221,7 +225,14 @@ describe('To do', () => {
     const t = new TodosService({} as never, {} as never, reviews as never, { setTodoCounter: () => undefined } as never);
     const out = await t.caregiversToRate({ userId: 'u', role: 'PATIENT_GUARDIAN', patientId: 'p', email: null });
     expect(out).toEqual([
-      { key: 'review:b-1:p1', kind: 'RATE_CAREGIVER', path: '/bookings/b-1/rate/p1', urgent: false, dueOn: '2026-12-01', params: { reference: 'BK-1', cover: 0 } },
+      {
+        key: 'review:b-1:p1',
+        kind: 'RATE_CAREGIVER',
+        path: '/bookings/b-1/rate/p1',
+        urgent: false,
+        dueOn: '2026-12-01',
+        params: { reference: 'BK-1', cover: 0 },
+      },
     ]);
   });
 });
@@ -240,7 +251,10 @@ describe('messages', () => {
     const lines = [line('DOCUMENT_REJECTED', { document: 'police' }), line('SHIFT_TODAY', { time: '08:00', reference: 'BK-3' })];
     const en = digestNotice(lines, 'en');
     expect(en.title).toBe('You have 2 things to do');
-    expect(en.lines).toEqual(['Upload your police clearance certificate again - the last one could not be accepted.', 'You have a shift today at 08:00 (BK-3).']);
+    expect(en.lines).toEqual([
+      'Upload your police clearance certificate again - the last one could not be accepted.',
+      'You have a shift today at 08:00 (BK-3).',
+    ]);
     for (const lang of ['si', 'ta'] as const) {
       const t = digestNotice(lines, lang);
       expect(t.title).toContain('2');
@@ -268,7 +282,10 @@ describe('reminders', () => {
   const c = (userId: string, key: string, kind: ReminderLine['kind'] = 'INVOICE_DUE'): Candidate => ({
     userId,
     stage: 'DUE_SOON',
-    line: { kind, todo: { key, kind: 'PAY_INVOICE', path: `/invoices/${key}`, urgent: false, dueOn: '2026-11-05', params: { number: key, amount: 'LKR 1.00' } } },
+    line: {
+      kind,
+      todo: { key, kind: 'PAY_INVOICE', path: `/invoices/${key}`, urgent: false, dueOn: '2026-11-05', params: { number: key, amount: 'LKR 1.00' } },
+    },
   });
 
   it('groups what is due by person', () => {
@@ -296,7 +313,17 @@ describe('reminders', () => {
       }),
     };
     const notices = { notify: jest.fn() };
-    const s = new ReminderSweepService(db as never, { get: () => undefined } as never, notices as never, {} as never, {} as never, {} as never, {} as never, {} as never, {} as never);
+    const s = new ReminderSweepService(
+      db as never,
+      { get: () => undefined } as never,
+      notices as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+    );
     // The usual channel is checked separately; here only the bell and push matter.
     (s as any).usualChannel = jest.fn(async () => undefined);
     return { s, locks, notices };
@@ -352,7 +379,17 @@ describe('reminders', () => {
     const settingsService = { getResolved: async () => settings };
     const notices = { deleteOlderThan: jest.fn(async () => 0) };
     const db = { delete: () => ({ where: async () => undefined }) };
-    const s = new ReminderSweepService(db as never, { get: () => undefined } as never, notices as never, settingsService as never, {} as never, {} as never, {} as never, {} as never, {} as never);
+    const s = new ReminderSweepService(
+      db as never,
+      { get: () => undefined } as never,
+      notices as never,
+      settingsService as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+    );
     const spy = jest.spyOn(s, 'invoicesDueTomorrow');
     expect(await s.tick(new Date('2026-11-04T17:00:00Z'))).toEqual({ messages: 0, staff: 0, deleted: 0 }); // 22:30 Colombo
     expect(spy).not.toHaveBeenCalled();

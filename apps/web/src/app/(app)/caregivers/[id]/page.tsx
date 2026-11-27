@@ -148,7 +148,10 @@ export default function CaregiverProfilePage() {
 
   const { data: references } = useQuery({
     queryKey: ['references', id],
-    queryFn: () => api.get<{ id: string; name: string; relationship: string; phone: string; email?: string | null; notes?: string | null; verificationStatus: string }[]>(`/caregivers/${id}/references`),
+    queryFn: () =>
+      api.get<{ id: string; name: string; relationship: string; phone: string; email?: string | null; notes?: string | null; verificationStatus: string }[]>(
+        `/caregivers/${id}/references`,
+      ),
     enabled: Boolean(id),
   });
   const { data: verifications } = useQuery({
@@ -165,7 +168,7 @@ export default function CaregiverProfilePage() {
   const { data: auditEntries } = useQuery({
     queryKey: ['audit', id],
     queryFn: () => api.get<any[]>(`/audit-logs?entityType=Caregiver&entityId=${id}`),
-    enabled: Boolean(id) && (user?.role === 'ADMIN'),
+    enabled: Boolean(id) && user?.role === 'ADMIN',
   });
   const canSeeHealth = user?.role === 'ADMIN';
   const { data: healthInfo } = useQuery({
@@ -291,12 +294,12 @@ export default function CaregiverProfilePage() {
       caregiver.status === 'REJECTED' && s === 'DRAFT'
         ? t('lifecycle.caregiver.reopenRejected')
         : s === 'REJECTED'
-        ? t('lifecycle.caregiver.toRejected')
-        : caregiver.status === 'ACTIVE'
-          ? t('lifecycle.caregiver.leaveActive', { status })
-          : s === 'ACTIVE'
-            ? t('lifecycle.caregiver.toActive')
-            : t('lifecycle.moveMessage', { status });
+          ? t('lifecycle.caregiver.toRejected')
+          : caregiver.status === 'ACTIVE'
+            ? t('lifecycle.caregiver.leaveActive', { status })
+            : s === 'ACTIVE'
+              ? t('lifecycle.caregiver.toActive')
+              : t('lifecycle.moveMessage', { status });
     return {
       title: t('lifecycle.moveTitleNamed', { name: caregiver.fullName, status }),
       message,
@@ -321,12 +324,7 @@ export default function CaregiverProfilePage() {
         <div className="flex items-center gap-3">
           {isEditing ? (
             <>
-              <Button
-                type="button"
-                variant="primary"
-                disabled={updateCaregiver.isPending}
-                onClick={onSave}
-              >
+              <Button type="button" variant="primary" disabled={updateCaregiver.isPending} onClick={onSave}>
                 {t('common.save')}
               </Button>
               <Button variant="secondary" onClick={() => setIsEditing(false)}>
@@ -437,7 +435,9 @@ export default function CaregiverProfilePage() {
                   <div className="space-y-3">
                     {caregiver.skills.map((s) => (
                       <div key={s.skillId} className="flex items-center justify-between rounded border border-border px-3 py-2">
-                        <span className="text-sm text-ink">{s.name} · {s.proficiency}</span>
+                        <span className="text-sm text-ink">
+                          {s.name} · {s.proficiency}
+                        </span>
                         <IconButton
                           icon={<Trash2 size={15} />}
                           aria-label="Delete skill"
@@ -451,19 +451,29 @@ export default function CaregiverProfilePage() {
                         <div className="mb-1 text-xs font-medium text-ink/70">{t('caregivers.edit.selectSkill')}</div>
                         <Select
                           value={skillId}
-                          onChange={(e) => { setSkillId(e.target.value); setSkillProficiency('INTERMEDIATE'); setSkillYears(1); }}
+                          onChange={(e) => {
+                            setSkillId(e.target.value);
+                            setSkillProficiency('INTERMEDIATE');
+                            setSkillYears(1);
+                          }}
                         >
                           <option value="">{t('caregivers.edit.selectSkill')}</option>
-                          {(allSkills ?? []).filter((sk) => !caregiver.skills.some((a) => a.skillId === sk.id)).map((sk) => (
-                            <option key={sk.id} value={sk.id}>{sk.name}</option>
-                          ))}
+                          {(allSkills ?? [])
+                            .filter((sk) => !caregiver.skills.some((a) => a.skillId === sk.id))
+                            .map((sk) => (
+                              <option key={sk.id} value={sk.id}>
+                                {sk.name}
+                              </option>
+                            ))}
                         </Select>
                       </div>
                       <div className="w-40">
                         <div className="mb-1 text-xs font-medium text-ink/70">{t('caregivers.edit.proficiency')}</div>
                         <Select value={skillProficiency} onChange={(e) => setSkillProficiency(e.target.value)}>
                           {['BASIC', 'INTERMEDIATE', 'ADVANCED', 'EXPERT'].map((p) => (
-                            <option key={p} value={p}>{p}</option>
+                            <option key={p} value={p}>
+                              {p}
+                            </option>
                           ))}
                         </Select>
                       </div>
@@ -483,9 +493,16 @@ export default function CaregiverProfilePage() {
                         size="sm"
                         disabled={!skillId || assignSkill.isPending}
                         onClick={() => {
-                          assignSkill.mutate({ skillId, proficiency: skillProficiency, yearsOfExperience: skillYears }, {
-                            onSuccess: () => { setSkillId(''); setSkillProficiency('INTERMEDIATE'); setSkillYears(1); },
-                          });
+                          assignSkill.mutate(
+                            { skillId, proficiency: skillProficiency, yearsOfExperience: skillYears },
+                            {
+                              onSuccess: () => {
+                                setSkillId('');
+                                setSkillProficiency('INTERMEDIATE');
+                                setSkillYears(1);
+                              },
+                            },
+                          );
                         }}
                       >
                         {t('caregivers.edit.addSkill')}
@@ -512,7 +529,9 @@ export default function CaregiverProfilePage() {
                   <div className="space-y-3">
                     {caregiver.languages.map((l) => (
                       <div key={l.languageId} className="flex items-center justify-between rounded border border-border px-3 py-2">
-                        <span className="text-sm text-ink">{l.name} · {l.proficiency}</span>
+                        <span className="text-sm text-ink">
+                          {l.name} · {l.proficiency}
+                        </span>
                         <IconButton
                           icon={<Trash2 size={15} />}
                           aria-label="Delete language"
@@ -526,19 +545,28 @@ export default function CaregiverProfilePage() {
                         <div className="mb-1 text-xs font-medium text-ink/70">{t('caregivers.edit.selectLanguage')}</div>
                         <Select
                           value={languageId}
-                          onChange={(e) => { setLanguageId(e.target.value); setLanguageProficiency('FLUENT'); }}
+                          onChange={(e) => {
+                            setLanguageId(e.target.value);
+                            setLanguageProficiency('FLUENT');
+                          }}
                         >
                           <option value="">{t('caregivers.edit.selectLanguage')}</option>
-                          {(allLanguages ?? []).filter((lg) => !caregiver.languages.some((a) => a.languageId === lg.id)).map((lg) => (
-                            <option key={lg.id} value={lg.id}>{lg.name}</option>
-                          ))}
+                          {(allLanguages ?? [])
+                            .filter((lg) => !caregiver.languages.some((a) => a.languageId === lg.id))
+                            .map((lg) => (
+                              <option key={lg.id} value={lg.id}>
+                                {lg.name}
+                              </option>
+                            ))}
                         </Select>
                       </div>
                       <div className="w-40">
                         <div className="mb-1 text-xs font-medium text-ink/70">{t('caregivers.edit.proficiency')}</div>
                         <Select value={languageProficiency} onChange={(e) => setLanguageProficiency(e.target.value)}>
                           {['BASIC', 'CONVERSATIONAL', 'FLUENT', 'NATIVE'].map((p) => (
-                            <option key={p} value={p}>{p}</option>
+                            <option key={p} value={p}>
+                              {p}
+                            </option>
                           ))}
                         </Select>
                       </div>
@@ -548,9 +576,15 @@ export default function CaregiverProfilePage() {
                         size="sm"
                         disabled={!languageId || assignLanguage.isPending}
                         onClick={() => {
-                          assignLanguage.mutate({ languageId, proficiency: languageProficiency }, {
-                            onSuccess: () => { setLanguageId(''); setLanguageProficiency('FLUENT'); },
-                          });
+                          assignLanguage.mutate(
+                            { languageId, proficiency: languageProficiency },
+                            {
+                              onSuccess: () => {
+                                setLanguageId('');
+                                setLanguageProficiency('FLUENT');
+                              },
+                            },
+                          );
                         }}
                       >
                         {t('caregivers.edit.addLanguage')}
@@ -630,11 +664,11 @@ export default function CaregiverProfilePage() {
                       <div>
                         <div className="mb-1 text-xs font-medium text-ink/70">{t('caregivers.edit.qualificationType')}</div>
                         <Select value={qualType} onChange={(e) => setQualType(e.target.value)}>
-                          {['NVQ', 'NURSING_DIPLOMA', 'NURSING_DEGREE', 'CAREGIVER_CERTIFICATE', 'FIRST_AID', 'OTHER'].map(
-                            (tp) => (
-                              <option key={tp} value={tp}>{tp.replace('_', ' ')}</option>
-                            ),
-                          )}
+                          {['NVQ', 'NURSING_DIPLOMA', 'NURSING_DEGREE', 'CAREGIVER_CERTIFICATE', 'FIRST_AID', 'OTHER'].map((tp) => (
+                            <option key={tp} value={tp}>
+                              {tp.replace('_', ' ')}
+                            </option>
+                          ))}
                         </Select>
                       </div>
                       <div>
@@ -671,21 +705,24 @@ export default function CaregiverProfilePage() {
                       size="sm"
                       disabled={!qualName || !qualInstitution || addQualification.isPending}
                       onClick={() => {
-                        addQualification.mutate({
-                          name: qualName,
-                          type: qualType,
-                          institution: qualInstitution,
-                          certificateNumber: qualCertificateNumber || null,
-                          issueDate: qualIssueDate || null,
-                        }, {
-                          onSuccess: () => {
-                            setQualName('');
-                            setQualType('NVQ');
-                            setQualInstitution('');
-                            setQualCertificateNumber('');
-                            setQualIssueDate('');
+                        addQualification.mutate(
+                          {
+                            name: qualName,
+                            type: qualType,
+                            institution: qualInstitution,
+                            certificateNumber: qualCertificateNumber || null,
+                            issueDate: qualIssueDate || null,
                           },
-                        });
+                          {
+                            onSuccess: () => {
+                              setQualName('');
+                              setQualType('NVQ');
+                              setQualInstitution('');
+                              setQualCertificateNumber('');
+                              setQualIssueDate('');
+                            },
+                          },
+                        );
                       }}
                     >
                       {t('caregivers.edit.addQualification')}
@@ -718,14 +755,10 @@ export default function CaregiverProfilePage() {
                           ))}
                         </Select>
                       )}
-                      {q.verificationStatus && !(user?.role === 'ADMIN' || user?.role === 'VERIFIER') && (
-                        <VerificationBadge status={q.verificationStatus} />
-                      )}
+                      {q.verificationStatus && !(user?.role === 'ADMIN' || user?.role === 'VERIFIER') && <VerificationBadge status={q.verificationStatus} />}
                     </div>
                   ))}
-                  {(!qualifications || qualifications.length === 0) && (
-                    <p className="text-sm text-ink/40">{t('caregivers.edit.noQualifications')}</p>
-                  )}
+                  {(!qualifications || qualifications.length === 0) && <p className="text-sm text-ink/40">{t('caregivers.edit.noQualifications')}</p>}
                 </div>
               )}
             </CardContent>
@@ -744,15 +777,27 @@ export default function CaregiverProfilePage() {
                   <div>
                     <div className="mb-1 text-xs font-medium text-ink/70">{t('caregivers.edit.documentType')}</div>
                     <Select value={docType} onChange={(e) => setDocType(e.target.value)}>
-                      {['NIC', 'PASSPORT', 'GRAMA_NILADHARI_CERTIFICATE', 'POLICE_CLEARANCE', 'CAREGIVER_CERTIFICATE', 'NVQ_CERTIFICATE', 'NURSING_CERTIFICATE', 'CV', 'OTHER'].map(
-                        (tp) => (
-                          <option key={tp} value={tp}>{tp.replace('_', ' ')}</option>
-                        ),
-                      )}
+                      {[
+                        'NIC',
+                        'PASSPORT',
+                        'GRAMA_NILADHARI_CERTIFICATE',
+                        'POLICE_CLEARANCE',
+                        'CAREGIVER_CERTIFICATE',
+                        'NVQ_CERTIFICATE',
+                        'NURSING_CERTIFICATE',
+                        'CV',
+                        'OTHER',
+                      ].map((tp) => (
+                        <option key={tp} value={tp}>
+                          {tp.replace('_', ' ')}
+                        </option>
+                      ))}
                     </Select>
                   </div>
                   <div>
-                    <label htmlFor="doc-expiry" className="mb-1 block text-xs font-medium text-ink/70">{t('caregivers.edit.expiresOn')}</label>
+                    <label htmlFor="doc-expiry" className="mb-1 block text-xs font-medium text-ink/70">
+                      {t('caregivers.edit.expiresOn')}
+                    </label>
                     <Input id="doc-expiry" type="date" value={docExpiry} onChange={(e) => setDocExpiry(e.target.value)} className="w-40" />
                   </div>
                   <div>
@@ -763,16 +808,13 @@ export default function CaregiverProfilePage() {
                       accept=".pdf,.jpg,.jpeg,.png,.webp"
                       onChange={(e) => {
                         const file = e.target.files?.[0];
-                        if (file) uploadDocument.mutate({ documentType: docType, file, expiresOn: docExpiry || undefined }, { onSuccess: () => setDocExpiry('') });
+                        if (file)
+                          uploadDocument.mutate({ documentType: docType, file, expiresOn: docExpiry || undefined }, { onSuccess: () => setDocExpiry('') });
                       }}
                       className="text-sm text-ink/70 file:mr-3 file:rounded file:border-0 file:bg-brand-light file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-brand-dark"
                     />
                   </div>
-                  {uploadDocument.isPending && (
-                    <span className="flex items-center gap-1 text-xs text-ink/50">
-                      {t('caregivers.edit.uploading')}
-                    </span>
-                  )}
+                  {uploadDocument.isPending && <span className="flex items-center gap-1 text-xs text-ink/50">{t('caregivers.edit.uploading')}</span>}
                 </div>
               </div>
               {caregiver.documents.map((d) => (
@@ -780,7 +822,7 @@ export default function CaregiverProfilePage() {
                   <div>
                     <div className="text-sm text-ink">{d.documentType.replace('_', ' ')}</div>
                     <div className="text-xs text-ink/50">{d.originalFilename}</div>
-                    {(user?.role === 'ADMIN' || user?.role === 'VERIFIER') ? (
+                    {user?.role === 'ADMIN' || user?.role === 'VERIFIER' ? (
                       <label className="mt-1 flex items-center gap-2 text-xs text-ink/60">
                         {t('caregivers.edit.expires')}
                         <input
@@ -789,13 +831,18 @@ export default function CaregiverProfilePage() {
                           disabled={setDocumentVerification.isPending}
                           onBlur={(e) => {
                             const next = e.target.value || null;
-                            if (next !== (d.expiresOn ?? null)) setDocumentVerification.mutate({ documentId: d.id, status: d.verificationStatus || 'PENDING', expiresOn: next });
+                            if (next !== (d.expiresOn ?? null))
+                              setDocumentVerification.mutate({ documentId: d.id, status: d.verificationStatus || 'PENDING', expiresOn: next });
                           }}
                           className={`rounded border border-border px-1.5 py-0.5 text-xs ${d.expiresOn && d.expiresOn < new Date().toISOString().slice(0, 10) ? 'text-danger' : ''}`}
                         />
                       </label>
                     ) : (
-                      d.expiresOn && <div className="text-xs text-ink/60">{t('caregivers.edit.expires')} {d.expiresOn}</div>
+                      d.expiresOn && (
+                        <div className="text-xs text-ink/60">
+                          {t('caregivers.edit.expires')} {d.expiresOn}
+                        </div>
+                      )
                     )}
                   </div>
                   <div className="flex items-center gap-2">
@@ -813,33 +860,31 @@ export default function CaregiverProfilePage() {
                         ))}
                       </Select>
                     )}
-                    {user?.role === 'ADMIN' && (deleteDocId !== d.id ? (
-                      <IconButton
-                        icon={<Trash2 size={15} />}
-                        aria-label="Delete document"
-                        onClick={() => setDeleteDocId(d.id)}
-                      />
-                    ) : (
-                      <div className="flex items-center gap-1">
-                        <span className="text-xs text-danger">{t('caregivers.confirmDeleteDocument')}</span>
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          disabled={removeDocument.isPending}
-                          onClick={() => { removeDocument.mutate(d.id); setDeleteDocId(null); }}
-                        >
-                          {t('common.confirm')}
-                        </Button>
-                        <Button variant="secondary" size="sm" onClick={() => setDeleteDocId(null)}>
-                          {t('common.cancel')}
-                        </Button>
-                      </div>
-                    ))}
+                    {user?.role === 'ADMIN' &&
+                      (deleteDocId !== d.id ? (
+                        <IconButton icon={<Trash2 size={15} />} aria-label="Delete document" onClick={() => setDeleteDocId(d.id)} />
+                      ) : (
+                        <div className="flex items-center gap-1">
+                          <span className="text-xs text-danger">{t('caregivers.confirmDeleteDocument')}</span>
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            disabled={removeDocument.isPending}
+                            onClick={() => {
+                              removeDocument.mutate(d.id);
+                              setDeleteDocId(null);
+                            }}
+                          >
+                            {t('common.confirm')}
+                          </Button>
+                          <Button variant="secondary" size="sm" onClick={() => setDeleteDocId(null)}>
+                            {t('common.cancel')}
+                          </Button>
+                        </div>
+                      ))}
                     <DocumentViewButton caregiverId={id} documentId={d.id} />
                   </div>
-                  {!(user?.role === 'ADMIN' || user?.role === 'VERIFIER') && (
-                    <VerificationBadge status={d.verificationStatus} />
-                  )}
+                  {!(user?.role === 'ADMIN' || user?.role === 'VERIFIER') && <VerificationBadge status={d.verificationStatus} />}
                 </div>
               ))}
               {caregiver.documents.length === 0 && <p className="py-5 text-sm text-ink/40">No documents uploaded.</p>}
@@ -955,32 +1000,30 @@ export default function CaregiverProfilePage() {
                         ))}
                       </Select>
                     )}
-                    {user?.role === 'ADMIN' && (deleteRefId !== r.id ? (
-                      <IconButton
-                        icon={<Trash2 size={15} />}
-                        aria-label="Delete reference"
-                        onClick={() => setDeleteRefId(r.id)}
-                      />
-                    ) : (
-                      <div className="flex items-center gap-1">
-                        <span className="text-xs text-danger">{t('caregivers.confirmDeleteReference')}</span>
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          disabled={removeReference.isPending}
-                          onClick={() => { removeReference.mutate(r.id); setDeleteRefId(null); }}
-                        >
-                          {t('common.confirm')}
-                        </Button>
-                        <Button variant="secondary" size="sm" onClick={() => setDeleteRefId(null)}>
-                          {t('common.cancel')}
-                        </Button>
-                      </div>
-                    ))}
+                    {user?.role === 'ADMIN' &&
+                      (deleteRefId !== r.id ? (
+                        <IconButton icon={<Trash2 size={15} />} aria-label="Delete reference" onClick={() => setDeleteRefId(r.id)} />
+                      ) : (
+                        <div className="flex items-center gap-1">
+                          <span className="text-xs text-danger">{t('caregivers.confirmDeleteReference')}</span>
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            disabled={removeReference.isPending}
+                            onClick={() => {
+                              removeReference.mutate(r.id);
+                              setDeleteRefId(null);
+                            }}
+                          >
+                            {t('common.confirm')}
+                          </Button>
+                          <Button variant="secondary" size="sm" onClick={() => setDeleteRefId(null)}>
+                            {t('common.cancel')}
+                          </Button>
+                        </div>
+                      ))}
                   </div>
-                  {!(user?.role === 'ADMIN' || user?.role === 'VERIFIER') && (
-                    <VerificationBadge status={r.verificationStatus} />
-                  )}
+                  {!(user?.role === 'ADMIN' || user?.role === 'VERIFIER') && <VerificationBadge status={r.verificationStatus} />}
                 </div>
               ))}
               {references?.length === 0 && <p className="py-5 text-sm text-ink/40">No references on file.</p>}
@@ -997,18 +1040,20 @@ export default function CaregiverProfilePage() {
                   <div>
                     <div className="mb-1 text-xs font-medium text-ink/70">{t('caregivers.edit.verificationType')}</div>
                     <Select value={verifType} onChange={(e) => setVerifType(e.target.value)}>
-                      {['IDENTITY', 'POLICE_CLEARANCE', 'QUALIFICATION', 'EXPERIENCE', 'REFERENCE', 'OVERALL'].map(
-                        (tp) => (
-                          <option key={tp} value={tp}>{tp.replace('_', ' ')}</option>
-                        ),
-                      )}
+                      {['IDENTITY', 'POLICE_CLEARANCE', 'QUALIFICATION', 'EXPERIENCE', 'REFERENCE', 'OVERALL'].map((tp) => (
+                        <option key={tp} value={tp}>
+                          {tp.replace('_', ' ')}
+                        </option>
+                      ))}
                     </Select>
                   </div>
                   <div>
                     <div className="mb-1 text-xs font-medium text-ink/70">{t('caregivers.edit.verificationStatus')}</div>
                     <Select value={verifStatus} onChange={(e) => setVerifStatus(e.target.value)}>
                       {['PENDING', 'IN_PROGRESS', 'VERIFIED', 'REJECTED'].map((s) => (
-                        <option key={s} value={s}>{s.replace('_', ' ')}</option>
+                        <option key={s} value={s}>
+                          {s.replace('_', ' ')}
+                        </option>
                       ))}
                     </Select>
                   </div>
@@ -1063,9 +1108,7 @@ export default function CaregiverProfilePage() {
                       ))}
                     </Select>
                   )}
-                  {!(user?.role === 'ADMIN' || user?.role === 'VERIFIER') && (
-                    <VerificationBadge status={v.status} />
-                  )}
+                  {!(user?.role === 'ADMIN' || user?.role === 'VERIFIER') && <VerificationBadge status={v.status} />}
                 </div>
               ))}
               {verifications?.length === 0 && <p className="py-5 text-sm text-ink/40">No verification records yet.</p>}
@@ -1126,9 +1169,7 @@ export default function CaregiverProfilePage() {
                       <input
                         type="checkbox"
                         checked={healthForm.physicalAbilityToLiftPatients}
-                        onChange={(e) =>
-                          setHealthForm((f) => ({ ...f, physicalAbilityToLiftPatients: e.target.checked }))
-                        }
+                        onChange={(e) => setHealthForm((f) => ({ ...f, physicalAbilityToLiftPatients: e.target.checked }))}
                         className="h-4 w-4"
                       />
                       {t('healthInfo.physicalAbilityToLift')}
@@ -1141,11 +1182,7 @@ export default function CaregiverProfilePage() {
                         {t('common.cancel')}
                       </Button>
                     </div>
-                    {healthError && (
-                      <div className="col-span-2 rounded border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
-                        {healthError}
-                      </div>
-                    )}
+                    {healthError && <div className="col-span-2 rounded border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">{healthError}</div>}
                     <div className="sm:col-span-2">
                       <div className="mb-1 text-xs font-medium text-ink/70">{t('healthInfo.surgicalHistory')}</div>
                       <textarea
@@ -1181,10 +1218,7 @@ export default function CaregiverProfilePage() {
                   <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                     <Field label={t('healthInfo.diabetes')} value={healthInfo?.hasDiabetes ? t('common.yes') : t('common.no')} />
                     <Field label={t('healthInfo.highBloodPressure')} value={healthInfo?.hasHighBloodPressure ? t('common.yes') : t('common.no')} />
-                    <Field
-                      label={t('healthInfo.physicalAbilityToLift')}
-                      value={healthInfo?.physicalAbilityToLiftPatients ? t('common.yes') : t('common.no')}
-                    />
+                    <Field label={t('healthInfo.physicalAbilityToLift')} value={healthInfo?.physicalAbilityToLiftPatients ? t('common.yes') : t('common.no')} />
                     <Field label={t('healthInfo.surgicalHistory')} value={healthInfo?.surgicalHistory} />
                     <Field label={t('healthInfo.mentalHealth')} value={healthInfo?.mentalHealthInformation} />
                     <Field label={t('healthInfo.otherNotes')} value={healthInfo?.otherNotes} />
@@ -1218,11 +1252,7 @@ export default function CaregiverProfilePage() {
 
         {isAdminOrStaff && (
           <TabsContent value="signIn">
-            <SignInAccessPanel
-              caregiverId={id}
-              registrationNumber={caregiver.registrationNumber}
-              canReset={user?.role === 'ADMIN'}
-            />
+            <SignInAccessPanel caregiverId={id} registrationNumber={caregiver.registrationNumber} canReset={user?.role === 'ADMIN'} />
           </TabsContent>
         )}
 

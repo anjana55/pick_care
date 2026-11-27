@@ -70,12 +70,21 @@ export default function ReviewsPage() {
                 )}
               >
                 {t(`reviews.tabs.${f}`)}
-                {n ? <span className="min-w-[1.25rem] rounded-full bg-accent px-1.5 text-center text-xs font-semibold tabular-nums text-white">{n}</span> : null}
+                {n ? (
+                  <span className="min-w-[1.25rem] rounded-full bg-accent px-1.5 text-center text-xs font-semibold tabular-nums text-white">{n}</span>
+                ) : null}
               </button>
             );
           })}
         </div>
-        <Input type="search" aria-label={t('reviews.search')} placeholder={t('reviews.search')} value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-sm" />
+        <Input
+          type="search"
+          aria-label={t('reviews.search')}
+          placeholder={t('reviews.search')}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="max-w-sm"
+        />
       </div>
 
       {isLoading && <p className="text-sm text-ink/60">{t('common.loading')}</p>}
@@ -84,7 +93,9 @@ export default function ReviewsPage() {
           {t('common.actionFailed')}
         </p>
       )}
-      {data && data.items.length === 0 && <p className="rounded-lg border border-dashed border-border bg-white p-8 text-center text-sm text-ink/60">{t(`reviews.empty.${filter}`)}</p>}
+      {data && data.items.length === 0 && (
+        <p className="rounded-lg border border-dashed border-border bg-white p-8 text-center text-sm text-ink/60">{t(`reviews.empty.${filter}`)}</p>
+      )}
       {data && data.items.length > 0 && (
         <div className="space-y-3">
           {data.items.map((r) => (
@@ -92,7 +103,9 @@ export default function ReviewsPage() {
           ))}
         </div>
       )}
-      {data && <ListPagination page={data.page} totalPages={Math.ceil(data.total / data.pageSize)} total={data.total} noun={t('reviews.noun')} onPage={setPage} />}
+      {data && (
+        <ListPagination page={data.page} totalPages={Math.ceil(data.total / data.pageSize)} total={data.total} noun={t('reviews.noun')} onPage={setPage} />
+      )}
     </div>
   );
 }

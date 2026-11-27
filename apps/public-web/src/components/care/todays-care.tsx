@@ -47,7 +47,12 @@ export function TodaysCare() {
           {day === data.today ? t('carePlan.todayTitle') : t('carePlan.dayTitle', { date: fmtDate(day, locale) })}
         </h2>
         <div className="flex items-center gap-1">
-          <button type="button" className="rounded p-1.5 text-ink/60 hover:bg-paper" aria-label={t('carePlan.previousDay')} onClick={() => setDate(addDays(day, -1))}>
+          <button
+            type="button"
+            className="rounded p-1.5 text-ink/60 hover:bg-paper"
+            aria-label={t('carePlan.previousDay')}
+            onClick={() => setDate(addDays(day, -1))}
+          >
             <ChevronLeft size={16} />
           </button>
           {day !== data.today && (
@@ -55,7 +60,12 @@ export function TodaysCare() {
               {t('carePlan.today')}
             </button>
           )}
-          <button type="button" className="rounded p-1.5 text-ink/60 hover:bg-paper" aria-label={t('carePlan.nextDay')} onClick={() => setDate(addDays(day, 1))}>
+          <button
+            type="button"
+            className="rounded p-1.5 text-ink/60 hover:bg-paper"
+            aria-label={t('carePlan.nextDay')}
+            onClick={() => setDate(addDays(day, 1))}
+          >
             <ChevronRight size={16} />
           </button>
         </div>
@@ -103,7 +113,11 @@ function ShiftChecklist({ shift: s, date }: { shift: CareChecklistShift; date: s
         <span className="text-xs text-ink/50">{s.bookingReference}</span>
         {s.isCover && <span className="text-xs text-amber-700">{t('account.bookings.cover')}</span>}
         <span className="ml-auto text-xs text-ink/50">
-          {s.locked ? t('carePlan.closed') : s.canMark ? t('carePlan.openUntil', { day: fmtDay(new Date(new Date(s.cutOffAt).getTime() - 60_000).toISOString(), locale) }) : t('carePlan.notStarted')}
+          {s.locked
+            ? t('carePlan.closed')
+            : s.canMark
+              ? t('carePlan.openUntil', { day: fmtDay(new Date(new Date(s.cutOffAt).getTime() - 60_000).toISOString(), locale) })
+              : t('carePlan.notStarted')}
         </span>
       </div>
       {s.planNotes && <p className="whitespace-pre-wrap border-b border-border px-3 py-2 text-sm text-ink/80">{s.planNotes}</p>}
@@ -128,7 +142,10 @@ function ChecklistItem({ shift, item: i, date }: { shift: CareChecklistShift; it
   const when = i.timing === 'AT_TIMES' ? i.dueKey : i.timing === 'SLOT' && i.slot ? t(`carePlan.slot.${i.slot}`) : t('carePlan.anyTime');
   // Marking Not done leaves the reason box open; saving a reason (or marking Done) closes it.
   const send = (status: 'DONE' | 'NOT_DONE', why?: string, close = true) =>
-    mark.mutate({ shiftId: shift.shiftId, activityId: i.activityId, dueKey: i.dueKey, status, reason: why?.trim() || null }, { onSuccess: () => close && setReasonOpen(false) });
+    mark.mutate(
+      { shiftId: shift.shiftId, activityId: i.activityId, dueKey: i.dueKey, status, reason: why?.trim() || null },
+      { onSuccess: () => close && setReasonOpen(false) },
+    );
 
   return (
     <li className="px-3 py-2.5">
@@ -193,7 +210,12 @@ function ChecklistItem({ shift, item: i, date }: { shift: CareChecklistShift; it
             value={reason}
             onChange={(e) => setReason(e.target.value)}
           />
-          <button type="button" className="h-9 rounded bg-brand px-3 text-sm font-medium text-white hover:bg-brand-dark" disabled={mark.isPending} onClick={() => send('NOT_DONE', reason)}>
+          <button
+            type="button"
+            className="h-9 rounded bg-brand px-3 text-sm font-medium text-white hover:bg-brand-dark"
+            disabled={mark.isPending}
+            onClick={() => send('NOT_DONE', reason)}
+          >
             {t('carePlan.saveReason')}
           </button>
         </div>
@@ -211,6 +233,11 @@ function Outcome({ item: i }: { item: CareChecklistItem }) {
   const { t } = useTranslation();
   if (!i.status) return <span className="shrink-0 rounded-full bg-paper px-2.5 py-0.5 text-xs text-ink/50">{t('carePlan.outcome.open')}</span>;
   const key = i.status === 'NOT_DONE' ? 'notDone' : i.source === 'AUTO' ? 'auto' : i.source === 'STAFF' ? 'staff' : 'done';
-  const tone = { done: 'bg-brand-light text-brand-dark', auto: 'bg-paper text-ink/50', staff: 'bg-brand-light text-brand-dark', notDone: 'bg-red-100 text-red-800' }[key];
+  const tone = {
+    done: 'bg-brand-light text-brand-dark',
+    auto: 'bg-paper text-ink/50',
+    staff: 'bg-brand-light text-brand-dark',
+    notDone: 'bg-red-100 text-red-800',
+  }[key];
   return <span className={cn('shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium', tone)}>{t(`carePlan.outcome.${key}`)}</span>;
 }

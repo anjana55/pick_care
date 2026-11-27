@@ -7,7 +7,14 @@ import type { ResolvedAiSettings } from './ai-settings.service';
 const transcript: ChatMessage[] = [
   { role: 'system', content: 'sys' },
   { role: 'user', content: 'Close CR-1' },
-  { role: 'assistant', content: '', toolCalls: [{ id: 'c1', name: 'get_request', arguments: { request: 'CR-1' } }, { id: 'c2', name: 'list_staff', arguments: {} }] },
+  {
+    role: 'assistant',
+    content: '',
+    toolCalls: [
+      { id: 'c1', name: 'get_request', arguments: { request: 'CR-1' } },
+      { id: 'c2', name: 'list_staff', arguments: {} },
+    ],
+  },
   { role: 'tool', content: '{"status":"NEW"}', toolCallId: 'c1', name: 'get_request' },
   { role: 'tool', content: '[]', toolCallId: 'c2', name: 'list_staff' },
 ];
@@ -15,7 +22,10 @@ const tools = [{ name: 'get_request', description: 'd', parameters: { type: 'obj
 
 describe('AI provider protocol', () => {
   it('speaks OpenAI-compatible: stringified arguments, tool_call_id, bearer key, JSON mode', () => {
-    const call = buildRequest({ provider: 'OPENAI_COMPATIBLE', baseUrl: 'https://x/v1/', model: 'm', apiKey: 'k' }, { messages: transcript, tools, json: true, temperature: 0.2, maxTokens: 100 });
+    const call = buildRequest(
+      { provider: 'OPENAI_COMPATIBLE', baseUrl: 'https://x/v1/', model: 'm', apiKey: 'k' },
+      { messages: transcript, tools, json: true, temperature: 0.2, maxTokens: 100 },
+    );
     expect(call.url).toBe('https://x/v1/chat/completions');
     expect(call.headers.authorization).toBe('Bearer k');
     const msgs = call.body.messages as any[];
@@ -27,7 +37,10 @@ describe('AI provider protocol', () => {
   });
 
   it('speaks Ollama: object arguments, tool_name, options, format json, no key header by default', () => {
-    const call = buildRequest({ provider: 'OLLAMA', baseUrl: 'http://h:11434', model: 'm', apiKey: null }, { messages: transcript, json: true, temperature: 0.1, maxTokens: 50 });
+    const call = buildRequest(
+      { provider: 'OLLAMA', baseUrl: 'http://h:11434', model: 'm', apiKey: null },
+      { messages: transcript, json: true, temperature: 0.1, maxTokens: 50 },
+    );
     expect(call.url).toBe('http://h:11434/api/chat');
     expect(call.headers.authorization).toBeUndefined();
     const msgs = call.body.messages as any[];
@@ -37,7 +50,10 @@ describe('AI provider protocol', () => {
   });
 
   it('speaks Anthropic: system on top, tool_use blocks, tool results merged into one user turn', () => {
-    const call = buildRequest({ provider: 'ANTHROPIC', baseUrl: 'https://api.anthropic.com', model: 'm', apiKey: 'k' }, { messages: transcript, tools, temperature: 0, maxTokens: 10 });
+    const call = buildRequest(
+      { provider: 'ANTHROPIC', baseUrl: 'https://api.anthropic.com', model: 'm', apiKey: 'k' },
+      { messages: transcript, tools, temperature: 0, maxTokens: 10 },
+    );
     expect(call.url).toBe('https://api.anthropic.com/v1/messages');
     expect(call.headers['x-api-key']).toBe('k');
     expect(call.body.system).toBe('sys');
@@ -52,14 +68,26 @@ describe('AI provider protocol', () => {
   });
 
   it('reads tool calls back from every provider, tolerating string or object arguments', () => {
-    expect(parseResponse('OPENAI_COMPATIBLE', { choices: [{ message: { content: null, tool_calls: [{ id: 'a', function: { name: 't', arguments: '{"x":1}' } }] } }] }))
-      .toEqual({ content: '', toolCalls: [{ id: 'a', name: 't', arguments: { x: 1 } }] });
+    expect(
+      parseResponse('OPENAI_COMPATIBLE', {
+        choices: [{ message: { content: null, tool_calls: [{ id: 'a', function: { name: 't', arguments: '{"x":1}' } }] } }],
+      }),
+    ).toEqual({ content: '', toolCalls: [{ id: 'a', name: 't', arguments: { x: 1 } }] });
     const ollama = parseResponse('OLLAMA', { message: { content: '', tool_calls: [{ function: { name: 't', arguments: { x: 2 } } }] } });
     expect(ollama.toolCalls[0]).toMatchObject({ name: 't', arguments: { x: 2 } });
     expect(ollama.toolCalls[0].id).toMatch(/^call_/);
-    expect(parseResponse('ANTHROPIC', { content: [{ type: 'text', text: 'hi' }, { type: 'tool_use', id: 'u', name: 't', input: { y: 1 } }] }))
-      .toEqual({ content: 'hi', toolCalls: [{ id: 'u', name: 't', arguments: { y: 1 } }] });
-    expect(parseResponse('OPENAI_COMPATIBLE', { choices: [{ message: { tool_calls: [{ function: { name: 't', arguments: 'not json' } }] } }] }).toolCalls[0].arguments).toEqual({});
+    expect(
+      parseResponse('ANTHROPIC', {
+        content: [
+          { type: 'text', text: 'hi' },
+          { type: 'tool_use', id: 'u', name: 't', input: { y: 1 } },
+        ],
+      }),
+    ).toEqual({ content: 'hi', toolCalls: [{ id: 'u', name: 't', arguments: { y: 1 } }] });
+    expect(
+      parseResponse('OPENAI_COMPATIBLE', { choices: [{ message: { tool_calls: [{ function: { name: 't', arguments: 'not json' } }] } }] }).toolCalls[0]
+        .arguments,
+    ).toEqual({});
   });
 
   it('pulls a JSON object out of fenced or chatty replies, and gives up quietly otherwise', () => {
@@ -73,7 +101,10 @@ describe('AI provider protocol', () => {
 
 describe('AI requirement extraction', () => {
   const catalog: Catalog = {
-    skills: [{ id: 'skill-a', name: 'Dementia Care' }, { id: 'skill-b', name: 'Wound Care' }],
+    skills: [
+      { id: 'skill-a', name: 'Dementia Care' },
+      { id: 'skill-b', name: 'Wound Care' },
+    ],
     languages: [{ id: 'lang-si', name: 'Sinhala' }],
     districts: [{ id: 5, name: 'Kandy', localName: 'මහනුවර' }],
   };
@@ -115,12 +146,16 @@ describe('AI requirement extraction', () => {
   });
 
   it('drops unknown districts, invalid enums and past dates rather than guessing', () => {
-    const { request } = normalizeExtraction({ districtId: 999, careType: 'DAYCARE', shift: 'MORNING', caregiverGenderPreference: 'OTHER', desiredStartDate: '2020-01-01', patient: { age: 300 } }, catalog, today);
+    const { request } = normalizeExtraction(
+      { districtId: 999, careType: 'DAYCARE', shift: 'MORNING', caregiverGenderPreference: 'OTHER', desiredStartDate: '2020-01-01', patient: { age: 300 } },
+      catalog,
+      today,
+    );
     expect(request).toEqual({ page: 1, pageSize: 20 });
     expect(normalizeExtraction(null, catalog, today).request).toEqual({ page: 1, pageSize: 20 });
   });
 
-  it('summarises in the visitor\'s language', () => {
+  it("summarises in the visitor's language", () => {
     const s = summarize({ location: { districtId: 5 }, shift: 'NIGHT', patient: { age: 79 } }, catalog, 'si', null);
     expect(s.location).toEqual(['මහනුවර']);
     expect(s.care).toEqual(['රාත්‍රී රැකවරණය']);
@@ -144,10 +179,18 @@ describe('AI requirement extraction', () => {
 });
 
 describe('AI re-ranking', () => {
-  const handles = new Map([['C1', 'a'], ['C2', 'b'], ['C3', 'c']]);
+  const handles = new Map([
+    ['C1', 'a'],
+    ['C2', 'b'],
+    ['C3', 'c'],
+  ]);
 
   it('reorders only known candidates, keeps the rest in their original order, and caps reasons', () => {
-    const r = applyRanking({ ranking: [{ id: 'c3', reason: 'x'.repeat(500) }, { id: 'C9' }, 'C3', { id: 'C1', reason: '  fits  ' }] }, handles, ['a', 'b', 'c']);
+    const r = applyRanking({ ranking: [{ id: 'c3', reason: 'x'.repeat(500) }, { id: 'C9' }, 'C3', { id: 'C1', reason: '  fits  ' }] }, handles, [
+      'a',
+      'b',
+      'c',
+    ]);
     expect(r.order).toEqual(['c', 'a', 'b']);
     expect(r.reasons.get('a')).toBe('fits');
     expect(r.reasons.get('c')).toHaveLength(200);
@@ -175,15 +218,24 @@ describe('AI provider: parameters a model refuses', () => {
     const base = { messages: [{ role: 'user' as const, content: 'hi' }], temperature: null, maxTokens: 10 };
     expect(buildRequest({ provider: 'ANTHROPIC', baseUrl: 'https://a', model: 'm', apiKey: 'k' }, base).body).not.toHaveProperty('temperature');
     expect(buildRequest({ provider: 'OPENAI_COMPATIBLE', baseUrl: 'https://a', model: 'm', apiKey: 'k' }, base).body).not.toHaveProperty('temperature');
-    expect((buildRequest({ provider: 'OLLAMA', baseUrl: 'https://a', model: 'm', apiKey: null }, base).body.options as object)).not.toHaveProperty('temperature');
-    const renamed = buildRequest({ provider: 'OPENAI_COMPATIBLE', baseUrl: 'https://a', model: 'm', apiKey: 'k' }, { ...base, tokenField: 'max_completion_tokens' }).body;
+    expect(buildRequest({ provider: 'OLLAMA', baseUrl: 'https://a', model: 'm', apiKey: null }, base).body.options as object).not.toHaveProperty('temperature');
+    const renamed = buildRequest(
+      { provider: 'OPENAI_COMPATIBLE', baseUrl: 'https://a', model: 'm', apiKey: 'k' },
+      { ...base, tokenField: 'max_completion_tokens' },
+    ).body;
     expect(renamed).toMatchObject({ max_completion_tokens: 10 });
     expect(renamed).not.toHaveProperty('max_tokens');
   });
 
   describe('retrying', () => {
     const settings = {
-      provider: 'ANTHROPIC', baseUrl: 'https://api.anthropic.com', model: 'claude-x', apiKey: 'k', temperature: 0.2, maxTokens: 100, timeoutMs: 5000,
+      provider: 'ANTHROPIC',
+      baseUrl: 'https://api.anthropic.com',
+      model: 'claude-x',
+      apiKey: 'k',
+      temperature: 0.2,
+      maxTokens: 100,
+      timeoutMs: 5000,
     } as ResolvedAiSettings;
     const ok = { content: [{ type: 'text', text: 'OK' }] };
     let bodies: Record<string, unknown>[];

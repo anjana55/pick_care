@@ -68,7 +68,7 @@ const REMINDER: Record<Lang, ClientNotice> = {
   en: {
     subject: 'A minute to rate your caregiver? (booking {ref})',
     heading: 'Would you rate your caregiver?',
-    body: 'You haven\'t rated the care on booking {ref} yet. Your rating helps other families, and we read every one. This is the only reminder we will send.',
+    body: "You haven't rated the care on booking {ref} yet. Your rating helps other families, and we read every one. This is the only reminder we will send.",
     cta: 'Rate your caregiver',
   },
   si: {
@@ -120,9 +120,15 @@ export function reviewRejectedNotice(lang: Lang, ref: string, reason: string): C
 }
 
 const PRAISE: Record<Lang, { heading: string; body: string }> = {
-  en: { heading: 'A client praised your care', body: 'A client gave you {stars} stars and said you are: {badges}. Well done - thank you for the care you give.' },
+  en: {
+    heading: 'A client praised your care',
+    body: 'A client gave you {stars} stars and said you are: {badges}. Well done - thank you for the care you give.',
+  },
   si: { heading: 'සේවාදායකයෙක් ඔබේ රැකවරණයට ප්‍රශංසා කළා', body: 'සේවාදායකයෙක් ඔබට තරු {stars}ක් ලබා දී ඔබ ගැන කීවේ: {badges}. ඉතා හොඳයි - ඔබ දෙන රැකවරණයට ස්තූතියි.' },
-  ta: { heading: 'ஒரு வாடிக்கையாளர் உங்கள் பராமரிப்பைப் பாராட்டினார்', body: 'ஒரு வாடிக்கையாளர் உங்களுக்கு {stars} நட்சத்திரங்கள் வழங்கி, நீங்கள்: {badges} என்று கூறினார். சிறப்பு - நீங்கள் வழங்கும் பராமரிப்புக்கு நன்றி.' },
+  ta: {
+    heading: 'ஒரு வாடிக்கையாளர் உங்கள் பராமரிப்பைப் பாராட்டினார்',
+    body: 'ஒரு வாடிக்கையாளர் உங்களுக்கு {stars} நட்சத்திரங்கள் வழங்கி, நீங்கள்: {badges} என்று கூறினார். சிறப்பு - நீங்கள் வழங்கும் பராமரிப்புக்கு நன்றி.',
+  },
 };
 
 /** To the caregiver, in all three languages (caregiver notices are), for 4-5 stars with badges. */

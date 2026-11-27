@@ -30,17 +30,26 @@ export default function WorkAbroadPage() {
   const steps = [1, 2, 3, 4].map((n) => ({ title: t(`workAbroad.steps.step${n}Title`), body: t(`workAbroad.steps.step${n}Body`) }));
 
   const primary = isCaregiver ? (
-    <Link href="/caregiver/work-abroad" className="inline-flex items-center gap-2 rounded bg-white px-5 py-2.5 text-sm font-semibold text-brand-dark hover:bg-white/90">
+    <Link
+      href="/caregiver/work-abroad"
+      className="inline-flex items-center gap-2 rounded bg-white px-5 py-2.5 text-sm font-semibold text-brand-dark hover:bg-white/90"
+    >
       {t('workAbroad.ctaOpen')}
       <ArrowRight className="h-4 w-4" aria-hidden />
     </Link>
   ) : (
     <>
-      <Link href="/caregiver/signup" className="inline-flex items-center gap-2 rounded bg-white px-5 py-2.5 text-sm font-semibold text-brand-dark hover:bg-white/90">
+      <Link
+        href="/caregiver/signup"
+        className="inline-flex items-center gap-2 rounded bg-white px-5 py-2.5 text-sm font-semibold text-brand-dark hover:bg-white/90"
+      >
         {t('workAbroad.ctaJoin')}
         <ArrowRight className="h-4 w-4" aria-hidden />
       </Link>
-      <Link href="/caregiver/login" className="inline-flex items-center rounded border border-white/40 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/10">
+      <Link
+        href="/caregiver/login"
+        className="inline-flex items-center rounded border border-white/40 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/10"
+      >
         {t('workAbroad.ctaSignIn')}
       </Link>
     </>
@@ -89,7 +98,10 @@ export default function WorkAbroadPage() {
                   <p className="mt-1 text-sm text-ink/60">{t('workAbroad.vacancies.body')}</p>
                 </div>
               </div>
-              <Link href="/work-abroad/vacancies" className="inline-flex shrink-0 items-center justify-center gap-2 rounded bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark">
+              <Link
+                href="/work-abroad/vacancies"
+                className="inline-flex shrink-0 items-center justify-center gap-2 rounded bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark"
+              >
                 {t('workAbroad.vacancies.cta')}
                 <ArrowRight className="h-4 w-4" aria-hidden />
               </Link>

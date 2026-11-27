@@ -168,10 +168,10 @@ services:
       - web
       - public-web
     ports:
-      - '80:80'     # still needed: certbot's HTTP-01 renewal challenge
-                     # is answered over plain HTTP, and the 80 server block
-                     # is what redirects visitors to https.
-      - '443:443'   # TLS terminates here, in this container.
+      - '80:80' # still needed: certbot's HTTP-01 renewal challenge
+        # is answered over plain HTTP, and the 80 server block
+        # is what redirects visitors to https.
+      - '443:443' # TLS terminates here, in this container.
     volumes:
       # Which config to serve. Defaults to the certificate-free HTTP one so
       # that nginx can ALWAYS start, even on a box that has never obtained a
@@ -216,5 +216,5 @@ services:
 volumes:
   mysql-data:
   caregiver-documents:
-  certbot-conf:      # the certificate and its private key - back this up
-  certbot-webroot:   # ACME challenge files; disposable
+  certbot-conf: # the certificate and its private key - back this up
+  certbot-webroot: # ACME challenge files; disposable

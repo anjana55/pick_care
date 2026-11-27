@@ -132,7 +132,6 @@ export function SignInMethodStep({ side, onChosen }: { side: SignupSide; onChose
           {error}
         </p>
       )}
-
     </div>
   );
 }
@@ -235,7 +234,15 @@ function WhatsappVerify({
       <div className="space-y-3">
         <div>
           <Label htmlFor="signup-whatsapp">{t('signup.whatsappNumber')}</Label>
-          <Input id="signup-whatsapp" type="tel" inputMode="tel" autoComplete="tel" placeholder="0771234567" value={phone} onChange={(e) => setPhone(e.target.value)} />
+          <Input
+            id="signup-whatsapp"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            placeholder="0771234567"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+          />
           <p className="mt-1 text-xs text-ink/50">{t('signup.whatsappNumberHint')}</p>
         </div>
         <FieldError message={error ?? undefined} />
@@ -266,7 +273,12 @@ function WhatsappVerify({
         {busy ? t('common.loading') : t('signup.verify')}
       </Button>
       <div className="flex flex-wrap justify-between gap-2 text-sm">
-        <button type="button" className="font-medium text-brand-dark hover:underline disabled:text-ink/40 disabled:no-underline" onClick={send} disabled={wait > 0 || busy}>
+        <button
+          type="button"
+          className="font-medium text-brand-dark hover:underline disabled:text-ink/40 disabled:no-underline"
+          onClick={send}
+          disabled={wait > 0 || busy}
+        >
           {wait > 0 ? t('signup.resendIn', { seconds: wait }) : t('signup.resend')}
         </button>
         <button type="button" className="text-ink/60 underline" onClick={() => (setSent(null), setCode(''), setError(null))}>
@@ -299,19 +311,25 @@ function EmailPassword({ onDone }: { onDone: (email: string, password: string) =
       }}
     >
       <div>
-        <Label htmlFor="signup-email" required>{t('signup.emailLabel')}</Label>
+        <Label htmlFor="signup-email" required>
+          {t('signup.emailLabel')}
+        </Label>
         <Input id="signup-email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         <FieldError message={checked ? emailError : undefined} />
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <Label htmlFor="signup-password" required>{t('signup.passwordLabel')}</Label>
+          <Label htmlFor="signup-password" required>
+            {t('signup.passwordLabel')}
+          </Label>
           <PasswordInput id="signup-password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} />
           <p className="mt-1 text-xs text-ink/50">{t('signup.passwordHint')}</p>
           <FieldError message={checked ? passwordError : undefined} />
         </div>
         <div>
-          <Label htmlFor="signup-confirm" required>{t('signup.confirmPassword')}</Label>
+          <Label htmlFor="signup-confirm" required>
+            {t('signup.confirmPassword')}
+          </Label>
           <PasswordInput id="signup-confirm" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
           <FieldError message={checked ? confirmError : undefined} />
         </div>
@@ -326,8 +344,7 @@ function EmailPassword({ onDone }: { onDone: (email: string, password: string) =
 /** "You'll sign in with WhatsApp: +9477... - Change", at the top of the details form. */
 export function ChosenSignInSummary({ chosen, onChange }: { chosen: ChosenSignIn; onChange: () => void }) {
   const { t } = useTranslation();
-  const value =
-    chosen.method === 'EMAIL' ? chosen.email : chosen.method === 'WHATSAPP' ? (chosen.identity.phone ?? '') : (chosen.identity.email ?? '');
+  const value = chosen.method === 'EMAIL' ? chosen.email : chosen.method === 'WHATSAPP' ? (chosen.identity.phone ?? '') : (chosen.identity.email ?? '');
   return (
     <div className="mb-5 flex flex-wrap items-center justify-between gap-2 rounded-DEFAULT border border-brand/30 bg-brand-light/40 p-3 text-sm text-ink">
       <span>{t(`signup.chosen.${chosen.method}`, { value })}</span>

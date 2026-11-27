@@ -14,7 +14,9 @@ const applyTokens = jest.fn();
 jest.mock('@/lib/navigation', () => ({ hardNavigate: jest.fn() }));
 jest.mock('@/lib/api/auth-context', () => ({ useAuth: () => ({ user: null, logout: jest.fn(), applyTokens: (...a: unknown[]) => applyTokens(...a) }) }));
 let officePhone: string | null = '011 234 5678';
-jest.mock('@/lib/branding/provider', () => ({ useBranding: () => ({ ...jest.requireActual('@care-platform/shared').DEFAULT_BRANDING, officePhone, logoUrl: null }) }));
+jest.mock('@/lib/branding/provider', () => ({
+  useBranding: () => ({ ...jest.requireActual('@care-platform/shared').DEFAULT_BRANDING, officePhone, logoUrl: null }),
+}));
 jest.mock('next/navigation', () => ({ useRouter: () => ({ push: jest.fn(), replace: jest.fn() }) }));
 jest.mock('@/lib/api/client', () => ({
   ...jest.requireActual('@/lib/api/client'),
@@ -50,9 +52,19 @@ async function chooseEmail() {
 /** Step 1 with WhatsApp: number, code, and the API's ticket. */
 async function chooseWhatsapp() {
   post.mockImplementation((path: string) => {
-    if (path === '/auth/signup/whatsapp/request-otp') return Promise.resolve({ phone: '+94771234567', resendAfterSeconds: 60, expiresInSeconds: 300, devOtp: '123456' });
+    if (path === '/auth/signup/whatsapp/request-otp')
+      return Promise.resolve({ phone: '+94771234567', resendAfterSeconds: 60, expiresInSeconds: 300, devOtp: '123456' });
     if (path === '/auth/signup/whatsapp/verify-otp') {
-      return Promise.resolve({ signedIn: false, ticket: 'wa-ticket', expiresInSeconds: 3600, method: 'WHATSAPP', side: 'client', phone: '+94771234567', email: null, name: null });
+      return Promise.resolve({
+        signedIn: false,
+        ticket: 'wa-ticket',
+        expiresInSeconds: 3600,
+        method: 'WHATSAPP',
+        side: 'client',
+        phone: '+94771234567',
+        email: null,
+        name: null,
+      });
     }
     return Promise.resolve({ signedIn: true, method: 'WHATSAPP', tokens: TOKENS });
   });
@@ -166,7 +178,15 @@ describe('client registration asks how they will sign in first', () => {
   });
 
   it('picks up an identity proven by Google, with the name it knows', async () => {
-    rememberIdentity({ ticket: 'g-ticket', expiresInSeconds: 3600, method: 'GOOGLE', side: 'client', email: 'nimali@example.com', phone: null, name: 'Nimali Perera' });
+    rememberIdentity({
+      ticket: 'g-ticket',
+      expiresInSeconds: 3600,
+      method: 'GOOGLE',
+      side: 'client',
+      email: 'nimali@example.com',
+      phone: null,
+      name: 'Nimali Perera',
+    });
     renderPage(<RegisterPage />);
     expect(await screen.findByText("You'll sign in with Google: nimali@example.com")).toBeInTheDocument();
     await waitFor(() => expect((screen.getByLabelText(/Full name/) as HTMLInputElement).value).toBe('Nimali Perera'));

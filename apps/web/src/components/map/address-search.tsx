@@ -28,7 +28,15 @@ export interface AddressSearchLabels {
  * dragged onto the house. For people who know the address but not where it
  * is on the map.
  */
-export function AddressSearch({ search, onPick, labels }: { search: (q: string) => Promise<AddressSearchResult>; onPick: (m: AddressMatch) => void; labels: AddressSearchLabels }) {
+export function AddressSearch({
+  search,
+  onPick,
+  labels,
+}: {
+  search: (q: string) => Promise<AddressSearchResult>;
+  onPick: (m: AddressMatch) => void;
+  labels: AddressSearchLabels;
+}) {
   const id = useId();
   const [term, setTerm] = useState('');
   const [results, setResults] = useState<AddressMatch[] | null>(null);
@@ -79,10 +87,16 @@ export function AddressSearch({ search, onPick, labels }: { search: (q: string) 
 
   const onKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!open || !results?.length) return;
-    if (e.key === 'ArrowDown') (e.preventDefault(), setActive((a) => (a + 1) % results.length));
-    else if (e.key === 'ArrowUp') (e.preventDefault(), setActive((a) => (a - 1 + results.length) % results.length));
-    else if (e.key === 'Enter') (e.preventDefault(), choose(results[active]));
-    else if (e.key === 'Escape') setOpen(false);
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActive((a) => (a + 1) % results.length);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActive((a) => (a - 1 + results.length) % results.length);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      choose(results[active]);
+    } else if (e.key === 'Escape') setOpen(false);
   };
 
   const listId = `${id}-results`;
@@ -113,7 +127,11 @@ export function AddressSearch({ search, onPick, labels }: { search: (q: string) 
         {busy ? labels.searching : failed ? <span className="text-red-700">{labels.error}</span> : picked ? labels.next[picked.precision] : ''}
       </p>
       {showList && (
-        <ul id={listId} role="listbox" className="absolute left-0 right-0 top-[4.25rem] z-20 max-h-72 overflow-auto rounded border border-ink/15 bg-white py-1 shadow-lg">
+        <ul
+          id={listId}
+          role="listbox"
+          className="absolute left-0 right-0 top-[4.25rem] z-20 max-h-72 overflow-auto rounded border border-ink/15 bg-white py-1 shadow-lg"
+        >
           {results!.length === 0 && <li className="px-3 py-2 text-sm text-ink/60">{labels.noMatches}</li>}
           {results!.map((m, i) => (
             <li

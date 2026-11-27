@@ -38,7 +38,10 @@ const notice = (over: Partial<NotificationItem> = {}): NotificationItem => ({
 function serve(summary: NotificationsSummary, items: NotificationItem[] = [], nextCursor: string | null = null) {
   return serveApi({
     'GET /me/notifications/summary': () => ({ status: 200, body: summary }),
-    'GET /me/notifications': (_b, q) => (q.before ? { status: 200, body: { items: [notice({ id: 'n-0', title: 'An older one' })], nextCursor: null } } : { status: 200, body: { items, nextCursor } }),
+    'GET /me/notifications': (_b, q) =>
+      q.before
+        ? { status: 200, body: { items: [notice({ id: 'n-0', title: 'An older one' })], nextCursor: null } }
+        : { status: 200, body: { items, nextCursor } },
     'POST /me/notifications/read': () => ({ status: 200, body: { marked: 1 } }),
   });
 }
@@ -72,7 +75,21 @@ describe('the bell', () => {
 
 describe('the Notifications screen', () => {
   it('leads with To do, each with one big button that opens the right screen', async () => {
-    serve({ unread: 0, badge: 2, todos: [todo(), todo({ key: 'r', kind: 'RATE_CAREGIVER', path: '/bookings/b0000000-0000-4000-8000-000000000001/rate/pub_1', urgent: false, dueOn: null, params: { reference: 'BK-9' } })] });
+    serve({
+      unread: 0,
+      badge: 2,
+      todos: [
+        todo(),
+        todo({
+          key: 'r',
+          kind: 'RATE_CAREGIVER',
+          path: '/bookings/b0000000-0000-4000-8000-000000000001/rate/pub_1',
+          urgent: false,
+          dueOn: null,
+          params: { reference: 'BK-9' },
+        }),
+      ],
+    });
     await show(<NotificationsScreen />);
     expect(await screen.findByText('Invoice INV-7 (LKR 12,500.00) is overdue')).toBeTruthy();
     expect(screen.getByText(en.notifications.text.RATE_CAREGIVER.replace('{reference}', 'BK-9'))).toBeTruthy();
@@ -97,7 +114,14 @@ describe('the Notifications screen', () => {
 
   it('pins an important announcement, opens its link on the website, and loads older ones', async () => {
     const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined as never);
-    serve({ unread: 2, todos: [], badge: 2 }, [notice(), notice({ id: 'n-2', category: 'ANNOUNCEMENT', title: 'Office closed on Poya day', path: '/notifications', link: '/account/bookings', important: true })], 'c-1');
+    serve(
+      { unread: 2, todos: [], badge: 2 },
+      [
+        notice(),
+        notice({ id: 'n-2', category: 'ANNOUNCEMENT', title: 'Office closed on Poya day', path: '/notifications', link: '/account/bookings', important: true }),
+      ],
+      'c-1',
+    );
     await show(<NotificationsScreen />);
     expect(await screen.findByText('Office closed on Poya day')).toBeTruthy();
     expect(screen.getByText(en.notifications.important)).toBeTruthy();
@@ -116,7 +140,11 @@ describe('the Notifications screen', () => {
   });
 
   it('pins only unread important notices', () => {
-    const order = pinImportant([notice({ id: 'c' }), notice({ id: 'a', important: true, readAt: '2026-11-04T06:00:00.000Z' }), notice({ id: 'b', important: true })]);
+    const order = pinImportant([
+      notice({ id: 'c' }),
+      notice({ id: 'a', important: true, readAt: '2026-11-04T06:00:00.000Z' }),
+      notice({ id: 'b', important: true }),
+    ]);
     expect(order.map((n) => n.id)).toEqual(['b', 'c', 'a']);
   });
 });

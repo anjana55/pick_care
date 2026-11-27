@@ -1,14 +1,7 @@
 import { JobsService } from '../jobs/jobs.service';
 import { AutomationService } from '../automation/automation.service';
 import { nudgeOnboarding } from '../onboarding/onboarding-jobs';
-import {
-  BadRequestException,
-  ForbiddenException,
-  Inject,
-  Injectable,
-  NotFoundException,
-  Optional,
-} from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHash, randomUUID as uuid } from 'crypto';
 import { and, eq, sql } from 'drizzle-orm';
@@ -19,12 +12,7 @@ import { AuditService } from '../audit/audit.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { documentCheckedNotice } from '../notifications/notification-messages';
 
-const ALLOWED_MIME_TYPES = new Set([
-  'application/pdf',
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-]);
+const ALLOWED_MIME_TYPES = new Set(['application/pdf', 'image/jpeg', 'image/png', 'image/webp']);
 const ALLOWED_EXTENSIONS = new Set(['.pdf', '.jpg', '.jpeg', '.png', '.webp']);
 
 /**
@@ -79,7 +67,7 @@ export class DocumentsService {
   }
 
   validateUpload(file: { mimetype: string; originalname: string; size: number; buffer?: Buffer }) {
-    const ext = ('.' + file.originalname.split('.').pop()!.toLowerCase());
+    const ext = '.' + file.originalname.split('.').pop()!.toLowerCase();
     if (!ALLOWED_MIME_TYPES.has(file.mimetype) || !ALLOWED_EXTENSIONS.has(ext)) {
       throw new BadRequestException('Unsupported file type. Only PDF, JPG, PNG and WEBP files are allowed.');
     }
@@ -197,7 +185,8 @@ export class DocumentsService {
         ...(expiresOn !== undefined ? { expiresOn } : {}),
       })
       .where(and(eq(caregiverDocuments.id, id), eq(caregiverDocuments.caregiverId, caregiverId)));
-    if ((status === 'VERIFIED' || status === 'REJECTED') && before.verificationStatus !== status) void this.tellCaregiver(caregiverId, status, before.documentType);
+    if ((status === 'VERIFIED' || status === 'REJECTED') && before.verificationStatus !== status)
+      void this.tellCaregiver(caregiverId, status, before.documentType);
     return this.findOne(caregiverId, id);
   }
 

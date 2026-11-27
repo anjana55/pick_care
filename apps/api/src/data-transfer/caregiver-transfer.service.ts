@@ -20,15 +20,7 @@ import { resolveLocationRefs } from '../common/utils/location.util';
 import { normalizePhone, phoneVariants } from '../common/utils/phone.util';
 import { WhatsappSettingsService } from '../whatsapp/whatsapp-settings.service';
 import { parseDate, parseEnum, parseList, readCsv, sameText, toCsv, type CsvColumn } from './csv.util';
-import {
-  LocationMatcher,
-  MAX_IMPORT_ROWS,
-  textCell,
-  type ColumnSpec,
-  type ImportIssue,
-  type ImportReport,
-  type ImportRowResult,
-} from './import-types';
+import { LocationMatcher, MAX_IMPORT_ROWS, textCell, type ColumnSpec, type ImportIssue, type ImportReport, type ImportRowResult } from './import-types';
 import { headerKey } from './csv.util';
 import type { CaregiverExportDto } from './dto/transfer.dto';
 import { caregiverRefCondition, generateUniquePublicId } from '../caregivers/caregiver-ref.util';
@@ -121,7 +113,15 @@ export class CaregiverTransferService {
     const conditions: SQL[] = [isNull(caregivers.deletedAt)];
     if (filter.search) {
       const term = `%${filter.search}%`;
-      conditions.push(or(like(caregivers.fullName, term), like(caregivers.registrationNumber, term), like(caregivers.primaryPhone, term), like(caregivers.nic, term), ...caregiverRefCondition(filter.search))!);
+      conditions.push(
+        or(
+          like(caregivers.fullName, term),
+          like(caregivers.registrationNumber, term),
+          like(caregivers.primaryPhone, term),
+          like(caregivers.nic, term),
+          ...caregiverRefCondition(filter.search),
+        )!,
+      );
     }
     if (filter.status) conditions.push(eq(caregivers.status, filter.status));
     if (filter.districtId) conditions.push(eq(caregivers.districtId, filter.districtId));
@@ -284,7 +284,8 @@ export class CaregiverTransferService {
 
     const dobRaw = text('dateOfBirth');
     const dateOfBirth = dobRaw ? parseDate(dobRaw) : null;
-    if (dobRaw && (!dateOfBirth || dateOfBirth > new Date().toISOString().slice(0, 10))) errors.push({ code: 'invalid', column: col('dateOfBirth').header, value: dobRaw });
+    if (dobRaw && (!dateOfBirth || dateOfBirth > new Date().toISOString().slice(0, 10)))
+      errors.push({ code: 'invalid', column: col('dateOfBirth').header, value: dobRaw });
 
     const enumCell = <T extends string>(key: string, allowed: readonly T[]): T | null => {
       const raw = text(key);
@@ -331,7 +332,10 @@ export class CaregiverTransferService {
     const heightIn = numberCell('heightIn', 9999.9, false);
     const weightKg = numberCell('weightKg', 2_147_483_647, true);
 
-    const location = locations.resolve(v[keyOf(col('district'))] ?? '', v[keyOf(col('city'))] ?? '', warnings, { district: col('district').header, city: col('city').header });
+    const location = locations.resolve(v[keyOf(col('district'))] ?? '', v[keyOf(col('city'))] ?? '', warnings, {
+      district: col('district').header,
+      city: col('city').header,
+    });
 
     const pick = <T extends { id: string; name: string; code?: string | null }>(key: string, list: T[]) => {
       const ids: string[] = [];
@@ -408,14 +412,21 @@ export class CaregiverTransferService {
   /** Someone already on the platform: the same registration number, NIC, passport or primary phone (any spelling). */
   private async findExisting(p: PreparedCaregiver, registrationNumber?: string) {
     const checks: [string, SQL | undefined][] = [
-      [col('registrationNumber').header, registrationNumber ? and(eq(caregivers.registrationNumber, registrationNumber), isNull(caregivers.deletedAt)) : undefined],
+      [
+        col('registrationNumber').header,
+        registrationNumber ? and(eq(caregivers.registrationNumber, registrationNumber), isNull(caregivers.deletedAt)) : undefined,
+      ],
       [col('nic').header, p.values.nic ? eq(caregivers.liveNic, p.values.nic) : undefined],
       [col('passportNumber').header, p.values.passportNumber ? eq(caregivers.livePassportNumber, p.values.passportNumber) : undefined],
       [col('primaryPhone').header, inArray(caregivers.livePrimaryPhone, p.phoneKeys)],
     ];
     for (const [column, where] of checks) {
       if (!where) continue;
-      const [row] = await this.db.select({ registrationNumber: caregivers.registrationNumber, fullName: caregivers.fullName }).from(caregivers).where(where).limit(1);
+      const [row] = await this.db
+        .select({ registrationNumber: caregivers.registrationNumber, fullName: caregivers.fullName })
+        .from(caregivers)
+        .where(where)
+        .limit(1);
       if (row) return { column, ...row };
     }
     return null;

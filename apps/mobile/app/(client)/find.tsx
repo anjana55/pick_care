@@ -42,8 +42,7 @@ export default function Find() {
   const client = useClient();
   const [findForMe, setFindForMe] = useState(false);
   /** "Ask us to find a caregiver": the request sheet for a client, sign-in first for anyone else. */
-  const askUs = () =>
-    client ? setFindForMe(true) : router.push({ pathname: '/sign-in', params: { role: 'client', returnTo: '/requests' } });
+  const askUs = () => (client ? setFindForMe(true) : router.push({ pathname: '/sign-in', params: { role: 'client', returnTo: '/requests' } }));
 
   // "Use my location" before searching: the next search starts from there.
   const [here, setHere] = useState<DeviceLocation | null>(null);
@@ -74,7 +73,11 @@ export default function Find() {
     if (!found) return;
     setHere(found);
     if (request) {
-      const next = { ...request, location: { districtId: found.city.districtId, cityId: found.city.cityId }, origin: { latitude: found.latitude, longitude: found.longitude } };
+      const next = {
+        ...request,
+        location: { districtId: found.city.districtId, cityId: found.city.cityId },
+        origin: { latitude: found.latitude, longitude: found.longitude },
+      };
       setRequest(next);
       rememberSearch(next, aiQuery);
     }
@@ -94,7 +97,6 @@ export default function Find() {
 
   const header = (
     <View style={styles.header}>
-
       {aiEnabled ? (
         <View accessibilityRole="tablist" style={[styles.modes, { borderColor: colors.border }]}>
           {(['ai', 'normal'] as const).map((m) => {
@@ -126,11 +128,7 @@ export default function Find() {
             }}
           />
         ) : (
-          <NormalSearchForm
-            key={panelKey}
-            initial={request}
-            onSearch={(r) => search(r)}
-          />
+          <NormalSearchForm key={panelKey} initial={request} onSearch={(r) => search(r)} />
         )}
       </Card>
 

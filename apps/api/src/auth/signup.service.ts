@@ -23,15 +23,7 @@ import {
   type SignupVerifyResult,
 } from '@care-platform/shared';
 import { DRIZZLE, type Database } from '../database/database.module';
-import {
-  agreementAcceptances,
-  caregivers,
-  patients,
-  signupIdentities,
-  socialAccounts,
-  users,
-  type SocialProvider,
-} from '../database/schema';
+import { agreementAcceptances, caregivers, patients, signupIdentities, socialAccounts, users, type SocialProvider } from '../database/schema';
 import { AuthService } from './auth.service';
 import { SocialProviderRegistry } from './social/social-provider';
 import { SIGNUP_TICKET_TTL_MS, matchesChallenge } from './social-auth.service';
@@ -192,7 +184,10 @@ export class SignupService {
     if (row.codeChallenge && !matchesChallenge(verifier, row.codeChallenge)) throw new UnauthorizedException(EXCHANGE_GONE);
 
     const ticket = this.newSecret();
-    await this.db.update(signupIdentities).set({ ticketHash: this.hash(ticket) }).where(eq(signupIdentities.id, row.id));
+    await this.db
+      .update(signupIdentities)
+      .set({ ticketHash: this.hash(ticket) })
+      .where(eq(signupIdentities.id, row.id));
     return this.identityView({ side: row.side, method: row.method as SocialProvider, phone: null, email: row.providerEmail, name: row.providerName }, ticket);
   }
 
@@ -303,9 +298,11 @@ export class SignupService {
         });
         const caregiverId = uuid();
         const registrationNumber = await generateRegistrationNumber(txDb);
-        await tx.insert(caregivers).values(
-          selfRegisteredCaregiverValues({ id: caregiverId, publicId: await generateUniquePublicId(txDb), userId, registrationNumber, fields, location }),
-        );
+        await tx
+          .insert(caregivers)
+          .values(
+            selfRegisteredCaregiverValues({ id: caregiverId, publicId: await generateUniquePublicId(txDb), userId, registrationNumber, fields, location }),
+          );
         await this.linkProvider(txDb, userId, identity);
         await this.recordAgreement(txDb, userId, 'caregiver', meta);
         if (identity.method !== 'EMAIL') await tx.update(signupIdentities).set({ userId }).where(eq(signupIdentities.id, identity.ticketId));
@@ -461,4 +458,3 @@ export class SignupService {
     }
   }
 }
-

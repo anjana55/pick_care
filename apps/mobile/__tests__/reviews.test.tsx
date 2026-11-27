@@ -57,7 +57,13 @@ describe('rating a caregiver in the app', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Submit rating' }));
 
     await waitFor(() => expect(calls.find((c) => c.route.startsWith('PUT'))).toBeTruthy());
-    expect(calls.find((c) => c.route.startsWith('PUT'))!.body).toEqual({ rating: 5, badges: ['KIND_PATIENT'], improvementTags: [], comment: null, privateNote: null });
+    expect(calls.find((c) => c.route.startsWith('PUT'))!.body).toEqual({
+      rating: 5,
+      badges: ['KIND_PATIENT'],
+      improvementTags: [],
+      comment: null,
+      privateNote: null,
+    });
     expect(await screen.findByText('Thank you - your rating has been saved.')).toBeTruthy();
   });
 
@@ -76,8 +82,39 @@ describe('rating a caregiver in the app', () => {
   it('shows "How was your care?" on Bookings, and each caregiver on a booking', async () => {
     await client();
     const booking = {
-      id: BOOKING, reference: 'BK-1001', status: 'CONFIRMED', scheduleType: 'DAY', startDate: '2026-10-01', endDate: '2026-11-30', rateType: null, rateAmount: null,
-      caregiverPublicId: CG, caregiver: null, shifts: [], reviews: [entry(), entry({ caregiverPublicId: '22222222-2222-4222-8222-222222222222', isCover: true, review: { id: 'r', bookingId: BOOKING, caregiverPublicId: '22222222-2222-4222-8222-222222222222', rating: 4, badges: [], improvementTags: [], comment: null, commentStatus: 'NONE', commentRejectReason: null, privateNote: null, hidden: false, createdAt: '', updatedAt: '' } })],
+      id: BOOKING,
+      reference: 'BK-1001',
+      status: 'CONFIRMED',
+      scheduleType: 'DAY',
+      startDate: '2026-10-01',
+      endDate: '2026-11-30',
+      rateType: null,
+      rateAmount: null,
+      caregiverPublicId: CG,
+      caregiver: null,
+      shifts: [],
+      reviews: [
+        entry(),
+        entry({
+          caregiverPublicId: '22222222-2222-4222-8222-222222222222',
+          isCover: true,
+          review: {
+            id: 'r',
+            bookingId: BOOKING,
+            caregiverPublicId: '22222222-2222-4222-8222-222222222222',
+            rating: 4,
+            badges: [],
+            improvementTags: [],
+            comment: null,
+            commentStatus: 'NONE',
+            commentRejectReason: null,
+            privateNote: null,
+            hidden: false,
+            createdAt: '',
+            updatedAt: '',
+          },
+        }),
+      ],
     } as unknown as ClientBooking;
     serveApi({
       'GET /me/bookings': () => ({ status: 200, body: [booking] }),

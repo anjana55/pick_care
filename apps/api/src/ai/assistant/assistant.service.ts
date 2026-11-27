@@ -239,7 +239,13 @@ export class AssistantService {
   }
 
   /** Runs one tool call; always returns text for the model, never throws for bad input. */
-  private async runTool(call: ChatToolCall, user: AuthenticatedUser, conversationId: string, replyId: string, links: Map<string, AssistantLink>): Promise<string> {
+  private async runTool(
+    call: ChatToolCall,
+    user: AuthenticatedUser,
+    conversationId: string,
+    replyId: string,
+    links: Map<string, AssistantLink>,
+  ): Promise<string> {
     try {
       if (READ_TOOL_NAMES.has(call.name)) {
         const { data, links: found } = await this.toolbox.read(call.name, call.arguments, user);
@@ -298,7 +304,11 @@ export class AssistantService {
 
   /** What became of the changes proposed earlier, so the model does not repeat or misreport them. */
   private async actionUpdates(conversationId: string): Promise<string[]> {
-    const rows = await this.db.select().from(assistantActions).where(eq(assistantActions.conversationId, conversationId)).orderBy(asc(assistantActions.createdAt));
+    const rows = await this.db
+      .select()
+      .from(assistantActions)
+      .where(eq(assistantActions.conversationId, conversationId))
+      .orderBy(asc(assistantActions.createdAt));
     return rows.slice(-15).map((a) => {
       const state =
         a.status === 'EXECUTED'

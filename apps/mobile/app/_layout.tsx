@@ -25,11 +25,7 @@ SplashScreen.preventAutoHideAsync().catch(() => undefined);
 function BrandedI18n({ children }: { children: ReactNode }) {
   const { branding } = useBranding();
   return (
-    <I18nProvider
-      defaultLocale={branding.defaultLocale}
-      enabledLocales={branding.enabledLocales}
-      vars={{ brand: branding.companyName }}
-    >
+    <I18nProvider defaultLocale={branding.defaultLocale} enabledLocales={branding.enabledLocales} vars={{ brand: branding.companyName }}>
       {children}
     </I18nProvider>
   );

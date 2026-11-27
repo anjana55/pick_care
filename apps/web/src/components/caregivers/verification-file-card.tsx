@@ -59,9 +59,13 @@ export function VerificationFileCard({ caregiverId }: { caregiverId: string }) {
               <li key={c.key} className="flex justify-between gap-3 rounded border border-border px-3 py-2">
                 <span className="text-ink/70">{t(`caregivers.verificationFile.checks.${c.key}`)}</span>
                 <span className={`text-right font-medium ${STATE_TONE[c.state]}`}>
-                  {c.key === 'PROFILE' && c.state === 'OK' ? t('caregivers.verificationFile.profileComplete') : t(`caregivers.verificationFile.states.${c.state}`)}
+                  {c.key === 'PROFILE' && c.state === 'OK'
+                    ? t('caregivers.verificationFile.profileComplete')
+                    : t(`caregivers.verificationFile.states.${c.state}`)}
                   {c.key === 'REFERENCES' && ` · ${c.confirmed}/${c.wanted}`}
-                  {c.gaps?.length ? <span className="block text-xs font-normal text-ink/60">{c.gaps.map((g) => t(`caregivers.verificationFile.gaps.${g}`)).join(', ')}</span> : null}
+                  {c.gaps?.length ? (
+                    <span className="block text-xs font-normal text-ink/60">{c.gaps.map((g) => t(`caregivers.verificationFile.gaps.${g}`)).join(', ')}</span>
+                  ) : null}
                 </span>
               </li>
             ))}
@@ -86,7 +90,11 @@ export function VerificationFileCard({ caregiverId }: { caregiverId: string }) {
                     </p>
                     {r.checks.length > 0 && (
                       <p className="text-xs text-ink/70">
-                        {r.checks.map((c) => `${t(`caregivers.verificationFile.readingCheck.${c.check}`)}: ${t(`caregivers.verificationFile.readingResult.${c.result}`)}`).join(' · ')}
+                        {r.checks
+                          .map(
+                            (c) => `${t(`caregivers.verificationFile.readingCheck.${c.check}`)}: ${t(`caregivers.verificationFile.readingResult.${c.result}`)}`,
+                          )
+                          .join(' · ')}
                         {r.expiresOn && ` · ${t('caregivers.verificationFile.readExpiry', { date: r.expiresOn })}`}
                       </p>
                     )}
@@ -119,7 +127,12 @@ export function VerificationFileCard({ caregiverId }: { caregiverId: string }) {
                       </>
                     ) : (
                       <p className="text-ink/60">
-                        {r.sentAt ? t('caregivers.verificationFile.waiting', { channel: t(`caregivers.verificationFile.channel.${r.channel ?? 'EMAIL'}`), when: fmtDateTime(r.sentAt, locale) }) : t('caregivers.verificationFile.notAsked')}
+                        {r.sentAt
+                          ? t('caregivers.verificationFile.waiting', {
+                              channel: t(`caregivers.verificationFile.channel.${r.channel ?? 'EMAIL'}`),
+                              when: fmtDateTime(r.sentAt, locale),
+                            })
+                          : t('caregivers.verificationFile.notAsked')}
                       </p>
                     )}
                   </li>

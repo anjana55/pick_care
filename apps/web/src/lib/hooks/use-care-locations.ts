@@ -8,7 +8,11 @@ const KEY = ['care-locations'] as const;
 
 /** Where one booking's care happens: the place used, a suggestion from a check-in, and the client's places. */
 export function useBookingCareLocation(bookingId: string) {
-  return useQuery({ queryKey: [...KEY, 'booking', bookingId], queryFn: () => api.get<BookingCareLocation>(`/bookings/${bookingId}/care-location`), enabled: Boolean(bookingId) });
+  return useQuery({
+    queryKey: [...KEY, 'booking', bookingId],
+    queryFn: () => api.get<BookingCareLocation>(`/bookings/${bookingId}/care-location`),
+    enabled: Boolean(bookingId),
+  });
 }
 
 function useInvalidate() {
@@ -40,5 +44,8 @@ export function useRemoveCareLocation(patientId: string) {
 /** Point the booking at one of the client's places, or back to their default (null). */
 export function useSetBookingCareLocation(bookingId: string) {
   const done = useInvalidate();
-  return useMutation({ mutationFn: (careLocationId: string | null) => api.put<BookingCareLocation>(`/bookings/${bookingId}/care-location`, { careLocationId }), onSuccess: done });
+  return useMutation({
+    mutationFn: (careLocationId: string | null) => api.put<BookingCareLocation>(`/bookings/${bookingId}/care-location`, { careLocationId }),
+    onSuccess: done,
+  });
 }

@@ -43,7 +43,9 @@ export function MyPlacementCard() {
         {current.jobTitle ? `${current.jobTitle} · ` : ''}
         {t('portal.workAbroad.interest.who', { type: t(`international.employerTypes.${current.organisationType}`), country: countries.name(current.country) })}
       </p>
-      <p className="mt-2 inline-block rounded-full bg-white px-3 py-1 text-xs font-semibold text-brand-dark">{t(`portal.workAbroad.placement.status.${current.status}`)}</p>
+      <p className="mt-2 inline-block rounded-full bg-white px-3 py-1 text-xs font-semibold text-brand-dark">
+        {t(`portal.workAbroad.placement.status.${current.status}`)}
+      </p>
       <dl className="mt-4 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
         {dates
           .filter(([, d]) => d)
@@ -75,7 +77,10 @@ export function MyApplicationsCard() {
           </h2>
           <p className="mt-1 text-sm text-ink/60">{t('portal.workAbroad.applications.intro')}</p>
         </div>
-        <Link href="/work-abroad/vacancies" className="inline-flex items-center gap-2 rounded bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark">
+        <Link
+          href="/work-abroad/vacancies"
+          className="inline-flex items-center gap-2 rounded bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark"
+        >
           <Search className="h-4 w-4" aria-hidden />
           {t('portal.workAbroad.applications.browse')}
         </Link>
@@ -91,15 +96,30 @@ export function MyApplicationsCard() {
                   {a.vacancy.title}
                 </Link>
                 <p className="text-xs text-ink/60">
-                  {[a.vacancy.city, countries.name(a.vacancy.country)].filter(Boolean).join(', ')} · {t('vacancies.apply.sentOn', { date: fmtDate(a.createdAt.slice(0, 10), locale) })}
+                  {[a.vacancy.city, countries.name(a.vacancy.country)].filter(Boolean).join(', ')} ·{' '}
+                  {t('vacancies.apply.sentOn', { date: fmtDate(a.createdAt.slice(0, 10), locale) })}
                 </p>
               </div>
               <div className="flex items-center gap-3">
-                <span className={cn('rounded-full px-2.5 py-0.5 text-xs font-semibold', a.status === 'PUT_FORWARD' ? 'bg-brand text-white' : a.status === 'NOT_SUCCESSFUL' ? 'bg-ink/10 text-ink/60' : 'bg-accent-light text-accent-dark')}>
+                <span
+                  className={cn(
+                    'rounded-full px-2.5 py-0.5 text-xs font-semibold',
+                    a.status === 'PUT_FORWARD'
+                      ? 'bg-brand text-white'
+                      : a.status === 'NOT_SUCCESSFUL'
+                        ? 'bg-ink/10 text-ink/60'
+                        : 'bg-accent-light text-accent-dark',
+                  )}
+                >
                   {!a.vacancy.open && a.status === 'APPLIED' ? t('portal.workAbroad.applications.closed') : t(`vacancies.apply.status.${a.status}`)}
                 </span>
                 {a.status === 'APPLIED' && (
-                  <button type="button" onClick={() => withdraw.mutate(a.id)} disabled={withdraw.isPending} className="text-xs text-danger hover:underline disabled:opacity-50">
+                  <button
+                    type="button"
+                    onClick={() => withdraw.mutate(a.id)}
+                    disabled={withdraw.isPending}
+                    className="text-xs text-danger hover:underline disabled:opacity-50"
+                  >
                     {t('portal.workAbroad.applications.withdraw')}
                     <span className="sr-only">: {a.vacancy.title}</span>
                   </button>
@@ -139,7 +159,11 @@ export function DatedDocumentsCard() {
             <span className="flex items-center gap-2">
               <span className="tabular-nums text-ink/70">{fmtDate(d.expiresOn, locale)}</span>
               <span className={cn('rounded-full px-2 py-0.5 text-xs font-semibold', STATE_STYLE[d.state])}>
-                {d.state === 'EXPIRED' ? t('portal.workAbroad.dated.expired') : d.state === 'EXPIRING' ? t('portal.workAbroad.dated.daysLeft', { days: d.daysLeft }) : t('portal.workAbroad.dated.valid')}
+                {d.state === 'EXPIRED'
+                  ? t('portal.workAbroad.dated.expired')
+                  : d.state === 'EXPIRING'
+                    ? t('portal.workAbroad.dated.daysLeft', { days: d.daysLeft })
+                    : t('portal.workAbroad.dated.valid')}
               </span>
             </span>
           </li>

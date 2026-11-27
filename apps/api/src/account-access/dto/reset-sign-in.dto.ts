@@ -20,16 +20,14 @@ export class ResetSignInDto {
   password?: boolean;
 
   @ApiPropertyOptional({
-    description:
-      'Release the sign-in phone number: WhatsApp sign-in stops, and the number is re-verified the next time the caregiver finishes their account',
+    description: 'Release the sign-in phone number: WhatsApp sign-in stops, and the number is re-verified the next time the caregiver finishes their account',
   })
   @IsOptional()
   @IsBoolean()
   phone?: boolean;
 
   @ApiPropertyOptional({
-    description:
-      'Clear the email address on the login. Needed when the caregiver will link a Google/Microsoft/Facebook account that uses a different address',
+    description: 'Clear the email address on the login. Needed when the caregiver will link a Google/Microsoft/Facebook account that uses a different address',
   })
   @IsOptional()
   @IsBoolean()

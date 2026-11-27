@@ -38,7 +38,12 @@ export class PatientProfileDto {
 
   @ApiPropertyOptional({ description: 'Name of the person needing care. Required when registrantType is GUARDIAN; ignored for SELF' })
   @ValidateIf(isGuardian)
-  @TextField({ min: 2, max: 255, requiredMessage: 'Name of the person needing care is required', invalidMessage: 'Enter a valid name for the person needing care' })
+  @TextField({
+    min: 2,
+    max: 255,
+    requiredMessage: 'Name of the person needing care is required',
+    invalidMessage: 'Enter a valid name for the person needing care',
+  })
   @IsString({ message: 'Name of the person needing care must be text' })
   recipientName?: string;
 

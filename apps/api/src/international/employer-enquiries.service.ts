@@ -4,7 +4,13 @@ import { and, count, desc, eq, inArray, like, or, type SQL } from 'drizzle-orm';
 import type { EmployerEnquiry, EmployerEnquiryList, EmployerEnquiryReceipt, EmployerEnquirySummary } from '@care-platform/shared';
 import { DRIZZLE, type Database } from '../database/database.module';
 import { caregivers, employerEnquiries, employers, jobOffers, overseasVacancies, placements, sharedProfiles, users } from '../database/schema';
-import { CreateEmployerEnquiryDto, EditEnquiryDetailsDto, EmployerAccountEnquiryDto, EmployerEnquiryQueryDto, UpdateEmployerEnquiryDto } from './dto/international.dto';
+import {
+  CreateEmployerEnquiryDto,
+  EditEnquiryDetailsDto,
+  EmployerAccountEnquiryDto,
+  EmployerEnquiryQueryDto,
+  UpdateEmployerEnquiryDto,
+} from './dto/international.dto';
 import type { StaffEnquiryDto } from './dto/admin.dto';
 import { SharedProfilesService } from './shared-profiles.service';
 import { InternationalNotifier } from './international-notifier.service';
@@ -110,7 +116,17 @@ export class EmployerEnquiriesService {
    * The enquiry behind a vacancy an employer posts: applicants staff put
    * forward become its candidates. No emails - the vacancy sends its own.
    */
-  async createForVacancy(employerId: string, v: { country: string; rolesCount: number; careSetting: string; visaSponsorship: EnquiryValues['visaSponsorship']; startTimeframe: string | null; title: string }): Promise<{ id: string; reference: string }> {
+  async createForVacancy(
+    employerId: string,
+    v: {
+      country: string;
+      rolesCount: number;
+      careSetting: string;
+      visaSponsorship: EnquiryValues['visaSponsorship'];
+      startTimeframe: string | null;
+      title: string;
+    },
+  ): Promise<{ id: string; reference: string }> {
     const [account] = await this.db
       .select({ e: employers, email: users.email })
       .from(employers)
@@ -276,7 +292,9 @@ export class EmployerEnquiriesService {
         if (!exists) throw new NotFoundException('Employer not found');
       }
       if (currentEmployerId && (await this.tiedToAccount(id))) {
-        throw new BadRequestException('Offers, vacancies or placements on this enquiry belong to its employer account, so it cannot be moved to another account.');
+        throw new BadRequestException(
+          'Offers, vacancies or placements on this enquiry belong to its employer account, so it cannot be moved to another account.',
+        );
       }
       changes.employerId = dto.employerId;
     }
@@ -370,10 +388,7 @@ function toEnquiry({ e, registrationNumber, fullName, slug, employerName, employ
     startTimeframe: e.startTimeframe,
     visaSponsorship: e.visaSponsorship,
     message: e.message,
-    caregiver:
-      e.caregiverId && registrationNumber
-        ? { id: e.caregiverId, registrationNumber, fullName: fullName ?? '', talentSlug: slug }
-        : null,
+    caregiver: e.caregiverId && registrationNumber ? { id: e.caregiverId, registrationNumber, fullName: fullName ?? '', talentSlug: slug } : null,
     employer: e.employerId && employerName && employerStatus ? { id: e.employerId, organisationName: employerName, status: employerStatus } : null,
     status: e.status,
     staffNote: e.staffNote,

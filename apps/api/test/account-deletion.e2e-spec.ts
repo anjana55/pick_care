@@ -102,7 +102,13 @@ describe('Account deletion (e2e)', () => {
   }
 
   const ask = (token: string) => api().post('/me/account/deletion').set(bearer(token));
-  const queue = async () => (await api().get('/account-deletions').set(bearer(staffToken)).expect(200)).body as { id: string; caregiverId: string | null; patientId: string | null; [k: string]: unknown }[];
+  const queue = async () =>
+    (await api().get('/account-deletions').set(bearer(staffToken)).expect(200)).body as {
+      id: string;
+      caregiverId: string | null;
+      patientId: string | null;
+      [k: string]: unknown;
+    }[];
   const requestOf = async (userId: string) => (await db.select().from(accountDeletionRequests).where(eq(accountDeletionRequests.userId, userId)))[0];
   const auditOf = async (entityType: string, entityId: string) =>
     (await api().get(`/audit-logs?entityType=${entityType}&entityId=${entityId}`).set(bearer(adminToken)).expect(200)).body as {
@@ -145,9 +151,17 @@ describe('Account deletion (e2e)', () => {
     const districtId = tree.flatMap((p) => p.districts)[0].id;
     const cityId = (await api().get(`/public/meta/locations/cities?districtId=${districtId}&locale=en`).expect(200)).body[0].id;
     intake = {
-      registrantType: 'GUARDIAN', recipientName: 'Sunil Fernando', recipientRelationship: 'PARENT', recipientAge: 78,
-      recipientGender: 'MALE', preferredContactMethod: 'PHONE_CALL', districtId, cityId,
-      careNeeds: 'Needs help with bathing, meals and medication reminders.', careSchedule: 'DAY', careStart: 'WITHIN_WEEK',
+      registrantType: 'GUARDIAN',
+      recipientName: 'Sunil Fernando',
+      recipientRelationship: 'PARENT',
+      recipientAge: 78,
+      recipientGender: 'MALE',
+      preferredContactMethod: 'PHONE_CALL',
+      districtId,
+      cityId,
+      careNeeds: 'Needs help with bathing, meals and medication reminders.',
+      careSchedule: 'DAY',
+      careStart: 'WITHIN_WEEK',
     };
   });
 
@@ -200,7 +214,14 @@ describe('Account deletion (e2e)', () => {
   describe('staff', () => {
     it('see each request with who it is and what is still open; verifiers do not', async () => {
       const cg = await newCaregiver();
-      await db.insert(payoutStatements).values({ id: uuid(), reference: `PO-T${run}${++n}`.slice(0, 16), caregiverId: cg.id, periodStart: '2026-10-01', periodEnd: '2026-10-31', status: 'APPROVED' } as never);
+      await db.insert(payoutStatements).values({
+        id: uuid(),
+        reference: `PO-T${run}${++n}`.slice(0, 16),
+        caregiverId: cg.id,
+        periodStart: '2026-10-01',
+        periodEnd: '2026-10-31',
+        status: 'APPROVED',
+      } as never);
       await ask(cg.token).expect(200);
 
       const row = (await queue()).find((r) => r.caregiverId === cg.id)!;
@@ -240,7 +261,12 @@ describe('Account deletion (e2e)', () => {
       await api().delete(`/caregivers/${cg.id}`).set(bearer(adminToken)).expect(200);
 
       // Gone from the caregiver list and the record ...
-      const listed = (await api().get(`/caregivers?search=${encodeURIComponent(cg.registrationNumber)}`).set(bearer(staffToken)).expect(200)).body;
+      const listed = (
+        await api()
+          .get(`/caregivers?search=${encodeURIComponent(cg.registrationNumber)}`)
+          .set(bearer(staffToken))
+          .expect(200)
+      ).body;
       expect(listed.items.map((c: { id: string }) => c.id)).not.toContain(cg.id);
       await api().get(`/caregivers/${cg.id}`).set(bearer(staffToken)).expect(404);
       // ... and out of the queue: the request is carried out, not left waiting.
@@ -264,7 +290,14 @@ describe('Account deletion (e2e)', () => {
 
     it("won't delete a caregiver who asked to be deleted while something of theirs is open", async () => {
       const cg = await newCaregiver();
-      await db.insert(payoutStatements).values({ id: uuid(), reference: `PO-D${run}${++n}`.slice(0, 16), caregiverId: cg.id, periodStart: '2026-10-01', periodEnd: '2026-10-31', status: 'APPROVED' } as never);
+      await db.insert(payoutStatements).values({
+        id: uuid(),
+        reference: `PO-D${run}${++n}`.slice(0, 16),
+        caregiverId: cg.id,
+        periodStart: '2026-10-01',
+        periodEnd: '2026-10-31',
+        status: 'APPROVED',
+      } as never);
       await ask(cg.token).expect(200);
 
       const refused = await api().delete(`/caregivers/${cg.id}`).set(bearer(adminToken)).expect(409);
@@ -304,7 +337,11 @@ describe('Account deletion (e2e)', () => {
       const cg = await newCaregiver();
       await api().put(`/me/saved-caregivers/${cg.publicId}`).set(bearer(client.token)).expect(200);
       await db.insert(deviceTokens).values({ id: uuid(), userId: client.userId, expoPushToken: `ExponentPushToken[${uuid()}]`, platform: 'ios' });
-      const req = await api().post('/me/care-requests').set(bearer(client.token)).send({ caregiverPublicId: cg.publicId, message: 'Mornings, please - Dad is at 5 Lake Road' }).expect(201);
+      const req = await api()
+        .post('/me/care-requests')
+        .set(bearer(client.token))
+        .send({ caregiverPublicId: cg.publicId, message: 'Mornings, please - Dad is at 5 Lake Road' })
+        .expect(201);
       await api().post('/me/care-locations').set(bearer(client.token)).send({ latitude: 6.9271, longitude: 79.8452 }).expect(201);
       await ask(client.token).expect(200);
 
@@ -418,11 +455,21 @@ describe('Account deletion (e2e)', () => {
     it('holds a caregiver with an unpaid payout until it is paid', async () => {
       const cg = await newCaregiver();
       const payoutId = uuid();
-      await db.insert(payoutStatements).values({ id: payoutId, reference: `PO-H${run}${++n}`.slice(0, 16), caregiverId: cg.id, periodStart: '2026-10-01', periodEnd: '2026-10-31', status: 'DRAFT' } as never);
+      await db.insert(payoutStatements).values({
+        id: payoutId,
+        reference: `PO-H${run}${++n}`.slice(0, 16),
+        caregiverId: cg.id,
+        periodStart: '2026-10-01',
+        periodEnd: '2026-10-31',
+        status: 'DRAFT',
+      } as never);
       await ask(cg.token).expect(200);
       await deletion.eraseDue(new Date(Date.now() + 15 * DAY));
       expect((await requestOf(cg.userId)).status).toBe('PENDING');
-      await db.update(payoutStatements).set({ status: 'PAID' } as never).where(eq(payoutStatements.id, payoutId));
+      await db
+        .update(payoutStatements)
+        .set({ status: 'PAID' } as never)
+        .where(eq(payoutStatements.id, payoutId));
       await deletion.eraseDue(new Date(Date.now() + 15 * DAY));
       expect((await requestOf(cg.userId)).status).toBe('ERASED');
       // The payout keeps pointing at the caregiver's (erased) record.
@@ -445,7 +492,14 @@ describe('Account deletion (e2e)', () => {
 
     it('emails staff when a caregiver deletes their account, with what is still open', async () => {
       const cg = await newCaregiver();
-      await db.insert(payoutStatements).values({ id: uuid(), reference: `PO-M${run}${++n}`.slice(0, 16), caregiverId: cg.id, periodStart: '2026-10-01', periodEnd: '2026-10-31', status: 'APPROVED' } as never);
+      await db.insert(payoutStatements).values({
+        id: uuid(),
+        reference: `PO-M${run}${++n}`.slice(0, 16),
+        caregiverId: cg.id,
+        periodStart: '2026-10-01',
+        periodEnd: '2026-10-31',
+        status: 'APPROVED',
+      } as never);
       const before = await pending();
       await ask(cg.token).expect(200);
 
@@ -475,7 +529,10 @@ describe('Account deletion (e2e)', () => {
       const row = (await queue()).find((r) => r.caregiverId === cg.id)!;
       await api().post(`/account-deletions/${row.id}/cancel`).set(bearer(staffToken)).expect(200);
       const cancelled = await entry('Caregiver', cg.id, 'CANCEL_ACCOUNT_DELETION');
-      expect(cancelled).toMatchObject({ action: 'CANCEL_ACCOUNT_DELETION', metadata: expect.objectContaining({ requestId: row.id, restoredStatus: 'ACTIVE' }) });
+      expect(cancelled).toMatchObject({
+        action: 'CANCEL_ACCOUNT_DELETION',
+        metadata: expect.objectContaining({ requestId: row.id, restoredStatus: 'ACTIVE' }),
+      });
       expect(cancelled.userId).not.toBe(cg.userId);
 
       const client = await newClient();

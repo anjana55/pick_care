@@ -13,7 +13,16 @@ import { tokenStore } from '@/api';
 
 jest.mock('expo-router', () => require('../test-utils/router').expoRouterMock());
 
-const TREE = [{ id: 1, name: 'Western', districts: [{ id: 6, name: 'Gampaha' }, { id: 5, name: 'Colombo' }] }];
+const TREE = [
+  {
+    id: 1,
+    name: 'Western',
+    districts: [
+      { id: 6, name: 'Gampaha' },
+      { id: 5, name: 'Colombo' },
+    ],
+  },
+];
 const CITIES = [{ id: 50, name: 'Dehiwala', subName: null, postcode: null, latitude: 6.85, longitude: 79.86 }];
 
 function caregiver(n: number, extra: Partial<PublicCaregiverSummary> = {}): PublicCaregiverSummary {
@@ -206,7 +215,10 @@ describe('a caregiver’s profile', () => {
     const calls = serveApi({
       'GET /public/caregivers/cg1abcdef-0000': () => ({
         status: 200,
-        body: caregiver(1, { qualificationSummary: ['NVQ Level 3 Caregiving'], availability: { dayDuty: true, nightDuty: true, liveIn24h: false, preferredShift: 'DAY', availableFrom: null } }),
+        body: caregiver(1, {
+          qualificationSummary: ['NVQ Level 3 Caregiving'],
+          availability: { dayDuty: true, nightDuty: true, liveIn24h: false, preferredShift: 'DAY', availableFrom: null },
+        }),
       }),
     });
     mockRouter.params = { publicId: 'cg1abcdef-0000' };

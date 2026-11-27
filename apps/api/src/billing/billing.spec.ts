@@ -45,7 +45,12 @@ describe('computeTotals', () => {
 
   it('rounds each line half away from zero, to the cent', () => {
     // 7.25 h x 333.33 = 2416.6425 -> 2416.64; 0.5 x 0.05 = 0.025 -> 0.03
-    const t = computeTotals({ lines: [{ quantity: '7.25', unitPrice: '333.33' }, { quantity: '0.5', unitPrice: '0.05' }] });
+    const t = computeTotals({
+      lines: [
+        { quantity: '7.25', unitPrice: '333.33' },
+        { quantity: '0.5', unitPrice: '0.05' },
+      ],
+    });
     expect(t.lines.map((l) => l.amount)).toEqual(['2416.64', '0.03']);
     expect(t.total).toBe('2416.67');
   });
@@ -128,10 +133,22 @@ describe('buildLines', () => {
     status: 'COMPLETED',
     ...over,
   });
-  const base = { mode: 'INVOICE' as const, language: 'en' as const, from: '2026-10-01', to: '2026-10-31', statuses: ['COMPLETED'] as const, billedShiftIds: new Set<string>(), billedPeriods: [] };
+  const base = {
+    mode: 'INVOICE' as const,
+    language: 'en' as const,
+    from: '2026-10-01',
+    to: '2026-10-31',
+    statuses: ['COMPLETED'] as const,
+    billedShiftIds: new Set<string>(),
+    billedPeriods: [],
+  };
 
   it('bills one day per completed shift at a daily rate, in time order', () => {
-    const r = buildLines({ ...base, bookings: [booking()], shifts: [shift('s2', '2026-10-21'), shift('s1', '2026-10-20'), shift('s3', '2026-10-22', { status: 'MISSED' })] });
+    const r = buildLines({
+      ...base,
+      bookings: [booking()],
+      shifts: [shift('s2', '2026-10-21'), shift('s1', '2026-10-20'), shift('s3', '2026-10-22', { status: 'MISSED' })],
+    });
     expect(r.lines.map((l) => [l.shiftId, l.serviceDate, l.quantity, l.unit, l.unitPrice])).toEqual([
       ['s1', '2026-10-20', '1.00', 'DAY', '3500.00'],
       ['s2', '2026-10-21', '1.00', 'DAY', '3500.00'],
@@ -158,7 +175,12 @@ describe('buildLines', () => {
   });
 
   it('bills scheduled shifts too when billing in advance', () => {
-    const r = buildLines({ ...base, statuses: ['SCHEDULED', 'COMPLETED'], bookings: [booking()], shifts: [shift('s1', '2026-10-20', { status: 'SCHEDULED' })] });
+    const r = buildLines({
+      ...base,
+      statuses: ['SCHEDULED', 'COMPLETED'],
+      bookings: [booking()],
+      shifts: [shift('s1', '2026-10-20', { status: 'SCHEDULED' })],
+    });
     expect(r.lines).toHaveLength(1);
   });
 
@@ -169,7 +191,14 @@ describe('buildLines', () => {
       shifts: [shift('s1', '2026-10-15'), shift('s2', '2026-10-16')],
     });
     expect(r.lines).toHaveLength(1);
-    expect(r.lines[0]).toMatchObject({ unit: 'MONTH', quantity: '0.57', unitPrice: '90000.00', shiftId: null, periodStart: '2026-10-15', periodEnd: '2026-10-31' });
+    expect(r.lines[0]).toMatchObject({
+      unit: 'MONTH',
+      quantity: '0.57',
+      unitPrice: '90000.00',
+      shiftId: null,
+      periodStart: '2026-10-15',
+      periodEnd: '2026-10-31',
+    });
   });
 
   it('does not bill a monthly period twice', () => {

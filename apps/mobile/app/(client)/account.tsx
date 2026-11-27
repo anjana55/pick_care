@@ -29,7 +29,6 @@ export default function Account() {
   return (
     <Screen title={t('nav.myAccount')}>
       <ScrollView contentContainerStyle={styles.body}>
-
         {user ? (
           <Card style={styles.profile}>
             <Avatar name={user.email ?? user.phone} size={64} />
@@ -52,11 +51,23 @@ export default function Account() {
 
         {user ? (
           <Card style={styles.menu}>
-            <MenuRow icon="chatbubbles-outline" label={t('account.nav.requests')} count={replies} countLabel={said(replies)} onPress={() => router.navigate('/requests')} />
+            <MenuRow
+              icon="chatbubbles-outline"
+              label={t('account.nav.requests')}
+              count={replies}
+              countLabel={said(replies)}
+              onPress={() => router.navigate('/requests')}
+            />
             <Divider />
             <MenuRow icon="heart-outline" tone="accent" label={t('account.nav.saved')} onPress={() => router.navigate('/saved')} />
             <Divider />
-            <MenuRow icon="receipt-outline" label={t('account.nav.invoices')} count={toPay} countLabel={said(toPay)} onPress={() => router.navigate('/invoices')} />
+            <MenuRow
+              icon="receipt-outline"
+              label={t('account.nav.invoices')}
+              count={toPay}
+              countLabel={said(toPay)}
+              onPress={() => router.navigate('/invoices')}
+            />
             <Divider />
             <MenuRow icon="location-outline" label={t('places.title')} onPress={() => router.push('/care-places')} />
             <Divider />

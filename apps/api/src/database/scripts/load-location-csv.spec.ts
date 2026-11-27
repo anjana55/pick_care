@@ -111,7 +111,7 @@ describe('loadLocationCsvs orphan sweep', () => {
     await loadLocationCsvs(db);
 
     const order = queries
-      .map((q, i) => (/delete from `(\w+)`/.exec(q.sql)?.[1] ?? null) && ({ table: /delete from `(\w+)`/.exec(q.sql)![1], i }))
+      .map((q, i) => (/delete from `(\w+)`/.exec(q.sql)?.[1] ?? null) && { table: /delete from `(\w+)`/.exec(q.sql)![1], i })
       .filter((entry): entry is { table: string; i: number } => entry !== null);
 
     const firstCities = order.findIndex((e) => e.table === 'cities');

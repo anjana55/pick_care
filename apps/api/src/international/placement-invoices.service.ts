@@ -48,7 +48,8 @@ export const placementInvoiceNumber = (year: number, n: number) => `PF-${year}-$
 export const balanceCents = (inv: Pick<InvoiceRow, 'amount' | 'amountPaid'>) => toCents(inv.amount) - toCents(inv.amountPaid);
 
 /** Issued, unpaid and past its due date. */
-export const isOverdue = (inv: Pick<InvoiceRow, 'status' | 'dueDate'>, today = todayColombo()) => inv.status === 'ISSUED' && Boolean(inv.dueDate && inv.dueDate < today);
+export const isOverdue = (inv: Pick<InvoiceRow, 'status' | 'dueDate'>, today = todayColombo()) =>
+  inv.status === 'ISSUED' && Boolean(inv.dueDate && inv.dueDate < today);
 
 /** Where an invoice stands after a payment or refund. A refund can never take back more than was paid. */
 export function afterPayment(inv: Pick<InvoiceRow, 'amount' | 'amountPaid' | 'status'>, amount: string): { amountPaid: string; status: 'ISSUED' | 'PAID' } {
@@ -179,7 +180,10 @@ export class PlacementInvoicesService {
     const inv = await this.row(id);
     if (inv.status !== 'ISSUED') throw new BadRequestException('Only an issued invoice can be voided.');
     if (toCents(inv.amountPaid) !== 0) throw new BadRequestException('Refund the payments on this invoice before voiding it.');
-    await this.db.update(placementInvoices).set({ status: 'VOID', voidedAt: new Date(), voidReason: reason, updatedAt: new Date() }).where(eq(placementInvoices.id, id));
+    await this.db
+      .update(placementInvoices)
+      .set({ status: 'VOID', voidedAt: new Date(), voidReason: reason, updatedAt: new Date() })
+      .where(eq(placementInvoices.id, id));
     return this.get(id);
   }
 
@@ -376,17 +380,30 @@ export class PlacementInvoicesService {
         return;
       }
       const amountOk = n.payhere_currency === c.currency && toCents(n.payhere_amount!) === toCents(c.amount);
-      const patch = { paymentId: n.payment_id ?? c.paymentId, method: n.method?.slice(0, 20) ?? c.method, statusMessage: n.status_message?.slice(0, 255) ?? null, updatedAt: new Date() };
+      const patch = {
+        paymentId: n.payment_id ?? c.paymentId,
+        method: n.method?.slice(0, 20) ?? c.method,
+        statusMessage: n.status_message?.slice(0, 255) ?? null,
+        updatedAt: new Date(),
+      };
       const paidOn = todayColombo();
 
       if (next === 'SUCCESS') {
         if (!amountOk) {
-          this.logger.error(`PayHere placement order ${c.id}: paid ${n.payhere_amount} ${n.payhere_currency}, expected ${c.amount} ${c.currency} - NOT applied`);
-          await tx.update(placementCheckouts).set({ ...patch, status: 'FAILED', statusMessage: 'Amount did not match the checkout' }).where(eq(placementCheckouts.id, c.id));
+          this.logger.error(
+            `PayHere placement order ${c.id}: paid ${n.payhere_amount} ${n.payhere_currency}, expected ${c.amount} ${c.currency} - NOT applied`,
+          );
+          await tx
+            .update(placementCheckouts)
+            .set({ ...patch, status: 'FAILED', statusMessage: 'Amount did not match the checkout' })
+            .where(eq(placementCheckouts.id, c.id));
           return;
         }
         if (c.status === 'SUCCESS') return;
-        await tx.update(placementCheckouts).set({ ...patch, status: 'SUCCESS' }).where(eq(placementCheckouts.id, c.id));
+        await tx
+          .update(placementCheckouts)
+          .set({ ...patch, status: 'SUCCESS' })
+          .where(eq(placementCheckouts.id, c.id));
         const done = await this.applyPayment(tx, c.invoiceId, {
           amount: fromCents(toCents(c.amount)),
           method: 'CARD_ONLINE',
@@ -411,11 +428,17 @@ export class PlacementInvoicesService {
             recordedByUserId: null,
           });
         }
-        await tx.update(placementCheckouts).set({ ...patch, status: 'CHARGEDBACK' }).where(eq(placementCheckouts.id, c.id));
+        await tx
+          .update(placementCheckouts)
+          .set({ ...patch, status: 'CHARGEDBACK' })
+          .where(eq(placementCheckouts.id, c.id));
         return;
       }
       if (c.status !== 'SUCCESS' && c.status !== 'CHARGEDBACK') {
-        await tx.update(placementCheckouts).set({ ...patch, status: next }).where(eq(placementCheckouts.id, c.id));
+        await tx
+          .update(placementCheckouts)
+          .set({ ...patch, status: next })
+          .where(eq(placementCheckouts.id, c.id));
       }
     });
     if (settled) void this.get(settled).then((inv) => this.notifyPaid(inv));
@@ -428,12 +451,24 @@ export class PlacementInvoicesService {
   private async applyPayment(
     tx: Tx,
     invoiceId: string,
-    p: { amount: string; method: (typeof placementInvoicePayments.$inferInsert)['method']; paidOn: string; reference: string | null; note: string | null; externalId: string | null; recordedByUserId: string | null },
+    p: {
+      amount: string;
+      method: (typeof placementInvoicePayments.$inferInsert)['method'];
+      paidOn: string;
+      reference: string | null;
+      note: string | null;
+      externalId: string | null;
+      recordedByUserId: string | null;
+    },
   ): Promise<boolean> {
     const [inv] = await tx.select().from(placementInvoices).where(eq(placementInvoices.id, invoiceId)).for('update').limit(1);
     if (!inv) throw new NotFoundException('Invoice not found');
     if (p.externalId) {
-      const [dup] = await tx.select({ id: placementInvoicePayments.id }).from(placementInvoicePayments).where(eq(placementInvoicePayments.externalId, p.externalId)).limit(1);
+      const [dup] = await tx
+        .select({ id: placementInvoicePayments.id })
+        .from(placementInvoicePayments)
+        .where(eq(placementInvoicePayments.externalId, p.externalId))
+        .limit(1);
       if (dup) return false;
     }
     const next = afterPayment(inv, p.amount);
@@ -452,7 +487,10 @@ export class PlacementInvoicesService {
 
   /** The year's next number. The counter row is locked until the issuing transaction commits. */
   private async nextNumber(tx: Tx, year: number): Promise<string> {
-    await tx.insert(placementInvoiceCounters).values({ year, lastNumber: 0 }).onDuplicateKeyUpdate({ set: { year: sql`year` } });
+    await tx
+      .insert(placementInvoiceCounters)
+      .values({ year, lastNumber: 0 })
+      .onDuplicateKeyUpdate({ set: { year: sql`year` } });
     const [c] = await tx.select().from(placementInvoiceCounters).where(eq(placementInvoiceCounters.year, year)).for('update').limit(1);
     const n = (c?.lastNumber ?? 0) + 1;
     await tx.update(placementInvoiceCounters).set({ lastNumber: n }).where(eq(placementInvoiceCounters.year, year));

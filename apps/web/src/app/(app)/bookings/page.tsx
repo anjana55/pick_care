@@ -40,8 +40,15 @@ export default function BookingsPage() {
 
   const { data: summary } = useBookingSummary(allowed);
   // Also left as the trail the record pages' previous / next follow (lib/record-trail).
-  const listFilters: BookingFilters = { status: tab === 'all' || tab === 'issues' || tab === 'care' ? undefined : tab, hasOpenIssues: tab === 'issues' || undefined, hasCareAlerts: tab === 'care' || undefined, search: search.trim() || undefined, page, pageSize: 20 };
-  const { data, isLoading } = useBookings(listFilters, allowed,);
+  const listFilters: BookingFilters = {
+    status: tab === 'all' || tab === 'issues' || tab === 'care' ? undefined : tab,
+    hasOpenIssues: tab === 'issues' || undefined,
+    hasCareAlerts: tab === 'care' || undefined,
+    search: search.trim() || undefined,
+    page,
+    pageSize: 20,
+  };
+  const { data, isLoading } = useBookings(listFilters, allowed);
   useRecordTrail('bookings', bookingListPath(listFilters), data);
 
   if (authLoading || !allowed) return <div className="flex min-h-[40vh] items-center justify-center text-sm text-ink/50">{t('common.loading')}</div>;
@@ -52,11 +59,17 @@ export default function BookingsPage() {
         <h1 className="text-xl font-semibold text-ink">{t('bookings.title')}</h1>
         <div className="flex flex-wrap items-center gap-2">
           {/* The template library has no menu item of its own: it is opened from the bookings it is applied to. */}
-          <Link href="/bookings/today" className="inline-flex h-9 items-center gap-2 rounded border border-border bg-white px-4 text-sm font-medium text-ink hover:bg-paper">
+          <Link
+            href="/bookings/today"
+            className="inline-flex h-9 items-center gap-2 rounded border border-border bg-white px-4 text-sm font-medium text-ink hover:bg-paper"
+          >
             <MapPinCheck size={16} aria-hidden />
             {t('bookings.todayVisits')}
           </Link>
-          <Link href="/care-plans" className="inline-flex h-9 items-center gap-2 rounded border border-border bg-white px-4 text-sm font-medium text-ink hover:bg-paper">
+          <Link
+            href="/care-plans"
+            className="inline-flex h-9 items-center gap-2 rounded border border-border bg-white px-4 text-sm font-medium text-ink hover:bg-paper"
+          >
             <ClipboardList size={16} aria-hidden />
             {t('carePlans.templates.title')}
           </Link>
@@ -84,8 +97,12 @@ export default function BookingsPage() {
             )}
           >
             {t(`bookings.tabs.${key}`)}
-            {summary && key !== 'all' && key !== 'issues' && key !== 'care' && <span className="rounded-full bg-paper px-1.5 text-xs tabular-nums text-ink/60">{summary.byStatus[key]}</span>}
-            {summary && key === 'issues' && summary.openIssues > 0 && <span className="rounded-full bg-accent-light px-1.5 text-xs tabular-nums text-accent">{summary.openIssues}</span>}
+            {summary && key !== 'all' && key !== 'issues' && key !== 'care' && (
+              <span className="rounded-full bg-paper px-1.5 text-xs tabular-nums text-ink/60">{summary.byStatus[key]}</span>
+            )}
+            {summary && key === 'issues' && summary.openIssues > 0 && (
+              <span className="rounded-full bg-accent-light px-1.5 text-xs tabular-nums text-accent">{summary.openIssues}</span>
+            )}
           </button>
         ))}
       </div>
@@ -119,12 +136,16 @@ export default function BookingsPage() {
           <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-ink/50">{t('common.loading')}</td>
+                <td colSpan={7} className="px-4 py-8 text-center text-ink/50">
+                  {t('common.loading')}
+                </td>
               </tr>
             )}
             {!isLoading && data?.items.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-ink/50">{t('bookings.empty')}</td>
+                <td colSpan={7} className="px-4 py-8 text-center text-ink/50">
+                  {t('bookings.empty')}
+                </td>
               </tr>
             )}
             {data?.items.map((b) => (
@@ -134,7 +155,10 @@ export default function BookingsPage() {
                     {b.reference}
                   </Link>
                   {b.openIssues > 0 && (
-                    <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-accent-light px-1.5 py-0.5 text-xs text-accent" title={t('bookings.issues.openCount', { count: b.openIssues })}>
+                    <span
+                      className="ml-2 inline-flex items-center gap-1 rounded-full bg-accent-light px-1.5 py-0.5 text-xs text-accent"
+                      title={t('bookings.issues.openCount', { count: b.openIssues })}
+                    >
                       <MessageSquareWarning size={12} aria-hidden />
                       {b.openIssues}
                     </span>

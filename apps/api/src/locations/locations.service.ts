@@ -32,10 +32,7 @@ export class LocationsService {
 
     const byProvince = new Map<number, { id: number; name: string }[]>();
     for (const district of districtRows) {
-      byProvince.set(district.provinceId, [
-        ...(byProvince.get(district.provinceId) ?? []),
-        { id: district.id, name: nameFor(district, locale) },
-      ]);
+      byProvince.set(district.provinceId, [...(byProvince.get(district.provinceId) ?? []), { id: district.id, name: nameFor(district, locale) }]);
     }
 
     return provinceRows.map((province) => ({
@@ -63,13 +60,7 @@ export class LocationsService {
    * findCities plus the two parent names, so the page can show which district
    * a result belongs to without a second request per row.
    */
-  async findCitiesPage(opts: {
-    districtId?: number;
-    page: number;
-    pageSize: number;
-    query?: string;
-    locale?: Locale;
-  }) {
+  async findCitiesPage(opts: { districtId?: number; page: number; pageSize: number; query?: string; locale?: Locale }) {
     const locale = opts.locale ?? 'en';
     // Sub-names and postcodes are searched too, because the browse box offers
     // them: a staff member looking up "Modara" or "10350" expects a hit, and a
@@ -77,10 +68,7 @@ export class LocationsService {
     const where = opts.query
       ? sql`(${cities.nameEn} LIKE ${`%${opts.query}%`} OR ${cities.nameSi} LIKE ${`%${opts.query}%`} OR ${cities.nameTa} LIKE ${`%${opts.query}%`} OR ${cities.subNameEn} LIKE ${`%${opts.query}%`} OR ${cities.subNameSi} LIKE ${`%${opts.query}%`} OR ${cities.subNameTa} LIKE ${`%${opts.query}%`} OR ${cities.postcode} LIKE ${`%${opts.query}%`})`
       : undefined;
-    const filters = [
-      opts.districtId ? eq(cities.districtId, opts.districtId) : undefined,
-      where,
-    ].filter((c): c is NonNullable<typeof c> => c !== undefined);
+    const filters = [opts.districtId ? eq(cities.districtId, opts.districtId) : undefined, where].filter((c): c is NonNullable<typeof c> => c !== undefined);
 
     // All three name columns are selected even though one is returned: the
     // locale is resolved after the query so the same projection serves every
@@ -127,10 +115,7 @@ export class LocationsService {
         latitude: row.latitude,
         longitude: row.longitude,
         districtId: row.districtId,
-        district: nameFor(
-          { nameEn: row.districtNameEn, nameSi: row.districtNameSi, nameTa: row.districtNameTa },
-          locale,
-        ),
+        district: nameFor({ nameEn: row.districtNameEn, nameSi: row.districtNameSi, nameTa: row.districtNameTa }, locale),
         province: row.provinceNameEn,
       })),
       page: opts.page,
@@ -151,10 +136,7 @@ function nameFor(row: { nameEn: string; nameSi: string; nameTa: string }, locale
   return locale === 'si' ? row.nameSi : locale === 'ta' ? row.nameTa : row.nameEn;
 }
 
-function subNameFor(
-  row: { subNameEn: string | null; subNameSi: string | null; subNameTa: string | null },
-  locale: Locale,
-): string | null {
+function subNameFor(row: { subNameEn: string | null; subNameSi: string | null; subNameTa: string | null }, locale: Locale): string | null {
   const value = locale === 'si' ? row.subNameSi : locale === 'ta' ? row.subNameTa : row.subNameEn;
   return value ?? row.subNameEn;
 }

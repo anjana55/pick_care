@@ -23,7 +23,10 @@ export function AppProviders({ children }: { children: ReactNode }) {
   );
 }
 
-type Handler = (body: Record<string, unknown>, query: Record<string, string>) => { status: number; body?: unknown } | Promise<{ status: number; body?: unknown }>;
+type Handler = (
+  body: Record<string, unknown>,
+  query: Record<string, string>,
+) => { status: number; body?: unknown } | Promise<{ status: number; body?: unknown }>;
 
 /**
  * Answers API calls by path ("POST /auth/login"); anything else has no network.

@@ -95,7 +95,10 @@ const DOC_TEXT: Record<Lang, { title: string; body: string }> = {
 };
 
 const DOC_REMIND_TEXT: Record<Lang, { title: string; body: string }> = {
-  en: { title: 'Reminder: documents for your registration', body: 'We still need {what} to finish checking your registration. Please upload them under Documents.' },
+  en: {
+    title: 'Reminder: documents for your registration',
+    body: 'We still need {what} to finish checking your registration. Please upload them under Documents.',
+  },
   si: { title: 'මතක් කිරීම: ඔබගේ ලියාපදිංචියට ලේඛන', body: 'ඔබගේ ලියාපදිංචිය පරීක්ෂා කිරීම අවසන් කිරීමට අපට තවමත් {what} අවශ්‍යයි. කරුණාකර ඒවා ලේඛන යටතේ උඩුගත කරන්න.' },
   ta: { title: 'நினைவூட்டல்: உங்கள் பதிவுக்கான ஆவணங்கள்', body: 'உங்கள் பதிவைச் சரிபார்த்து முடிக்க எங்களுக்கு இன்னும் {what} தேவை. அவற்றை ஆவணங்கள் பகுதியில் பதிவேற்றவும்.' },
 };
@@ -280,7 +283,9 @@ export class OnboardingAgentService implements OnApplicationBootstrap, OnModuleD
         },
         facts: {
           today,
-          documents: docs.filter((d) => d.caregiverId === r.id).map((d) => ({ type: d.type, status: d.status, expiresOn: d.expiresOn, reading: (d.reading as DocumentReadingOutcome | null) ?? null })),
+          documents: docs
+            .filter((d) => d.caregiverId === r.id)
+            .map((d) => ({ type: d.type, status: d.status, expiresOn: d.expiresOn, reading: (d.reading as DocumentReadingOutcome | null) ?? null })),
           profile: {
             dateOfBirth: ymd(dob),
             permanentAddress: r.permanentAddress,
@@ -290,10 +295,16 @@ export class OnboardingAgentService implements OnApplicationBootstrap, OnModuleD
             emergencyContactName: r.emergencyContactName,
             emergencyContactNumber: r.emergencyContactNumber,
           },
-          references: mine.map((x) => ({ status: x.verificationStatus, answer: (x.confirmAnswer as ReferenceAnswer | null) ?? null, sentAt: x.confirmSentAt?.toISOString() ?? null })),
+          references: mine.map((x) => ({
+            status: x.verificationStatus,
+            answer: (x.confirmAnswer as ReferenceAnswer | null) ?? null,
+            sentAt: x.confirmSentAt?.toISOString() ?? null,
+          })),
         },
         refs: mine,
-        unread: docs.filter((d) => d.caregiverId === r.id && !d.reading && d.status !== 'REJECTED' && (READABLE_DOCUMENT_TYPES as readonly string[]).includes(d.type)).map((d) => ({ id: d.id, type: d.type as string })),
+        unread: docs
+          .filter((d) => d.caregiverId === r.id && !d.reading && d.status !== 'REJECTED' && (READABLE_DOCUMENT_TYPES as readonly string[]).includes(d.type))
+          .map((d) => ({ id: d.id, type: d.type as string })),
       };
     });
   }
@@ -389,7 +400,13 @@ export class OnboardingAgentService implements OnApplicationBootstrap, OnModuleD
     const p = decision.proposal as ReadProposal | null;
     if (!p?.documentId) throw new BadRequestException('This proposal has no document');
     const [d] = await this.db
-      .select({ doc: caregiverDocuments, fullName: caregivers.fullName, nic: caregivers.nic, passportNumber: caregivers.passportNumber, dateOfBirth: caregivers.dateOfBirth })
+      .select({
+        doc: caregiverDocuments,
+        fullName: caregivers.fullName,
+        nic: caregivers.nic,
+        passportNumber: caregivers.passportNumber,
+        dateOfBirth: caregivers.dateOfBirth,
+      })
       .from(caregiverDocuments)
       .innerJoin(caregivers, eq(caregivers.id, caregiverDocuments.caregiverId))
       .where(eq(caregiverDocuments.id, p.documentId))
@@ -398,14 +415,19 @@ export class OnboardingAgentService implements OnApplicationBootstrap, OnModuleD
     const mediaType = d.doc.mimeType as ChatAttachment['mediaType'];
     if (!ATTACHMENT_MEDIA_TYPES.includes(mediaType)) throw new BadRequestException('This kind of file cannot be read');
     const models = await this.models.candidates('ONBOARDING', 'SENSITIVE');
-    if (mediaType === 'application/pdf' && models.every((m) => m.provider === 'OLLAMA')) throw new BadRequestException('The model set up reads images only, not PDF files - staff to check this one');
+    if (mediaType === 'application/pdf' && models.every((m) => m.provider === 'OLLAMA'))
+      throw new BadRequestException('The model set up reads images only, not PDF files - staff to check this one');
     const buffer = await this.storage.download(d.doc.storageKey);
     const answer = await this.models.chat({
       function: 'ONBOARDING',
       dataClass: 'SENSITIVE',
       messages: [
         { role: 'system', content: READ_PROMPT },
-        { role: 'user', content: 'What does this document show?', attachments: [{ mediaType, base64: buffer.toString('base64'), filename: `document.${mediaType.split('/')[1]}` }] },
+        {
+          role: 'user',
+          content: 'What does this document show?',
+          attachments: [{ mediaType, base64: buffer.toString('base64'), filename: `document.${mediaType.split('/')[1]}` }],
+        },
       ],
       json: true,
       temperature: 0,
@@ -418,8 +440,19 @@ export class OnboardingAgentService implements OnApplicationBootstrap, OnModuleD
       { fullName: d.fullName, nic: d.nic, passportNumber: d.passportNumber, dateOfBirth: ymd(dob) },
       colomboToday(),
     );
-    const row = { caregiverId: d.doc.caregiverId, outcome: result.outcome, checks: result.checks, expiresOn: result.expiresOn, endpointName: answer.endpointName, model: answer.model, readAt: new Date() };
-    await this.db.insert(documentReadings).values({ documentId: p.documentId, ...row }).onDuplicateKeyUpdate({ set: row });
+    const row = {
+      caregiverId: d.doc.caregiverId,
+      outcome: result.outcome,
+      checks: result.checks,
+      expiresOn: result.expiresOn,
+      endpointName: answer.endpointName,
+      model: answer.model,
+      readAt: new Date(),
+    };
+    await this.db
+      .insert(documentReadings)
+      .values({ documentId: p.documentId, ...row })
+      .onDuplicateKeyUpdate({ set: row });
     return { outcome: result.outcome, checks: result.checks.map((c) => `${c.check}:${c.result}`).join(','), model: answer.endpointName };
   };
 
@@ -432,7 +465,9 @@ export class OnboardingAgentService implements OnApplicationBootstrap, OnModuleD
     const [saved] = await this.db.select().from(onboardingFiles).where(eq(onboardingFiles.caregiverId, cg.id)).limit(1);
 
     // 1. The file: re-assembled whenever what it says changes.
-    const summary = file.checks.map((c) => `${c.key}:${c.state}${c.gaps ? `(${c.gaps.join('+')})` : ''}${c.key === 'REFERENCES' ? `(${c.confirmed}/${c.wanted})` : ''}`).join(',');
+    const summary = file.checks
+      .map((c) => `${c.key}:${c.state}${c.gaps ? `(${c.gaps.join('+')})` : ''}${c.key === 'REFERENCES' ? `(${c.confirmed}/${c.wanted})` : ''}`)
+      .join(',');
     const changed = !saved || saved.recommendation !== file.recommendation || JSON.stringify(saved.checks) !== JSON.stringify(file.checks);
     if (changed) {
       const decision = await this.automation.decide({
@@ -464,28 +499,51 @@ export class OnboardingAgentService implements OnApplicationBootstrap, OnModuleD
           action: REQUEST_DOCUMENT,
           case: ref,
           reason: `Ask ${cg.registrationNumber} for ${listDocs(file.missingDocuments)}${unclear.length ? ` (a clearer copy of ${listDocs(unclear)})` : ''}: the verification needs ${file.missingDocuments.length === 1 ? 'it' : 'them'}`,
-          proposal: { caregiverId: cg.id, registrationNumber: cg.registrationNumber, documents: file.missingDocuments, unclear, entries: now_ } satisfies DocumentProposal,
+          proposal: {
+            caregiverId: cg.id,
+            registrationNumber: cg.registrationNumber,
+            documents: file.missingDocuments,
+            unclear,
+            entries: now_,
+          } satisfies DocumentProposal,
           dedupeKey: `${cg.id}|docs|${now_.join(',')}`,
         });
         if (decision.decisionId) {
           out.decided++;
           if (decision.outcome === 'EXECUTE') await this.runOrLog(decision.decisionId, cg);
         }
-      } else if (stillMissing.length && saved?.documentsRequestedAt && !saved.documentsEscalatedAt && !saved.documentsRemindedAt && now.getTime() - saved.documentsRequestedAt.getTime() >= ONBOARDING_DOCUMENT_REMIND_DAYS * DAY && now.getTime() - saved.documentsRequestedAt.getTime() < ONBOARDING_DOCUMENT_DAYS * DAY) {
+      } else if (
+        stillMissing.length &&
+        saved?.documentsRequestedAt &&
+        !saved.documentsEscalatedAt &&
+        !saved.documentsRemindedAt &&
+        now.getTime() - saved.documentsRequestedAt.getTime() >= ONBOARDING_DOCUMENT_REMIND_DAYS * DAY &&
+        now.getTime() - saved.documentsRequestedAt.getTime() < ONBOARDING_DOCUMENT_DAYS * DAY
+      ) {
         // One reminder first. It follows an ask already sent, so it is not a new decision.
         await this.remindDocuments(cg, stillMissing, unclear, now);
         out.decided++;
-      } else if (stillMissing.length && saved?.documentsRequestedAt && !saved.documentsEscalatedAt && now.getTime() - saved.documentsRequestedAt.getTime() >= ONBOARDING_DOCUMENT_DAYS * DAY) {
+      } else if (
+        stillMissing.length &&
+        saved?.documentsRequestedAt &&
+        !saved.documentsEscalatedAt &&
+        now.getTime() - saved.documentsRequestedAt.getTime() >= ONBOARDING_DOCUMENT_DAYS * DAY
+      ) {
         await this.db.update(onboardingFiles).set({ documentsEscalatedAt: now }).where(eq(onboardingFiles.caregiverId, cg.id));
         await this.automation.setHandoverNote(ref, {
           done: `Asked ${cg.registrationNumber} for ${listDocs(asked)} ${ONBOARDING_DOCUMENT_DAYS} days ago`,
           waiting: `Staff: still not uploaded - ${listDocs(stillMissing)}; phone the caregiver`,
           next: 'Update the verification file when they upload',
         });
-        await this.tellStaff(`Documents not received: ${cg.registrationNumber}`, [
-          `${cg.registrationNumber} was asked ${ONBOARDING_DOCUMENT_DAYS} days ago for ${listDocs(asked)}${saved.documentsRemindedAt ? ', and reminded once,' : ''} and has not uploaded ${listDocs(stillMissing)}.`,
-          'Phone the caregiver. The onboarding agent will not ask again.',
-        ], cg.id, `onboarding docs ${cg.id}`);
+        await this.tellStaff(
+          `Documents not received: ${cg.registrationNumber}`,
+          [
+            `${cg.registrationNumber} was asked ${ONBOARDING_DOCUMENT_DAYS} days ago for ${listDocs(asked)}${saved.documentsRemindedAt ? ', and reminded once,' : ''} and has not uploaded ${listDocs(stillMissing)}.`,
+            'Phone the caregiver. The onboarding agent will not ask again.',
+          ],
+          cg.id,
+          `onboarding docs ${cg.id}`,
+        );
         out.staff++;
       }
     }
@@ -493,7 +551,11 @@ export class OnboardingAgentService implements OnApplicationBootstrap, OnModuleD
     // 3. Referees: each asked once; staff after seven days without an answer (one note naming them all).
     const silent: string[] = [];
     for (const r of refs) {
-      const state = referenceState({ status: r.verificationStatus, answer: (r.confirmAnswer as ReferenceAnswer | null) ?? null, sentAt: r.confirmSentAt?.toISOString() ?? null });
+      const state = referenceState({
+        status: r.verificationStatus,
+        answer: (r.confirmAnswer as ReferenceAnswer | null) ?? null,
+        sentAt: r.confirmSentAt?.toISOString() ?? null,
+      });
       if (state === 'NOT_ASKED' && r.verificationStatus === 'PENDING') {
         const decision = await this.automation.decide({
           action: FOLLOW_UP,
@@ -530,7 +592,9 @@ export class OnboardingAgentService implements OnApplicationBootstrap, OnModuleD
 
   private recommendReason(f: OnboardingFileResult): string {
     if (f.recommendation === 'READY') return 'Everything is in: ready for staff to check and decide';
-    const open = f.checks.filter((c) => c.state !== 'OK' && c.state !== 'TO_CHECK').map((c) => `${c.key.toLowerCase()} ${c.state.toLowerCase().replace('_', ' ')}`);
+    const open = f.checks
+      .filter((c) => c.state !== 'OK' && c.state !== 'TO_CHECK')
+      .map((c) => `${c.key.toLowerCase()} ${c.state.toLowerCase().replace('_', ' ')}`);
     return f.recommendation === 'CONCERNS' ? `Read before deciding: ${open.join(', ')}` : `Not ready: ${open.join(', ')}`;
   }
 
@@ -552,10 +616,15 @@ export class OnboardingAgentService implements OnApplicationBootstrap, OnModuleD
     });
     let staffEmailed = 0;
     if (turnedReady) {
-      staffEmailed = await this.tellStaff(`Ready to verify: ${p.registrationNumber}`, [
-        `${p.registrationNumber}'s documents, profile and references are in.`,
-        'Open the caregiver, check the documents and decide. The onboarding agent does not verify anyone.',
-      ], p.caregiverId, `onboarding ready ${p.caregiverId}`);
+      staffEmailed = await this.tellStaff(
+        `Ready to verify: ${p.registrationNumber}`,
+        [
+          `${p.registrationNumber}'s documents, profile and references are in.`,
+          'Open the caregiver, check the documents and decide. The onboarding agent does not verify anyone.',
+        ],
+        p.caregiverId,
+        `onboarding ready ${p.caregiverId}`,
+      );
     }
     return { recommendation: p.file.recommendation, staffEmailed };
   };
@@ -565,23 +634,50 @@ export class OnboardingAgentService implements OnApplicationBootstrap, OnModuleD
     const p = decision.proposal as DocumentProposal | null;
     if (!p?.caregiverId || !p.documents?.length) throw new BadRequestException('This proposal has no documents');
     const [cg] = await this.db
-      .select({ userId: caregivers.userId, status: caregivers.status, phone: caregivers.primaryPhone, preferred: caregivers.preferredContactMethod, accountPhone: users.phone })
+      .select({
+        userId: caregivers.userId,
+        status: caregivers.status,
+        phone: caregivers.primaryPhone,
+        preferred: caregivers.preferredContactMethod,
+        accountPhone: users.phone,
+      })
       .from(caregivers)
       .leftJoin(users, eq(users.id, caregivers.userId))
       .where(eq(caregivers.id, p.caregiverId))
       .limit(1);
-    if (!cg?.userId || !(ONBOARDING_STATUSES as readonly string[]).includes(cg.status)) throw new BadRequestException('This caregiver is no longer being onboarded');
+    if (!cg?.userId || !(ONBOARDING_STATUSES as readonly string[]).includes(cg.status))
+      throw new BadRequestException('This caregiver is no longer being onboarded');
     const now = new Date();
-    const [saved] = await this.db.select({ id: onboardingFiles.caregiverId }).from(onboardingFiles).where(eq(onboardingFiles.caregiverId, p.caregiverId)).limit(1);
+    const [saved] = await this.db
+      .select({ id: onboardingFiles.caregiverId })
+      .from(onboardingFiles)
+      .where(eq(onboardingFiles.caregiverId, p.caregiverId))
+      .limit(1);
     const unclear = p.unclear ?? [];
-    const set = { documentsRequested: (p.entries ?? p.documents.map((d) => `${d}:MISSING`)).join(','), documentsRequestedAt: now, documentsEscalatedAt: null, documentsRemindedAt: null };
+    const set = {
+      documentsRequested: (p.entries ?? p.documents.map((d) => `${d}:MISSING`)).join(','),
+      documentsRequestedAt: now,
+      documentsEscalatedAt: null,
+      documentsRemindedAt: null,
+    };
     if (saved) await this.db.update(onboardingFiles).set(set).where(eq(onboardingFiles.caregiverId, p.caregiverId));
     else await this.db.insert(onboardingFiles).values({ caregiverId: p.caregiverId, recommendation: 'NOT_READY', checks: [], assembledAt: now, ...set });
 
-    const told = await this.tellCaregiver({ userId: cg.userId, phone: cg.accountPhone ?? cg.phone, normalized: !!cg.accountPhone, preferred: cg.preferred }, p.registrationNumber, p.documents, unclear, DOC_TEXT, `onboarding docs ${p.caregiverId}`);
+    const told = await this.tellCaregiver(
+      { userId: cg.userId, phone: cg.accountPhone ?? cg.phone, normalized: !!cg.accountPhone, preferred: cg.preferred },
+      p.registrationNumber,
+      p.documents,
+      unclear,
+      DOC_TEXT,
+      `onboarding docs ${p.caregiverId}`,
+    );
     await this.automation.setHandoverNote(
       { caseType: 'CAREGIVER', caseId: p.caregiverId },
-      { done: `Asked ${p.registrationNumber} for ${listDocs(p.documents)} (${told.join(' and ')})`, waiting: `The caregiver to upload (up to ${ONBOARDING_DOCUMENT_DAYS} days)`, next: 'Update the verification file; staff if nothing comes' },
+      {
+        done: `Asked ${p.registrationNumber} for ${listDocs(p.documents)} (${told.join(' and ')})`,
+        waiting: `The caregiver to upload (up to ${ONBOARDING_DOCUMENT_DAYS} days)`,
+        next: 'Update the verification file; staff if nothing comes',
+      },
     );
     return { told };
   };
@@ -590,10 +686,21 @@ export class OnboardingAgentService implements OnApplicationBootstrap, OnModuleD
     if (!cg.userId) return;
     const [acct] = await this.db.select({ phone: users.phone }).from(users).where(eq(users.id, cg.userId)).limit(1);
     await this.db.update(onboardingFiles).set({ documentsRemindedAt: now }).where(eq(onboardingFiles.caregiverId, cg.id));
-    const told = await this.tellCaregiver({ userId: cg.userId, phone: acct?.phone ?? cg.phone, normalized: !!acct?.phone, preferred: cg.preferred }, cg.registrationNumber, documents, unclear, DOC_REMIND_TEXT, `onboarding remind ${cg.id}`);
+    const told = await this.tellCaregiver(
+      { userId: cg.userId, phone: acct?.phone ?? cg.phone, normalized: !!acct?.phone, preferred: cg.preferred },
+      cg.registrationNumber,
+      documents,
+      unclear,
+      DOC_REMIND_TEXT,
+      `onboarding remind ${cg.id}`,
+    );
     await this.automation.setHandoverNote(
       { caseType: 'CAREGIVER', caseId: cg.id },
-      { done: `Asked ${cg.registrationNumber} for ${listDocs(documents)}, and reminded them once (${told.join(' and ')})`, waiting: `The caregiver to upload (staff are told after ${ONBOARDING_DOCUMENT_DAYS} days)`, next: 'Update the verification file; staff if nothing comes' },
+      {
+        done: `Asked ${cg.registrationNumber} for ${listDocs(documents)}, and reminded them once (${told.join(' and ')})`,
+        waiting: `The caregiver to upload (staff are told after ${ONBOARDING_DOCUMENT_DAYS} days)`,
+        next: 'Update the verification file; staff if nothing comes',
+      },
     );
   }
 
@@ -606,7 +713,8 @@ export class OnboardingAgentService implements OnApplicationBootstrap, OnModuleD
     text: Record<Lang, { title: string; body: string }>,
     label: string,
   ): Promise<string[]> {
-    const what = (lang: Lang) => documents.map((d) => (unclear.includes(d) ? CLEARER[lang].replace('{doc}', DOC_WORDS[lang][d]) : DOC_WORDS[lang][d])).join(', ');
+    const what = (lang: Lang) =>
+      documents.map((d) => (unclear.includes(d) ? CLEARER[lang].replace('{doc}', DOC_WORDS[lang][d]) : DOC_WORDS[lang][d])).join(', ');
     const words = (lang: Lang) => ({ title: text[lang].title, body: text[lang].body.replace('{what}', what(lang)) });
     this.notices.notify([to.userId], words, '/documents', label);
     const told = ['bell'];
@@ -656,7 +764,11 @@ export class OnboardingAgentService implements OnApplicationBootstrap, OnModuleD
         r.ref.email,
         {
           subject: 'A reference you gave',
-          blocks: LANGS.map((l) => ({ lang: l, heading: l === 'en' ? 'A reference you gave' : l === 'si' ? 'ඔබ ලබා දුන් යොමුවක්' : 'நீங்கள் வழங்கிய பரிந்துரை', paragraphs: [text(l).replace(` ${url}`, '')] })),
+          blocks: LANGS.map((l) => ({
+            lang: l,
+            heading: l === 'en' ? 'A reference you gave' : l === 'si' ? 'ඔබ ලබා දුන් යොමුවක්' : 'நீங்கள் வழங்கிய பரிந்துரை',
+            paragraphs: [text(l).replace(` ${url}`, '')],
+          })),
           cta: { label: 'Answer three questions', url },
         },
         `reference ${p.referenceId}`,
@@ -666,19 +778,36 @@ export class OnboardingAgentService implements OnApplicationBootstrap, OnModuleD
     if (!channel) throw new BadRequestException('This referee has no email and WhatsApp messages are not set up - phone them');
     await this.db
       .update(references)
-      .set({ confirmTokenHash: hashToken(token), confirmSentAt: new Date(), confirmChannel: channel, confirmEscalatedAt: null, verificationStatus: 'IN_PROGRESS' })
+      .set({
+        confirmTokenHash: hashToken(token),
+        confirmSentAt: new Date(),
+        confirmChannel: channel,
+        confirmEscalatedAt: null,
+        verificationStatus: 'IN_PROGRESS',
+      })
       .where(eq(references.id, p.referenceId));
     await this.automation.setHandoverNote(
       { caseType: 'CAREGIVER', caseId: p.caregiverId },
-      { done: `Asked ${firstName(r.ref.name)} to confirm the reference (${channel.toLowerCase()})`, waiting: `The referee to answer (up to ${REFERENCE_ANSWER_DAYS} days)`, next: 'Put the answer in the verification file; staff if there is none' },
+      {
+        done: `Asked ${firstName(r.ref.name)} to confirm the reference (${channel.toLowerCase()})`,
+        waiting: `The referee to answer (up to ${REFERENCE_ANSWER_DAYS} days)`,
+        next: 'Put the answer in the verification file; staff if there is none',
+      },
     );
     return { channel };
   };
 
   private async staffRecipients(): Promise<string[]> {
     const settings = await this.emailSettings.getResolved();
-    if (settings.requestAlertsTo) return settings.requestAlertsTo.split(',').map((a) => a.trim()).filter(Boolean);
-    const rows = await this.db.select({ email: users.email }).from(users).where(and(inArray(users.role, ['ADMIN', 'STAFF']), eq(users.isActive, true)));
+    if (settings.requestAlertsTo)
+      return settings.requestAlertsTo
+        .split(',')
+        .map((a) => a.trim())
+        .filter(Boolean);
+    const rows = await this.db
+      .select({ email: users.email })
+      .from(users)
+      .where(and(inArray(users.role, ['ADMIN', 'STAFF']), eq(users.isActive, true)));
     return rows.map((r) => r.email!).filter(Boolean);
   }
 
@@ -689,7 +818,14 @@ export class OnboardingAgentService implements OnApplicationBootstrap, OnModuleD
     try {
       await this.email.sendNotificationEmail(
         to,
-        { subject, blocks: [{ lang: 'en', heading: subject, paragraphs: [...paragraphs, 'Sent by the onboarding agent. Take over the caregiver to stop it acting.'] }], cta: { label: 'Open the caregiver', url: `${(this.config.get<string>('CAREGIVER_WEB_URL') ?? 'http://localhost:3000/staff').replace(/\/+$/, '')}/caregivers/${caregiverId}` } },
+        {
+          subject,
+          blocks: [{ lang: 'en', heading: subject, paragraphs: [...paragraphs, 'Sent by the onboarding agent. Take over the caregiver to stop it acting.'] }],
+          cta: {
+            label: 'Open the caregiver',
+            url: `${(this.config.get<string>('CAREGIVER_WEB_URL') ?? 'http://localhost:3000/staff').replace(/\/+$/, '')}/caregivers/${caregiverId}`,
+          },
+        },
         label,
       );
       return to.length;
@@ -709,7 +845,8 @@ export class OnboardingAgentService implements OnApplicationBootstrap, OnModuleD
       .innerJoin(caregivers, eq(caregivers.id, references.caregiverId))
       .where(eq(references.confirmTokenHash, hashToken(token)))
       .limit(1);
-    if (!r || !r.ref.confirmSentAt || Date.now() - r.ref.confirmSentAt.getTime() > REFERENCE_LINK_DAYS * DAY) throw new NotFoundException('This link is not valid or has expired');
+    if (!r || !r.ref.confirmSentAt || Date.now() - r.ref.confirmSentAt.getTime() > REFERENCE_LINK_DAYS * DAY)
+      throw new NotFoundException('This link is not valid or has expired');
     return r;
   }
 
@@ -730,11 +867,22 @@ export class OnboardingAgentService implements OnApplicationBootstrap, OnModuleD
       answeredAt: now.toISOString(),
     };
     // Only the answer is recorded; the reference's verification stays with staff.
-    await this.db.update(references).set({ confirmAnswer: answer, confirmAnsweredAt: now }).where(and(eq(references.id, r.ref.id), isNull(references.confirmAnsweredAt)));
+    await this.db
+      .update(references)
+      .set({ confirmAnswer: answer, confirmAnsweredAt: now })
+      .where(and(eq(references.id, r.ref.id), isNull(references.confirmAnsweredAt)));
     await this.automation
-      .setHandoverNote({ caseType: 'CAREGIVER', caseId: r.ref.caregiverId }, { done: `${firstName(r.ref.name)} answered the reference questions`, waiting: 'Staff to read the answer in the verification file', next: 'Update the verification file' })
+      .setHandoverNote(
+        { caseType: 'CAREGIVER', caseId: r.ref.caregiverId },
+        {
+          done: `${firstName(r.ref.name)} answered the reference questions`,
+          waiting: 'Staff to read the answer in the verification file',
+          next: 'Update the verification file',
+        },
+      )
       .catch(() => undefined);
-    if ((await this.automation.gate(RECOMMEND)).mode !== 'MANUAL') await this.jobs.enqueue(ONBOARDING_CAREGIVER_JOB, { caregiverId: r.ref.caregiverId }, { maxAttempts: 3 }).catch(() => undefined);
+    if ((await this.automation.gate(RECOMMEND)).mode !== 'MANUAL')
+      await this.jobs.enqueue(ONBOARDING_CAREGIVER_JOB, { caregiverId: r.ref.caregiverId }, { maxAttempts: 3 }).catch(() => undefined);
     return { ok: true };
   }
 
@@ -755,7 +903,10 @@ export class OnboardingAgentService implements OnApplicationBootstrap, OnModuleD
       recommendation: saved.recommendation,
       checks: saved.checks,
       assembledAt: saved.assembledAt.toISOString(),
-      documentsRequested: saved.documentsRequested && saved.documentsRequestedAt ? { documents: saved.documentsRequested.split(',').map((e) => e.split(':')[0]) as CoreDocumentLabel[], at: saved.documentsRequestedAt.toISOString() } : null,
+      documentsRequested:
+        saved.documentsRequested && saved.documentsRequestedAt
+          ? { documents: saved.documentsRequested.split(',').map((e) => e.split(':')[0]) as CoreDocumentLabel[], at: saved.documentsRequestedAt.toISOString() }
+          : null,
       references: refs.map((r) => ({
         id: r.id,
         name: r.name,
@@ -764,7 +915,15 @@ export class OnboardingAgentService implements OnApplicationBootstrap, OnModuleD
         channel: r.confirmChannel,
         answer: (r.confirmAnswer as ReferenceAnswer | null) ?? null,
       })),
-      readings: readings.map(({ r, type }) => ({ documentId: r.documentId, documentType: type, outcome: r.outcome, checks: r.checks, expiresOn: r.expiresOn, model: r.endpointName, readAt: r.readAt.toISOString() })),
+      readings: readings.map(({ r, type }) => ({
+        documentId: r.documentId,
+        documentType: type,
+        outcome: r.outcome,
+        checks: r.checks,
+        expiresOn: r.expiresOn,
+        model: r.endpointName,
+        readAt: r.readAt.toISOString(),
+      })),
     };
   }
 
@@ -779,7 +938,14 @@ export class OnboardingAgentService implements OnApplicationBootstrap, OnModuleD
     const open = await this.db
       .select()
       .from(agentDecisions)
-      .where(and(inArray(agentDecisions.action, [RECOMMEND, REQUEST_DOCUMENT, FOLLOW_UP, READ]), eq(agentDecisions.outcome, 'SHADOW'), isNull(agentDecisions.staffVerdict), eq(agentDecisions.caseType, 'CAREGIVER')))
+      .where(
+        and(
+          inArray(agentDecisions.action, [RECOMMEND, REQUEST_DOCUMENT, FOLLOW_UP, READ]),
+          eq(agentDecisions.outcome, 'SHADOW'),
+          isNull(agentDecisions.staffVerdict),
+          eq(agentDecisions.caseType, 'CAREGIVER'),
+        ),
+      )
       .limit(500);
     const mine = open.filter((d) => !only?.length || only.includes(d.caseId!));
     if (!mine.length) return 0;
@@ -803,7 +969,11 @@ export class OnboardingAgentService implements OnApplicationBootstrap, OnModuleD
         else if (decided) verdict = 'DIFFERED';
       } else if (d.action === READ) {
         // A reading only informs: scored once staff have checked the document themselves (or it was removed).
-        const [doc] = await this.db.select({ status: caregiverDocuments.verificationStatus }).from(caregiverDocuments).where(eq(caregiverDocuments.id, (d.proposal as ReadProposal | null)?.documentId ?? '')).limit(1);
+        const [doc] = await this.db
+          .select({ status: caregiverDocuments.verificationStatus })
+          .from(caregiverDocuments)
+          .where(eq(caregiverDocuments.id, (d.proposal as ReadProposal | null)?.documentId ?? ''))
+          .limit(1);
         if (!doc) verdict = 'DIFFERED';
         else if (doc.status === 'VERIFIED' || doc.status === 'REJECTED') verdict = 'AGREED';
       } else {
@@ -813,7 +983,12 @@ export class OnboardingAgentService implements OnApplicationBootstrap, OnModuleD
         else if (decided) verdict = 'DIFFERED';
       }
       if (!verdict) continue;
-      await this.automation.review(d.id, verdict, verdict === 'AGREED' ? 'Scored automatically: staff did the same' : 'Scored automatically: staff went another way', agent);
+      await this.automation.review(
+        d.id,
+        verdict,
+        verdict === 'AGREED' ? 'Scored automatically: staff did the same' : 'Scored automatically: staff went another way',
+        agent,
+      );
       scored++;
     }
     return scored;

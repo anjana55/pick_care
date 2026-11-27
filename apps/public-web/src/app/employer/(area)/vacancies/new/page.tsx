@@ -36,7 +36,14 @@ export default function NewVacancyPage() {
       {account && account.status !== 'VERIFIED' ? (
         <p className="rounded-lg border border-border bg-white p-4 text-sm text-ink/70">{t('employer.vacancies.verifyFirst')}</p>
       ) : (
-        account && <VacancyForm defaultCountry={account.country} pending={save.isPending} error={save.error} onSubmit={(body) => save.mutate({ body }, { onSuccess: (v) => setReference(v.reference) })} />
+        account && (
+          <VacancyForm
+            defaultCountry={account.country}
+            pending={save.isPending}
+            error={save.error}
+            onSubmit={(body) => save.mutate({ body }, { onSuccess: (v) => setReference(v.reference) })}
+          />
+        )
       )}
     </div>
   );

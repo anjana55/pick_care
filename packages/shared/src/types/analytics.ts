@@ -83,7 +83,6 @@ export function analyticsAllowedOn(pathname: string | null | undefined): boolean
  */
 export function normalizeAnalyticsConfig(raw: unknown): PublicAnalyticsConfig {
   const r = (raw && typeof raw === 'object' ? raw : {}) as Partial<Record<keyof PublicAnalyticsConfig, unknown>>;
-  const measurementId =
-    typeof r.measurementId === 'string' && GA_MEASUREMENT_ID_RE.test(r.measurementId) ? r.measurementId : null;
+  const measurementId = typeof r.measurementId === 'string' && GA_MEASUREMENT_ID_RE.test(r.measurementId) ? r.measurementId : null;
   return r.enabled === true && measurementId ? { enabled: true, measurementId } : DISABLED_ANALYTICS;
 }

@@ -23,12 +23,24 @@ import type { BillingAdjustmentView, IssueReportView } from '@/lib/api/types';
  * told. An adjustment not yet on a document can be closed by hand: settled
  * some other way (a cash refund, a transfer) or dropped.
  */
-export function BookingCorrections({ bookingId, canCorrect, onCorrectFrom }: { bookingId: string; canCorrect: boolean; onCorrectFrom: (issue: IssueReportView) => void }) {
+export function BookingCorrections({
+  bookingId,
+  canCorrect,
+  onCorrectFrom,
+}: {
+  bookingId: string;
+  canCorrect: boolean;
+  onCorrectFrom: (issue: IssueReportView) => void;
+}) {
   const { t, locale } = useTranslation();
   const { data } = useBookingCorrections(bookingId);
   if (!data || (data.amendments.length === 0 && data.adjustments.length === 0 && data.reports.length === 0)) return null;
   const docTitle = (kind: 'INVOICE' | 'PAYOUT', label: string | null) =>
-    kind === 'INVOICE' ? (label ? t('bookings.correct.invoice', { label }) : t('bookings.correct.draftInvoice')) : t('bookings.correct.payout', { label: label ?? '' });
+    kind === 'INVOICE'
+      ? label
+        ? t('bookings.correct.invoice', { label })
+        : t('bookings.correct.draftInvoice')
+      : t('bookings.correct.payout', { label: label ?? '' });
 
   return (
     <Card>
@@ -96,7 +108,17 @@ export function BookingCorrections({ bookingId, canCorrect, onCorrectFrom }: { b
   );
 }
 
-function ReportRow({ bookingId, report: r, canCorrect, onCorrect }: { bookingId: string; report: IssueReportView; canCorrect: boolean; onCorrect: () => void }) {
+function ReportRow({
+  bookingId,
+  report: r,
+  canCorrect,
+  onCorrect,
+}: {
+  bookingId: string;
+  report: IssueReportView;
+  canCorrect: boolean;
+  onCorrect: () => void;
+}) {
   const { t, locale } = useTranslation();
   const close = useCloseIssueReport(bookingId);
   const [answering, setAnswering] = useState(false);
@@ -151,9 +173,21 @@ function ReportRow({ bookingId, report: r, canCorrect, onCorrect }: { bookingId:
               </label>
             ))}
           </div>
-          <Textarea rows={2} maxLength={500} autoFocus placeholder={t('bookings.issues.notePlaceholder')} aria-label={t('bookings.issues.notePlaceholder')} value={note} onChange={(e) => setNote(e.target.value)} />
+          <Textarea
+            rows={2}
+            maxLength={500}
+            autoFocus
+            placeholder={t('bookings.issues.notePlaceholder')}
+            aria-label={t('bookings.issues.notePlaceholder')}
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+          />
           <div className="flex gap-2">
-            <Button size="sm" disabled={note.trim().length < 3 || close.isPending} onClick={() => close.mutate({ id: r.id, status, note: note.trim() }, { onSuccess: () => setAnswering(false) })}>
+            <Button
+              size="sm"
+              disabled={note.trim().length < 3 || close.isPending}
+              onClick={() => close.mutate({ id: r.id, status, note: note.trim() }, { onSuccess: () => setAnswering(false) })}
+            >
               {t('bookings.issues.send')}
             </Button>
             <Button size="sm" variant="secondary" onClick={() => setAnswering(false)}>
@@ -226,7 +260,11 @@ function AdjustmentRow({ bookingId, adjustment: a }: { bookingId: string; adjust
             value={reason}
             onChange={(e) => setReason(e.target.value)}
           />
-          <Button size="sm" disabled={!reason.trim() || close.isPending} onClick={() => close.mutate({ id: a.id, outcome: mode, reason: reason.trim() }, { onSuccess: () => setMode(null) })}>
+          <Button
+            size="sm"
+            disabled={!reason.trim() || close.isPending}
+            onClick={() => close.mutate({ id: a.id, outcome: mode, reason: reason.trim() }, { onSuccess: () => setMode(null) })}
+          >
             {t('common.save')}
           </Button>
           <Button size="sm" variant="secondary" onClick={() => setMode(null)}>

@@ -70,7 +70,10 @@ export function EmployerForm({ employer, onDone }: { employer?: EmployerAdminRow
           sendPasswordLink: sendLink,
           status,
         },
-        { onSuccess: (res) => onDone(res.passwordLinkSent ? t('overseasAdmin.employer.createdLinkSent', { email: res.email ?? '' }) : t('overseasAdmin.employer.created')) },
+        {
+          onSuccess: (res) =>
+            onDone(res.passwordLinkSent ? t('overseasAdmin.employer.createdLinkSent', { email: res.email ?? '' }) : t('overseasAdmin.employer.created')),
+        },
       );
     }
   };
@@ -89,11 +92,15 @@ export function EmployerForm({ employer, onDone }: { employer?: EmployerAdminRow
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <Label htmlFor="em-org" required>{t('international.edit.organisation')}</Label>
+          <Label htmlFor="em-org" required>
+            {t('international.edit.organisation')}
+          </Label>
           <Input id="em-org" value={v.organisationName} onChange={(e) => set('organisationName', e.target.value)} maxLength={200} required />
         </div>
         <div>
-          <Label htmlFor="em-type" required>{t('international.detail.type')}</Label>
+          <Label htmlFor="em-type" required>
+            {t('international.detail.type')}
+          </Label>
           <Select id="em-type" value={v.organisationType} onChange={(e) => set('organisationType', e.target.value as EmployerType)}>
             {employerTypeValues.map((k) => (
               <option key={k} value={k}>
@@ -103,7 +110,9 @@ export function EmployerForm({ employer, onDone }: { employer?: EmployerAdminRow
           </Select>
         </div>
         <div>
-          <Label htmlFor="em-country" required>{t('international.enquiries.country')}</Label>
+          <Label htmlFor="em-country" required>
+            {t('international.enquiries.country')}
+          </Label>
           <Select id="em-country" value={v.country} onChange={(e) => set('country', e.target.value as CountryCode)} required>
             <option value="">{t('overseasAdmin.chooseCountry')}</option>
             {countries.map((c) => (
@@ -114,11 +123,15 @@ export function EmployerForm({ employer, onDone }: { employer?: EmployerAdminRow
           </Select>
         </div>
         <div>
-          <Label htmlFor="em-contact" required>{t('international.detail.contact')}</Label>
+          <Label htmlFor="em-contact" required>
+            {t('international.detail.contact')}
+          </Label>
           <Input id="em-contact" value={v.contactName} onChange={(e) => set('contactName', e.target.value)} maxLength={150} required />
         </div>
         <div>
-          <Label htmlFor="em-email" required>{t('overseasAdmin.employer.signInEmail')}</Label>
+          <Label htmlFor="em-email" required>
+            {t('overseasAdmin.employer.signInEmail')}
+          </Label>
           <Input id="em-email" type="email" value={v.email} onChange={(e) => set('email', e.target.value)} maxLength={255} required />
           {employer && <p className="mt-1 text-xs text-ink/50">{t('overseasAdmin.employer.emailHint')}</p>}
         </div>

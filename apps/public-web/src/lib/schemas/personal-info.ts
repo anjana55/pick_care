@@ -15,7 +15,6 @@ export type PersonalInfoValues = z.infer<ReturnType<typeof makePersonalInfoSchem
  */
 export const UNSET_ID = '' as unknown as number;
 
-
 const GENDERS = ['MALE', 'FEMALE', 'OTHER'] as const;
 const CIVIL_STATUSES = ['SINGLE', 'MARRIED', 'DIVORCED', 'WIDOWED', 'OTHER'] as const;
 export const CONTACT_METHODS = ['PHONE_CALL', 'WHATSAPP', 'EMAIL'] as const;
@@ -24,7 +23,12 @@ export function makePersonalInfoSchema(t: (key: string) => string) {
   const required = (field: string) => t(`personalInfo.validation.${field}.required`);
   const invalid = (field: string) => t(`personalInfo.validation.${field}.invalid`);
   // Digits, not just length: a name typed into a phone box is 9+ characters too (isPhoneNumber).
-  const phone = (field: string) => z.string().trim().min(1, required(field)).refine((v) => isPhoneNumber(v), invalid(field));
+  const phone = (field: string) =>
+    z
+      .string()
+      .trim()
+      .min(1, required(field))
+      .refine((v) => isPhoneNumber(v), invalid(field));
 
   return z.object({
     fullName: z.string().trim().min(1, required('fullName')).min(2, invalid('fullName')),
@@ -39,7 +43,11 @@ export function makePersonalInfoSchema(t: (key: string) => string) {
     heightIn: z.coerce.number().optional(),
     weightKg: z.coerce.number().optional(),
     primaryPhone: phone('primaryPhone'),
-    secondaryPhone: z.string().trim().optional().refine((v) => !v || isPhoneNumber(v), invalid('secondaryPhone')),
+    secondaryPhone: z
+      .string()
+      .trim()
+      .optional()
+      .refine((v) => !v || isPhoneNumber(v), invalid('secondaryPhone')),
     emergencyContactName: z.string().trim().min(1, required('emergencyContactName')).min(2, invalid('emergencyContactName')),
     emergencyContactNumber: phone('emergencyContactNumber'),
     emergencyContactRelationship: z.string().trim().min(1, required('emergencyContactRelationship')).min(2, invalid('emergencyContactRelationship')),

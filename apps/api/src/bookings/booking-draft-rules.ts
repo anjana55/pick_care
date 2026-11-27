@@ -77,7 +77,11 @@ export function draftBooking(input: DraftInput): DraftResult {
       draft.rateAmount = input.clientRate.toFixed(2);
     }
   }
-  const rates = draft.rateAmount ? 'at the rates agreed in the offer' : draft.payRateAmount ? "at the caregiver's agreed pay; the client's rate is still to be set" : 'rates still to be agreed';
+  const rates = draft.rateAmount
+    ? 'at the rates agreed in the offer'
+    : draft.payRateAmount
+      ? "at the caregiver's agreed pay; the client's rate is still to be set"
+      : 'rates still to be agreed';
   const summary = `${WORDS[scheduleType]}, ${daysInWords(preset.days)}, ${preset.start}-${preset.end}, from ${startDate} for ${FIRST_BOOKING_DAYS} days (${shifts} shifts), ${rates}`;
   return { ok: true, draft, summary };
 }

@@ -1,11 +1,6 @@
 import type { ClientStatus } from './api/types';
 
-export const CLIENT_STATUS_OPTIONS: ClientStatus[] = [
-  'PENDING_REVIEW',
-  'ACTIVE',
-  'INACTIVE',
-  'SUSPENDED',
-];
+export const CLIENT_STATUS_OPTIONS: ClientStatus[] = ['PENDING_REVIEW', 'ACTIVE', 'INACTIVE', 'SUSPENDED'];
 
 const TRANSITIONS: Record<ClientStatus, ClientStatus[]> = {
   PENDING_REVIEW: ['ACTIVE', 'INACTIVE'],

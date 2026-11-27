@@ -80,7 +80,13 @@ export default function Register() {
     const name = next.method === 'EMAIL' ? null : next.identity.name;
     if (side === 'client') {
       setClientForm(startClientForm({ name, whatsapp: next.method === 'WHATSAPP', fromSearch }));
-      setAnswered(new Set(Object.entries(fromSearch).filter(([, v]) => v !== undefined).map(([k]) => k as keyof IntakeFromSearch)));
+      setAnswered(
+        new Set(
+          Object.entries(fromSearch)
+            .filter(([, v]) => v !== undefined)
+            .map(([k]) => k as keyof IntakeFromSearch),
+        ),
+      );
     } else {
       setCaregiverForm(startCaregiverForm(name));
     }
@@ -134,10 +140,17 @@ export default function Register() {
             <Text accessibilityRole="header" style={[styles.heading, { color: colors.ink, textAlign: 'center' }]}>
               {t('signup.checkEmailTitle')}
             </Text>
-            <Text style={{ fontSize: 17, lineHeight: 25, color: colors.ink, textAlign: 'center' }}>{t('signup.checkEmailBody', { email: emailDone.email })}</Text>
-            {emailDone.registrationNumber ? <Text style={{ color: colors.muted }}>{t('signup.regNumber', { number: emailDone.registrationNumber })}</Text> : null}
+            <Text style={{ fontSize: 17, lineHeight: 25, color: colors.ink, textAlign: 'center' }}>
+              {t('signup.checkEmailBody', { email: emailDone.email })}
+            </Text>
+            {emailDone.registrationNumber ? (
+              <Text style={{ color: colors.muted }}>{t('signup.regNumber', { number: emailDone.registrationNumber })}</Text>
+            ) : null}
           </Card>
-          <Button label={t('signup.signIn')} onPress={() => router.replace({ pathname: '/sign-in', params: { role: side, ...(returnTo ? { returnTo } : {}) } })} />
+          <Button
+            label={t('signup.signIn')}
+            onPress={() => router.replace({ pathname: '/sign-in', params: { role: side, ...(returnTo ? { returnTo } : {}) } })}
+          />
         </ScrollView>
       </Screen>
     );
@@ -157,10 +170,19 @@ export default function Register() {
             <Text accessibilityRole="header" style={[styles.heading, { color: colors.ink }]}>
               {side === 'client' ? t('signup.detailsTitleClient') : t('signup.detailsTitleCaregiver')}
             </Text>
-            {side === 'client' && answered.size ? <Text style={{ fontSize: 16, lineHeight: 23, color: colors.muted }}>{t('signup.detailsSubtitle')}</Text> : null}
+            {side === 'client' && answered.size ? (
+              <Text style={{ fontSize: 16, lineHeight: 23, color: colors.muted }}>{t('signup.detailsSubtitle')}</Text>
+            ) : null}
 
             {side === 'client' ? (
-              <ClientDetails form={clientForm} setForm={setClientForm} askPhone={askPhone} hasEmail={hasEmail} answered={answered} problems={checked ? problems : null} />
+              <ClientDetails
+                form={clientForm}
+                setForm={setClientForm}
+                askPhone={askPhone}
+                hasEmail={hasEmail}
+                answered={answered}
+                problems={checked ? problems : null}
+              />
             ) : (
               <CaregiverDetails form={caregiverForm} setForm={setCaregiverForm} askPhone={askPhone} problems={checked ? problems : null} />
             )}

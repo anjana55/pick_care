@@ -56,7 +56,11 @@ export class CommunicationPreferencesService {
     return this.view(await this.load(subject));
   }
 
-  async update(subject: Subject, dto: UpdateCommunicationPreferences, actor: { userId: string; self: boolean; ip?: string | null }): Promise<CommunicationPreferences> {
+  async update(
+    subject: Subject,
+    dto: UpdateCommunicationPreferences,
+    actor: { userId: string; self: boolean; ip?: string | null },
+  ): Promise<CommunicationPreferences> {
     const before = await this.load(subject);
     const method = dto.preferredContactMethod !== undefined ? dto.preferredContactMethod : before.preferredContactMethod;
 
@@ -118,10 +122,22 @@ export class CommunicationPreferencesService {
   }
 
   private async load(subject: Subject): Promise<Loaded> {
-    const account = { userId: users.id, email: users.email, accountPhone: users.phone, pushEnabled: users.pushEnabled, reminderMessagesEnabled: users.reminderMessagesEnabled };
+    const account = {
+      userId: users.id,
+      email: users.email,
+      accountPhone: users.phone,
+      pushEnabled: users.pushEnabled,
+      reminderMessagesEnabled: users.reminderMessagesEnabled,
+    };
     if (subject.kind === 'CAREGIVER') {
       const [r] = await this.db
-        .select({ personId: caregivers.id, phone: caregivers.primaryPhone, preferredContactMethod: caregivers.preferredContactMethod, autoNotifyRequests: caregivers.autoNotifyRequests, ...account })
+        .select({
+          personId: caregivers.id,
+          phone: caregivers.primaryPhone,
+          preferredContactMethod: caregivers.preferredContactMethod,
+          autoNotifyRequests: caregivers.autoNotifyRequests,
+          ...account,
+        })
         .from(caregivers)
         .leftJoin(users, eq(users.id, caregivers.userId))
         .where(and(eq(caregivers.id, subject.caregiverId), isNull(caregivers.deletedAt)))
@@ -141,7 +157,13 @@ export class CommunicationPreferencesService {
       };
     }
     const [r] = await this.db
-      .select({ personId: patients.id, phone: patients.phone, preferredContactMethod: patients.preferredContactMethod, preferredContactTime: patients.preferredContactTime, ...account })
+      .select({
+        personId: patients.id,
+        phone: patients.phone,
+        preferredContactMethod: patients.preferredContactMethod,
+        preferredContactTime: patients.preferredContactTime,
+        ...account,
+      })
       .from(patients)
       .leftJoin(users, eq(users.id, patients.userId))
       .where(eq(patients.id, subject.patientId))
@@ -164,7 +186,10 @@ export class CommunicationPreferencesService {
   private async view(l: Loaded): Promise<CommunicationPreferences> {
     let appDevices = 0;
     if (l.userId) {
-      const [d] = await this.db.select({ n: count() }).from(deviceTokens).where(and(eq(deviceTokens.userId, l.userId), isNull(deviceTokens.revokedAt)));
+      const [d] = await this.db
+        .select({ n: count() })
+        .from(deviceTokens)
+        .where(and(eq(deviceTokens.userId, l.userId), isNull(deviceTokens.revokedAt)));
       appDevices = Number(d?.n ?? 0);
     }
     return {

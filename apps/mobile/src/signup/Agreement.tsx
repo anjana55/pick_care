@@ -14,7 +14,13 @@ export function TickBox({ label, checked, onChange, error }: { label: string; ch
   const colors = useColors();
   return (
     <View style={{ gap: 4 }}>
-      <Pressable accessibilityRole="checkbox" accessibilityLabel={label} accessibilityState={{ checked }} onPress={() => onChange(!checked)} style={styles.tick}>
+      <Pressable
+        accessibilityRole="checkbox"
+        accessibilityLabel={label}
+        accessibilityState={{ checked }}
+        onPress={() => onChange(!checked)}
+        style={styles.tick}
+      >
         <Ionicons name={checked ? 'checkbox' : 'square-outline'} size={30} color={error ? colors.danger : colors.brand} />
         <Text style={{ flex: 1, fontSize: 16, lineHeight: 23, color: colors.ink }}>{label}</Text>
       </Pressable>
@@ -31,7 +37,17 @@ export function TickBox({ label, checked, onChange, error }: { label: string; ch
  * The service agreement on the registration form: its title, the full text a
  * tap away, and the tick box that accepts it.
  */
-export function AgreementBox({ side, checked, onChange, error }: { side: SignupSide; checked: boolean; onChange: (v: boolean) => void; error?: string | null }) {
+export function AgreementBox({
+  side,
+  checked,
+  onChange,
+  error,
+}: {
+  side: SignupSide;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  error?: string | null;
+}) {
   const { t, locale } = useTranslation();
   const colors = useColors();
   const { branding } = useBranding();

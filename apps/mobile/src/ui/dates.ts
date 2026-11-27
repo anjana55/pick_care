@@ -12,7 +12,6 @@ export function formatDate(value: string, locale: string): string {
   });
 }
 
-
 /**
  * Shift times are always Sri Lanka time, whatever zone the phone is in:
  * that's where the care happens and what everyone hears on the phone.

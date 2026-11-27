@@ -106,11 +106,20 @@ export function toInput(rows: EditableRow[], withTax: boolean): BillingLineInput
 }
 
 /** Totals for the rows as typed; rows that are not valid yet count as zero. */
-export function liveTotals(rows: EditableRow[], opts: { discountType?: DiscountType | null; discountValue?: string | null; taxRate?: string | null } = {}): Totals {
+export function liveTotals(
+  rows: EditableRow[],
+  opts: { discountType?: DiscountType | null; discountValue?: string | null; taxRate?: string | null } = {},
+): Totals {
   const safe = rows.map((r) =>
     rowProblem(r)
       ? { quantity: '0', unitPrice: '0', taxable: r.taxable }
-      : { quantity: r.quantity.trim(), unitPrice: r.unitPrice.trim(), discountType: r.discountType, discountValue: r.discountValue.trim() || null, taxable: r.taxable },
+      : {
+          quantity: r.quantity.trim(),
+          unitPrice: r.unitPrice.trim(),
+          discountType: r.discountType,
+          discountValue: r.discountValue.trim() || null,
+          taxable: r.taxable,
+        },
   );
   const dv = opts.discountValue && AMOUNT.test(opts.discountValue.trim()) ? opts.discountValue.trim() : null;
   return computeTotals({ lines: safe, discountType: dv ? opts.discountType : null, discountValue: dv, taxRate: opts.taxRate });
@@ -180,7 +189,13 @@ export function LineEditor({
                         '—'
                       )
                     ) : (
-                      <Input type="date" className="h-8 w-32 px-2" value={r.serviceDate ?? ''} onChange={(e) => set(r.key, { serviceDate: e.target.value || null })} aria-label={t('billing.lines.date')} />
+                      <Input
+                        type="date"
+                        className="h-8 w-32 px-2"
+                        value={r.serviceDate ?? ''}
+                        onChange={(e) => set(r.key, { serviceDate: e.target.value || null })}
+                        aria-label={t('billing.lines.date')}
+                      />
                     )}
                   </td>
                   <td className="px-3 py-2">
@@ -198,7 +213,13 @@ export function LineEditor({
                     {readOnly ? (
                       <span className="text-ink">{r.description}</span>
                     ) : (
-                      <Input className="h-8 px-2" maxLength={300} value={r.description} onChange={(e) => set(r.key, { description: e.target.value })} aria-label={t('billing.lines.description')} />
+                      <Input
+                        className="h-8 px-2"
+                        maxLength={300}
+                        value={r.description}
+                        onChange={(e) => set(r.key, { description: e.target.value })}
+                        aria-label={t('billing.lines.description')}
+                      />
                     )}
                     {problem && <p className="mt-1 text-xs text-danger">{t(problem)}</p>}
                     {unpriced && !problem && <p className="mt-1 text-xs text-accent">{t('billing.lines.unpriced')}</p>}
@@ -207,14 +228,25 @@ export function LineEditor({
                     {readOnly ? (
                       r.quantity
                     ) : (
-                      <Input inputMode="decimal" className="h-8 px-2 text-right" value={r.quantity} onChange={(e) => set(r.key, { quantity: e.target.value })} aria-label={t('billing.lines.quantity')} />
+                      <Input
+                        inputMode="decimal"
+                        className="h-8 px-2 text-right"
+                        value={r.quantity}
+                        onChange={(e) => set(r.key, { quantity: e.target.value })}
+                        aria-label={t('billing.lines.quantity')}
+                      />
                     )}
                   </td>
                   <td className="px-3 py-2">
                     {readOnly || r.kind === 'SHIFT' ? (
                       <span className="text-ink/70">{t(`billing.unit.${r.unit}`)}</span>
                     ) : (
-                      <Select className="h-8 px-2" value={r.unit} onChange={(e) => set(r.key, { unit: e.target.value as BillingUnit })} aria-label={t('billing.lines.unit')}>
+                      <Select
+                        className="h-8 px-2"
+                        value={r.unit}
+                        onChange={(e) => set(r.key, { unit: e.target.value as BillingUnit })}
+                        aria-label={t('billing.lines.unit')}
+                      >
                         {BILLING_UNITS.map((u) => (
                           <option key={u} value={u}>
                             {t(`billing.unit.${u}`)}
@@ -345,7 +377,8 @@ export function TotalsBlock({
   return (
     <dl className="ml-auto w-full max-w-sm text-sm">
       {row(t('billing.totals.subtotal'), formatLkr(totals.subtotal))}
-      {Number(totals.discount) > 0 && row(discountLabel ? `${t('billing.totals.discount')} (${discountLabel})` : t('billing.totals.discount'), `−${formatLkr(totals.discount)}`)}
+      {Number(totals.discount) > 0 &&
+        row(discountLabel ? `${t('billing.totals.discount')} (${discountLabel})` : t('billing.totals.discount'), `−${formatLkr(totals.discount)}`)}
       {taxLabel && row(taxLabel, formatLkr(totals.tax))}
       {row(t('billing.totals.total'), formatLkr(totals.total), true)}
       {paid !== undefined && Number(paid) !== 0 && row(t('billing.totals.paid'), `−${formatLkr(paid)}`)}

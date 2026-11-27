@@ -16,9 +16,7 @@ export function HowItWorksSection() {
       <div className="mt-6 grid gap-6 sm:grid-cols-3">
         {steps.map((step, i) => (
           <div key={step.title} className="text-center">
-            <div className="mx-auto mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-brand text-sm font-semibold text-white">
-              {i + 1}
-            </div>
+            <div className="mx-auto mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-brand text-sm font-semibold text-white">{i + 1}</div>
             <h3 className="text-sm font-semibold text-ink">{step.title}</h3>
             <p className="mt-1 text-sm text-ink/60">{step.body}</p>
           </div>

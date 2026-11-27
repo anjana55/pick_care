@@ -34,8 +34,12 @@ export const bankAccounts = mysqlTable('bank_accounts', {
   accountName: varchar('account_name', { length: 200 }).notNull(),
   accountNumber: varchar('account_number', { length: 40 }).notNull(),
   active: boolean('active').notNull().default(true),
-  createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+  createdAt: datetime('created_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: datetime('updated_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
 });
 
 /**
@@ -79,8 +83,12 @@ export const billingSettings = mysqlTable('billing_settings', {
   payhereNotifyBaseUrl: varchar('payhere_notify_base_url', { length: 255 }),
 
   updatedBy: varchar('updated_by', { length: 36 }),
-  createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+  createdAt: datetime('created_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: datetime('updated_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
 });
 
 /**
@@ -143,8 +151,12 @@ export const invoices = mysqlTable(
     paidAt: datetime('paid_at'),
     voidedAt: datetime('voided_at'),
     voidReason: varchar('void_reason', { length: 500 }),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     patientIdx: index('invoices_patient_idx').on(table.patientId, table.status),
@@ -224,7 +236,9 @@ export const invoicePayments = mysqlTable(
     externalId: varchar('external_id', { length: 80 }),
     recordedByUserId: varchar('recorded_by_user_id', { length: 36 }),
     // Milliseconds: two entries made in one second still list in the order they were made.
-    createdAt: datetime('created_at', { fsp: 3 }).notNull().default(sql`CURRENT_TIMESTAMP(3)`),
+    createdAt: datetime('created_at', { fsp: 3 })
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP(3)`),
   },
   (table) => ({
     invoiceIdx: index('invoice_payments_invoice_idx').on(table.invoiceId),
@@ -250,8 +264,12 @@ export const payhereCheckouts = mysqlTable(
     method: varchar('method', { length: 20 }),
     statusMessage: varchar('status_message', { length: 255 }),
     createdByUserId: varchar('created_by_user_id', { length: 36 }),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     invoiceIdx: index('payhere_checkouts_invoice_idx').on(table.invoiceId),
@@ -282,7 +300,9 @@ export const invoiceEvents = mysqlTable(
     type: mysqlEnum('type', invoiceEventTypeEnum).notNull(),
     note: text('note'),
     actorUserId: varchar('actor_user_id', { length: 36 }),
-    createdAt: datetime('created_at', { fsp: 3 }).notNull().default(sql`CURRENT_TIMESTAMP(3)`),
+    createdAt: datetime('created_at', { fsp: 3 })
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP(3)`),
   },
   (table) => ({
     invoiceIdx: index('invoice_events_invoice_idx').on(table.invoiceId, table.createdAt),
@@ -323,8 +343,12 @@ export const payoutStatements = mysqlTable(
     paidByUserId: varchar('paid_by_user_id', { length: 36 }),
     voidedAt: datetime('voided_at'),
     voidReason: varchar('void_reason', { length: 500 }),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     caregiverIdx: index('payout_statements_caregiver_idx').on(table.caregiverId, table.periodStart),
@@ -398,7 +422,9 @@ export const billingAdjustments = mysqlTable(
     closedAt: datetime('closed_at'),
     closedByUserId: varchar('closed_by_user_id', { length: 36 }),
     createdByUserId: varchar('created_by_user_id', { length: 36 }),
-    createdAt: datetime('created_at', { fsp: 3 }).notNull().default(sql`CURRENT_TIMESTAMP(3)`),
+    createdAt: datetime('created_at', { fsp: 3 })
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP(3)`),
   },
   (table) => ({
     patientIdx: index('billing_adjustments_patient_idx').on(table.patientId, table.status),

@@ -66,11 +66,7 @@ export default function Requests() {
         ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
         renderItem={({ item }) => <RequestCard request={item} />}
       />
-      <RequestSheet
-        visible={findForMe}
-        onClose={() => setFindForMe(false)}
-        onViewRequests={() => setFindForMe(false)}
-      />
+      <RequestSheet visible={findForMe} onClose={() => setFindForMe(false)} onViewRequests={() => setFindForMe(false)} />
     </View>
   );
 }
@@ -99,9 +95,7 @@ function RequestCard({ request }: { request: ClientCareRequest }) {
         </Text>
       </View>
       <Text style={{ fontSize: 15, lineHeight: 22, color: colors.ink }}>{t(`account.requests.statusHelp.${request.status}`)}</Text>
-      {request.caregiverPublicId && !request.caregiver ? (
-        <Text style={{ fontSize: 14, color: colors.muted }}>{t('account.requests.notOnline')}</Text>
-      ) : null}
+      {request.caregiverPublicId && !request.caregiver ? <Text style={{ fontSize: 14, color: colors.muted }}>{t('account.requests.notOnline')}</Text> : null}
       <Text style={{ fontSize: 13, color: colors.muted }}>
         {t('account.requests.reference', { reference: request.reference })} · {t('account.requests.sentOn', { date: formatDate(request.createdAt, locale) })}
         {request.desiredStartDate ? ` · ${t('account.requests.startsOn', { date: formatDate(request.desiredStartDate, locale) })}` : ''}
@@ -126,7 +120,11 @@ function RequestCard({ request }: { request: ClientCareRequest }) {
             </Text>
             <View style={styles.row}>
               <View style={{ flex: 1 }}>
-                <Button label={t('account.requests.cancelYes')} busy={cancel.isPending} onPress={() => cancel.mutate(request.id, { onSuccess: () => setConfirming(false) })} />
+                <Button
+                  label={t('account.requests.cancelYes')}
+                  busy={cancel.isPending}
+                  onPress={() => cancel.mutate(request.id, { onSuccess: () => setConfirming(false) })}
+                />
               </View>
               <View style={{ flex: 1 }}>
                 <Button variant="secondary" label={t('account.requests.cancelNo')} onPress={() => setConfirming(false)} />

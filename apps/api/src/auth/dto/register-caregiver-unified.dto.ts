@@ -36,8 +36,7 @@ export class RegisterCaregiverUnifiedDto extends OmitType(CreateCaregiverDto, ['
   phone: string;
 
   @ApiPropertyOptional({
-    description:
-      'Optional. Must match the address they later verify with Google, Microsoft or Facebook.',
+    description: 'Optional. Must match the address they later verify with Google, Microsoft or Facebook.',
   })
   @IsOptional()
   @IsEmail({}, { message: 'Enter a valid email address' })

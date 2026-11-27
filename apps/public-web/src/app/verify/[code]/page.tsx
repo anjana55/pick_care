@@ -44,7 +44,11 @@ export default function VerifyCertificatePage() {
           {data && (
             <div>
               <div className="flex items-start gap-3">
-                {data.status === 'VALID' ? <BadgeCheck className="h-8 w-8 shrink-0 text-brand" aria-hidden /> : <ShieldAlert className="h-8 w-8 shrink-0 text-amber-600" aria-hidden />}
+                {data.status === 'VALID' ? (
+                  <BadgeCheck className="h-8 w-8 shrink-0 text-brand" aria-hidden />
+                ) : (
+                  <ShieldAlert className="h-8 w-8 shrink-0 text-amber-600" aria-hidden />
+                )}
                 <div>
                   <p className="font-semibold text-ink">{data.status === 'VALID' ? t('verify.valid') : t('verify.revoked')}</p>
                   <p className="mt-1 text-sm text-ink/60">{data.status === 'VALID' ? t('verify.validHelp') : t('verify.revokedHelp')}</p>

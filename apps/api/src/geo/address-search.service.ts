@@ -94,7 +94,10 @@ export class AddressSearchService {
     const typed = fold(q);
     if (!typed) return [];
     // "12 Main Street, Kandy": the town is usually the last part.
-    const parts = typed.split(',').map((s) => s.trim()).filter(Boolean);
+    const parts = typed
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
     const words = [...new Set([typed, ...parts.reverse()])];
     const { cities, districts } = await this.geo.all();
     const scored: { score: number; match: AddressMatch }[] = [];
@@ -148,7 +151,10 @@ export class AddressSearchService {
     const base = (this.config.get<string>('GEOCODER_URL') || 'https://nominatim.openstreetmap.org').replace(/\/+$/, '');
     const url = `${base}/search?${new URLSearchParams({ q, format: 'jsonv2', countrycodes: 'lk', limit: '6', addressdetails: '1', 'accept-language': `${locale},en` })}`;
     const contact = this.config.get<string>('GEOCODER_CONTACT') || this.config.get<string>('PUBLIC_WEB_URL') || 'care-platform';
-    const rows = await this.getJson<NominatimHit[]>(url, { 'User-Agent': `CarePlatform/1.0 (${contact})`, Referer: this.config.get<string>('PUBLIC_WEB_URL') ?? '' });
+    const rows = await this.getJson<NominatimHit[]>(url, {
+      'User-Agent': `CarePlatform/1.0 (${contact})`,
+      Referer: this.config.get<string>('PUBLIC_WEB_URL') ?? '',
+    });
     return rows
       .map((r) => ({ r, lat: Number(r.lat), lng: Number(r.lon) }))
       .filter(({ lat, lng }) => Number.isFinite(lat) && Number.isFinite(lng) && inSriLanka(lat, lng))
@@ -157,7 +163,11 @@ export class AddressSearchService {
         const house = r.address?.house_number;
         const road = r.address?.road;
         const label = house && road ? `${house} ${road}` : r.name || first;
-        const detail = rest.filter((s) => s !== label && s !== road && s !== house && s !== 'Sri Lanka' && s !== 'ශ්‍රී ලංකාව' && s !== 'இலங்கை' && !/^\d{5}$/.test(s)).slice(0, 3).join(', ') || null;
+        const detail =
+          rest
+            .filter((s) => s !== label && s !== road && s !== house && s !== 'Sri Lanka' && s !== 'ශ්‍රී ලංකාව' && s !== 'இலங்கை' && !/^\d{5}$/.test(s))
+            .slice(0, 3)
+            .join(', ') || null;
         return { label, detail, latitude: round6(lat), longitude: round6(lng), precision: nominatimPrecision(r), source: 'MAP' as const };
       });
   }
@@ -198,14 +208,24 @@ export class AddressSearchService {
 
 export function nominatimPrecision(r: Pick<NominatimHit, 'addresstype' | 'type' | 'class' | 'address'>): AddressPrecision {
   const t = r.addresstype ?? r.type ?? '';
-  if (r.address?.house_number || ['house', 'building', 'amenity', 'shop', 'office', 'tourism', 'leisure', 'place_of_worship'].includes(t) || r.class === 'building' || r.class === 'amenity') return 'ADDRESS';
+  if (
+    r.address?.house_number ||
+    ['house', 'building', 'amenity', 'shop', 'office', 'tourism', 'leisure', 'place_of_worship'].includes(t) ||
+    r.class === 'building' ||
+    r.class === 'amenity'
+  )
+    return 'ADDRESS';
   if (['road', 'street', 'residential', 'pedestrian', 'service'].includes(t) || r.class === 'highway') return 'STREET';
   if (['city', 'town', 'village', 'municipality', 'county', 'state', 'state_district', 'district'].includes(t)) return 'TOWN';
   return 'AREA';
 }
 
 export function googlePrecision(r: Pick<GoogleHit, 'types' | 'geometry'>): AddressPrecision {
-  if (r.geometry.location_type === 'ROOFTOP' || r.types.some((t) => ['street_address', 'premise', 'subpremise', 'establishment', 'point_of_interest'].includes(t))) return 'ADDRESS';
+  if (
+    r.geometry.location_type === 'ROOFTOP' ||
+    r.types.some((t) => ['street_address', 'premise', 'subpremise', 'establishment', 'point_of_interest'].includes(t))
+  )
+    return 'ADDRESS';
   if (r.types.includes('route')) return 'STREET';
   if (r.types.some((t) => ['locality', 'administrative_area_level_1', 'administrative_area_level_2'].includes(t))) return 'TOWN';
   return 'AREA';

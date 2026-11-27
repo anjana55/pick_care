@@ -1,10 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import {
-  analyticsAllowedOn,
-  cleanAnalyticsPath,
-  normalizeAnalyticsConfig,
-  normalizeMeasurementId,
-} from '@care-platform/shared';
+import { analyticsAllowedOn, cleanAnalyticsPath, normalizeAnalyticsConfig, normalizeMeasurementId } from '@care-platform/shared';
 import { AnalyticsSettingsService } from './analytics-settings.service';
 
 /**
@@ -21,9 +16,7 @@ const GA = 'G-AB12CD34EF';
 const DEFAULT_ROW = { enabled: false, measurementId: null, updatedBy: null };
 
 function make(initial: Record<string, unknown> | null = null) {
-  let row: Record<string, unknown> | null = initial
-    ? { id: 'default', ...DEFAULT_ROW, createdAt: new Date(), updatedAt: new Date(), ...initial }
-    : null;
+  let row: Record<string, unknown> | null = initial ? { id: 'default', ...DEFAULT_ROW, createdAt: new Date(), updatedAt: new Date(), ...initial } : null;
   const query = { where: () => ({ limit: async () => (row ? [{ ...row }] : []) }) };
   const db: any = {
     select: () => ({ from: () => query }),
@@ -89,7 +82,11 @@ describe('AnalyticsSettingsService', () => {
   });
 
   it('answers "no analytics" when the settings cannot be read', async () => {
-    const service = new AnalyticsSettingsService({ select: () => { throw new Error('db down'); } } as any);
+    const service = new AnalyticsSettingsService({
+      select: () => {
+        throw new Error('db down');
+      },
+    } as any);
     expect((await service.getPublic()).enabled).toBe(false);
   });
 });

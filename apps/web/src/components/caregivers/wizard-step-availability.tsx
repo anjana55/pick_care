@@ -131,7 +131,9 @@ export function AvailabilityStep({ caregiverId, onNext, onBack }: { caregiverId:
                 onChange={(e) =>
                   setForm({
                     ...form,
-                    careTypes: e.target.checked ? careTypeValues.filter((v) => v === type || form.careTypes.includes(v)) : form.careTypes.filter((v) => v !== type),
+                    careTypes: e.target.checked
+                      ? careTypeValues.filter((v) => v === type || form.careTypes.includes(v))
+                      : form.careTypes.filter((v) => v !== type),
                   })
                 }
                 className="h-4 w-4 rounded border-border text-brand focus:ring-brand"
@@ -163,7 +165,11 @@ export function AvailabilityStep({ caregiverId, onNext, onBack }: { caregiverId:
                 onChange={(e) => setForm({ ...form, [key]: e.target.checked })}
                 className="h-4 w-4 rounded border-border text-brand focus:ring-brand"
               />
-              {key === 'dayDuty' ? t('caregivers.me.availability.dayDuty') : key === 'nightDuty' ? t('caregivers.me.availability.nightDuty') : t('caregivers.me.availability.liveIn24h')}
+              {key === 'dayDuty'
+                ? t('caregivers.me.availability.dayDuty')
+                : key === 'nightDuty'
+                  ? t('caregivers.me.availability.nightDuty')
+                  : t('caregivers.me.availability.liveIn24h')}
             </label>
           ))}
         </div>
@@ -236,7 +242,13 @@ export function AvailabilityStep({ caregiverId, onNext, onBack }: { caregiverId:
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <Label htmlFor="expectedLeaveDays">{t('caregivers.me.availability.expectedLeaveDays')}</Label>
-          <Input id="expectedLeaveDays" type="number" min={0} value={form.expectedLeaveDays} onChange={(e) => setForm({ ...form, expectedLeaveDays: e.target.value })} />
+          <Input
+            id="expectedLeaveDays"
+            type="number"
+            min={0}
+            value={form.expectedLeaveDays}
+            onChange={(e) => setForm({ ...form, expectedLeaveDays: e.target.value })}
+          />
         </div>
         <div>
           <Label htmlFor="preferredLeavePattern">{t('caregivers.me.availability.preferredLeavePattern')}</Label>

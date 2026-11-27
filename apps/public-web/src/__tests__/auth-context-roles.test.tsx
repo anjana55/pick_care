@@ -86,7 +86,11 @@ describe('a token for a role this site does not serve', () => {
   });
 
   it('leaves an existing caregiver session alone rather than signing it out', () => {
-    render(<AuthProvider><Probe /></AuthProvider>);
+    render(
+      <AuthProvider>
+        <Probe />
+      </AuthProvider>,
+    );
     act(() => {
       auth!.applyTokens({ accessToken: tokenWith({ sub: 'c1', role: 'CAREGIVER', caregiverId: 'cg-1' }), refreshToken: 'keep' });
     });

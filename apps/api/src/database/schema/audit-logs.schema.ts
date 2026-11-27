@@ -12,7 +12,9 @@ export const auditLogs = mysqlTable(
     // Never store sensitive document contents or passwords here.
     metadata: json('metadata'),
     ipAddress: varchar('ip_address', { length: 45 }),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     entityIdx: index('audit_logs_entity_idx').on(table.entityType, table.entityId),

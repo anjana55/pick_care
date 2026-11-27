@@ -36,9 +36,18 @@ const SUGGESTIONS = 8;
 
 /** "Your shift went to someone else" - the caregiver who could not be reached, in their language. */
 const SHIFT_COVERED = {
-  en: { title: 'Your shift has been given to another caregiver', body: 'Your {time} shift on {date} is now covered by someone else. You do not need to go. Call the office if you have questions.' },
-  si: { title: 'ඔබගේ වාරය වෙනත් රැකවරණ සේවකයෙකුට ලබා දී ඇත', body: '{date} දින {time} ට ඇති ඔබගේ වාරය දැන් වෙනත් අයෙකු විසින් ආවරණය කරයි. ඔබ යා යුතු නැත. ප්‍රශ්න ඇත්නම් කාර්යාලයට අමතන්න.' },
-  ta: { title: 'உங்கள் பணிநேரம் வேறொரு பராமரிப்பாளருக்கு வழங்கப்பட்டது', body: '{date} அன்று {time} மணிக்கான உங்கள் பணிநேரத்தை இப்போது வேறொருவர் ஏற்றுக்கொண்டுள்ளார். நீங்கள் செல்லத் தேவையில்லை. கேள்விகள் இருந்தால் அலுவலகத்தை அழைக்கவும்.' },
+  en: {
+    title: 'Your shift has been given to another caregiver',
+    body: 'Your {time} shift on {date} is now covered by someone else. You do not need to go. Call the office if you have questions.',
+  },
+  si: {
+    title: 'ඔබගේ වාරය වෙනත් රැකවරණ සේවකයෙකුට ලබා දී ඇත',
+    body: '{date} දින {time} ට ඇති ඔබගේ වාරය දැන් වෙනත් අයෙකු විසින් ආවරණය කරයි. ඔබ යා යුතු නැත. ප්‍රශ්න ඇත්නම් කාර්යාලයට අමතන්න.',
+  },
+  ta: {
+    title: 'உங்கள் பணிநேரம் வேறொரு பராமரிப்பாளருக்கு வழங்கப்பட்டது',
+    body: '{date} அன்று {time} மணிக்கான உங்கள் பணிநேரத்தை இப்போது வேறொருவர் ஏற்றுக்கொண்டுள்ளார். நீங்கள் செல்லத் தேவையில்லை. கேள்விகள் இருந்தால் அலுவலகத்தை அழைக்கவும்.',
+  },
 } as const;
 /** "Someone else is coming" - the client, in their language. Their arrival code is the shift's, so it has not changed. */
 const COVER_COMING = {
@@ -186,7 +195,9 @@ export class CoverService implements OnApplicationBootstrap {
     const inv = refs.invoices.get(shiftId);
     const pay = refs.payouts.get(shiftId);
     if (!inv && !pay) return null;
-    return [inv ? (inv.number ? `invoice ${inv.number}` : 'a draft invoice') : null, pay ? `pay statement ${pay.reference}` : null].filter(Boolean).join(' and ');
+    return [inv ? (inv.number ? `invoice ${inv.number}` : 'a draft invoice') : null, pay ? `pay statement ${pay.reference}` : null]
+      .filter(Boolean)
+      .join(' and ');
   }
 
   private refuse(block: CoverBlock): never {
@@ -196,7 +207,11 @@ export class CoverService implements OnApplicationBootstrap {
   }
 
   private offersFor(shiftId: string) {
-    return this.db.select().from(requestOffers).where(and(eq(requestOffers.shiftId, shiftId), eq(requestOffers.kind, 'COVER'))).orderBy(desc(requestOffers.createdAt));
+    return this.db
+      .select()
+      .from(requestOffers)
+      .where(and(eq(requestOffers.shiftId, shiftId), eq(requestOffers.kind, 'COVER')))
+      .orderBy(desc(requestOffers.createdAt));
   }
 
   /** Caregivers who hold a shift that overlaps this one - they cannot take it. */
@@ -229,7 +244,10 @@ export class CoverService implements OnApplicationBootstrap {
     const pool = await this.pools.pool(request, { genderPreference: row.genderPreference, exclude, anyCareType: !row.careType }, now);
     // The shift pays what it pays, and having other bookings is no drawback for someone free at this time:
     // neither the caregiver's own rate nor their running bookings should move them up or down.
-    return rankMatches(request, pool.map((c) => ({ ...c, ownRate: null, runningBookings: 0, availableFrom: null })));
+    return rankMatches(
+      request,
+      pool.map((c) => ({ ...c, ownRate: null, runningBookings: 0, availableFrom: null })),
+    );
   }
 
   /**
@@ -257,11 +275,26 @@ export class CoverService implements OnApplicationBootstrap {
     const [billedOn, offerRows] = await Promise.all([this.billedOn(shiftId), this.offersFor(shiftId)]);
     const ranked = blocked ? [] : (await this.rank(row, now)).slice(0, SUGGESTIONS);
     const people = ranked.length
-      ? await this.db.select({ id: caregivers.id, fullName: caregivers.fullName, phone: caregivers.primaryPhone }).from(caregivers).where(inArray(caregivers.id, ranked.map((r) => r.caregiverId)))
+      ? await this.db
+          .select({ id: caregivers.id, fullName: caregivers.fullName, phone: caregivers.primaryPhone })
+          .from(caregivers)
+          .where(
+            inArray(
+              caregivers.id,
+              ranked.map((r) => r.caregiverId),
+            ),
+          )
       : [];
     const suggestions: CoverSuggestion[] = ranked.map((r) => {
       const p = people.find((x) => x.id === r.caregiverId);
-      return { caregiverId: r.caregiverId, fullName: p?.fullName ?? '-', registrationNumber: r.registrationNumber, phone: p?.phone ?? null, score: r.score, reasons: r.reasons };
+      return {
+        caregiverId: r.caregiverId,
+        fullName: p?.fullName ?? '-',
+        registrationNumber: r.registrationNumber,
+        phone: p?.phone ?? null,
+        score: r.score,
+        reasons: r.reasons,
+      };
     });
     return {
       shiftId,
@@ -315,7 +348,10 @@ export class CoverService implements OnApplicationBootstrap {
 
     const [existing, people, busy] = await Promise.all([
       this.offersFor(row.shiftId),
-      this.db.select({ id: caregivers.id, userId: caregivers.userId }).from(caregivers).where(and(inArray(caregivers.id, caregiverIds), isNull(caregivers.deletedAt))),
+      this.db
+        .select({ id: caregivers.id, userId: caregivers.userId })
+        .from(caregivers)
+        .where(and(inArray(caregivers.id, caregiverIds), isNull(caregivers.deletedAt))),
       this.busy(row, caregiverIds),
     ]);
     const waiting = existing.filter((o) => effectiveCareOfferStatus(o.status, o.expiresAt, now) === 'OFFERED');
@@ -327,10 +363,22 @@ export class CoverService implements OnApplicationBootstrap {
     const problems = new Map<string, () => never>();
     for (const id of caregiverIds) {
       const person = people.find((p) => p.id === id);
-      if (!person) problems.set(id, () => { throw new NotFoundException('Caregiver not found'); });
-      else if (id === row.caregiverId) problems.set(id, () => { throw new BadRequestException('This caregiver is already on the shift'); });
-      else if (busy.has(id)) problems.set(id, () => { throw new ConflictException('This caregiver has another shift at that time'); });
-      else if (waiting.some((o) => o.caregiverId === id)) problems.set(id, () => { throw new ConflictException('This caregiver already has a cover offer waiting for this shift'); });
+      if (!person)
+        problems.set(id, () => {
+          throw new NotFoundException('Caregiver not found');
+        });
+      else if (id === row.caregiverId)
+        problems.set(id, () => {
+          throw new BadRequestException('This caregiver is already on the shift');
+        });
+      else if (busy.has(id))
+        problems.set(id, () => {
+          throw new ConflictException('This caregiver has another shift at that time');
+        });
+      else if (waiting.some((o) => o.caregiverId === id))
+        problems.set(id, () => {
+          throw new ConflictException('This caregiver already has a cover offer waiting for this shift');
+        });
     }
     if (opts.strict) for (const fail of problems.values()) fail();
 
@@ -389,7 +437,10 @@ export class CoverService implements OnApplicationBootstrap {
       .where(and(eq(requestOffers.shiftId, shiftId), eq(requestOffers.status, 'OFFERED'), except ? ne(requestOffers.id, except) : undefined));
     if (!open.length) return 0;
     const ids = open.map((o) => o.id);
-    await this.db.update(requestOffers).set({ status: 'WITHDRAWN', respondedAt: new Date() }).where(and(inArray(requestOffers.id, ids), eq(requestOffers.status, 'OFFERED')));
+    await this.db
+      .update(requestOffers)
+      .set({ status: 'WITHDRAWN', respondedAt: new Date() })
+      .where(and(inArray(requestOffers.id, ids), eq(requestOffers.status, 'OFFERED')));
     for (const id of ids) await this.jobs.cancel(offerExpiryKey(id));
     await this.offers.tellNoLongerOpen(ids);
     return ids.length;
@@ -408,7 +459,12 @@ export class CoverService implements OnApplicationBootstrap {
     if (offer.status === 'OFFERED' && (await this.busy(before, [offer.caregiverId])).size) throw new ConflictException('You have another shift at that time');
     let already = false;
     await this.db.transaction(async (tx) => {
-      const [shift] = await tx.select({ status: bookingShifts.status, endsAt: bookingShifts.endsAt }).from(bookingShifts).where(eq(bookingShifts.id, shiftId)).for('update').limit(1);
+      const [shift] = await tx
+        .select({ status: bookingShifts.status, endsAt: bookingShifts.endsAt })
+        .from(bookingShifts)
+        .where(eq(bookingShifts.id, shiftId))
+        .for('update')
+        .limit(1);
       const [mine] = await tx.select().from(requestOffers).where(eq(requestOffers.id, offer.id)).limit(1);
       if (mine.status === 'ACCEPTED') {
         already = true; // pressed twice
@@ -424,7 +480,8 @@ export class CoverService implements OnApplicationBootstrap {
       if (mine.status === 'DECLINED') throw new BadRequestException('You have already declined this offer');
       if (mine.status === 'EXPIRED' || mine.expiresAt.getTime() <= now.getTime()) throw new BadRequestException('The time to answer this offer has passed');
       const [checkIn] = await tx.select({ at: shiftCheckins.checkedInAt }).from(shiftCheckins).where(eq(shiftCheckins.shiftId, shiftId)).limit(1);
-      if (!shift || shift.status !== 'SCHEDULED' || new Date(shift.endsAt).getTime() <= now.getTime() || checkIn?.at) throw new ConflictException('This job is no longer open');
+      if (!shift || shift.status !== 'SCHEDULED' || new Date(shift.endsAt).getTime() <= now.getTime() || checkIn?.at)
+        throw new ConflictException('This job is no longer open');
       await tx.update(requestOffers).set({ status: 'ACCEPTED', respondedAt: now }).where(eq(requestOffers.id, offer.id));
     });
     if (already) return;
@@ -444,7 +501,10 @@ export class CoverService implements OnApplicationBootstrap {
       // The roster refused (the shift changed in the meantime). The offer is closed rather than
       // left accepted with nobody on the shift; the caregiver is told it has gone, and staff see the reason here.
       this.logger.warn(`Cover offer ${offer.id} was accepted but the shift could not be moved: ${(err as Error).message}`);
-      await this.db.update(requestOffers).set({ status: 'WITHDRAWN', respondedAt: now }).where(and(eq(requestOffers.id, offer.id), eq(requestOffers.status, 'ACCEPTED')));
+      await this.db
+        .update(requestOffers)
+        .set({ status: 'WITHDRAWN', respondedAt: now })
+        .where(and(eq(requestOffers.id, offer.id), eq(requestOffers.status, 'ACCEPTED')));
       await this.jobs.cancel(offerExpiryKey(offer.id));
       throw new ConflictException('This job is no longer open');
     }
@@ -452,17 +512,33 @@ export class CoverService implements OnApplicationBootstrap {
     // Covered: whoever said they could not make it is off the shift now.
     await this.db.update(bookingShifts).set({ cantMakeAt: null, cantMakeNote: null, cantMakeCaregiverId: null }).where(eq(bookingShifts.id, shiftId));
     await this.closeFor(shiftId, offer.id);
-    await this.afterAccepted(row, offer).catch((e) => this.logger.error(`Cover offer ${offer.id} accepted, but not everyone could be told: ${(e as Error).message}`));
+    await this.afterAccepted(row, offer).catch((e) =>
+      this.logger.error(`Cover offer ${offer.id} accepted, but not everyone could be told: ${(e as Error).message}`),
+    );
   };
 
   /** Tells the caregiver who was replaced, the client, and the office. `row` is the shift as it was before the change. */
   private async afterAccepted(row: ShiftRow, offer: { id: string; caregiverId: string; sentByUserId: string | null }) {
     const when = toColombo(row.startsAt);
     const fill = (text: string, name = '') => text.replace('{time}', when.time).replace('{date}', when.date).replace('{name}', name);
-    const [cover] = await this.db.select({ fullName: caregivers.fullName, registrationNumber: caregivers.registrationNumber }).from(caregivers).where(eq(caregivers.id, offer.caregiverId)).limit(1);
+    const [cover] = await this.db
+      .select({ fullName: caregivers.fullName, registrationNumber: caregivers.registrationNumber })
+      .from(caregivers)
+      .where(eq(caregivers.id, offer.caregiverId))
+      .limit(1);
 
-    this.notices.notify([row.caregiverUserId], (lang) => ({ title: SHIFT_COVERED[lang].title, body: fill(SHIFT_COVERED[lang].body) }), '/shifts', `shift covered ${row.shiftId}`);
-    this.notices.notify([row.patientUserId], (lang) => ({ title: COVER_COMING[lang].title, body: fill(COVER_COMING[lang].body, cover?.fullName ?? '') }), '/bookings', `cover coming ${row.shiftId}`);
+    this.notices.notify(
+      [row.caregiverUserId],
+      (lang) => ({ title: SHIFT_COVERED[lang].title, body: fill(SHIFT_COVERED[lang].body) }),
+      '/shifts',
+      `shift covered ${row.shiftId}`,
+    );
+    this.notices.notify(
+      [row.patientUserId],
+      (lang) => ({ title: COVER_COMING[lang].title, body: fill(COVER_COMING[lang].body, cover?.fullName ?? '') }),
+      '/bookings',
+      `cover coming ${row.shiftId}`,
+    );
 
     await this.automation.setHandoverNote(
       { caseType: 'BOOKING', caseId: row.bookingId },
@@ -475,7 +551,12 @@ export class CoverService implements OnApplicationBootstrap {
 
     // The office: whoever sent the offer, or - when the agent sent it - the alert list.
     const subject = `Cover found: ${row.reference}`;
-    this.notices.notifyStaff(subject, `${cover?.registrationNumber ?? 'A caregiver'} accepted the ${when.time} visit on ${when.date} in place of ${row.registration}.`, `/bookings/${row.bookingId}`, `cover found ${offer.id}`);
+    this.notices.notifyStaff(
+      subject,
+      `${cover?.registrationNumber ?? 'A caregiver'} accepted the ${when.time} visit on ${when.date} in place of ${row.registration}.`,
+      `/bookings/${row.bookingId}`,
+      `cover found ${offer.id}`,
+    );
     const to = await this.officeRecipients(offer.sentByUserId);
     if (!to.length) return;
     await this.email.sendNotificationEmail(
@@ -492,7 +573,10 @@ export class CoverService implements OnApplicationBootstrap {
             ],
           },
         ],
-        cta: { label: "Open Today's visits", url: `${(this.config.get<string>('CAREGIVER_WEB_URL') ?? 'http://localhost:3000/staff').replace(/\/+$/, '')}/bookings/today` },
+        cta: {
+          label: "Open Today's visits",
+          url: `${(this.config.get<string>('CAREGIVER_WEB_URL') ?? 'http://localhost:3000/staff').replace(/\/+$/, '')}/bookings/today`,
+        },
       },
       `cover accepted ${offer.id}`,
     );

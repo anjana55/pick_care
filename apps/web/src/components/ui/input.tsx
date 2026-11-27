@@ -13,27 +13,22 @@ export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputE
 ));
 Input.displayName = 'Input';
 
-export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<HTMLTextAreaElement>>(
-  ({ className, ...props }, ref) => (
-    <textarea
-      ref={ref}
-      className={cn(
-        'w-full rounded border border-border bg-white px-3 py-2 text-sm text-ink placeholder:text-ink/40 focus:outline-none focus:ring-2 focus:ring-brand',
-        className,
-      )}
-      {...props}
-    />
-  ),
-);
+export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<HTMLTextAreaElement>>(({ className, ...props }, ref) => (
+  <textarea
+    ref={ref}
+    className={cn(
+      'w-full rounded border border-border bg-white px-3 py-2 text-sm text-ink placeholder:text-ink/40 focus:outline-none focus:ring-2 focus:ring-brand',
+      className,
+    )}
+    {...props}
+  />
+));
 Textarea.displayName = 'Textarea';
 
 export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement>>(({ className, ...props }, ref) => (
   <select
     ref={ref}
-    className={cn(
-      'h-10 w-full rounded border border-border bg-white px-3 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-brand',
-      className,
-    )}
+    className={cn('h-10 w-full rounded border border-border bg-white px-3 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-brand', className)}
     {...props}
   />
 ));
@@ -45,12 +40,7 @@ Select.displayName = 'Select';
  * the DOM. It renders the marker only - the input itself still gets the native
  * `required` attribute where that is wanted.
  */
-export function Label({
-  className,
-  required,
-  children,
-  ...props
-}: LabelHTMLAttributes<HTMLLabelElement> & { required?: boolean }) {
+export function Label({ className, required, children, ...props }: LabelHTMLAttributes<HTMLLabelElement> & { required?: boolean }) {
   return (
     <label className={cn('mb-1.5 block text-sm font-medium text-ink', className)} {...props}>
       {children}

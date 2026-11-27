@@ -21,9 +21,7 @@ export function MyRatings() {
         </span>
         <div>
           <Stars rating={data.summary.average} size="md" />
-          <p className="text-sm text-ink/60">
-            {data.summary.count === 1 ? t('reviews.ratingsOne') : t('reviews.ratingsMany', { count: data.summary.count })}
-          </p>
+          <p className="text-sm text-ink/60">{data.summary.count === 1 ? t('reviews.ratingsOne') : t('reviews.ratingsMany', { count: data.summary.count })}</p>
         </div>
       </div>
       <p className="text-sm text-ink/70">

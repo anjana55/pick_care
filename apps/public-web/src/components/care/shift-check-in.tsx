@@ -13,7 +13,10 @@ export function CheckInStatus({ shift }: { shift: CaregiverShift }) {
   const { t, locale } = useTranslation();
   const c = shift.checkIn;
   if (!c) return null;
-  if (c.checkedInAt && c.checkedOutAt) return <span className="ml-1 text-brand-dark">· {t('checkIn.caregiver.out', { in: fmtTime(c.checkedInAt, locale), out: fmtTime(c.checkedOutAt, locale) })}</span>;
+  if (c.checkedInAt && c.checkedOutAt)
+    return (
+      <span className="ml-1 text-brand-dark">· {t('checkIn.caregiver.out', { in: fmtTime(c.checkedInAt, locale), out: fmtTime(c.checkedOutAt, locale) })}</span>
+    );
   if (c.checkedInAt) return <span className="ml-1 font-medium text-brand-dark">· {t('checkIn.caregiver.in', { time: fmtTime(c.checkedInAt, locale) })}</span>;
   if (c.codeLocked) return <span className="ml-1 text-danger">· {t('checkIn.caregiver.locked')}</span>;
   if (c.state === 'NOT_RECORDED' && shift.status === 'SCHEDULED') return <span className="ml-1">· {t('checkIn.caregiver.notRecorded')}</span>;
@@ -92,7 +95,11 @@ export function CheckInForm({ shift, onDone }: { shift: CaregiverShift; onDone: 
         </p>
       )}
       <div className="mt-2 flex gap-2">
-        <button type="submit" disabled={code.length !== 4 || busy} className="rounded bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-60">
+        <button
+          type="submit"
+          disabled={code.length !== 4 || busy}
+          className="rounded bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-60"
+        >
           {t('checkIn.caregiver.submit')}
         </button>
         <button type="button" onClick={onDone} className="rounded border border-border bg-white px-4 py-2 text-sm font-medium text-ink hover:bg-paper">

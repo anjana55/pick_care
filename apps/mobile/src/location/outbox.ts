@@ -29,7 +29,14 @@ export async function flushOutbox(session: TrackSession | null, deps: OutboxDeps
   for (let i = 0; i < points.length; i += LOCATION_POINTS_BATCH_MAX) {
     const batch = points.slice(i, i + LOCATION_POINTS_BATCH_MAX);
     const body: { points: LocationPointInput[] } = {
-      points: batch.map((p) => ({ at: new Date(p.at).toISOString(), latitude: p.latitude, longitude: p.longitude, accuracyM: p.accuracyM, speed: p.speed, mocked: p.mocked })),
+      points: batch.map((p) => ({
+        at: new Date(p.at).toISOString(),
+        latitude: p.latitude,
+        longitude: p.longitude,
+        accuracyM: p.accuracyM,
+        speed: p.speed,
+        mocked: p.mocked,
+      })),
     };
     let res: Response;
     try {

@@ -213,7 +213,9 @@ function NewPhoneRequestPage() {
               />
             </div>
             <div>
-              <Label htmlFor="language" required>{t('requests.new.language')}</Label>
+              <Label htmlFor="language" required>
+                {t('requests.new.language')}
+              </Label>
               <Select id="language" value={language} onChange={(e) => setLanguage(e.target.value as (typeof LANGUAGES)[number])}>
                 {LANGUAGES.map((l) => (
                   <option key={l} value={l}>

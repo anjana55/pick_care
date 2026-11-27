@@ -110,7 +110,10 @@ export default function ClientsListPage() {
               <UserX size={16} />
               {t('accountDeletions.title')}
               {deletionsWaiting > 0 && (
-                <span className="min-w-[1.25rem] rounded-full bg-accent px-1.5 text-center text-xs font-semibold tabular-nums text-white" aria-label={t('accountDeletions.waitingCount', { count: deletionsWaiting })}>
+                <span
+                  className="min-w-[1.25rem] rounded-full bg-accent px-1.5 text-center text-xs font-semibold tabular-nums text-white"
+                  aria-label={t('accountDeletions.waitingCount', { count: deletionsWaiting })}
+                >
                   {deletionsWaiting}
                 </span>
               )}
@@ -164,28 +167,16 @@ export default function ClientsListPage() {
             </option>
           ))}
         </Select>
-        <Button
-          type="button"
-          variant={activeCount > 0 ? 'primary' : 'secondary'}
-          onClick={() => setFiltersOpen((o) => !o)}
-          className="relative sm:w-auto"
-        >
+        <Button type="button" variant={activeCount > 0 ? 'primary' : 'secondary'} onClick={() => setFiltersOpen((o) => !o)} className="relative sm:w-auto">
           <SlidersHorizontal size={15} />
           {t('filters.button')}
-          {activeCount > 0 && (
-            <span className="ml-1 rounded-full bg-white/25 px-1.5 py-0.5 text-[10px] font-semibold">{activeCount}</span>
-          )}
+          {activeCount > 0 && <span className="ml-1 rounded-full bg-white/25 px-1.5 py-0.5 text-[10px] font-semibold">{activeCount}</span>}
         </Button>
       </div>
 
       {filtersOpen && (
         <div className="mb-4">
-          <ClientFiltersPanel
-            filters={filters}
-            districts={districts}
-            onChange={updateFilters}
-            onClose={() => setFiltersOpen(false)}
-          />
+          <ClientFiltersPanel filters={filters} districts={districts} onChange={updateFilters} onClose={() => setFiltersOpen(false)} />
         </div>
       )}
 
@@ -235,18 +226,12 @@ export default function ClientsListPage() {
                 </td>
                 <td className="px-4 py-3">
                   <div className="tabular-nums text-ink/70">{c.phone || c.accountPhone || '—'}</div>
-                  {c.preferredContactMethod && (
-                    <div className="text-xs text-ink/50">
-                      {t(`clients.options.contactMethod.${c.preferredContactMethod}`)}
-                    </div>
-                  )}
+                  {c.preferredContactMethod && <div className="text-xs text-ink/50">{t(`clients.options.contactMethod.${c.preferredContactMethod}`)}</div>}
                 </td>
                 <td className="px-4 py-3 text-ink/70">{c.email || '—'}</td>
                 <td className="px-4 py-3 text-ink/70">
                   {c.careSchedule ? t(`clients.options.careSchedule.${c.careSchedule}`) : '—'}
-                  {c.careStart && (
-                    <div className="text-xs text-ink/50">{t(`clients.options.careStart.${c.careStart}`)}</div>
-                  )}
+                  {c.careStart && <div className="text-xs text-ink/50">{t(`clients.options.careStart.${c.careStart}`)}</div>}
                 </td>
                 <td className="px-4 py-3">
                   <StatusBadge status={c.status} label={t(`clients.status.${c.status}`)} />
@@ -292,15 +277,7 @@ export default function ClientsListPage() {
         />
       )}
 
-      {data && (
-        <ListPagination
-          page={data.page}
-          totalPages={data.totalPages}
-          total={data.total}
-          noun={t('clients.clientsCount')}
-          onPage={setPage}
-        />
-      )}
+      {data && <ListPagination page={data.page} totalPages={data.totalPages} total={data.total} noun={t('clients.clientsCount')} onPage={setPage} />}
     </div>
   );
 }

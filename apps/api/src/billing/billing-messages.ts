@@ -61,9 +61,15 @@ export const BILLING_FOOTER: Record<Lang, string> = {
 };
 
 const PAYOUT_PAID: Record<Lang, { heading: string; body: string }> = {
-  en: { heading: 'Your payment has been sent', body: 'Payment {ref} of {amount} for {from} to {to} was made on {date}. The details are in your {brand} account.' },
+  en: {
+    heading: 'Your payment has been sent',
+    body: 'Payment {ref} of {amount} for {from} to {to} was made on {date}. The details are in your {brand} account.',
+  },
   si: { heading: 'ඔබගේ ගෙවීම යවා ඇත', body: '{from} සිට {to} දක්වා කාලය සඳහා {amount} ක ගෙවීම {ref}, {date} දින සිදු කරන ලදී. විස්තර ඔබගේ {brand} ගිණුමේ ඇත.' },
-  ta: { heading: 'உங்கள் கொடுப்பனவு அனுப்பப்பட்டது', body: '{from} முதல் {to} வரையிலான காலத்துக்கான {amount} கொடுப்பனவு {ref}, {date} அன்று செலுத்தப்பட்டது. விவரங்கள் உங்கள் {brand} கணக்கில் உள்ளன.' },
+  ta: {
+    heading: 'உங்கள் கொடுப்பனவு அனுப்பப்பட்டது',
+    body: '{from} முதல் {to} வரையிலான காலத்துக்கான {amount} கொடுப்பனவு {ref}, {date} அன்று செலுத்தப்பட்டது. விவரங்கள் உங்கள் {brand} கணக்கில் உள்ளன.',
+  },
 };
 
 export function invoiceClientNotice(notice: ClientNotice, lang: Lang, vars: { number: string; amount: string; date: string }) {

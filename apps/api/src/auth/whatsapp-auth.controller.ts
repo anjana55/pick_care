@@ -3,12 +3,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';
 import { WhatsappAuthService } from './whatsapp-auth.service';
-import {
-  RegisterCaregiverWhatsappDto,
-  RegisterPatientWhatsappDto,
-  RequestWhatsappOtpDto,
-  VerifyWhatsappOtpDto,
-} from './dto/whatsapp-auth.dto';
+import { RegisterCaregiverWhatsappDto, RegisterPatientWhatsappDto, RequestWhatsappOtpDto, VerifyWhatsappOtpDto } from './dto/whatsapp-auth.dto';
 import { Public } from '../common/decorators/public.decorator';
 import { AuditService } from '../audit/audit.service';
 

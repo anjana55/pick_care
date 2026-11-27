@@ -21,7 +21,6 @@ import {
  * PatientIntakeValues, so the component is generic over that and addresses
  * fields by name; the schema in lib/schemas/patient-intake.ts is what actually
  * types and validates them (same approach as PersonalInfoFields). */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 /** The form's four parts. Sign-up can fold away the ones a search already answered. */
 export type IntakeSectionKey = 'whoNeedsCare' | 'contact' | 'location' | 'care';
@@ -106,8 +105,7 @@ export function PatientIntakeFields<T extends PatientIntakeValues>({
   const choose = <option value="">{t('personalInfo.options.select')}</option>;
   const answered = (field: string) => hiddenFields.includes(field);
   // A part is folded when it was folded whole, or when every question in it was answered.
-  const isHidden = (key: IntakeSectionKey) =>
-    hiddenSections.includes(key) || INTAKE_SECTION_FIELDS[key].filter((f) => !OPTIONAL_FIELDS.has(f)).every(answered);
+  const isHidden = (key: IntakeSectionKey) => hiddenSections.includes(key) || INTAKE_SECTION_FIELDS[key].filter((f) => !OPTIONAL_FIELDS.has(f)).every(answered);
   const contactMethods = allowEmailContact ? CONTACT_METHODS : CONTACT_METHODS.filter((m) => m !== 'EMAIL');
 
   return (
@@ -115,7 +113,10 @@ export function PatientIntakeFields<T extends PatientIntakeValues>({
       <Section title={t('patientIntake.sections.whoNeedsCare')} hidden={isHidden('whoNeedsCare')}>
         <div role="radiogroup" aria-label={t('patientIntake.sections.whoNeedsCare')} className="grid gap-2 sm:grid-cols-2">
           {REGISTRANT_TYPES.map((type) => (
-            <label key={type} className="flex cursor-pointer items-start gap-2 rounded border border-border p-3 text-sm text-ink has-[:checked]:border-brand has-[:checked]:bg-brand-light/40">
+            <label
+              key={type}
+              className="flex cursor-pointer items-start gap-2 rounded border border-border p-3 text-sm text-ink has-[:checked]:border-brand has-[:checked]:bg-brand-light/40"
+            >
               <input type="radio" value={type} className="mt-0.5 h-4 w-4 text-brand focus:ring-brand" {...register('registrantType' as any)} />
               <span>{t(`patientIntake.options.registrantType.${type}`)}</span>
             </label>
@@ -126,12 +127,16 @@ export function PatientIntakeFields<T extends PatientIntakeValues>({
         {guardian && (
           <>
             <div>
-              <Label htmlFor="recipientName" required>{t('patientIntake.fields.recipientName')}</Label>
+              <Label htmlFor="recipientName" required>
+                {t('patientIntake.fields.recipientName')}
+              </Label>
               <Input id="recipientName" {...register('recipientName' as any)} />
               <FieldError message={err('recipientName')} />
             </div>
             <div>
-              <Label htmlFor="recipientRelationship" required>{t('patientIntake.fields.relationship')}</Label>
+              <Label htmlFor="recipientRelationship" required>
+                {t('patientIntake.fields.relationship')}
+              </Label>
               <Select id="recipientRelationship" {...register('recipientRelationship' as any)}>
                 {choose}
                 {options('relationship', RELATIONSHIPS)}
@@ -143,12 +148,16 @@ export function PatientIntakeFields<T extends PatientIntakeValues>({
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div hidden={answered('recipientAge')}>
-            <Label htmlFor="recipientAge" required>{guardian ? t('patientIntake.fields.recipientAge') : t('patientIntake.fields.yourAge')}</Label>
+            <Label htmlFor="recipientAge" required>
+              {guardian ? t('patientIntake.fields.recipientAge') : t('patientIntake.fields.yourAge')}
+            </Label>
             <Input id="recipientAge" type="number" inputMode="numeric" min={0} max={120} {...register('recipientAge' as any)} />
             <FieldError message={err('recipientAge')} />
           </div>
           <div hidden={answered('recipientGender')}>
-            <Label htmlFor="recipientGender" required>{guardian ? t('patientIntake.fields.recipientGender') : t('patientIntake.fields.yourGender')}</Label>
+            <Label htmlFor="recipientGender" required>
+              {guardian ? t('patientIntake.fields.recipientGender') : t('patientIntake.fields.yourGender')}
+            </Label>
             <Select id="recipientGender" {...register('recipientGender' as any)}>
               {choose}
               {options('gender', GENDERS)}
@@ -166,7 +175,9 @@ export function PatientIntakeFields<T extends PatientIntakeValues>({
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <Label htmlFor="preferredContactMethod" required>{t('patientIntake.fields.contactMethod')}</Label>
+            <Label htmlFor="preferredContactMethod" required>
+              {t('patientIntake.fields.contactMethod')}
+            </Label>
             <Select id="preferredContactMethod" {...register('preferredContactMethod' as any)}>
               {choose}
               {options('contactMethod', contactMethods)}
@@ -174,7 +185,9 @@ export function PatientIntakeFields<T extends PatientIntakeValues>({
             <FieldError message={err('preferredContactMethod')} />
           </div>
           <div>
-            <Label htmlFor="preferredContactTime" required>{t('patientIntake.fields.contactTime')}</Label>
+            <Label htmlFor="preferredContactTime" required>
+              {t('patientIntake.fields.contactTime')}
+            </Label>
             <Select id="preferredContactTime" {...register('preferredContactTime' as any)}>
               {options('contactTime', CONTACT_TIMES)}
             </Select>
@@ -191,7 +204,9 @@ export function PatientIntakeFields<T extends PatientIntakeValues>({
         )}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <Label htmlFor="districtId" required>{t('patientIntake.fields.district')}</Label>
+            <Label htmlFor="districtId" required>
+              {t('patientIntake.fields.district')}
+            </Label>
             <Controller
               name={'districtId' as any}
               control={control}
@@ -208,7 +223,9 @@ export function PatientIntakeFields<T extends PatientIntakeValues>({
                 >
                   {choose}
                   {districts.map((d) => (
-                    <option key={d.id} value={d.id}>{d.name}</option>
+                    <option key={d.id} value={d.id}>
+                      {d.name}
+                    </option>
                   ))}
                 </Select>
               )}
@@ -216,7 +233,9 @@ export function PatientIntakeFields<T extends PatientIntakeValues>({
             <FieldError message={err('districtId')} />
           </div>
           <div>
-            <Label htmlFor="cityId" required>{t('patientIntake.fields.city')}</Label>
+            <Label htmlFor="cityId" required>
+              {t('patientIntake.fields.city')}
+            </Label>
             <Controller
               name={'cityId' as any}
               control={control}
@@ -224,13 +243,19 @@ export function PatientIntakeFields<T extends PatientIntakeValues>({
                 <Select id="cityId" ref={field.ref} value={field.value ?? ''} onChange={field.onChange} disabled={!selectedDistrictId}>
                   {choose}
                   {cities.map((c) => (
-                    <option key={c.id} value={c.id}>{c.subName ? `${c.name} - ${c.subName}` : c.name}</option>
+                    <option key={c.id} value={c.id}>
+                      {c.subName ? `${c.name} - ${c.subName}` : c.name}
+                    </option>
                   ))}
                 </Select>
               )}
             />
             <FieldError message={err('cityId')} />
-            {selectedCity?.postcode && <p className="mt-1 text-xs text-ink/60" aria-live="polite">{selectedCity.postcode}</p>}
+            {selectedCity?.postcode && (
+              <p className="mt-1 text-xs text-ink/60" aria-live="polite">
+                {selectedCity.postcode}
+              </p>
+            )}
           </div>
         </div>
         <div>
@@ -248,7 +273,9 @@ export function PatientIntakeFields<T extends PatientIntakeValues>({
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div hidden={answered('careSchedule')}>
-            <Label htmlFor="careSchedule" required>{t('patientIntake.fields.careSchedule')}</Label>
+            <Label htmlFor="careSchedule" required>
+              {t('patientIntake.fields.careSchedule')}
+            </Label>
             <Select id="careSchedule" {...register('careSchedule' as any)}>
               {choose}
               {options('careSchedule', CARE_SCHEDULES)}
@@ -256,7 +283,9 @@ export function PatientIntakeFields<T extends PatientIntakeValues>({
             <FieldError message={err('careSchedule')} />
           </div>
           <div hidden={answered('careStart')}>
-            <Label htmlFor="careStart" required>{t('patientIntake.fields.careStart')}</Label>
+            <Label htmlFor="careStart" required>
+              {t('patientIntake.fields.careStart')}
+            </Label>
             <Select id="careStart" {...register('careStart' as any)}>
               {choose}
               {options('careStart', CARE_STARTS)}

@@ -56,7 +56,11 @@ it('sets the password with the sign-up token and says to confirm the address', a
   create();
   expect(await screen.findByText(en.caregiverSignup.checkEmailTitle)).toBeDefined();
   expect(screen.getByText(en.caregiverSignup.checkEmailBody.replace('{email}', 'nadee@example.com'))).toBeDefined();
-  expect(post).toHaveBeenCalledWith('/auth/register-caregiver/unified/password', { pendingToken: 'tok', email: 'nadee@example.com', password: 'CaregiverPass123' });
+  expect(post).toHaveBeenCalledWith('/auth/register-caregiver/unified/password', {
+    pendingToken: 'tok',
+    email: 'nadee@example.com',
+    password: 'CaregiverPass123',
+  });
   expect(screen.getByRole('link', { name: en.caregiverSignup.goToSignIn }).getAttribute('href')).toBe('/caregiver/login');
 });
 

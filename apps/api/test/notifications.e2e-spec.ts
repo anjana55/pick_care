@@ -50,8 +50,15 @@ describe('In-app notifications (e2e)', () => {
     const reg = await api()
       .post('/auth/register-caregiver/unified')
       .send({
-        phone, consentAccepted: true, fullName: `Bell Caregiver ${phone}`, permanentAddress: '1 Lake Road, Kandy',
-        dateOfBirth: '1988-01-20', gender: 'FEMALE', civilStatus: 'MARRIED', emergencyContactName: 'EC', emergencyContactNumber: '0770001111',
+        phone,
+        consentAccepted: true,
+        fullName: `Bell Caregiver ${phone}`,
+        permanentAddress: '1 Lake Road, Kandy',
+        dateOfBirth: '1988-01-20',
+        gender: 'FEMALE',
+        civilStatus: 'MARRIED',
+        emergencyContactName: 'EC',
+        emergencyContactNumber: '0770001111',
         emergencyContactRelationship: 'Husband',
       })
       .expect(201);
@@ -64,7 +71,14 @@ describe('In-app notifications (e2e)', () => {
   async function newClient() {
     const reg = await api()
       .post('/auth/register-patient')
-      .send({ email: `bell-client-${run}-${++n}@example.com`, password: 'SelfRegPass123', fullName: `Bell Client ${letters(++n)}`, phone: newPhone(), consentAccepted: true, ...intake })
+      .send({
+        email: `bell-client-${run}-${++n}@example.com`,
+        password: 'SelfRegPass123',
+        fullName: `Bell Client ${letters(++n)}`,
+        phone: newPhone(),
+        consentAccepted: true,
+        ...intake,
+      })
       .expect(201);
     const [row] = await db.select().from(patients).where(eq(patients.id, reg.body.patientId));
     const token = jwt.sign({ sub: row.userId, role: 'PATIENT_GUARDIAN', patientId: row.id }, { secret: accessSecret, expiresIn: '10m' });
@@ -74,19 +88,32 @@ describe('In-app notifications (e2e)', () => {
   async function booking(patientId: string, caregiverId: string, shifts: { from: number; hours?: number }[]) {
     const id = uuid();
     await db.insert(bookings).values({
-      id, reference: `NT${run}${String(++n).padStart(4, '0')}`.slice(0, 16), patientId, caregiverId, status: 'CONFIRMED',
-      scheduleType: 'DAY', daysOfWeek: '1,2,3,4,5', shiftStartTime: '08:00', shiftEndTime: '17:00', startDate: '2026-01-01', endDate: '2026-12-31',
+      id,
+      reference: `NT${run}${String(++n).padStart(4, '0')}`.slice(0, 16),
+      patientId,
+      caregiverId,
+      status: 'CONFIRMED',
+      scheduleType: 'DAY',
+      daysOfWeek: '1,2,3,4,5',
+      shiftStartTime: '08:00',
+      shiftEndTime: '17:00',
+      startDate: '2026-01-01',
+      endDate: '2026-12-31',
     });
     for (const s of shifts) {
       const startsAt = new Date(Date.now() + s.from * HOUR);
-      await db.insert(bookingShifts).values({ id: uuid(), bookingId: id, caregiverId, startsAt, endsAt: new Date(startsAt.getTime() + (s.hours ?? 2) * HOUR), status: 'SCHEDULED' });
+      await db
+        .insert(bookingShifts)
+        .values({ id: uuid(), bookingId: id, caregiverId, startsAt, endsAt: new Date(startsAt.getTime() + (s.hours ?? 2) * HOUR), status: 'SCHEDULED' });
     }
     return id;
   }
 
   async function invoice(patientId: string, dueDate: string, total = '12500.00', paid = '0.00') {
     const id = uuid();
-    await db.insert(invoices).values({ id, number: `NT-${run}-${++n}`, patientId, status: 'ISSUED', basis: 'MANUAL', dueDate, billToName: 'Bell Client', total, amountPaid: paid });
+    await db
+      .insert(invoices)
+      .values({ id, number: `NT-${run}-${++n}`, patientId, status: 'ISSUED', basis: 'MANUAL', dueDate, billToName: 'Bell Client', total, amountPaid: paid });
     return id;
   }
 
@@ -105,7 +132,10 @@ describe('In-app notifications (e2e)', () => {
   }
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).overrideProvider(ThrottlerStorage).useValue(unlimitedThrottle).compile();
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+      .overrideProvider(ThrottlerStorage)
+      .useValue(unlimitedThrottle)
+      .compile();
     app = moduleRef.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
     await app.init();
@@ -119,15 +149,30 @@ describe('In-app notifications (e2e)', () => {
     districtId = tree.flatMap((p) => p.districts)[0].id;
     const cityId = (await api().get(`/public/meta/locations/cities?districtId=${districtId}&locale=en`).expect(200)).body[0].id;
     intake = {
-      registrantType: 'GUARDIAN', recipientName: 'Sunil Fernando', recipientRelationship: 'PARENT', recipientAge: 78, recipientGender: 'MALE',
-      preferredContactMethod: 'PHONE_CALL', districtId, cityId, careNeeds: 'Needs help with bathing, meals and medication reminders.',
-      careSchedule: 'DAY', careStart: 'WITHIN_WEEK',
+      registrantType: 'GUARDIAN',
+      recipientName: 'Sunil Fernando',
+      recipientRelationship: 'PARENT',
+      recipientAge: 78,
+      recipientGender: 'MALE',
+      preferredContactMethod: 'PHONE_CALL',
+      districtId,
+      cityId,
+      careNeeds: 'Needs help with bathing, meals and medication reminders.',
+      careSchedule: 'DAY',
+      careStart: 'WITHIN_WEEK',
     };
-    await api().patch('/settings/notifications').set(bearer(adminToken)).send({ remindersEnabled: true, quietStartHour: 21, quietEndHour: 7, dailyReminderCap: 2 }).expect(200);
+    await api()
+      .patch('/settings/notifications')
+      .set(bearer(adminToken))
+      .send({ remindersEnabled: true, quietStartHour: 21, quietEndHour: 7, dailyReminderCap: 2 })
+      .expect(200);
   });
 
   afterAll(async () => {
-    await api().patch('/settings/notifications').set(bearer(adminToken)).send({ remindersEnabled: true, quietStartHour: 21, quietEndHour: 7, dailyReminderCap: 2, retentionDays: 180 });
+    await api()
+      .patch('/settings/notifications')
+      .set(bearer(adminToken))
+      .send({ remindersEnabled: true, quietStartHour: 21, quietEndHour: 7, dailyReminderCap: 2, retentionDays: 180 });
     await app.close();
   });
 
@@ -159,8 +204,24 @@ describe('In-app notifications (e2e)', () => {
     expect(before.unreadBy).toEqual({ BOOKING: 1 });
     expect(before.firstName).toBe('Bell');
     // Someone else can't mark it read.
-    expect((await api().post('/me/notifications/read').set(bearer(other.token)).send({ ids: [items[0].id] }).expect(200)).body.marked).toBe(0);
-    expect((await api().post('/me/notifications/read').set(bearer(client.token)).send({ paths: [`/bookings/${id}`] }).expect(200)).body.marked).toBe(1);
+    expect(
+      (
+        await api()
+          .post('/me/notifications/read')
+          .set(bearer(other.token))
+          .send({ ids: [items[0].id] })
+          .expect(200)
+      ).body.marked,
+    ).toBe(0);
+    expect(
+      (
+        await api()
+          .post('/me/notifications/read')
+          .set(bearer(client.token))
+          .send({ paths: [`/bookings/${id}`] })
+          .expect(200)
+      ).body.marked,
+    ).toBe(1);
     const after = await summary(client.token).expect(200);
     expect(after.body.unread).toBe(0);
     expect(after.body.badge).toBe(after.body.todos.length);
@@ -171,11 +232,15 @@ describe('In-app notifications (e2e)', () => {
   it('pages through the history', async () => {
     const client = await newClient();
     const notices = app.get(NotificationsService);
-    for (let i = 0; i < 23; i++) await notices.deliver([client.userId], () => ({ title: `Notice ${i}`, body: 'b' }), '/notifications', 'page test', { push: false });
+    for (let i = 0; i < 23; i++)
+      await notices.deliver([client.userId], () => ({ title: `Notice ${i}`, body: 'b' }), '/notifications', 'page test', { push: false });
     const first = await list(client.token).expect(200);
     expect(first.body.items).toHaveLength(20);
     expect(first.body.items[0].title).toBe('Notice 22');
-    const second = await api().get(`/me/notifications?before=${encodeURIComponent(first.body.nextCursor)}`).set(bearer(client.token)).expect(200);
+    const second = await api()
+      .get(`/me/notifications?before=${encodeURIComponent(first.body.nextCursor)}`)
+      .set(bearer(client.token))
+      .expect(200);
     expect(second.body.items.map((x: { title: string }) => x.title)).toEqual(['Notice 2', 'Notice 1', 'Notice 0']);
     expect(second.body.nextCursor).toBeNull();
     await api().post('/me/notifications/read').set(bearer(client.token)).send({ all: true }).expect(200);
@@ -208,13 +273,49 @@ describe('In-app notifications (e2e)', () => {
     const cg = await newCaregiver();
     const client = await newClient();
     const first = (await summary(cg.token).expect(200)).body.todos;
-    expect(first.filter((t: { kind: string }) => t.kind === 'UPLOAD_DOCUMENT').map((t: { params: { document: string } }) => t.params.document).sort()).toEqual(['gn', 'identity', 'police']);
+    expect(
+      first
+        .filter((t: { kind: string }) => t.kind === 'UPLOAD_DOCUMENT')
+        .map((t: { params: { document: string } }) => t.params.document)
+        .sort(),
+    ).toEqual(['gn', 'identity', 'police']);
 
     const rejected = uuid();
     await db.insert(caregiverDocuments).values([
-      { id: uuid(), caregiverId: cg.id, documentType: 'NIC', storageKey: `k-${uuid()}`, originalFilename: 'nic.jpg', mimeType: 'image/jpeg', sizeBytes: 10, checksum: 'x', verificationStatus: 'VERIFIED' },
-      { id: rejected, caregiverId: cg.id, documentType: 'POLICE_CLEARANCE', storageKey: `k-${uuid()}`, originalFilename: 'p.jpg', mimeType: 'image/jpeg', sizeBytes: 10, checksum: 'x', verificationStatus: 'PENDING' },
-      { id: uuid(), caregiverId: cg.id, documentType: 'GRAMA_NILADHARI_CERTIFICATE', storageKey: `k-${uuid()}`, originalFilename: 'g.jpg', mimeType: 'image/jpeg', sizeBytes: 10, checksum: 'x', verificationStatus: 'PENDING', expiresOn: addDays(colomboToday(), 10) },
+      {
+        id: uuid(),
+        caregiverId: cg.id,
+        documentType: 'NIC',
+        storageKey: `k-${uuid()}`,
+        originalFilename: 'nic.jpg',
+        mimeType: 'image/jpeg',
+        sizeBytes: 10,
+        checksum: 'x',
+        verificationStatus: 'VERIFIED',
+      },
+      {
+        id: rejected,
+        caregiverId: cg.id,
+        documentType: 'POLICE_CLEARANCE',
+        storageKey: `k-${uuid()}`,
+        originalFilename: 'p.jpg',
+        mimeType: 'image/jpeg',
+        sizeBytes: 10,
+        checksum: 'x',
+        verificationStatus: 'PENDING',
+      },
+      {
+        id: uuid(),
+        caregiverId: cg.id,
+        documentType: 'GRAMA_NILADHARI_CERTIFICATE',
+        storageKey: `k-${uuid()}`,
+        originalFilename: 'g.jpg',
+        mimeType: 'image/jpeg',
+        sizeBytes: 10,
+        checksum: 'x',
+        verificationStatus: 'PENDING',
+        expiresOn: addDays(colomboToday(), 10),
+      },
     ]);
     // Staff reject the police clearance: the caregiver hears, and it is on their To do.
     await api().patch(`/caregivers/${cg.id}/documents/${rejected}/verification`).set(bearer(adminToken)).send({ status: 'REJECTED' }).expect(200);
@@ -248,22 +349,47 @@ describe('In-app notifications (e2e)', () => {
     const created = await api()
       .post('/announcements')
       .set(bearer(staffToken))
-      .send({ audience: 'CLIENTS', en: { title: 'Office closed on Poya day', body: 'We are closed on Friday. Urgent? Call the hotline.' }, si: { title: 'පෝය දිනයේ කාර්යාලය වසා ඇත', body: '' }, link: '/account/bookings', important: true, sendPush: false })
+      .send({
+        audience: 'CLIENTS',
+        en: { title: 'Office closed on Poya day', body: 'We are closed on Friday. Urgent? Call the hotline.' },
+        si: { title: 'පෝය දිනයේ කාර්යාලය වසා ඇත', body: '' },
+        link: '/account/bookings',
+        important: true,
+        sendPush: false,
+      })
       .expect(201);
     expect(created.body).toMatchObject({ publishedAt: null, recipients: 0 });
     expect(created.body.text.si.body).toBe('We are closed on Friday. Urgent? Call the hotline.');
-    await api().post('/announcements').set(bearer(staffToken)).send({ audience: 'CLIENTS', en: { title: 'x', body: 'y' }, link: 'javascript:alert(1)' }).expect(400);
+    await api()
+      .post('/announcements')
+      .set(bearer(staffToken))
+      .send({ audience: 'CLIENTS', en: { title: 'x', body: 'y' }, link: 'javascript:alert(1)' })
+      .expect(400);
 
     const published = await api().post(`/announcements/${created.body.id}/publish`).set(bearer(staffToken)).expect(200);
     expect(published.body.recipients).toBeGreaterThan(0);
     await api().post(`/announcements/${created.body.id}/publish`).set(bearer(staffToken)).expect(409);
-    await api().patch(`/announcements/${created.body.id}`).set(bearer(staffToken)).send({ audience: 'ALL', en: { title: 'a', body: 'b' } }).expect(409);
+    await api()
+      .patch(`/announcements/${created.body.id}`)
+      .set(bearer(staffToken))
+      .send({ audience: 'ALL', en: { title: 'a', body: 'b' } })
+      .expect(409);
 
     const mine = (await list(client.token, 'si').expect(200)).body.items[0];
-    expect(mine).toMatchObject({ category: 'ANNOUNCEMENT', important: true, link: '/account/bookings', title: 'පෝය දිනයේ කාර්යාලය වසා ඇත', path: '/notifications' });
+    expect(mine).toMatchObject({
+      category: 'ANNOUNCEMENT',
+      important: true,
+      link: '/account/bookings',
+      title: 'පෝය දිනයේ කාර්යාලය වසා ඇත',
+      path: '/notifications',
+    });
     expect((await list(cg.token).expect(200)).body.items.find((x: { category: string }) => x.category === 'ANNOUNCEMENT')).toBeUndefined();
 
-    await api().post('/me/notifications/read').set(bearer(client.token)).send({ ids: [mine.id] }).expect(200);
+    await api()
+      .post('/me/notifications/read')
+      .set(bearer(client.token))
+      .send({ ids: [mine.id] })
+      .expect(200);
     expect((await api().get(`/announcements/${created.body.id}`).set(bearer(staffToken)).expect(200)).body.readCount).toBe(1);
 
     await api().delete(`/announcements/${created.body.id}`).set(bearer(staffToken)).expect(204);
@@ -272,12 +398,24 @@ describe('In-app notifications (e2e)', () => {
 
   it("won't push an announcement in quiet hours, but will put it in the bell", async () => {
     const hour = Number(toColombo(new Date()).time.slice(0, 2));
-    await api().patch('/settings/notifications').set(bearer(adminToken)).send({ quietStartHour: hour, quietEndHour: (hour + 1) % 24 }).expect(200);
+    await api()
+      .patch('/settings/notifications')
+      .set(bearer(adminToken))
+      .send({ quietStartHour: hour, quietEndHour: (hour + 1) % 24 })
+      .expect(200);
     try {
-      const a = await api().post('/announcements').set(bearer(staffToken)).send({ audience: 'CAREGIVERS', en: { title: 'Quiet', body: 'Night' }, sendPush: true }).expect(201);
+      const a = await api()
+        .post('/announcements')
+        .set(bearer(staffToken))
+        .send({ audience: 'CAREGIVERS', en: { title: 'Quiet', body: 'Night' }, sendPush: true })
+        .expect(201);
       const refused = await api().post(`/announcements/${a.body.id}/publish`).set(bearer(staffToken)).expect(400);
       expect(refused.body.message).toContain('quiet hours');
-      await api().patch(`/announcements/${a.body.id}`).set(bearer(staffToken)).send({ audience: 'CAREGIVERS', en: { title: 'Quiet', body: 'Night' }, sendPush: false }).expect(200);
+      await api()
+        .patch(`/announcements/${a.body.id}`)
+        .set(bearer(staffToken))
+        .send({ audience: 'CAREGIVERS', en: { title: 'Quiet', body: 'Night' }, sendPush: false })
+        .expect(200);
       await api().post(`/announcements/${a.body.id}/publish`).set(bearer(staffToken)).expect(200);
       await api().delete(`/announcements/${a.body.id}`).set(bearer(staffToken)).expect(204);
     } finally {
@@ -312,7 +450,12 @@ describe('In-app notifications (e2e)', () => {
     await sweep.tick(noon);
     await new Promise((r) => setTimeout(r, 300));
     expect((await list(client.token).expect(200)).body.items.filter((x: { category: string }) => x.category === 'REMINDER')).toHaveLength(1);
-    expect(await db.select().from(reminderSends).where(and(eq(reminderSends.userId, client.userId), eq(reminderSends.itemKey, `invoice:${third}`)))).toEqual([]);
+    expect(
+      await db
+        .select()
+        .from(reminderSends)
+        .where(and(eq(reminderSends.userId, client.userId), eq(reminderSends.itemKey, `invoice:${third}`))),
+    ).toEqual([]);
   });
 
   it("goes when the person's account is erased", async () => {

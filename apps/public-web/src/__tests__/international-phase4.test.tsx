@@ -54,7 +54,6 @@ jest.mock('@/components/layout/site-footer', () => ({ SiteFooter: () => null }))
 const CAREGIVER = { userId: 'u-cg', email: 'dilani@example.lk', role: 'CAREGIVER' as const, caregiverId: 'cg-1' };
 const EMPLOYER = { userId: 'u-emp', email: 'aiko@example.jp', role: 'EMPLOYER' as const, employerId: 'emp-1' };
 
-
 function renderUi(ui: ReactElement) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return render(
@@ -160,7 +159,9 @@ describe('a caregiver answering a job offer', () => {
     fireEvent.click(screen.getByLabelText(/I have read the terms/));
     expect(sign).toBeEnabled();
     fireEvent.click(sign);
-    await waitFor(() => expect(post).toHaveBeenCalledWith('/caregivers/cg-1/overseas/offers/of-1/respond', { action: 'ACCEPT', signatureName: 'Dilani Perera' }));
+    await waitFor(() =>
+      expect(post).toHaveBeenCalledWith('/caregivers/cg-1/overseas/offers/of-1/respond', { action: 'ACCEPT', signatureName: 'Dilani Perera' }),
+    );
     expect(await screen.findByText('Accepted')).toBeInTheDocument();
   });
 
@@ -207,7 +208,11 @@ describe('the departure checklist', () => {
       { item: 'OFFER_ACCEPTED' as const, done: true, doneOn: '2026-10-01', dueOn: null, note: null },
       { item: 'MEDICAL' as const, done: false, doneOn: null, dueOn: '2026-11-05', note: 'Bring your passport' },
     ];
-    route({ '/caregivers/cg-1/overseas/placements': [placement({ status: 'PRE_DEPARTURE', journey: { checklist, departureDetails: 'UL 454, 08:40', addressAbroad: null, phoneAbroad: null } })] });
+    route({
+      '/caregivers/cg-1/overseas/placements': [
+        placement({ status: 'PRE_DEPARTURE', journey: { checklist, departureDetails: 'UL 454, 08:40', addressAbroad: null, phoneAbroad: null } }),
+      ],
+    });
     put.mockResolvedValue([placement()]);
     renderUi(<DepartureCard />);
     expect(await screen.findAllByText('1 of 2 done')).not.toHaveLength(0);
@@ -215,7 +220,9 @@ describe('the departure checklist', () => {
     expect(screen.getByText('UL 454, 08:40')).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText('Phone number abroad'), { target: { value: '+971 50 123 4567' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
-    await waitFor(() => expect(put).toHaveBeenCalledWith('/caregivers/cg-1/overseas/placements/pl-1/contact', { addressAbroad: null, phoneAbroad: '+971 50 123 4567' }));
+    await waitFor(() =>
+      expect(put).toHaveBeenCalledWith('/caregivers/cg-1/overseas/placements/pl-1/contact', { addressAbroad: null, phoneAbroad: '+971 50 123 4567' }),
+    );
   });
 });
 
@@ -223,7 +230,15 @@ describe('checking a certificate', () => {
   it('shows the first name and programme of a genuine certificate', async () => {
     const { default: Page } = await import('@/app/verify/[code]/page');
     params = { code: 'abcdefghjk23' };
-    route({ '/public/certificates/abcdefghjk23': { number: 'TC-2026-K7Q2M9', firstName: 'Dilani', programmeTitle: 'English for caregivers', issuedOn: '2026-09-01', status: 'VALID' } });
+    route({
+      '/public/certificates/abcdefghjk23': {
+        number: 'TC-2026-K7Q2M9',
+        firstName: 'Dilani',
+        programmeTitle: 'English for caregivers',
+        issuedOn: '2026-09-01',
+        status: 'VALID',
+      },
+    });
     renderUi(<Page />);
     expect(await screen.findByText('This certificate is genuine')).toBeInTheDocument();
     expect(screen.getByText('Dilani')).toBeInTheDocument();
@@ -256,7 +271,17 @@ describe("an employer's interviews and offers", () => {
         status: 'INTERVIEW_SCHEDULED',
         interviewAt: null,
         messageToEmployer: null,
-        talent: { slug: 'dilani2026abc', firstName: 'Dilani', headline: null, photoUrl: null, yearsExperience: 4, verified: true, languages: [], completedTraining: [], targetCountries: ['JP'] },
+        talent: {
+          slug: 'dilani2026abc',
+          firstName: 'Dilani',
+          headline: null,
+          photoUrl: null,
+          yearsExperience: 4,
+          verified: true,
+          languages: [],
+          completedTraining: [],
+          targetCountries: ['JP'],
+        },
         interviews: [],
         offer: null,
         ...candidate,
@@ -267,7 +292,20 @@ describe("an employer's interviews and offers", () => {
   it('lets them add feedback after an interview, and make an offer', async () => {
     const { default: Overview } = await import('@/app/employer/(area)/page');
     auth = { user: EMPLOYER, loading: false };
-    const past = { id: 'iv-1', candidateId: 'cand-1', round: 1, scheduledAt: '2026-10-20T04:00:00Z', durationMinutes: 30, mode: 'VIDEO' as const, meetingLink: 'https://meet.example/x', location: null, instructions: null, status: 'SCHEDULED' as const, cancelReason: null, feedback: null };
+    const past = {
+      id: 'iv-1',
+      candidateId: 'cand-1',
+      round: 1,
+      scheduledAt: '2026-10-20T04:00:00Z',
+      durationMinutes: 30,
+      mode: 'VIDEO' as const,
+      meetingLink: 'https://meet.example/x',
+      location: null,
+      instructions: null,
+      status: 'SCHEDULED' as const,
+      cancelReason: null,
+      feedback: null,
+    };
     route({ '/employer/me': account(), '/employer/enquiries': [enquiry({ interviews: [past] })] });
     renderUi(<Overview />);
     expect(await screen.findByRole('link', { name: /Make an offer/ })).toHaveAttribute('href', '/employer/offers/new?candidate=cand-1');
@@ -278,7 +316,12 @@ describe("an employer's interviews and offers", () => {
   it('shows an offer in progress instead of offering to make another', async () => {
     const { default: Overview } = await import('@/app/employer/(area)/page');
     auth = { user: EMPLOYER, loading: false };
-    route({ '/employer/me': account(), '/employer/enquiries': [enquiry({ status: 'SELECTED', offer: { id: 'of-1', reference: 'OF-7K2Q9M', status: 'PENDING_REVIEW', expired: false } as unknown as EmployerJobOffer })] });
+    route({
+      '/employer/me': account(),
+      '/employer/enquiries': [
+        enquiry({ status: 'SELECTED', offer: { id: 'of-1', reference: 'OF-7K2Q9M', status: 'PENDING_REVIEW', expired: false } as unknown as EmployerJobOffer }),
+      ],
+    });
     renderUi(<Overview />);
     expect(await screen.findByRole('link', { name: 'Offer OF-7K2Q9M' })).toHaveAttribute('href', '/employer/offers/of-1');
     expect(screen.getByText('With our team')).toBeInTheDocument();

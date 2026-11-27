@@ -1,13 +1,6 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
-import {
-  ADSENSE_PUBLISHER_ID_RE,
-  DISABLED_ADS,
-  adsTxtLine,
-  normalizePublisherId,
-  normalizeSlotId,
-  type PublicAdsConfig,
-} from '@care-platform/shared';
+import { ADSENSE_PUBLISHER_ID_RE, DISABLED_ADS, adsTxtLine, normalizePublisherId, normalizeSlotId, type PublicAdsConfig } from '@care-platform/shared';
 import { DRIZZLE, type Database } from '../database/database.module';
 import { adsSettings } from '../database/schema';
 import { UpdateAdsSettingsDto } from './dto/update-ads-settings.dto';
@@ -44,7 +37,10 @@ export class AdsSettingsService {
   private async getRow(): Promise<Row> {
     const [existing] = await this.db.select().from(adsSettings).where(eq(adsSettings.id, SETTINGS_ID)).limit(1);
     if (existing) return existing;
-    await this.db.insert(adsSettings).values({ id: SETTINGS_ID }).onDuplicateKeyUpdate({ set: { id: SETTINGS_ID } });
+    await this.db
+      .insert(adsSettings)
+      .values({ id: SETTINGS_ID })
+      .onDuplicateKeyUpdate({ set: { id: SETTINGS_ID } });
     const [created] = await this.db.select().from(adsSettings).where(eq(adsSettings.id, SETTINGS_ID)).limit(1);
     return created;
   }

@@ -47,23 +47,50 @@ export class DataTransferController {
   }
 
   @Get('caregivers/export')
-  async exportCaregivers(@Query() filter: CaregiverExportDto, @CurrentUser() user: AuthenticatedUser, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
+  async exportCaregivers(
+    @Query() filter: CaregiverExportDto,
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const { csv, count } = await this.caregiverTransfer.export(filter);
-    await this.audit.record({ userId: user.userId, action: 'EXPORT_CAREGIVERS', entityType: 'Caregiver', metadata: { count, filter: { ...filter } }, ipAddress: req.ip ?? null });
+    await this.audit.record({
+      userId: user.userId,
+      action: 'EXPORT_CAREGIVERS',
+      entityType: 'Caregiver',
+      metadata: { count, filter: { ...filter } },
+      ipAddress: req.ip ?? null,
+    });
     return this.csvFile(res, csv, `caregivers-${this.today()}.csv`);
   }
 
   @Get('clients/export')
-  async exportClients(@Query() filter: ClientExportDto, @CurrentUser() user: AuthenticatedUser, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
+  async exportClients(
+    @Query() filter: ClientExportDto,
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const { csv, count } = await this.clientTransfer.export(filter);
-    await this.audit.record({ userId: user.userId, action: 'EXPORT_CLIENTS', entityType: 'Patient', metadata: { count, filter: { ...filter } }, ipAddress: req.ip ?? null });
+    await this.audit.record({
+      userId: user.userId,
+      action: 'EXPORT_CLIENTS',
+      entityType: 'Patient',
+      metadata: { count, filter: { ...filter } },
+      ipAddress: req.ip ?? null,
+    });
     return this.csvFile(res, csv, `clients-${this.today()}.csv`);
   }
 
   @Post('caregivers/import')
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('file', { limits: { fileSize: MAX_IMPORT_BYTES + 1024 } }))
-  async importCaregivers(@UploadedFile() file: Express.Multer.File, @Body() options: ImportOptionsDto, @CurrentUser() user: AuthenticatedUser, @Req() req: Request) {
+  async importCaregivers(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() options: ImportOptionsDto,
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: Request,
+  ) {
     const report = await this.caregiverTransfer.import(this.readFile(file), options.dryRun !== false);
     await this.recordImport(report, 'IMPORT_CAREGIVERS', 'Caregiver', user, req, file);
     return this.checkReport(report);
@@ -72,7 +99,12 @@ export class DataTransferController {
   @Post('clients/import')
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('file', { limits: { fileSize: MAX_IMPORT_BYTES + 1024 } }))
-  async importClients(@UploadedFile() file: Express.Multer.File, @Body() options: ImportOptionsDto, @CurrentUser() user: AuthenticatedUser, @Req() req: Request) {
+  async importClients(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() options: ImportOptionsDto,
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: Request,
+  ) {
     const report = await this.clientTransfer.import(this.readFile(file), options.dryRun !== false);
     await this.recordImport(report, 'IMPORT_CLIENTS', 'Patient', user, req, file);
     return this.checkReport(report);
@@ -89,7 +121,8 @@ export class DataTransferController {
 
   /** A file the importer can't use at all is a 400, so the page shows it as an error rather than an empty report. */
   private checkReport(report: ImportReport): ImportReport {
-    if (report.missingColumns.length) throw new BadRequestException(`The file is missing required columns: ${report.missingColumns.join(', ')}. Start from the template.`);
+    if (report.missingColumns.length)
+      throw new BadRequestException(`The file is missing required columns: ${report.missingColumns.join(', ')}. Start from the template.`);
     if (report.total === 0) throw new BadRequestException('The file has no rows to import.');
     if (report.total > MAX_IMPORT_ROWS) throw new BadRequestException(`Import at most ${MAX_IMPORT_ROWS} rows at a time; this file has ${report.total}.`);
     return report;
@@ -101,7 +134,14 @@ export class DataTransferController {
       userId: user.userId,
       action,
       entityType,
-      metadata: { file: file.originalname, rows: report.total, created: report.created, duplicates: report.duplicates, errors: report.errors, ids: report.rows.filter((r) => r.id).map((r) => r.id) },
+      metadata: {
+        file: file.originalname,
+        rows: report.total,
+        created: report.created,
+        duplicates: report.duplicates,
+        errors: report.errors,
+        ids: report.rows.filter((r) => r.id).map((r) => r.id),
+      },
       ipAddress: req.ip ?? null,
     });
   }

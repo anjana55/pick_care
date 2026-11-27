@@ -74,18 +74,12 @@ function pick(row: { nameEn: string; nameSi: string; nameTa: string }, locale: L
 }
 
 /** Same as pick(), for the own-location join whose columns are prefixed. */
-function pickOwnCity(
-  row: { cityEn: string | null; citySi: string | null; cityTa: string | null },
-  locale: Locale,
-): string | null {
+function pickOwnCity(row: { cityEn: string | null; citySi: string | null; cityTa: string | null }, locale: Locale): string | null {
   const value = locale === 'si' ? row.citySi : locale === 'ta' ? row.cityTa : row.cityEn;
   return value ?? row.cityEn;
 }
 
-function pickDistrict(
-  row: { districtEn: string | null; districtSi: string | null; districtTa: string | null },
-  locale: Locale,
-): string | null {
+function pickDistrict(row: { districtEn: string | null; districtSi: string | null; districtTa: string | null }, locale: Locale): string | null {
   const value = locale === 'si' ? row.districtSi : locale === 'ta' ? row.districtTa : row.districtEn;
   return value ?? row.districtEn;
 }
@@ -218,7 +212,8 @@ export class PublicSearchService {
     }
 
     const searchCity = await this.geo.city(request.location?.cityId);
-    if (searchCity) return { ...base, latitude: searchCity.latitude, longitude: searchCity.longitude, source: 'searchCity', label: localName(searchCity, locale) };
+    if (searchCity)
+      return { ...base, latitude: searchCity.latitude, longitude: searchCity.longitude, source: 'searchCity', label: localName(searchCity, locale) };
 
     const profileCity = await this.geo.city(request.origin?.cityId);
     if (profileCity && (!searchedDistrictId || profileCity.districtId === searchedDistrictId)) {
@@ -227,7 +222,14 @@ export class PublicSearchService {
 
     const district = await this.geo.district(searchedDistrictId);
     if (district) {
-      return { ...base, latitude: district.latitude, longitude: district.longitude, source: 'district', label: localName(district, locale), districtId: district.id };
+      return {
+        ...base,
+        latitude: district.latitude,
+        longitude: district.longitude,
+        source: 'district',
+        label: localName(district, locale),
+        districtId: district.id,
+      };
     }
     return null;
   }
@@ -250,10 +252,7 @@ export class PublicSearchService {
   private async resolveLocationFilterIds(origin: ResolvedOrigin | null): Promise<string[] | null> {
     if (!origin) return null;
 
-    const [cityIds, districtIds] = await Promise.all([
-      this.geo.cityIdsWithin(origin, origin.radiusKm),
-      this.geo.districtIdsWithin(origin, origin.radiusKm),
-    ]);
+    const [cityIds, districtIds] = await Promise.all([this.geo.cityIdsWithin(origin, origin.radiusKm), this.geo.districtIdsWithin(origin, origin.radiusKm)]);
     let preferredCityIds = cityIds;
     if (origin.districtId) {
       const { cities: all } = await this.geo.all();
@@ -268,7 +267,12 @@ export class PublicSearchService {
     ].filter((c): c is NonNullable<typeof c> => c !== null && c !== undefined);
 
     const [ownMatches, preferredMatches] = await Promise.all([
-      ownConditions.length ? this.db.select({ id: caregivers.id }).from(caregivers).where(or(...ownConditions)) : Promise.resolve([]),
+      ownConditions.length
+        ? this.db
+            .select({ id: caregivers.id })
+            .from(caregivers)
+            .where(or(...ownConditions))
+        : Promise.resolve([]),
       preferredCityIds.length
         ? this.db
             .selectDistinct({ caregiverId: preferredLocations.caregiverId })
@@ -299,7 +303,13 @@ export class PublicSearchService {
     if (request.careType) {
       const column = availability[CARE_TYPE_COLUMNS[request.careType]];
       const declined = await this.db.select({ caregiverId: availability.caregiverId }).from(availability).where(eq(column, false));
-      if (declined.length) conditions.push(notInArray(caregivers.id, declined.map((d) => d.caregiverId)));
+      if (declined.length)
+        conditions.push(
+          notInArray(
+            caregivers.id,
+            declined.map((d) => d.caregiverId),
+          ),
+        );
     }
 
     if (request.mandatorySkillIds?.length) {
@@ -346,7 +356,13 @@ export class PublicSearchService {
             gt(bookingShifts.endsAt, colomboToUtc(day, '00:00')),
           ),
         );
-      if (booked.length) conditions.push(notInArray(caregivers.id, booked.map((b) => b.caregiverId)));
+      if (booked.length)
+        conditions.push(
+          notInArray(
+            caregivers.id,
+            booked.map((b) => b.caregiverId),
+          ),
+        );
     }
 
     const whereClause = and(...conditions);
@@ -369,7 +385,9 @@ export class PublicSearchService {
       // own town could be left out of the results altogether.
       .orderBy(
         ...(request.location?.cityId || request.location?.districtId || origin?.districtId
-          ? [sql`CASE WHEN ${caregivers.cityId} = ${request.location?.cityId ?? 0} THEN 0 WHEN ${caregivers.districtId} = ${request.location?.districtId ?? origin?.districtId ?? 0} THEN 1 ELSE 2 END`]
+          ? [
+              sql`CASE WHEN ${caregivers.cityId} = ${request.location?.cityId ?? 0} THEN 0 WHEN ${caregivers.districtId} = ${request.location?.districtId ?? origin?.districtId ?? 0} THEN 1 ELSE 2 END`,
+            ]
           : []),
         sql`CASE WHEN ${inArray(caregivers.status, [...VERIFIED_CAREGIVER_STATUSES])} THEN 0 ELSE 1 END`,
         asc(caregivers.id),
@@ -731,9 +749,7 @@ export class PublicSearchService {
 
       const serviceArea: ServiceAreaCity[] = myLocations.flatMap((l) => {
         const point = places.cities.get(l.cityId);
-        return point
-          ? [{ cityId: l.cityId, name: pick(l, locale), latitude: point.latitude, longitude: point.longitude, distanceKm: distanceTo(point) }]
-          : [];
+        return point ? [{ cityId: l.cityId, name: pick(l, locale), latitude: point.latitude, longitude: point.longitude, distanceKm: distanceTo(point) }] : [];
       });
       const nearestService = serviceArea
         .filter((c): c is ServiceAreaCity & { distanceKm: number } => c.distanceKm !== null)
@@ -771,9 +787,7 @@ export class PublicSearchService {
         // submitted, verified or not, are shown; only internal
         // verification *notes* stay hidden, never the qualification itself.
         qualificationSummary: myQualifications.map((q) => `${q.name} — ${q.institution}`),
-        relevantExperienceSummary: [
-          ...new Set(myExperiences.map((e) => e.careType).filter((c): c is string => !!c)),
-        ],
+        relevantExperienceSummary: [...new Set(myExperiences.map((e) => e.careType).filter((c): c is string => !!c))],
         dayDuty: myAvailability?.dayDuty ?? false,
         nightDuty: myAvailability?.nightDuty ?? false,
         liveIn24h: myAvailability?.liveIn24h ?? false,

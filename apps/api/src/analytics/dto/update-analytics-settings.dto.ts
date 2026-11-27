@@ -9,10 +9,13 @@ import { IsBoolean, IsOptional, IsString, MaxLength } from 'class-validator';
  */
 export class UpdateAnalyticsSettingsDto {
   @ApiPropertyOptional({ description: 'Measure the public site with Google Analytics. Needs a measurement ID.' })
-  @IsOptional() @IsBoolean()
+  @IsOptional()
+  @IsBoolean()
   enabled?: boolean;
 
   @ApiPropertyOptional({ example: 'G-AB12CD34EF' })
-  @IsOptional() @IsString() @MaxLength(2000)
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
   measurementId?: string;
 }

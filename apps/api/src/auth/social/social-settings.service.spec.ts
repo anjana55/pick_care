@@ -109,7 +109,9 @@ describe('SocialAuthSettingsService', () => {
   it('builds the right client class for each provider', async () => {
     const secret = encryptSecret('s', KEY);
     const { service } = make(
-      (['GOOGLE', 'MICROSOFT', 'FACEBOOK'] as const).map((p) => row({ provider: p, enabled: true, clientId: 'id', clientSecretEncrypted: secret, tenant: 'contoso.com', apiVersion: 'v20.0' })),
+      (['GOOGLE', 'MICROSOFT', 'FACEBOOK'] as const).map((p) =>
+        row({ provider: p, enabled: true, clientId: 'id', clientSecretEncrypted: secret, tenant: 'contoso.com', apiVersion: 'v20.0' }),
+      ),
     );
     const registry = new SocialProviderRegistry(service);
     expect(await registry.get('google')).toBeInstanceOf(GoogleProviderClient);
@@ -142,7 +144,10 @@ describe('SocialAuthSettingsService', () => {
 
   describe('what the admin sees', () => {
     it('never returns the secret, only that one is stored and its last four characters', async () => {
-      const { service } = make([row({ provider: 'GOOGLE', enabled: true, clientId: 'g', clientSecretEncrypted: encryptSecret('abcd-1234-WXYZ', KEY) }), ...empty().slice(1)]);
+      const { service } = make([
+        row({ provider: 'GOOGLE', enabled: true, clientId: 'g', clientSecretEncrypted: encryptSecret('abcd-1234-WXYZ', KEY) }),
+        ...empty().slice(1),
+      ]);
 
       const [google] = await service.getForAdmin();
 
@@ -203,17 +208,26 @@ describe('SocialAuthSettingsService', () => {
     });
 
     it('makes the admin re-enter the secret when the client ID changes', async () => {
-      const { service } = make([row({ provider: 'GOOGLE', enabled: true, clientId: 'old', clientSecretEncrypted: encryptSecret('s', KEY) }), ...empty().slice(1)]);
+      const { service } = make([
+        row({ provider: 'GOOGLE', enabled: true, clientId: 'old', clientSecretEncrypted: encryptSecret('s', KEY) }),
+        ...empty().slice(1),
+      ]);
 
       await expect(service.update('GOOGLE', { clientId: 'new' }, 'a')).rejects.toThrow(/secret again/i);
       await expect(service.update('GOOGLE', { clientId: 'new', clientSecret: 'fresh' }, 'a')).resolves.toBeDefined();
     });
 
     it('removes the secret on request, and then cannot stay enabled', async () => {
-      const { service } = make([row({ provider: 'GOOGLE', enabled: true, clientId: 'g', clientSecretEncrypted: encryptSecret('s', KEY) }), ...empty().slice(1)]);
+      const { service } = make([
+        row({ provider: 'GOOGLE', enabled: true, clientId: 'g', clientSecretEncrypted: encryptSecret('s', KEY) }),
+        ...empty().slice(1),
+      ]);
 
       await expect(service.update('GOOGLE', { clearClientSecret: true }, 'a')).rejects.toThrow(/client secret/);
-      await expect(service.update('GOOGLE', { clearClientSecret: true, enabled: false }, 'a')).resolves.toMatchObject({ clientSecretSet: false, enabled: false });
+      await expect(service.update('GOOGLE', { clearClientSecret: true, enabled: false }, 'a')).resolves.toMatchObject({
+        clientSecretSet: false,
+        enabled: false,
+      });
     });
 
     it('only applies tenant to Microsoft and API version to Facebook', async () => {
@@ -245,7 +259,13 @@ describe('credential probes', () => {
     global.fetch = jest.fn(async () => new Response(JSON.stringify(body), { status })) as never;
   };
   const cfg = (provider: 'GOOGLE' | 'MICROSOFT' | 'FACEBOOK') => ({
-    provider, enabled: true, clientId: 'id', clientSecret: 'secret', tenant: 'common', apiVersion: 'v21.0', usable: true,
+    provider,
+    enabled: true,
+    clientId: 'id',
+    clientSecret: 'secret',
+    tenant: 'common',
+    apiVersion: 'v21.0',
+    usable: true,
   });
   const probe = (p: 'GOOGLE' | 'MICROSOFT' | 'FACEBOOK') => SocialProviderRegistry.build(cfg(p)).probeCredentials('https://x/cb');
 
@@ -276,7 +296,7 @@ describe('credential probes', () => {
     expect((await probe('FACEBOOK')).ok).toBe(true);
   });
 
-  it('never repeats the provider\'s own wording, which can quote the secret', async () => {
+  it("never repeats the provider's own wording, which can quote the secret", async () => {
     answer(401, { error: 'invalid_client', error_description: 'secret=secret is wrong' });
     const r = await probe('GOOGLE');
     expect(JSON.stringify(r)).not.toContain('secret=secret');

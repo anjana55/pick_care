@@ -68,7 +68,9 @@ export default function EmployerEnquiryPage() {
       {
         status,
         staffNote: note.trim() || null,
-        ...(status === 'PLACED' ? { placementFeeAmount: fee === '' ? null : Number(fee), placementFeeCurrency: fee === '' ? null : currency.toUpperCase() } : {}),
+        ...(status === 'PLACED'
+          ? { placementFeeAmount: fee === '' ? null : Number(fee), placementFeeCurrency: fee === '' ? null : currency.toUpperCase() }
+          : {}),
       },
       { onSuccess: () => setSaved(true) },
     );
@@ -118,7 +120,10 @@ export default function EmployerEnquiryPage() {
                 <Row label={t('international.enquiries.country')}>{countryName(enquiry.country, locale)}</Row>
                 <Row label={t('international.detail.contact')}>{enquiry.contactName}</Row>
                 <Row label={t('international.detail.email')}>
-                  <a href={`mailto:${enquiry.email}?subject=${encodeURIComponent(enquiry.reference)}`} className="inline-flex items-center gap-1 text-brand-dark hover:underline">
+                  <a
+                    href={`mailto:${enquiry.email}?subject=${encodeURIComponent(enquiry.reference)}`}
+                    className="inline-flex items-center gap-1 text-brand-dark hover:underline"
+                  >
                     <Mail size={14} aria-hidden />
                     {enquiry.email}
                   </a>
@@ -133,7 +138,12 @@ export default function EmployerEnquiryPage() {
                 )}
                 {enquiry.website && (
                   <Row label={t('international.detail.website')}>
-                    <a href={/^https?:\/\//.test(enquiry.website) ? enquiry.website : `https://${enquiry.website}`} target="_blank" rel="noreferrer noopener" className="inline-flex items-center gap-1 text-brand-dark hover:underline">
+                    <a
+                      href={/^https?:\/\//.test(enquiry.website) ? enquiry.website : `https://${enquiry.website}`}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="inline-flex items-center gap-1 text-brand-dark hover:underline"
+                    >
                       <ExternalLink size={14} aria-hidden />
                       {enquiry.website}
                     </a>
@@ -220,7 +230,14 @@ export default function EmployerEnquiryPage() {
           {status === 'PLACED' && <p className="text-xs text-ink/50">{t('international.detail.feeHint')}</p>}
           <div>
             <Label htmlFor="enq-note">{t('international.detail.note')}</Label>
-            <Textarea id="enq-note" rows={4} value={note} onChange={(e) => setNote(e.target.value)} maxLength={5000} placeholder={t('international.detail.notePlaceholder')} />
+            <Textarea
+              id="enq-note"
+              rows={4}
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              maxLength={5000}
+              placeholder={t('international.detail.notePlaceholder')}
+            />
           </div>
           {update.isError && <p className="text-sm text-danger">{update.error instanceof Error ? update.error.message : t('common.actionFailed')}</p>}
           <div className="flex items-center gap-3">

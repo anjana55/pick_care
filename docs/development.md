@@ -80,9 +80,15 @@ Production settings are in `.env.production.example` and
 From the repo root:
 
 ```bash
+npm run format        # Prettier: rewrite files in the house style
+npm run lint          # ESLint, no warnings allowed (npm run lint -- --fix fixes what it can)
 npm run typecheck     # every workspace
 npm test              # API unit tests, public-site and mobile component tests
 ```
+
+CI runs `format:check`, `lint`, `typecheck` and `test` on every pull request. Set
+your editor to format with Prettier on save (it reads `.prettierrc.json`) and to
+show ESLint (`eslint.config.mjs`), and most of this happens as you type.
 
 Per app:
 
@@ -155,8 +161,13 @@ Every user-facing string goes through the app's `t()` with keys in that app's
   Form + Zod; the `@/` alias points at `src/`.
 - **Mobile:** add native packages with `npx expo install`, use the app's own
   `Text` component, and see `apps/mobile/README.md` for its rules.
-- **Formatting:** 2-space indent, single quotes, semicolons, trailing commas,
-  LF line endings and a final newline (`.editorconfig`).
+- **Formatting is Prettier's** (`.prettierrc.json`: 160 columns, single quotes,
+  trailing commas). Don't hand-format or argue with it; `npm run format` before
+  committing. Markdown, migrations and the translation spreadsheet are left as
+  written (`.prettierignore`).
+- **Lint is ESLint** (`eslint.config.mjs`): TypeScript recommended rules, the
+  React hooks rules, and Next.js' rules for the two web apps. A rule is switched
+  off for a line only with a comment saying why.
 - **No brand names in code or strings.** Use `{brand}` or the branding settings.
 - **Delete, don't comment out.** Old code is in git history. Remove unused files,
   exports, dependencies and translation keys as part of the change that stops

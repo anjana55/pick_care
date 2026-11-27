@@ -31,10 +31,7 @@ export default function NotFound() {
             >
               {t('notFound.home')}
             </Link>
-            <Link
-              href="/find"
-              className="rounded bg-brand px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-dark"
-            >
+            <Link href="/find" className="rounded bg-brand px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-dark">
               {t('notFound.search')}
             </Link>
           </div>

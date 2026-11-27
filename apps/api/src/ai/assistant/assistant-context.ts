@@ -75,8 +75,14 @@ async function describeRecord(db: Database, kind: Kind, id: string): Promise<str
 
   switch (kind) {
     case 'request': {
-      const [r] = await db.select({ reference: careRequests.reference, status: careRequests.status }).from(careRequests).where(eq(careRequests.id, id)).limit(1);
-      return r ? `They have care request ${r.reference} open (status ${r.status}).${thisOne('request', `look it up with get_request("${r.reference}")`)}` : null;
+      const [r] = await db
+        .select({ reference: careRequests.reference, status: careRequests.status })
+        .from(careRequests)
+        .where(eq(careRequests.id, id))
+        .limit(1);
+      return r
+        ? `They have care request ${r.reference} open (status ${r.status}).${thisOne('request', `look it up with get_request("${r.reference}")`)}`
+        : null;
     }
     case 'booking': {
       const [b] = await db.select({ reference: bookings.reference, status: bookings.status }).from(bookings).where(eq(bookings.id, id)).limit(1);
@@ -98,11 +104,19 @@ async function describeRecord(db: Database, kind: Kind, id: string): Promise<str
     }
     case 'invoice': {
       const [i] = await db.select({ number: invoices.number, status: invoices.status }).from(invoices).where(eq(invoices.id, id)).limit(1);
-      return i ? `They have invoice ${i.number ?? '(draft, no number yet)'} open (status ${i.status}). You have no tool for invoices; say so if they ask you to change it.` : null;
+      return i
+        ? `They have invoice ${i.number ?? '(draft, no number yet)'} open (status ${i.status}). You have no tool for invoices; say so if they ask you to change it.`
+        : null;
     }
     case 'payout': {
-      const [s] = await db.select({ reference: payoutStatements.reference, status: payoutStatements.status }).from(payoutStatements).where(eq(payoutStatements.id, id)).limit(1);
-      return s ? `They have payout statement ${s.reference} open (status ${s.status}). You have no tool for payouts; say so if they ask you to change it.` : null;
+      const [s] = await db
+        .select({ reference: payoutStatements.reference, status: payoutStatements.status })
+        .from(payoutStatements)
+        .where(eq(payoutStatements.id, id))
+        .limit(1);
+      return s
+        ? `They have payout statement ${s.reference} open (status ${s.status}). You have no tool for payouts; say so if they ask you to change it.`
+        : null;
     }
   }
 }

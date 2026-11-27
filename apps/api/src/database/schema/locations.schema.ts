@@ -81,7 +81,9 @@ export const preferredLocations = mysqlTable(
     cityId: int('city_id')
       .notNull()
       .references(() => cities.id),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.caregiverId, table.cityId] }),

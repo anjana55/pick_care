@@ -16,12 +16,11 @@ export default function NotFound() {
           <h1 className="mb-2 text-lg font-semibold text-ink">{t('notFound.title')}</h1>
           <p className="mb-6 text-sm text-ink/60">{t('notFound.body')}</p>
           <div className="flex flex-col items-center gap-3">
-            <Link
-              href="/dashboard"
-              className="rounded bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark"
-            >
+            <Link href="/dashboard" className="rounded bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark">
               {t('notFound.home')}
             </Link>
+            {/* The public site, outside this app's /staff base path, so not a <Link>. */}
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
             <a href="/" className="text-sm font-medium text-brand-dark hover:underline">
               {t('notFound.public')}
             </a>

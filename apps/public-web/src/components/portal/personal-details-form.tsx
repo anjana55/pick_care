@@ -130,12 +130,20 @@ export function PersonalDetailsForm({ caregiver }: { caregiver: OwnCaregiver }) 
         omitFields={hidden}
       />
 
-      {serverError && <p role="alert" className="mt-4 text-sm text-danger">{serverError}</p>}
+      {serverError && (
+        <p role="alert" className="mt-4 text-sm text-danger">
+          {serverError}
+        </p>
+      )}
       <div className="mt-5 flex items-center gap-3 border-t border-border pt-4">
         <Button type="submit" disabled={isSubmitting || !isDirty}>
           {isSubmitting ? t('common.loading') : t('common.save')}
         </Button>
-        {saved && <span role="status" className="text-sm text-brand-dark">{t('portal.saved')}</span>}
+        {saved && (
+          <span role="status" className="text-sm text-brand-dark">
+            {t('portal.saved')}
+          </span>
+        )}
       </div>
     </form>
   );

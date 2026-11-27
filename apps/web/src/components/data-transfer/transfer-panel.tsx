@@ -5,7 +5,15 @@ import Link from 'next/link';
 import { AlertTriangle, CheckCircle2, Download, FileSpreadsheet, Upload, XCircle } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/provider';
 import { useLocationTree } from '@/lib/hooks/use-caregivers';
-import { useDownloadTemplate, useExportCsv, useImportCsv, type ImportIssue, type ImportReport, type ImportRowResult, type TransferKind } from '@/lib/hooks/use-data-transfer';
+import {
+  useDownloadTemplate,
+  useExportCsv,
+  useImportCsv,
+  type ImportIssue,
+  type ImportReport,
+  type ImportRowResult,
+  type TransferKind,
+} from '@/lib/hooks/use-data-transfer';
 import { CAREGIVER_STATUS_OPTIONS } from '@/lib/caregiver-status';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,7 +29,17 @@ const CLIENT_STATUSES = ['PENDING_REVIEW', 'ACTIVE', 'INACTIVE', 'SUSPENDED'];
  */
 const GUIDE: Record<TransferKind, { required: string[]; options: [string, string][] }> = {
   caregivers: {
-    required: ['Full name', 'Date of birth', 'Gender', 'Civil status', 'Primary phone', 'Permanent address', 'Emergency contact name', 'Emergency contact number', 'Emergency contact relationship'],
+    required: [
+      'Full name',
+      'Date of birth',
+      'Gender',
+      'Civil status',
+      'Primary phone',
+      'Permanent address',
+      'Emergency contact name',
+      'Emergency contact number',
+      'Emergency contact relationship',
+    ],
     options: [
       ['Gender', 'MALE, FEMALE, OTHER'],
       ['Civil status', 'SINGLE, MARRIED, DIVORCED, WIDOWED, OTHER'],
@@ -54,7 +72,9 @@ function OutcomeBadge({ outcome }: { outcome: ImportRowResult['outcome'] }) {
     DUPLICATE: 'bg-accent-light text-accent',
     ERROR: 'bg-danger-light text-danger',
   };
-  return <span className={cn('inline-flex whitespace-nowrap rounded px-2 py-0.5 text-xs font-medium', styles[outcome])}>{t(`dataTransfer.outcome.${outcome}`)}</span>;
+  return (
+    <span className={cn('inline-flex whitespace-nowrap rounded px-2 py-0.5 text-xs font-medium', styles[outcome])}>{t(`dataTransfer.outcome.${outcome}`)}</span>
+  );
 }
 
 /**
@@ -146,11 +166,22 @@ export function TransferPanel({ kind }: { kind: TransferKind }) {
             </div>
             <div>
               <Label htmlFor={`${kind}-search`}>{t('dataTransfer.search')}</Label>
-              <Input id={`${kind}-search`} value={search} onChange={(e) => setSearch(e.target.value)} maxLength={100} placeholder={t(`dataTransfer.${kind}.searchPlaceholder`)} />
+              <Input
+                id={`${kind}-search`}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                maxLength={100}
+                placeholder={t(`dataTransfer.${kind}.searchPlaceholder`)}
+              />
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <Button onClick={() => exporter.mutate({ status: status || undefined, districtId: districtId ? Number(districtId) : undefined, search: search.trim() || undefined })} disabled={exporter.isPending}>
+            <Button
+              onClick={() =>
+                exporter.mutate({ status: status || undefined, districtId: districtId ? Number(districtId) : undefined, search: search.trim() || undefined })
+              }
+              disabled={exporter.isPending}
+            >
               <Download size={16} aria-hidden className="mr-1.5" />
               {exporter.isPending ? t('dataTransfer.preparing') : t('dataTransfer.downloadCsv')}
             </Button>
@@ -250,7 +281,12 @@ export function TransferPanel({ kind }: { kind: TransferKind }) {
 
           {report && (
             <div className="space-y-4">
-              <div className={cn('flex flex-wrap items-center gap-x-6 gap-y-2 rounded border p-4 text-sm', committed ? 'border-brand/40 bg-brand-light/40' : 'border-border bg-paper/60')}>
+              <div
+                className={cn(
+                  'flex flex-wrap items-center gap-x-6 gap-y-2 rounded border p-4 text-sm',
+                  committed ? 'border-brand/40 bg-brand-light/40' : 'border-border bg-paper/60',
+                )}
+              >
                 <span className="font-medium text-ink">{committed ? t('dataTransfer.doneTitle') : t('dataTransfer.checkedTitle', { n: report.total })}</span>
                 <span className="inline-flex items-center gap-1.5 text-brand-dark">
                   <CheckCircle2 size={16} aria-hidden />
@@ -265,7 +301,9 @@ export function TransferPanel({ kind }: { kind: TransferKind }) {
                   {t('dataTransfer.summary.errors', { n: report.errors })}
                 </span>
               </div>
-              {report.ignoredColumns.length > 0 && <p className="text-xs text-ink/60">{t('dataTransfer.ignoredColumns', { columns: report.ignoredColumns.join(', ') })}</p>}
+              {report.ignoredColumns.length > 0 && (
+                <p className="text-xs text-ink/60">{t('dataTransfer.ignoredColumns', { columns: report.ignoredColumns.join(', ') })}</p>
+              )}
 
               {!committed && (
                 <div className="flex flex-wrap items-center gap-3">
@@ -283,7 +321,10 @@ export function TransferPanel({ kind }: { kind: TransferKind }) {
                     key={f}
                     type="button"
                     onClick={() => setRowFilter(f)}
-                    className={cn('rounded-full border px-3 py-1', rowFilter === f ? 'border-brand bg-brand-light text-brand-dark' : 'border-border text-ink/70 hover:text-ink')}
+                    className={cn(
+                      'rounded-full border px-3 py-1',
+                      rowFilter === f ? 'border-brand bg-brand-light text-brand-dark' : 'border-border text-ink/70 hover:text-ink',
+                    )}
                   >
                     {t(`dataTransfer.filter.${f}`)}
                   </button>

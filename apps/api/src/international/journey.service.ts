@@ -28,7 +28,9 @@ export function checklistOf(rows: Pick<ItemRow, 'item' | 'doneOn' | 'dueOn' | 'n
 export class JourneyService {
   constructor(@Inject(DRIZZLE) private readonly db: Database) {}
 
-  async forPlacements(rows: Pick<PlacementRow, 'id' | 'departureDetails' | 'addressAbroad' | 'phoneAbroad' | 'candidateId'>[]): Promise<Map<string, PlacementJourney>> {
+  async forPlacements(
+    rows: Pick<PlacementRow, 'id' | 'departureDetails' | 'addressAbroad' | 'phoneAbroad' | 'candidateId'>[],
+  ): Promise<Map<string, PlacementJourney>> {
     const out = new Map<string, PlacementJourney>();
     if (!rows.length) return out;
     const ids = rows.map((r) => r.id);
@@ -37,7 +39,15 @@ export class JourneyService {
       this.db
         .select({ candidateId: jobOffers.candidateId, respondedAt: jobOffers.respondedAt })
         .from(jobOffers)
-        .where(and(inArray(jobOffers.candidateId, rows.map((r) => r.candidateId)), eq(jobOffers.status, 'ACCEPTED'))),
+        .where(
+          and(
+            inArray(
+              jobOffers.candidateId,
+              rows.map((r) => r.candidateId),
+            ),
+            eq(jobOffers.status, 'ACCEPTED'),
+          ),
+        ),
     ]);
     const acceptedOn = new Map(accepted.map((a) => [a.candidateId, a.respondedAt ? new Date(a.respondedAt).toISOString().slice(0, 10) : todayColombo()]));
     for (const p of rows) {
@@ -61,7 +71,14 @@ export class JourneyService {
       .from(placementChecklistItems)
       .where(and(eq(placementChecklistItems.placementId, placementId), eq(placementChecklistItems.item, item)))
       .limit(1);
-    const doneOn = dto.done === false ? null : dto.done === true ? (dto.doneOn ?? existing?.doneOn ?? todayColombo()) : dto.doneOn !== undefined ? dto.doneOn : (existing?.doneOn ?? null);
+    const doneOn =
+      dto.done === false
+        ? null
+        : dto.done === true
+          ? (dto.doneOn ?? existing?.doneOn ?? todayColombo())
+          : dto.doneOn !== undefined
+            ? dto.doneOn
+            : (existing?.doneOn ?? null);
     if (doneOn && doneOn > todayColombo()) throw new BadRequestException('A step cannot be done in the future.');
     const values = {
       doneOn,

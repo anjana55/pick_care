@@ -2,7 +2,15 @@ import { AttachmentNotSupportedError, buildRequest, type ChatAttachment } from '
 
 const png: ChatAttachment = { mediaType: 'image/png', base64: 'iVBORw0K', filename: 'nic.png' };
 const pdf: ChatAttachment = { mediaType: 'application/pdf', base64: 'JVBERi0x', filename: 'police.pdf' };
-const req = (attachments: ChatAttachment[]) => ({ messages: [{ role: 'system' as const, content: 'Read it' }, { role: 'user' as const, content: 'What does it say?', attachments }], temperature: 0, maxTokens: 300, json: true });
+const req = (attachments: ChatAttachment[]) => ({
+  messages: [
+    { role: 'system' as const, content: 'Read it' },
+    { role: 'user' as const, content: 'What does it say?', attachments },
+  ],
+  temperature: 0,
+  maxTokens: 300,
+  json: true,
+});
 const cfg = (provider: 'OLLAMA' | 'OPENAI_COMPATIBLE' | 'ANTHROPIC') => ({ provider, baseUrl: 'http://model', model: 'm', apiKey: null });
 
 describe('files shown to a model', () => {

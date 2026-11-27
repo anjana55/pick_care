@@ -8,7 +8,12 @@ const key = (requestId: string) => ['care-offers', requestId] as const;
 
 /** The offers sent on one request. Refetched while open: a caregiver may answer at any moment. */
 export function useRequestOffers(requestId: string) {
-  return useQuery({ queryKey: key(requestId), queryFn: () => api.get<StaffCareOffer[]>(`/care-requests/${requestId}/offers`), enabled: Boolean(requestId), refetchInterval: 30_000 });
+  return useQuery({
+    queryKey: key(requestId),
+    queryFn: () => api.get<StaffCareOffer[]>(`/care-requests/${requestId}/offers`),
+    enabled: Boolean(requestId),
+    refetchInterval: 30_000,
+  });
 }
 
 export function useSendOffer(requestId: string) {

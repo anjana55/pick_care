@@ -36,8 +36,12 @@ export const automationSettings = mysqlTable('automation_settings', {
   demoteAfterReversals: int('demote_after_reversals').notNull().default(3),
 
   updatedBy: varchar('updated_by', { length: 36 }),
-  createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+  createdAt: datetime('created_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: datetime('updated_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
 });
 
 /**
@@ -57,8 +61,12 @@ export const automationFunctions = mysqlTable('automation_functions', {
   endpointId: varchar('endpoint_id', { length: 36 }),
   fallbackEndpointId: varchar('fallback_endpoint_id', { length: 36 }),
   updatedBy: varchar('updated_by', { length: 36 }),
-  createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+  createdAt: datetime('created_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: datetime('updated_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
 });
 
 /**
@@ -78,7 +86,9 @@ export const automationActionPolicies = mysqlTable('automation_action_policies',
   promotedBy: varchar('promoted_by', { length: 36 }),
   demotedAt: datetime('demoted_at'),
   demoteReason: varchar('demote_reason', { length: 255 }),
-  updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: datetime('updated_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
 });
 
 /**
@@ -102,8 +112,12 @@ export const automationCases = mysqlTable(
     takeoverReason: varchar('takeover_reason', { length: 500 }),
     handoverNote: json('handover_note').$type<HandoverNote>(),
     handoverNoteAt: datetime('handover_note_at'),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (t) => ({
     caseUnique: uniqueIndex('automation_cases_case_unique').on(t.caseType, t.caseId),
@@ -151,7 +165,9 @@ export const agentDecisions = mysqlTable(
     executedAt: datetime('executed_at', { fsp: 3 }),
     executionError: varchar('execution_error', { length: 500 }),
     result: json('result').$type<Record<string, unknown>>(),
-    createdAt: datetime('created_at', { fsp: 3 }).notNull().default(sql`CURRENT_TIMESTAMP(3)`),
+    createdAt: datetime('created_at', { fsp: 3 })
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP(3)`),
   },
   (t) => ({
     functionCreatedIdx: index('agent_decisions_function_created_idx').on(t.function, t.createdAt),
@@ -187,8 +203,12 @@ export const automationEndpoints = mysqlTable(
     timeoutMs: int('timeout_ms').notNull().default(30000),
     clearedFor: mysqlEnum('cleared_for', DATA_CLASSES).notNull().default('PUBLIC'),
     updatedBy: varchar('updated_by', { length: 36 }),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (t) => ({
     nameUnique: uniqueIndex('automation_endpoints_name_unique').on(t.name),

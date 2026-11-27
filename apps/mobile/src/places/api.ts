@@ -16,7 +16,9 @@ export function useSavePlace() {
   const client = useClient();
   return useMutation({
     mutationFn: ({ id, ...body }: CareLocationUpdate & { id?: string }) =>
-      id ? api.patch<CareLocation>(`/me/care-locations/${encodeURIComponent(id)}`, body) : api.post<CareLocation>('/me/care-locations', body as CareLocationInput),
+      id
+        ? api.patch<CareLocation>(`/me/care-locations/${encodeURIComponent(id)}`, body)
+        : api.post<CareLocation>('/me/care-locations', body as CareLocationInput),
     onSuccess: () => qc.invalidateQueries({ queryKey: key(client?.userId) }),
   });
 }

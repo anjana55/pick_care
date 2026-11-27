@@ -26,7 +26,9 @@ export const whatsappOtps = mysqlTable(
     attempts: int('attempts').notNull().default(0),
     maxAttempts: int('max_attempts').notNull(),
     consumedAt: datetime('consumed_at'),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     phonePurposeIdx: index('whatsapp_otps_phone_purpose_idx').on(table.phone, table.purpose),
@@ -81,6 +83,10 @@ export const whatsappAuthSettings = mysqlTable('whatsapp_auth_settings', {
   defaultCountryCode: varchar('default_country_code', { length: 4 }).notNull().default('94'),
 
   updatedBy: varchar('updated_by', { length: 36 }),
-  createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+  createdAt: datetime('created_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: datetime('updated_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
 });

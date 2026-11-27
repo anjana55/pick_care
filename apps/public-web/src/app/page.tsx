@@ -1,12 +1,7 @@
 import type { Metadata } from 'next';
 import { getBranding } from '@/lib/branding/server';
 import { FinderPage } from '@/components/search/finder-page';
-import {
-  LandingApps,
-  LandingHowItWorks,
-  LandingGallery,
-  LandingCta,
-} from '@/components/landing/landing-sections';
+import { LandingApps, LandingHowItWorks, LandingGallery, LandingCta } from '@/components/landing/landing-sections';
 import { AdSlot } from '@/components/ads/adsense';
 
 export async function generateMetadata(): Promise<Metadata> {

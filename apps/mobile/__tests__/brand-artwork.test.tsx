@@ -3,7 +3,6 @@ import { DEFAULT_BRANDING, type PublicBranding } from '@care-platform/shared';
 import { BrandLogo, BrandMark } from '../src/ui/visual';
 import { AppProviders, serveApi } from '../test-utils/app';
 
-
 /**
  * The deployment's artwork from Settings > Branding, in the app: each piece
  * where it belongs, always as a PNG (the app can't draw SVG), and the

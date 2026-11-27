@@ -34,8 +34,12 @@ export const aiSettings = mysqlTable('ai_settings', {
   assistantPrompt: text('assistant_prompt'),
 
   updatedBy: varchar('updated_by', { length: 36 }),
-  createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+  createdAt: datetime('created_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: datetime('updated_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
 });
 
 /** One staff member's chat with the assistant. Private to that user. */
@@ -45,8 +49,12 @@ export const assistantConversations = mysqlTable(
     id: varchar('id', { length: 36 }).primaryKey(),
     userId: varchar('user_id', { length: 36 }).notNull(),
     title: varchar('title', { length: 120 }).notNull(),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     userIdx: index('assistant_conversations_user_idx').on(table.userId, table.updatedAt),
@@ -72,7 +80,9 @@ export const assistantMessages = mysqlTable(
     toolCallId: varchar('tool_call_id', { length: 64 }),
     toolName: varchar('tool_name', { length: 64 }),
     links: json('links'),
-    createdAt: datetime('created_at', { fsp: 3 }).notNull().default(sql`CURRENT_TIMESTAMP(3)`),
+    createdAt: datetime('created_at', { fsp: 3 })
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP(3)`),
   },
   (table) => ({
     conversationIdx: index('assistant_messages_conversation_idx').on(table.conversationId, table.createdAt),
@@ -102,7 +112,9 @@ export const assistantActions = mysqlTable(
     error: varchar('error', { length: 500 }),
     decidedByUserId: varchar('decided_by_user_id', { length: 36 }),
     decidedAt: datetime('decided_at'),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     conversationIdx: index('assistant_actions_conversation_idx').on(table.conversationId),

@@ -59,7 +59,14 @@ describe('WhatsApp authentication (e2e)', () => {
   const clearOtps = (phone: string) => db.execute(sql`DELETE FROM whatsapp_otps WHERE phone = ${e164(phone)}`);
   const expireOtps = (phone: string) =>
     db.execute(sql`UPDATE whatsapp_otps SET expires_at = NOW() - INTERVAL 1 MINUTE WHERE phone = ${e164(phone)} AND consumed_at IS NULL`);
-  const userRow = async (phone: string) => (await db.select().from(users).where(eq(users.phone, e164(phone))).limit(1))[0];
+  const userRow = async (phone: string) =>
+    (
+      await db
+        .select()
+        .from(users)
+        .where(eq(users.phone, e164(phone)))
+        .limit(1)
+    )[0];
 
   const caregiverBody = (phone: string, extra: Record<string, unknown> = {}) => ({
     whatsappNumber: phone,
@@ -93,10 +100,8 @@ describe('WhatsApp authentication (e2e)', () => {
 
   const registerCaregiver = (phone: string, extra?: Record<string, unknown>) =>
     api().post('/auth/whatsapp/register-caregiver').send(caregiverBody(phone, extra));
-  const registerPatient = (phone: string, extra?: Record<string, unknown>) =>
-    api().post('/auth/whatsapp/register-patient').send(patientBody(phone, extra));
-  const requestOtp = (phone: string, purpose: 'REGISTER' | 'LOGIN' | 'RECOVERY') =>
-    api().post('/auth/whatsapp/request-otp').send({ phone, purpose });
+  const registerPatient = (phone: string, extra?: Record<string, unknown>) => api().post('/auth/whatsapp/register-patient').send(patientBody(phone, extra));
+  const requestOtp = (phone: string, purpose: 'REGISTER' | 'LOGIN' | 'RECOVERY') => api().post('/auth/whatsapp/request-otp').send({ phone, purpose });
   const verifyOtp = (phone: string, purpose: 'REGISTER' | 'LOGIN' | 'RECOVERY', code: string) =>
     api().post('/auth/whatsapp/verify-otp').send({ phone, purpose, code });
   const wrongCode = (real: string) => (real === '000000' ? '111111' : '000000');
@@ -123,8 +128,7 @@ describe('WhatsApp authentication (e2e)', () => {
     return res.body.devOtp as string;
   }
 
-  const setSettings = (patch: Record<string, unknown>) =>
-    api().patch('/settings/whatsapp').set(bearer(adminToken)).send(patch);
+  const setSettings = (patch: Record<string, unknown>) => api().patch('/settings/whatsapp').set(bearer(adminToken)).send(patch);
 
   beforeAll(async () => {
     app = await buildApp({ throttle: false });
@@ -261,7 +265,7 @@ describe('WhatsApp authentication (e2e)', () => {
       const res = await api().get('/audit-logs?entityType=WhatsappSettings&pageSize=50').set(bearer(adminToken));
       // The route may be mounted at /audit; fall back so the assertion is about content, not the path.
       const rows = res.status === 200 ? res.body : (await api().get('/audit?entityType=WhatsappSettings&pageSize=50').set(bearer(adminToken))).body;
-      const list = Array.isArray(rows) ? rows : rows.items ?? [];
+      const list = Array.isArray(rows) ? rows : (rows.items ?? []);
       expect(list.some((r: any) => r.action === 'UPDATE_WHATSAPP_SETTINGS')).toBe(true);
       expect(JSON.stringify(list)).not.toContain('EAAG');
     });
@@ -374,7 +378,10 @@ describe('WhatsApp authentication (e2e)', () => {
       expect(profile.userId).toBe((await userRow(phone)).id);
 
       // visible to staff immediately, like any other self-registration
-      const list = await api().get(`/caregivers?search=${encodeURIComponent(profile.fullName)}`).set(bearer(adminToken)).expect(200);
+      const list = await api()
+        .get(`/caregivers?search=${encodeURIComponent(profile.fullName)}`)
+        .set(bearer(adminToken))
+        .expect(200);
       expect(list.body.items.some((c: any) => c.id === profile.id)).toBe(true);
     });
 
@@ -476,7 +483,11 @@ describe('WhatsApp authentication (e2e)', () => {
     it('records no separate care recipient when the person registers for themselves', async () => {
       const phone = newPhone();
       await registerPatient(phone, { registrantType: 'SELF' }).expect(201);
-      const [profile] = await db.select().from(patients).where(eq(patients.userId, (await userRow(phone)).id)).limit(1);
+      const [profile] = await db
+        .select()
+        .from(patients)
+        .where(eq(patients.userId, (await userRow(phone)).id))
+        .limit(1);
       expect(profile.registrantType).toBe('SELF');
       expect(profile.recipientName).toBeNull();
       expect(profile.recipientRelationship).toBeNull();
@@ -484,7 +495,16 @@ describe('WhatsApp authentication (e2e)', () => {
 
     it('rejects a registration that leaves out the care intake, and creates no account', async () => {
       // (The description of the care is optional, so it is not in this list.)
-      for (const field of ['registrantType', 'recipientAge', 'recipientGender', 'preferredContactMethod', 'districtId', 'cityId', 'careSchedule', 'careStart']) {
+      for (const field of [
+        'registrantType',
+        'recipientAge',
+        'recipientGender',
+        'preferredContactMethod',
+        'districtId',
+        'cityId',
+        'careSchedule',
+        'careStart',
+      ]) {
         const phone = newPhone();
         await registerPatient(phone, { [field]: undefined }).expect(400);
         expect(await userRow(phone)).toBeUndefined();
@@ -498,7 +518,9 @@ describe('WhatsApp authentication (e2e)', () => {
 
     it('rejects a city outside the chosen district, leaving no half-created account', async () => {
       const phone = newPhone();
-      const other = (await http.get('/public/meta/locations/tree?locale=en')).body.flatMap((p: any) => p.districts).find((d: any) => d.id !== intake.districtId).id;
+      const other = (await http.get('/public/meta/locations/tree?locale=en')).body
+        .flatMap((p: any) => p.districts)
+        .find((d: any) => d.id !== intake.districtId).id;
       await registerPatient(phone, { districtId: other }).expect(400);
       expect(await userRow(phone)).toBeUndefined();
     });
@@ -510,7 +532,10 @@ describe('WhatsApp authentication (e2e)', () => {
     });
 
     it('email registration now requires a phone number', async () => {
-      await api().post('/auth/register-patient').send(emailPatientBody({ email: `nophone-${runBase}@example.com`, phone: undefined })).expect(400);
+      await api()
+        .post('/auth/register-patient')
+        .send(emailPatientBody({ email: `nophone-${runBase}@example.com`, phone: undefined }))
+        .expect(400);
     });
 
     it('validates input', async () => {
@@ -571,7 +596,10 @@ describe('WhatsApp authentication (e2e)', () => {
     it('a deactivated WhatsApp account loses access immediately', async () => {
       const victim = await verifiedCaregiver();
       await api().get(`/caregivers/${victim.caregiverId}`).set(bearer(victim.tokens.accessToken)).expect(200);
-      await db.update(users).set({ isActive: false }).where(eq(users.phone, e164(victim.phone)));
+      await db
+        .update(users)
+        .set({ isActive: false })
+        .where(eq(users.phone, e164(victim.phone)));
       await api().get(`/caregivers/${victim.caregiverId}`).set(bearer(victim.tokens.accessToken)).expect(401);
       await api().post('/auth/refresh').send({ refreshToken: victim.tokens.refreshToken }).expect(401);
       // and can't get a new session
@@ -760,7 +788,9 @@ describe('WhatsApp authentication (e2e)', () => {
       try {
         const { phone } = await verifiedCaregiver();
         const code = await loginCode(phone);
-        const [row] = (await db.execute(sql`SELECT TIMESTAMPDIFF(SECOND, created_at, expires_at) AS ttl FROM whatsapp_otps WHERE phone = ${e164(phone)} ORDER BY created_at DESC LIMIT 1`)) as any;
+        const [row] = (await db.execute(
+          sql`SELECT TIMESTAMPDIFF(SECOND, created_at, expires_at) AS ttl FROM whatsapp_otps WHERE phone = ${e164(phone)} ORDER BY created_at DESC LIMIT 1`,
+        )) as any;
         expect(Number(row[0].ttl)).toBe(120);
         await verifyOtp(phone, 'LOGIN', code).expect(201);
       } finally {
@@ -771,7 +801,10 @@ describe('WhatsApp authentication (e2e)', () => {
     it('staff accounts can never sign in with WhatsApp, even with a phone on the row', async () => {
       const phone = newPhone();
       const [admin] = await db.select().from(users).where(eq(users.email, 'verifier@care-platform.local')).limit(1);
-      await db.update(users).set({ phone: e164(phone), phoneVerifiedAt: new Date() }).where(eq(users.id, admin.id));
+      await db
+        .update(users)
+        .set({ phone: e164(phone), phoneVerifiedAt: new Date() })
+        .where(eq(users.id, admin.id));
       try {
         const res = await requestOtp(phone, 'LOGIN').expect(201);
         expect(res.body.devOtp).toBeUndefined();
@@ -895,7 +928,10 @@ describe('WhatsApp authentication (e2e)', () => {
       const real = await registerCaregiver(phone, { fullName: 'Real Owner' }).expect(201);
       expect(real.body.caregiverId).not.toBe(squatter.body.caregiverId);
 
-      const rows = await db.select().from(users).where(eq(users.phone, e164(phone)));
+      const rows = await db
+        .select()
+        .from(users)
+        .where(eq(users.phone, e164(phone)));
       expect(rows).toHaveLength(1);
       expect(rows[0].fullName).toBe('Real Owner');
       const orphan = await db.select().from(caregivers).where(eq(caregivers.id, squatter.body.caregiverId));
@@ -991,10 +1027,7 @@ describe('WhatsApp authentication (e2e)', () => {
 
     it('still registers, verifies and logs in an email customer end to end', async () => {
       const email = `e2e-email-${runBase}@example.com`;
-      const reg = await api()
-        .post('/auth/register-patient')
-        .send(emailPatientBody({ email }))
-        .expect(201);
+      const reg = await api().post('/auth/register-patient').send(emailPatientBody({ email })).expect(201);
       expect(reg.body.devVerificationUrl).toContain('/verify-email?token=');
       await api().post('/auth/login').send({ email, password: 'SelfRegPass123' }).expect(401); // not verified yet
       const token = new URL(reg.body.devVerificationUrl).searchParams.get('token');
@@ -1005,8 +1038,14 @@ describe('WhatsApp authentication (e2e)', () => {
 
     it('email tokens carry no phone claim, and the same change-password still works', async () => {
       const email = `e2e-pw-${runBase}@example.com`;
-      const reg = await api().post('/auth/register-patient').send(emailPatientBody({ email, fullName: 'PW User' })).expect(201);
-      const ver = await api().post('/auth/verify-email').send({ token: new URL(reg.body.devVerificationUrl).searchParams.get('token') }).expect(201);
+      const reg = await api()
+        .post('/auth/register-patient')
+        .send(emailPatientBody({ email, fullName: 'PW User' }))
+        .expect(201);
+      const ver = await api()
+        .post('/auth/verify-email')
+        .send({ token: new URL(reg.body.devVerificationUrl).searchParams.get('token') })
+        .expect(201);
       expect(decodeJwt(ver.body.accessToken).phone).toBeUndefined();
       await api()
         .post('/auth/change-password')
@@ -1024,8 +1063,13 @@ describe('WhatsApp endpoint rate limiting (e2e)', () => {
 
   beforeAll(async () => {
     app = await buildApp({ throttle: true });
-    adminToken = (await request(app.getHttpServer()).post('/auth/login').send({ email: 'admin@care-platform.local', password: SEED_PASSWORD })).body.accessToken;
-    await request(app.getHttpServer()).patch('/settings/whatsapp').set({ Authorization: `Bearer ${adminToken}` }).send({ enabled: true, provider: 'CONSOLE' }).expect(200);
+    adminToken = (await request(app.getHttpServer()).post('/auth/login').send({ email: 'admin@care-platform.local', password: SEED_PASSWORD })).body
+      .accessToken;
+    await request(app.getHttpServer())
+      .patch('/settings/whatsapp')
+      .set({ Authorization: `Bearer ${adminToken}` })
+      .send({ enabled: true, provider: 'CONSOLE' })
+      .expect(200);
   });
   afterAll(async () => {
     await app.close();
@@ -1043,7 +1087,9 @@ describe('WhatsApp endpoint rate limiting (e2e)', () => {
   it('throttles code guessing from one client', async () => {
     const statuses: number[] = [];
     for (let i = 0; i < 14; i++) {
-      statuses.push((await request(app.getHttpServer()).post('/auth/whatsapp/verify-otp').send({ phone: '0771110001', purpose: 'LOGIN', code: '123456' })).status);
+      statuses.push(
+        (await request(app.getHttpServer()).post('/auth/whatsapp/verify-otp').send({ phone: '0771110001', purpose: 'LOGIN', code: '123456' })).status,
+      );
     }
     expect(statuses).toContain(429);
   });

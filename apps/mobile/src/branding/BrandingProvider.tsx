@@ -1,7 +1,16 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQuery } from '@tanstack/react-query';
-import { DEFAULT_BRANDING, brandingAssetUrl, normalizeBranding, textScaleFor, type BrandAsset, type BRAND_PNG_SIZES, type Locale, type PublicBranding } from '@care-platform/shared';
+import {
+  DEFAULT_BRANDING,
+  brandingAssetUrl,
+  normalizeBranding,
+  textScaleFor,
+  type BrandAsset,
+  type BRAND_PNG_SIZES,
+  type Locale,
+  type PublicBranding,
+} from '@care-platform/shared';
 import { api } from '@/api';
 import { config } from '@/config';
 

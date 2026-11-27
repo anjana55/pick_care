@@ -53,7 +53,10 @@ export function NotificationBell() {
     <>
       <Bell className="h-5 w-5" aria-hidden />
       {count > 0 && (
-        <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[11px] font-bold leading-none text-white" aria-hidden>
+        <span
+          className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[11px] font-bold leading-none text-white"
+          aria-hidden
+        >
           {badgeLabel(count)}
         </span>
       )}
@@ -72,7 +75,15 @@ export function NotificationBell() {
 
   return (
     <div ref={panel} className="relative">
-      <button type="button" aria-label={label} title={label} aria-expanded={open} aria-haspopup="dialog" onClick={() => setOpen((o) => !o)} className={faceClass}>
+      <button
+        type="button"
+        aria-label={label}
+        title={label}
+        aria-expanded={open}
+        aria-haspopup="dialog"
+        onClick={() => setOpen((o) => !o)}
+        className={faceClass}
+      >
         {face}
       </button>
       {open && <BellPanel role={user.role} href={href} onClose={() => setOpen(false)} />}
@@ -89,7 +100,11 @@ function BellPanel({ role, href, onClose }: { role: string; href: string; onClos
   const todos = summary.data?.todos ?? [];
 
   return (
-    <div role="dialog" aria-label={t('notifications.title')} className="absolute right-0 top-12 z-30 w-[26rem] max-w-[calc(100vw-2rem)] rounded-xl border border-border bg-paper shadow-xl">
+    <div
+      role="dialog"
+      aria-label={t('notifications.title')}
+      className="absolute right-0 top-12 z-30 w-[26rem] max-w-[calc(100vw-2rem)] rounded-xl border border-border bg-paper shadow-xl"
+    >
       <div className="max-h-[70vh] space-y-4 overflow-y-auto p-4">
         {todos.length > 0 && (
           <section>
@@ -106,7 +121,13 @@ function BellPanel({ role, href, onClose }: { role: string; href: string; onClos
               </button>
             )}
           </div>
-          {list.isError ? <p className="text-sm text-red-700">{t('notifications.loadError')}</p> : list.isLoading ? <p className="text-sm text-ink/60">{t('common.loading')}</p> : <NotificationList items={items} role={role} onOpen={onClose} />}
+          {list.isError ? (
+            <p className="text-sm text-red-700">{t('notifications.loadError')}</p>
+          ) : list.isLoading ? (
+            <p className="text-sm text-ink/60">{t('common.loading')}</p>
+          ) : (
+            <NotificationList items={items} role={role} onOpen={onClose} />
+          )}
         </section>
       </div>
       <div className="border-t border-border p-2 text-center">

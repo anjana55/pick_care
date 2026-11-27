@@ -22,14 +22,26 @@ import { clearPoints, currentSession, isTracking, readPoints, startTracking, sto
 
 const LAST_KEY = 'location.test.last';
 const TESTS: { label: string; kind: TrackKind; everyMinutes?: number; hours: number; hint: string }[] = [
-  { label: 'Trip: every 30 s, up to 1 hour', kind: 'TRIP', hours: 1, hint: 'Start before leaving, lock the phone, travel about 45 minutes (bus, tuk-tuk or car), stop on arrival.' },
-  { label: 'Visit: every 30 min, up to 9 hours', kind: 'SHIFT', everyMinutes: 30, hours: 9, hint: 'Start at the beginning of a working day, use the phone normally, stop after 8 hours.' },
+  {
+    label: 'Trip: every 30 s, up to 1 hour',
+    kind: 'TRIP',
+    hours: 1,
+    hint: 'Start before leaving, lock the phone, travel about 45 minutes (bus, tuk-tuk or car), stop on arrival.',
+  },
+  {
+    label: 'Visit: every 30 min, up to 9 hours',
+    kind: 'SHIFT',
+    everyMinutes: 30,
+    hours: 9,
+    hint: 'Start at the beginning of a working day, use the phone normally, stop after 8 hours.',
+  },
   { label: 'Visit: every 5 min, up to 2 hours', kind: 'SHIFT', everyMinutes: 5, hours: 2, hint: 'A quick check that points keep coming with the screen off.' },
 ];
 
 const START_MESSAGES: Record<Exclude<StartResult, 'started'>, string> = {
   denied: 'Location permission was refused. Allow it ("While using the app") in the phone\'s settings and try again.',
-  unavailable: 'This build cannot track in the background. It needs a new development or preview build with expo-task-manager and the background location setting.',
+  unavailable:
+    'This build cannot track in the background. It needs a new development or preview build with expo-task-manager and the background location setting.',
 };
 
 export default function LocationTestScreen() {
@@ -116,7 +128,8 @@ export default function LocationTestScreen() {
               </Pressable>
             ))}
             <Text style={{ fontSize: 14, lineHeight: 20, color: colors.muted }}>
-              Before starting: charge above 80%, close other navigation apps, and allow location "While using the app" only - not "Allow all the time". Don't swipe the app away during the test (that is a separate check).
+              Before starting: charge above 80%, close other navigation apps, and allow location "While using the app" only - not "Allow all the time". Don't
+              swipe the app away during the test (that is a separate check).
             </Text>
             <FormError message={error} />
             <Button label="Start test" busy={busy} onPress={() => void start()} />

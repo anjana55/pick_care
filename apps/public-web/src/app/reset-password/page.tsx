@@ -13,7 +13,11 @@ import { Label } from '@/components/ui/input';
 import { PasswordInput } from '@/components/ui/password-input';
 import { loginPathFor } from '@/lib/login-path';
 
-type LinkState = { status: 'checking' } | { status: 'invalid' } | { status: 'ready'; role: string; firstPassword: boolean; email: string | null } | { status: 'done'; role: string };
+type LinkState =
+  | { status: 'checking' }
+  | { status: 'invalid' }
+  | { status: 'ready'; role: string; firstPassword: boolean; email: string | null }
+  | { status: 'done'; role: string };
 
 const MIN_LENGTH = 8;
 
@@ -84,7 +88,10 @@ function ResetPasswordInner() {
               <CheckCircle2 size={40} className="mx-auto mb-4 text-brand" aria-hidden />
               <h1 className="mb-2 text-lg font-semibold text-ink">{t('passwordReset.doneTitle')}</h1>
               <p className="text-sm text-ink/60">{t('passwordReset.doneBody')}</p>
-              <Link href={loginPathFor(state.role)} className="mt-6 inline-flex rounded-DEFAULT bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark">
+              <Link
+                href={loginPathFor(state.role)}
+                className="mt-6 inline-flex rounded-DEFAULT bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark"
+              >
                 {t('passwordReset.signIn')}
               </Link>
             </div>
@@ -105,12 +112,26 @@ function ResetPasswordInner() {
                 {state.email && <input type="email" name="username" autoComplete="username" value={state.email} readOnly hidden />}
                 <div>
                   <Label htmlFor="new-password">{t('passwordReset.newPassword')}</Label>
-                  <PasswordInput id="new-password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} maxLength={128} required />
+                  <PasswordInput
+                    id="new-password"
+                    autoComplete="new-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    maxLength={128}
+                    required
+                  />
                   <p className={`mt-1 text-xs ${tooShort ? 'text-danger' : 'text-ink/50'}`}>{t('passwordReset.rule', { n: MIN_LENGTH })}</p>
                 </div>
                 <div>
                   <Label htmlFor="confirm-password">{t('passwordReset.confirmPassword')}</Label>
-                  <PasswordInput id="confirm-password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} maxLength={128} required />
+                  <PasswordInput
+                    id="confirm-password"
+                    autoComplete="new-password"
+                    value={confirm}
+                    onChange={(e) => setConfirm(e.target.value)}
+                    maxLength={128}
+                    required
+                  />
                   {mismatch && <p className="mt-1 text-xs text-danger">{t('passwordReset.mismatch')}</p>}
                 </div>
                 {error && (

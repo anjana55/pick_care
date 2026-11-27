@@ -15,7 +15,15 @@ export const fmtTime = (iso: string, locale: Locale) =>
   new Intl.DateTimeFormat(tag(locale), { timeZone: COLOMBO_TIME_ZONE, hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(iso));
 
 export const fmtDateTime = (iso: string, locale: Locale) =>
-  new Intl.DateTimeFormat(tag(locale), { timeZone: COLOMBO_TIME_ZONE, day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(iso));
+  new Intl.DateTimeFormat(tag(locale), {
+    timeZone: COLOMBO_TIME_ZONE,
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(new Date(iso));
 
 /** 'YYYY-MM-DD' -> a readable date, no time zone involved. */
 export const fmtDate = (date: string, locale: Locale) =>

@@ -30,7 +30,12 @@ export async function phonePosition(timeoutMs = 8000, load: () => LocationModule
       new Promise<null>((resolve) => setTimeout(() => resolve(null), timeoutMs)),
     ]);
     if (!fix) return {};
-    return { latitude: fix.coords.latitude, longitude: fix.coords.longitude, accuracyM: fix.coords.accuracy ?? undefined, ...(fix.mocked ? { mocked: true } : {}) };
+    return {
+      latitude: fix.coords.latitude,
+      longitude: fix.coords.longitude,
+      accuracyM: fix.coords.accuracy ?? undefined,
+      ...(fix.mocked ? { mocked: true } : {}),
+    };
   } catch {
     return {};
   }

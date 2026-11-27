@@ -105,7 +105,7 @@ export class WhatsappSettingsService {
     // Validate the *resulting* configuration, not just the changed fields, so
     // an admin can't leave the feature switched on with half a config.
     const next = { ...current, ...stripUndefined(fields) };
-    const nextToken = clearAccessToken ? null : (accessToken?.trim() || current.accessToken);
+    const nextToken = clearAccessToken ? null : accessToken?.trim() || current.accessToken;
     this.assertConsistent(next, nextToken);
 
     const patch: Partial<typeof whatsappAuthSettings.$inferInsert> = {
@@ -119,7 +119,15 @@ export class WhatsappSettingsService {
       patch.accessTokenEncrypted = encryptSecret(accessToken.trim(), this.encryptionKey);
     }
     // Stored trimmed so a pasted trailing space can't break the Graph API URL.
-    for (const key of ['apiBaseUrl', 'apiVersion', 'phoneNumberId', 'businessAccountId', 'templateName', 'templateLanguage', 'notificationTemplateName'] as const) {
+    for (const key of [
+      'apiBaseUrl',
+      'apiVersion',
+      'phoneNumberId',
+      'businessAccountId',
+      'templateName',
+      'templateLanguage',
+      'notificationTemplateName',
+    ] as const) {
       if (typeof patch[key] === 'string') (patch as Record<string, unknown>)[key] = (patch[key] as string).trim() || null;
     }
     if (typeof patch.apiBaseUrl === 'string') patch.apiBaseUrl = patch.apiBaseUrl.replace(/\/+$/, '');
@@ -159,7 +167,9 @@ export class WhatsappSettingsService {
   private assertNotificationsConsistent(s: Omit<ResolvedWhatsappSettings, 'accessToken'>, token: string | null) {
     if (!s.notificationsEnabled) return;
     if (s.provider === 'CONSOLE' && this.config.get<string>('NODE_ENV') === 'production') {
-      throw new BadRequestException('The console provider only logs messages and is for development - choose Meta Cloud API to send WhatsApp updates in production');
+      throw new BadRequestException(
+        'The console provider only logs messages and is for development - choose Meta Cloud API to send WhatsApp updates in production',
+      );
     }
     if (s.provider === 'META_CLOUD') {
       const missing: string[] = [];

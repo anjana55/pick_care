@@ -111,7 +111,14 @@ export default function EmployerRegisterPage() {
                   <Label htmlFor="reg-org" required>
                     {t('international.form.organisationName')}
                   </Label>
-                  <Input id="reg-org" value={v.organisationName} onChange={set('organisationName')} maxLength={200} autoComplete="organization" {...aria('organisationName')} />
+                  <Input
+                    id="reg-org"
+                    value={v.organisationName}
+                    onChange={set('organisationName')}
+                    maxLength={200}
+                    autoComplete="organization"
+                    {...aria('organisationName')}
+                  />
                   {err('organisationName')}
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -166,7 +173,16 @@ export default function EmployerRegisterPage() {
                   </div>
                   <div>
                     <Label htmlFor="reg-phone">{t('international.form.phone')}</Label>
-                    <Input id="reg-phone" type="tel" value={v.phone} onChange={set('phone')} placeholder="+81 90 1234 5678" maxLength={30} autoComplete="tel" {...aria('phone')} />
+                    <Input
+                      id="reg-phone"
+                      type="tel"
+                      value={v.phone}
+                      onChange={set('phone')}
+                      placeholder="+81 90 1234 5678"
+                      maxLength={30}
+                      autoComplete="tel"
+                      {...aria('phone')}
+                    />
                     {err('phone')}
                   </div>
                   <div>
@@ -188,7 +204,13 @@ export default function EmployerRegisterPage() {
 
               <div>
                 <label className="flex items-start gap-2.5 text-sm text-ink/80">
-                  <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 h-4 w-4 rounded border-border text-brand focus:ring-brand" {...aria('consent')} />
+                  <input
+                    type="checkbox"
+                    checked={consent}
+                    onChange={(e) => setConsent(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 rounded border-border text-brand focus:ring-brand"
+                    {...aria('consent')}
+                  />
                   <span>{t('employer.register.consent')}</span>
                 </label>
                 {err('consent')}

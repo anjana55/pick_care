@@ -27,7 +27,13 @@ export default function PeopleWaitingPage() {
       <p className="mt-1 text-sm text-ink/60">{t('peopleWaiting.subtitle')}</p>
       <div className="mt-4 flex gap-2" role="tablist">
         {(['OPEN', 'HANDLED'] as const).map((k) => (
-          <button key={k} role="tab" aria-selected={tab === k} className={`rounded-DEFAULT px-3 py-1.5 text-sm font-medium ${tab === k ? 'bg-brand text-white' : 'bg-white text-ink/70 ring-1 ring-border'}`} onClick={() => setTab(k)}>
+          <button
+            key={k}
+            role="tab"
+            aria-selected={tab === k}
+            className={`rounded-DEFAULT px-3 py-1.5 text-sm font-medium ${tab === k ? 'bg-brand text-white' : 'bg-white text-ink/70 ring-1 ring-border'}`}
+            onClick={() => setTab(k)}
+          >
             {t(k === 'OPEN' ? 'peopleWaiting.openTab' : 'peopleWaiting.handledTab')}
           </button>
         ))}
@@ -35,7 +41,9 @@ export default function PeopleWaitingPage() {
       <div className="mt-4 space-y-3">
         {isLoading && <p className="text-sm text-ink/50">{t('common.loading')}</p>}
         {data && data.length === 0 && <p className="text-sm text-ink/50">{t('peopleWaiting.none')}</p>}
-        {data?.map((r) => <Row key={r.id} r={r} />)}
+        {data?.map((r) => (
+          <Row key={r.id} r={r} />
+        ))}
       </div>
     </div>
   );
@@ -60,12 +68,24 @@ function Row({ r }: { r: StaffTalkRequest }) {
     <article className="rounded-lg border border-border bg-white p-4" data-testid="talk-request">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <p className="text-sm">
-          {personHref ? <Link href={personHref} className="font-medium text-brand-dark hover:underline">{r.person.name}</Link> : <span className="font-medium">{r.person.name}</span>}
+          {personHref ? (
+            <Link href={personHref} className="font-medium text-brand-dark hover:underline">
+              {r.person.name}
+            </Link>
+          ) : (
+            <span className="font-medium">{r.person.name}</span>
+          )}
           <span className="text-ink/50"> · {t(r.role === 'CLIENT' ? 'peopleWaiting.client' : 'peopleWaiting.caregiver')}</span>
           {r.about && (
             <span className="text-ink/50">
               {' · '}
-              {aboutHref ? <Link href={aboutHref} className="hover:underline">{t('peopleWaiting.about', { ref: r.about.reference })}</Link> : t('peopleWaiting.about', { ref: r.about.reference })}
+              {aboutHref ? (
+                <Link href={aboutHref} className="hover:underline">
+                  {t('peopleWaiting.about', { ref: r.about.reference })}
+                </Link>
+              ) : (
+                t('peopleWaiting.about', { ref: r.about.reference })
+              )}
             </span>
           )}
         </p>
@@ -75,7 +95,11 @@ function Row({ r }: { r: StaffTalkRequest }) {
       <p className="mt-2 flex flex-wrap items-center gap-3 text-sm">
         <span className="font-medium text-accent">{t(`peopleWaiting.contact.${r.contact}`)}</span>
         {r.person.phone && <PhoneLink phone={r.person.phone} whatsapp />}
-        {r.person.email && <a href={`mailto:${r.person.email}`} className="text-brand hover:underline">{r.person.email}</a>}
+        {r.person.email && (
+          <a href={`mailto:${r.person.email}`} className="text-brand hover:underline">
+            {r.person.email}
+          </a>
+        )}
       </p>
       {r.status === 'OPEN' ? (
         <form
@@ -89,8 +113,14 @@ function Row({ r }: { r: StaffTalkRequest }) {
             <Label htmlFor={`note-${r.id}`}>{t('peopleWaiting.note')}</Label>
             <Input id={`note-${r.id}`} maxLength={500} value={note} onChange={(e) => setNote(e.target.value)} />
           </div>
-          <Button type="submit" size="sm" disabled={handle.isPending}>{t('peopleWaiting.handle')}</Button>
-          {error && <p role="alert" className="w-full text-sm text-danger">{error}</p>}
+          <Button type="submit" size="sm" disabled={handle.isPending}>
+            {t('peopleWaiting.handle')}
+          </Button>
+          {error && (
+            <p role="alert" className="w-full text-sm text-danger">
+              {error}
+            </p>
+          )}
         </form>
       ) : (
         <p className="mt-2 text-xs text-ink/60">

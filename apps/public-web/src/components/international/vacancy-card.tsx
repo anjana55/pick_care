@@ -19,7 +19,10 @@ export function useSalaryText() {
         return `${v.salaryCurrency ?? ''} ${n}`;
       }
     };
-    const amount = v.salaryMin != null && v.salaryMax != null && v.salaryMax !== v.salaryMin ? `${fmt(v.salaryMin)} – ${fmt(v.salaryMax)}` : fmt((v.salaryMin ?? v.salaryMax)!);
+    const amount =
+      v.salaryMin != null && v.salaryMax != null && v.salaryMax !== v.salaryMin
+        ? `${fmt(v.salaryMin)} – ${fmt(v.salaryMax)}`
+        : fmt((v.salaryMin ?? v.salaryMax)!);
     return v.salaryPeriod ? t(`vacancies.per.${v.salaryPeriod}`, { amount }) : amount;
   };
 }
@@ -62,14 +65,20 @@ export function VacancyCard({ vacancy: v }: { vacancy: PublicVacancy }) {
             {v.title}
           </Link>
         </h3>
-        <span className="rounded-full bg-accent-light px-2.5 py-0.5 text-xs font-semibold text-accent-dark">{t('vacancies.roles', { count: v.rolesCount })}</span>
+        <span className="rounded-full bg-accent-light px-2.5 py-0.5 text-xs font-semibold text-accent-dark">
+          {t('vacancies.roles', { count: v.rolesCount })}
+        </span>
       </div>
       <div className="mt-3">
         <VacancyFacts vacancy={v} />
       </div>
       <p className="mt-3 line-clamp-2 text-sm text-ink/60">{v.description}</p>
       <div className="mt-auto flex items-center justify-between gap-3 pt-4 text-xs text-ink/50">
-        <span>{v.closesOn ? t('vacancies.closes', { date: fmtDate(v.closesOn, locale) }) : t('vacancies.posted', { date: fmtDate(v.publishedAt.slice(0, 10), locale) })}</span>
+        <span>
+          {v.closesOn
+            ? t('vacancies.closes', { date: fmtDate(v.closesOn, locale) })
+            : t('vacancies.posted', { date: fmtDate(v.publishedAt.slice(0, 10), locale) })}
+        </span>
         <Link href={`/work-abroad/vacancies/${v.reference}`} className="text-sm font-semibold text-brand hover:text-brand-dark">
           {t('vacancies.view')}
           <span className="sr-only">: {v.title}</span>

@@ -18,7 +18,9 @@ export function TrainingProgrammeCard({ programme, children }: { programme: Publ
   return (
     <div className="flex flex-col rounded-lg border border-border bg-white p-5">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="rounded-full bg-accent-light px-2.5 py-0.5 text-xs font-semibold text-accent-dark">{t(`workAbroad.categories.${programme.category}`)}</span>
+        <span className="rounded-full bg-accent-light px-2.5 py-0.5 text-xs font-semibold text-accent-dark">
+          {t(`workAbroad.categories.${programme.category}`)}
+        </span>
         <span className="rounded-full bg-paper px-2.5 py-0.5 text-xs font-semibold text-ink/70">{fee}</span>
       </div>
       <h3 className="mt-3 text-base font-semibold text-ink">{programme.title}</h3>

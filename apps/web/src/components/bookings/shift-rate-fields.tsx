@@ -31,7 +31,8 @@ export const shiftRatesOf = (s: Pick<BookingShift, 'rateType' | 'rateAmount' | '
   payRateAmount: s.payRateAmount ?? '',
 });
 
-export const shiftRatesValid = (v: ShiftRateValue) => (!v.rateType || MONEY.test(v.rateAmount.trim())) && (!v.payRateType || MONEY.test(v.payRateAmount.trim()));
+export const shiftRatesValid = (v: ShiftRateValue) =>
+  (!v.rateType || MONEY.test(v.rateAmount.trim())) && (!v.payRateType || MONEY.test(v.payRateAmount.trim()));
 
 /** The form value as an API payload. A locked side is left out entirely, so the API never sees a request for it. */
 export function shiftRatesPayload(v: ShiftRateValue, locks: { client: boolean; pay: boolean }): ShiftRateInput {
@@ -44,7 +45,8 @@ export function shiftRatesPayload(v: ShiftRateValue, locks: { client: boolean; p
 /** "LKR 5,000.00 per shift" - a shift's own rate. */
 export function useShiftRateLabel() {
   const { t } = useTranslation();
-  return (type: ShiftRateType | RateType, amount: string, unitKey: 'shiftRateUnit' | 'rateUnit' = 'shiftRateUnit') => `${formatLkr(amount)} ${t(`bookings.${unitKey}.${type}`)}`;
+  return (type: ShiftRateType | RateType, amount: string, unitKey: 'shiftRateUnit' | 'rateUnit' = 'shiftRateUnit') =>
+    `${formatLkr(amount)} ${t(`bookings.${unitKey}.${type}`)}`;
 }
 
 /**
@@ -162,7 +164,11 @@ export function ShiftRateEditor({ booking, shift, onDone }: { booking: BookingDe
       <ShiftRateFields booking={booking} value={value} onChange={setValue} locks={locks} idPrefix={`rate-${shift.id}`} />
       {billedDocs.length > 0 && <p className="mt-2 text-xs text-accent">{t('bookings.shiftRate.billedHint', { docs: billedDocs.join(', ') })}</p>}
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        <Button size="sm" disabled={!valid || update.isPending || (locks.client && locks.pay)} onClick={() => update.mutate({ shiftId: shift.id, ...shiftRatesPayload(value, locks) }, { onSuccess: onDone })}>
+        <Button
+          size="sm"
+          disabled={!valid || update.isPending || (locks.client && locks.pay)}
+          onClick={() => update.mutate({ shiftId: shift.id, ...shiftRatesPayload(value, locks) }, { onSuccess: onDone })}
+        >
           {t('common.save')}
         </Button>
         <Button size="sm" variant="secondary" onClick={onDone}>
@@ -184,8 +190,10 @@ export function ShiftRateChips({ shift }: { shift: BookingShift }) {
   const { t } = useTranslation();
   const label = useShiftRateLabel();
   const chips: { key: string; text: string; href?: string; tone: 'rate' | 'doc' }[] = [];
-  if (shift.rateType && shift.rateAmount) chips.push({ key: 'c', text: t('bookings.detail.ownRateCharged', { rate: label(shift.rateType, shift.rateAmount) }), tone: 'rate' });
-  if (shift.payRateType && shift.payRateAmount) chips.push({ key: 'p', text: t('bookings.detail.ownRatePaid', { rate: label(shift.payRateType, shift.payRateAmount) }), tone: 'rate' });
+  if (shift.rateType && shift.rateAmount)
+    chips.push({ key: 'c', text: t('bookings.detail.ownRateCharged', { rate: label(shift.rateType, shift.rateAmount) }), tone: 'rate' });
+  if (shift.payRateType && shift.payRateAmount)
+    chips.push({ key: 'p', text: t('bookings.detail.ownRatePaid', { rate: label(shift.payRateType, shift.payRateAmount) }), tone: 'rate' });
   if (shift.invoice)
     chips.push({
       key: 'i',
@@ -193,7 +201,8 @@ export function ShiftRateChips({ shift }: { shift: BookingShift }) {
       href: `/invoices/${shift.invoice.id}`,
       tone: 'doc',
     });
-  if (shift.payout) chips.push({ key: 'o', text: t('bookings.detail.onPayout', { reference: shift.payout.reference }), href: `/payouts/${shift.payout.id}`, tone: 'doc' });
+  if (shift.payout)
+    chips.push({ key: 'o', text: t('bookings.detail.onPayout', { reference: shift.payout.reference }), href: `/payouts/${shift.payout.id}`, tone: 'doc' });
   if (!chips.length) return null;
   return (
     <div className="mt-1 flex flex-wrap gap-1.5 sm:pl-32">

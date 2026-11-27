@@ -47,9 +47,7 @@ export const employers = mysqlTable(
   'employers',
   {
     id: varchar('id', { length: 36 }).primaryKey(),
-    userId: varchar('user_id', { length: 36 })
-      .notNull()
-      .unique(),
+    userId: varchar('user_id', { length: 36 }).notNull().unique(),
     organisationName: varchar('organisation_name', { length: 200 }).notNull(),
     organisationType: mysqlEnum('organisation_type', employerTypeEnum).notNull(),
     country: varchar('country', { length: 2 }).notNull(),
@@ -63,8 +61,12 @@ export const employers = mysqlTable(
     reviewedByUserId: varchar('reviewed_by_user_id', { length: 36 }),
     reviewedAt: datetime('reviewed_at'),
     consentAcceptedAt: datetime('consent_accepted_at').notNull(),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     statusIdx: index('employers_status_idx').on(table.status, table.createdAt),
@@ -112,8 +114,12 @@ export const employerEnquiries = mysqlTable(
     // The employer ticked "contact me about this enquiry" and accepted the privacy notice.
     consentAcceptedAt: datetime('consent_accepted_at').notNull(),
     language: varchar('language', { length: 5 }).notNull().default('en'),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     statusIdx: index('employer_enquiries_status_idx').on(table.status, table.createdAt),
@@ -161,8 +167,12 @@ export const enquiryCandidates = mysqlTable(
     employerMessage: varchar('employer_message', { length: 1000 }),
     // Internal: never shown to the employer or the caregiver.
     staffNote: varchar('staff_note', { length: 1000 }),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     oncePerEnquiry: uniqueIndex('enquiry_candidates_enquiry_caregiver_unique').on(table.enquiryId, table.caregiverId),
@@ -181,7 +191,9 @@ export const employerShortlist = mysqlTable(
     caregiverId: varchar('caregiver_id', { length: 36 })
       .notNull()
       .references(() => caregivers.id),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.employerId, table.caregiverId] }),
@@ -207,7 +219,9 @@ export const caregiverOverseasProfiles = mysqlTable('caregiver_overseas_profiles
   passportHeld: boolean('passport_held'),
   passportExpiry: date('passport_expiry', { mode: 'string' }),
   availableFrom: date('available_from', { mode: 'string' }),
-  updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: datetime('updated_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
 });
 
 // --- training -----------------------------------------------------------------
@@ -238,8 +252,12 @@ export const trainingProgrammes = mysqlTable('training_programmes', {
   sortOrder: int('sort_order').notNull().default(0),
   // 0-100. Set: a certificate of completion needs a score at or above it.
   passMark: int('pass_mark'),
-  createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+  createdAt: datetime('created_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: datetime('updated_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
 });
 
 /**
@@ -266,8 +284,12 @@ export const trainingEnrolments = mysqlTable(
     // 0-100 each. Progress is staff's estimate; score is the final assessment.
     progressPercent: int('progress_percent'),
     score: int('score'),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     oncePerProgramme: uniqueIndex('training_enrolments_programme_caregiver_unique').on(table.programmeId, table.caregiverId),
@@ -316,8 +338,12 @@ export const sharedProfiles = mysqlTable(
     // Withdrawing consent clears these and switches sharing off.
     consentAcceptedAt: datetime('consent_accepted_at'),
     consentVersion: varchar('consent_version', { length: 20 }),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     statusIdx: index('shared_profiles_status_idx').on(table.status),
@@ -380,8 +406,12 @@ export const overseasVacancies = mysqlTable(
     reviewedAt: datetime('reviewed_at'),
     publishedAt: datetime('published_at'),
     createdByUserId: varchar('created_by_user_id', { length: 36 }),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     statusIdx: index('overseas_vacancies_status_idx').on(table.status, table.publishedAt),
@@ -414,8 +444,12 @@ export const vacancyApplications = mysqlTable(
     candidateId: varchar('candidate_id', { length: 36 }).references(() => enquiryCandidates.id),
     // Internal: never shown to the caregiver.
     staffNote: varchar('staff_note', { length: 1000 }),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     oncePerVacancy: uniqueIndex('vacancy_applications_vacancy_caregiver_unique').on(table.vacancyId, table.caregiverId),
@@ -477,8 +511,12 @@ export const placements = mysqlTable(
     // Internal: never shown to the employer or the caregiver.
     staffNote: text('staff_note'),
     createdByUserId: varchar('created_by_user_id', { length: 36 }),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     statusIdx: index('placements_status_idx').on(table.status),
@@ -508,8 +546,12 @@ export const placementCheckins = mysqlTable(
     outcome: mysqlEnum('outcome', checkinOutcomeEnum),
     note: varchar('note', { length: 1000 }),
     recordedByUserId: varchar('recorded_by_user_id', { length: 36 }),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     oncePerKind: uniqueIndex('placement_checkins_placement_kind_unique').on(table.placementId, table.kind),
@@ -563,8 +605,12 @@ export const placementInvoices = mysqlTable(
     paidAt: datetime('paid_at'),
     voidedAt: datetime('voided_at'),
     voidReason: varchar('void_reason', { length: 500 }),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     statusIdx: index('placement_invoices_status_idx').on(table.status, table.dueDate),
@@ -602,7 +648,9 @@ export const placementInvoicePayments = mysqlTable(
     note: varchar('note', { length: 500 }),
     externalId: varchar('external_id', { length: 80 }).unique(),
     recordedByUserId: varchar('recorded_by_user_id', { length: 36 }),
-    createdAt: datetime('created_at', { fsp: 3 }).notNull().default(sql`CURRENT_TIMESTAMP(3)`),
+    createdAt: datetime('created_at', { fsp: 3 })
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP(3)`),
   },
   (table) => ({
     invoiceIdx: index('placement_invoice_payments_invoice_idx').on(table.invoiceId),
@@ -627,8 +675,12 @@ export const placementCheckouts = mysqlTable(
     method: varchar('method', { length: 20 }),
     statusMessage: varchar('status_message', { length: 255 }),
     createdByUserId: varchar('created_by_user_id', { length: 36 }),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     invoiceIdx: index('placement_checkouts_invoice_idx').on(table.invoiceId),
@@ -655,13 +707,14 @@ export const documentExpiryReminders = mysqlTable(
     subject: varchar('subject', { length: 60 }).notNull(),
     expiresOn: date('expires_on', { mode: 'string' }).notNull(),
     stage: mysqlEnum('stage', expiryReminderStageEnum).notNull(),
-    sentAt: datetime('sent_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    sentAt: datetime('sent_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     once: uniqueIndex('document_expiry_reminders_unique').on(table.caregiverId, table.subject, table.expiresOn, table.stage),
   }),
 );
-
 
 // === phase 4 ====================================================================================
 
@@ -695,8 +748,12 @@ export const caregiverAssessments = mysqlTable(
     verifiedAt: datetime('verified_at'),
     // Internal: never shown to the caregiver.
     note: varchar('note', { length: 500 }),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     caregiverIdx: index('caregiver_assessments_caregiver_idx').on(table.caregiverId),
@@ -737,7 +794,9 @@ export const trainingCertificates = mysqlTable(
     issuedByUserId: varchar('issued_by_user_id', { length: 36 }),
     revokedAt: datetime('revoked_at'),
     revokedReason: varchar('revoked_reason', { length: 500 }),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     caregiverIdx: index('training_certificates_caregiver_idx').on(table.caregiverId),
@@ -771,8 +830,12 @@ export const candidateInterviews = mysqlTable(
     // The employer's, after the interview. Staff see it; the caregiver does not.
     feedback: varchar('feedback', { length: 2000 }),
     createdByUserId: varchar('created_by_user_id', { length: 36 }),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     candidateIdx: index('candidate_interviews_candidate_idx').on(table.candidateId),
@@ -842,8 +905,12 @@ export const jobOffers = mysqlTable(
     declineReason: varchar('decline_reason', { length: 500 }),
     sentAt: datetime('sent_at'),
     respondedAt: datetime('responded_at'),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     candidateIdx: index('job_offers_candidate_idx').on(table.candidateId),
@@ -879,7 +946,9 @@ export const placementChecklistItems = mysqlTable(
     dueOn: date('due_on', { mode: 'string' }),
     note: varchar('note', { length: 500 }),
     updatedByUserId: varchar('updated_by_user_id', { length: 36 }),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.placementId, table.item] }),
@@ -916,8 +985,12 @@ export const welfareReports = mysqlTable(
     acknowledgedByUserId: varchar('acknowledged_by_user_id', { length: 36 }),
     resolvedAt: datetime('resolved_at'),
     resolvedByUserId: varchar('resolved_by_user_id', { length: 36 }),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     statusIdx: index('welfare_reports_status_idx').on(table.status, table.severity),
@@ -936,7 +1009,9 @@ export const welfareReportMessages = mysqlTable(
     authorRole: mysqlEnum('author_role', ['CAREGIVER', 'STAFF']).notNull(),
     authorUserId: varchar('author_user_id', { length: 36 }),
     body: text('body').notNull(),
-    createdAt: datetime('created_at', { fsp: 3 }).notNull().default(sql`CURRENT_TIMESTAMP(3)`),
+    createdAt: datetime('created_at', { fsp: 3 })
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP(3)`),
   },
   (table) => ({
     reportIdx: index('welfare_report_messages_report_idx').on(table.reportId, table.createdAt),

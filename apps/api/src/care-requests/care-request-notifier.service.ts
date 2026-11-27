@@ -9,15 +9,7 @@ import { EmailSettingsService } from '../email/email-settings.service';
 import { WhatsappSettingsService, type ResolvedWhatsappSettings } from '../whatsapp/whatsapp-settings.service';
 import { WhatsappProviderService } from '../whatsapp/whatsapp-provider.service';
 import { normalizePhone } from '../common/utils/phone.util';
-import {
-  CLIENT_CTA,
-  CLIENT_FOOTER,
-  caregiverNotice,
-  caregiverNoticeFor,
-  type CaregiverNotice,
-  clientNotice,
-  clientNoticeFor,
-} from './notification-messages';
+import { CLIENT_CTA, CLIENT_FOOTER, caregiverNotice, caregiverNoticeFor, type CaregiverNotice, clientNotice, clientNoticeFor } from './notification-messages';
 import { fromBlocks, fromNotice } from '../push/push.service';
 import { NotificationsService } from '../notifications/notifications.service';
 
@@ -321,7 +313,12 @@ export class CareRequestNotifier {
     const lang = ctx.language;
     const text = clientNotice(notice, lang, ctx.reference);
     // Push to the app as well - in addition to the message below, never instead of it.
-    this.notices.notify([ctx.client.userId], (l) => fromNotice(clientNotice(notice, l, ctx.reference)), `/requests/${ctx.id}`, `client update ${ctx.reference}`);
+    this.notices.notify(
+      [ctx.client.userId],
+      (l) => fromNotice(clientNotice(notice, l, ctx.reference)),
+      `/requests/${ctx.id}`,
+      `client update ${ctx.reference}`,
+    );
     const wa = await this.whatsappSettings.getResolved();
     const channel = chooseClientChannel({
       hasEmail: Boolean(ctx.client.email),

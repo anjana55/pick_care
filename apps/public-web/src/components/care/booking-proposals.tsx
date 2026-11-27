@@ -38,11 +38,16 @@ function Proposal({ proposal: p }: { proposal: ClientBookingProposal }) {
   const overnight = p.shiftEndTime <= p.shiftStartTime;
 
   return (
-    <section aria-labelledby={`check-${p.id}`} className={`rounded-lg border p-4 sm:p-5 ${waiting ? 'border-brand bg-brand-light/40' : 'border-border bg-white'}`}>
+    <section
+      aria-labelledby={`check-${p.id}`}
+      className={`rounded-lg border p-4 sm:p-5 ${waiting ? 'border-brand bg-brand-light/40' : 'border-border bg-white'}`}
+    >
       <h2 id={`check-${p.id}`} className="text-base font-semibold text-ink">
         {t(`account.bookingCheck.title.${p.status}`)}
       </h2>
-      <p className="mt-1 text-sm text-ink/70">{t(`account.bookingCheck.intro.${p.status === 'ACCEPTED' && p.billingTiming === 'ADVANCE' ? 'ACCEPTED_ADVANCE' : p.status}`)}</p>
+      <p className="mt-1 text-sm text-ink/70">
+        {t(`account.bookingCheck.intro.${p.status === 'ACCEPTED' && p.billingTiming === 'ADVANCE' ? 'ACCEPTED_ADVANCE' : p.status}`)}
+      </p>
       {p.firstInvoice && <PayNow invoice={p.firstInvoice} why={t('payNow.whyFirst')} />}
 
       <div className="mt-4">
@@ -67,7 +72,8 @@ function Proposal({ proposal: p }: { proposal: ClientBookingProposal }) {
         <div>
           <dt className="text-xs text-ink/50">{t('account.bookings.dates')}</dt>
           <dd className="text-ink">
-            {fmtDate(p.startDate, locale)} – {fmtDate(p.endDate, locale)} <span className="text-ink/60">({t('account.bookingCheck.visits', { n: p.shiftCount })})</span>
+            {fmtDate(p.startDate, locale)} – {fmtDate(p.endDate, locale)}{' '}
+            <span className="text-ink/60">({t('account.bookingCheck.visits', { n: p.shiftCount })})</span>
           </dd>
         </div>
         {p.rateType && p.rateAmount && (
@@ -105,7 +111,12 @@ function Proposal({ proposal: p }: { proposal: ClientBookingProposal }) {
           >
             {t('account.bookingCheck.accept')}
           </button>
-          <button type="button" disabled={answer.isPending} onClick={() => setChanging(true)} className="rounded border border-border bg-white px-4 py-2 text-sm font-medium text-ink hover:bg-paper disabled:opacity-60">
+          <button
+            type="button"
+            disabled={answer.isPending}
+            onClick={() => setChanging(true)}
+            className="rounded border border-border bg-white px-4 py-2 text-sm font-medium text-ink hover:bg-paper disabled:opacity-60"
+          >
             {t('account.bookingCheck.change')}
           </button>
         </div>
@@ -131,10 +142,18 @@ function Proposal({ proposal: p }: { proposal: ClientBookingProposal }) {
             className="mt-1 w-full rounded border border-border bg-white px-3 py-2 text-sm text-ink"
           />
           <div className="mt-2 flex flex-wrap gap-2">
-            <button type="submit" disabled={answer.isPending || note.trim().length < 3} className="rounded bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-60">
+            <button
+              type="submit"
+              disabled={answer.isPending || note.trim().length < 3}
+              className="rounded bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-60"
+            >
               {t('account.bookingCheck.send')}
             </button>
-            <button type="button" onClick={() => setChanging(false)} className="rounded border border-border bg-white px-4 py-2 text-sm font-medium text-ink hover:bg-paper">
+            <button
+              type="button"
+              onClick={() => setChanging(false)}
+              className="rounded border border-border bg-white px-4 py-2 text-sm font-medium text-ink hover:bg-paper"
+            >
               {t('account.bookingCheck.back')}
             </button>
           </div>

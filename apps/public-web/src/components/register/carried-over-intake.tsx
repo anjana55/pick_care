@@ -11,7 +11,6 @@ import { CareNeedSummary, useLocationLabel } from '@/components/care/care-need-s
 
 /* Generic over the two sign-up forms, which both extend PatientIntakeValues
  * (same approach as PatientIntakeFields). */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 /**
  * Brings what the visitor already told us into a client sign-up form:
@@ -26,13 +25,7 @@ import { CareNeedSummary, useLocationLabel } from '@/components/care/care-need-s
  * Nothing the search did not answer is guessed. Validation is unchanged: a
  * folded part that turns out to be invalid unfolds itself (onInvalid).
  */
-export function useCarriedOverIntake<T extends PatientIntakeValues>({
-  setValue,
-  channel,
-}: {
-  setValue: UseFormSetValue<T>;
-  channel: 'email' | 'whatsapp';
-}) {
+export function useCarriedOverIntake<T extends PatientIntakeValues>({ setValue, channel }: { setValue: UseFormSetValue<T>; channel: 'email' | 'whatsapp' }) {
   const { t } = useTranslation();
   const [folded, setFolded] = useState<IntakeSectionKey[]>([]);
   const [answered, setAnswered] = useState<string[]>([]);
@@ -57,7 +50,11 @@ export function useCarriedOverIntake<T extends PatientIntakeValues>({
     // Every question the search answered is kept out of sight, one by one -
     // not only whole parts - so nothing is asked twice. How to be contacted
     // has a sensible default from the sign-in they chose.
-    setAnswered(Object.entries(fromSearch).filter(([, v]) => v !== undefined).map(([k]) => k));
+    setAnswered(
+      Object.entries(fromSearch)
+        .filter(([, v]) => v !== undefined)
+        .map(([k]) => k),
+    );
     setFolded(['contact']);
     setCarried(true);
     // Once, on arrival - re-running on a language switch would overwrite edits.
@@ -73,8 +70,7 @@ export function useCarriedOverIntake<T extends PatientIntakeValues>({
   const onInvalid = useCallback(
     (errors: FieldErrors<T>) => {
       const failed = Object.keys(errors);
-      const hiddenFailed =
-        folded.some((key) => INTAKE_SECTION_FIELDS[key].some((f) => failed.includes(f))) || answered.some((f) => failed.includes(f));
+      const hiddenFailed = folded.some((key) => INTAKE_SECTION_FIELDS[key].some((f) => failed.includes(f))) || answered.some((f) => failed.includes(f));
       if (hiddenFailed) unfold();
     },
     [folded, answered, unfold],

@@ -14,7 +14,13 @@ import {
   type TrainingProgrammeInput,
 } from '@care-platform/shared';
 import { useTranslation } from '@/lib/i18n/provider';
-import { useRevokeCertificate, useSaveTrainingProgramme, useTrainingEnrolments, useTrainingProgrammes, useUpdateEnrolment } from '@/lib/hooks/use-international';
+import {
+  useRevokeCertificate,
+  useSaveTrainingProgramme,
+  useTrainingEnrolments,
+  useTrainingProgrammes,
+  useUpdateEnrolment,
+} from '@/lib/hooks/use-international';
 import { Button } from '@/components/ui/button';
 import { Input, Label, Select, Textarea } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -162,7 +168,13 @@ function ProgrammeForm({ initial, onDone }: { initial: { id?: string; values: Tr
         </div>
         <div>
           <Label htmlFor="tp-fee">{t('international.training.fee')}</Label>
-          <Input id="tp-fee" type="number" min={0} value={v.feeLkr ?? ''} onChange={(e) => set({ feeLkr: e.target.value === '' ? null : Number(e.target.value) })} />
+          <Input
+            id="tp-fee"
+            type="number"
+            min={0}
+            value={v.feeLkr ?? ''}
+            onChange={(e) => set({ feeLkr: e.target.value === '' ? null : Number(e.target.value) })}
+          />
         </div>
         <div>
           <Label htmlFor="tp-start">{t('international.training.nextStart')}</Label>
@@ -170,7 +182,14 @@ function ProgrammeForm({ initial, onDone }: { initial: { id?: string; values: Tr
         </div>
         <div>
           <Label htmlFor="tp-pass">{t('international.training.passMark')}</Label>
-          <Input id="tp-pass" type="number" min={0} max={100} value={v.passMark ?? ''} onChange={(e) => set({ passMark: e.target.value === '' ? null : Number(e.target.value) })} />
+          <Input
+            id="tp-pass"
+            type="number"
+            min={0}
+            max={100}
+            value={v.passMark ?? ''}
+            onChange={(e) => set({ passMark: e.target.value === '' ? null : Number(e.target.value) })}
+          />
           <p className="mt-1 text-xs text-ink/50">{t('international.training.passMarkHint')}</p>
         </div>
         <div>
@@ -289,14 +308,28 @@ function EnrolmentRow({ programmeId, enrolment: e }: { programmeId: string; enro
         <Label htmlFor={`sc-${e.id}`}>{t('international.training.score')}</Label>
         <Input id={`sc-${e.id}`} className="w-20" type="number" min={0} max={100} value={score} onChange={(ev) => setScore(ev.target.value)} />
       </div>
-      <Button size="sm" disabled={!dirty || update.isPending} onClick={() => update.mutate({ id: e.id, status, progressPercent: num(progress), score: num(score) })}>
+      <Button
+        size="sm"
+        disabled={!dirty || update.isPending}
+        onClick={() => update.mutate({ id: e.id, status, progressPercent: num(progress), score: num(score) })}
+      >
         {t('common.save')}
       </Button>
-      <DeleteRecordButton compact path={`/international/training/enrolments/${e.id}`} label={t('training.removeSignUp')} title={t('training.removeSignUpTitle')} body={t('training.removeSignUpBody', { name: e.fullName })} />
+      <DeleteRecordButton
+        compact
+        path={`/international/training/enrolments/${e.id}`}
+        label={t('training.removeSignUp')}
+        title={t('training.removeSignUpTitle')}
+        body={t('training.removeSignUpBody', { name: e.fullName })}
+      />
       {cert && (
         <div className="basis-full text-xs">
-          <span className={cert.revoked ? 'text-ink/50 line-through' : 'font-medium text-brand-dark'}>{t('international.training.certificate', { number: cert.number })}</span>
-          {cert.revoked && cert.revokedReason && <span className="ml-2 text-ink/60">{t('international.training.revokedBecause', { reason: cert.revokedReason })}</span>}
+          <span className={cert.revoked ? 'text-ink/50 line-through' : 'font-medium text-brand-dark'}>
+            {t('international.training.certificate', { number: cert.number })}
+          </span>
+          {cert.revoked && cert.revokedReason && (
+            <span className="ml-2 text-ink/60">{t('international.training.revokedBecause', { reason: cert.revokedReason })}</span>
+          )}
           {!cert.revoked && !revoking && (
             <button type="button" className="ml-3 text-danger hover:underline" onClick={() => setRevoking(true)}>
               {t('international.training.revoke')}
@@ -304,8 +337,20 @@ function EnrolmentRow({ programmeId, enrolment: e }: { programmeId: string; enro
           )}
           {revoking && (
             <span className="mt-1 flex flex-wrap items-center gap-2">
-              <Input className="h-8 w-64" value={reason} onChange={(ev) => setReason(ev.target.value)} maxLength={500} placeholder={t('international.training.revokeReason')} aria-label={t('international.training.revokeReason')} />
-              <Button size="sm" variant="danger" disabled={reason.trim().length < 3 || revoke.isPending} onClick={() => revoke.mutate({ id: cert.id, reason: reason.trim() }, { onSuccess: () => setRevoking(false) })}>
+              <Input
+                className="h-8 w-64"
+                value={reason}
+                onChange={(ev) => setReason(ev.target.value)}
+                maxLength={500}
+                placeholder={t('international.training.revokeReason')}
+                aria-label={t('international.training.revokeReason')}
+              />
+              <Button
+                size="sm"
+                variant="danger"
+                disabled={reason.trim().length < 3 || revoke.isPending}
+                onClick={() => revoke.mutate({ id: cert.id, reason: reason.trim() }, { onSuccess: () => setRevoking(false) })}
+              >
                 {t('international.training.confirmRevoke')}
               </Button>
               <Button size="sm" variant="ghost" onClick={() => setRevoking(false)}>
@@ -316,7 +361,9 @@ function EnrolmentRow({ programmeId, enrolment: e }: { programmeId: string; enro
         </div>
       )}
       {(update.isError || revoke.isError) && (
-        <p className="basis-full text-xs text-danger">{(update.error ?? revoke.error) instanceof Error ? (update.error ?? revoke.error)!.message : t('common.actionFailed')}</p>
+        <p className="basis-full text-xs text-danger">
+          {(update.error ?? revoke.error) instanceof Error ? (update.error ?? revoke.error)!.message : t('common.actionFailed')}
+        </p>
       )}
     </li>
   );
@@ -353,7 +400,13 @@ function EnrolCaregiver({ programmeId, enrolledIds }: { programmeId: string; enr
       <div className="flex flex-wrap items-end gap-3">
         <div className="min-w-56 flex-1">
           <Label htmlFor={`enrol-${programmeId}`}>{t('training.findCaregiver')}</Label>
-          <Input id={`enrol-${programmeId}`} value={search} onChange={(ev) => setSearch(ev.target.value)} placeholder={t('training.findPlaceholder')} autoFocus />
+          <Input
+            id={`enrol-${programmeId}`}
+            value={search}
+            onChange={(ev) => setSearch(ev.target.value)}
+            placeholder={t('training.findPlaceholder')}
+            autoFocus
+          />
         </div>
         <div>
           <Label htmlFor={`enrol-status-${programmeId}`}>{t('international.training.statusLabel')}</Label>

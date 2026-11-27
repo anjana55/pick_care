@@ -41,7 +41,12 @@ export default function CaregiverProfilePage() {
   const experiences = useExperiences();
 
   if (isLoading) return <p className="text-sm text-ink/60">{t('common.loading')}</p>;
-  if (isError || !caregiver) return <p role="alert" className="text-sm text-danger">{t('portal.loadError')}</p>;
+  if (isError || !caregiver)
+    return (
+      <p role="alert" className="text-sm text-danger">
+        {t('portal.loadError')}
+      </p>
+    );
 
   return (
     <div className="space-y-5">
@@ -51,7 +56,10 @@ export default function CaregiverProfilePage() {
       </div>
 
       {/* Ratings have no tab of their own: what clients say about this profile opens from it. */}
-      <Link href="/caregiver/ratings" className="flex items-center gap-3 rounded-lg border border-border bg-white p-4 transition-colors hover:border-brand/40 hover:bg-brand-light/40">
+      <Link
+        href="/caregiver/ratings"
+        className="flex items-center gap-3 rounded-lg border border-border bg-white p-4 transition-colors hover:border-brand/40 hover:bg-brand-light/40"
+      >
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-light text-brand-dark">
           <Star className="h-5 w-5" aria-hidden />
         </span>
@@ -92,7 +100,11 @@ export default function CaregiverProfilePage() {
         loading={experiences.list.isLoading}
         fields={EXPERIENCE_FIELDS}
         titleOf={(r) => `${String(r.role)} — ${String(r.employerOrClient)}`}
-        detailOf={(r) => [r.country, `${String(r.startDate).slice(0, 10)} → ${r.endDate ? String(r.endDate).slice(0, 10) : t('portal.experience.present')}`].filter(Boolean).join(' · ')}
+        detailOf={(r) =>
+          [r.country, `${String(r.startDate).slice(0, 10)} → ${r.endDate ? String(r.endDate).slice(0, 10) : t('portal.experience.present')}`]
+            .filter(Boolean)
+            .join(' · ')
+        }
         onSave={(values, id) => experiences.save.mutateAsync({ recordId: id, values })}
         onRemove={(id) => experiences.remove.mutateAsync(id)}
         saving={experiences.save.isPending}

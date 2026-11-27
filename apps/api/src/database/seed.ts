@@ -213,11 +213,7 @@ async function main() {
   ];
 
   for (const c of fictionalCaregivers) {
-    const [existing] = await db
-      .select({ id: schema.caregivers.id })
-      .from(schema.caregivers)
-      .where(eq(schema.caregivers.primaryPhone, c.phone))
-      .limit(1);
+    const [existing] = await db.select({ id: schema.caregivers.id }).from(schema.caregivers).where(eq(schema.caregivers.primaryPhone, c.phone)).limit(1);
     if (existing) continue; // already seeded in a previous run
 
     const id = uuid();
@@ -289,18 +285,13 @@ async function main() {
 
     const location = locationIds[c.location];
     if (!location) {
-      throw new Error(
-        `Seed references location "${c.location}", which is missing from seed-data/cities.csv`,
-      );
+      throw new Error(`Seed references location "${c.location}", which is missing from seed-data/cities.csv`);
     }
 
     // The caregiver's own location is the same city they prefer working in,
     // so a public search for that district finds them by their record and not
     // only through their preferred-location row.
-    await db
-      .update(schema.caregivers)
-      .set({ cityId: location.cityId, districtId: location.districtId })
-      .where(eq(schema.caregivers.id, id));
+    await db.update(schema.caregivers).set({ cityId: location.cityId, districtId: location.districtId }).where(eq(schema.caregivers.id, id));
 
     await db.insert(schema.preferredLocations).values({
       caregiverId: id,

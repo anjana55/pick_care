@@ -108,7 +108,19 @@ export default function CheckInSettingsPage() {
       },
     );
 
-  const number = (key: 'earlyMinutes' | 'lateAfterMinutes' | 'farMetres' | 'onMyWayMinutes' | 'locationRetentionDays' | 'presenceEveryMinutes' | 'presenceAwayPoints' | 'presenceSilentMultiplier', label: string, hint: string) => (
+  const number = (
+    key:
+      | 'earlyMinutes'
+      | 'lateAfterMinutes'
+      | 'farMetres'
+      | 'onMyWayMinutes'
+      | 'locationRetentionDays'
+      | 'presenceEveryMinutes'
+      | 'presenceAwayPoints'
+      | 'presenceSilentMultiplier',
+    label: string,
+    hint: string,
+  ) => (
     <div>
       <Label htmlFor={key}>{label}</Label>
       <Input
@@ -152,7 +164,11 @@ export default function CheckInSettingsPage() {
               </span>
             </label>
             {number('onMyWayMinutes', t('visits.settings.onMyWay'), t('visits.settings.onMyWayHint', CHECK_IN_SETTINGS_LIMITS.onMyWayMinutes))}
-            {number('locationRetentionDays', t('visits.settings.retention'), t('visits.settings.retentionHint', CHECK_IN_SETTINGS_LIMITS.locationRetentionDays))}
+            {number(
+              'locationRetentionDays',
+              t('visits.settings.retention'),
+              t('visits.settings.retentionHint', CHECK_IN_SETTINGS_LIMITS.locationRetentionDays),
+            )}
             <label className="flex items-start gap-3">
               <input type="checkbox" className="mt-1 h-4 w-4" checked={draft.presenceEnabled} onChange={(e) => change({ presenceEnabled: e.target.checked })} />
               <span>
@@ -160,9 +176,21 @@ export default function CheckInSettingsPage() {
                 <span className="block text-xs text-ink/50">{t('visits.settings.presenceHint')}</span>
               </span>
             </label>
-            {number('presenceEveryMinutes', t('visits.settings.presenceEvery'), t('visits.settings.presenceEveryHint', CHECK_IN_SETTINGS_LIMITS.presenceEveryMinutes))}
-            {number('presenceAwayPoints', t('visits.settings.presenceAway'), t('visits.settings.presenceAwayHint', CHECK_IN_SETTINGS_LIMITS.presenceAwayPoints))}
-            {number('presenceSilentMultiplier', t('visits.settings.presenceSilent'), t('visits.settings.presenceSilentHint', CHECK_IN_SETTINGS_LIMITS.presenceSilentMultiplier))}
+            {number(
+              'presenceEveryMinutes',
+              t('visits.settings.presenceEvery'),
+              t('visits.settings.presenceEveryHint', CHECK_IN_SETTINGS_LIMITS.presenceEveryMinutes),
+            )}
+            {number(
+              'presenceAwayPoints',
+              t('visits.settings.presenceAway'),
+              t('visits.settings.presenceAwayHint', CHECK_IN_SETTINGS_LIMITS.presenceAwayPoints),
+            )}
+            {number(
+              'presenceSilentMultiplier',
+              t('visits.settings.presenceSilent'),
+              t('visits.settings.presenceSilentHint', CHECK_IN_SETTINGS_LIMITS.presenceSilentMultiplier),
+            )}
           </fieldset>
           {error && (
             <p role="alert" className="text-sm text-danger">

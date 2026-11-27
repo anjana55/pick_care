@@ -41,7 +41,9 @@ export default function CarePlacesScreen({ locate = phonePosition }: { locate?: 
   const edit = (p?: CareLocation) => {
     save.reset();
     setNotice(null);
-    setEditing(p ? { id: p.id, start: p, point: p, zoomedIn: true, label: p.label, goTo: null } : { start: null, point: null, zoomedIn: false, label: '', goTo: null });
+    setEditing(
+      p ? { id: p.id, start: p, point: p, zoomedIn: true, label: p.label, goTo: null } : { start: null, point: null, zoomedIn: false, label: '', goTo: null },
+    );
   };
   const here = async () => {
     if (!editing) return;
@@ -76,7 +78,13 @@ export default function CarePlacesScreen({ locate = phonePosition }: { locate?: 
             />
             <PinMap start={editing.start} goTo={editing.goTo} onMove={(point, zoomedIn) => setEditing((e) => (e ? { ...e, point, zoomedIn } : e))} />
             {editing.point && !editing.zoomedIn ? <Text style={{ fontSize: 14, color: colors.danger }}>{t('places.zoomIn')}</Text> : null}
-            <Field label={t('places.label')} value={editing.label} placeholder={t('places.labelPlaceholder')} maxLength={CARE_LOCATION_LABEL_MAX} onChangeText={(label) => setEditing({ ...editing, label })} />
+            <Field
+              label={t('places.label')}
+              value={editing.label}
+              placeholder={t('places.labelPlaceholder')}
+              maxLength={CARE_LOCATION_LABEL_MAX}
+              onChangeText={(label) => setEditing({ ...editing, label })}
+            />
             <FormError message={notice ?? error} />
             <Button label={t('places.save')} busy={save.isPending} disabled={!editing.point || !editing.zoomedIn} onPress={submit} />
             <Button variant="secondary" label={t('common.cancel')} onPress={() => setEditing(null)} />
@@ -97,7 +105,9 @@ export default function CarePlacesScreen({ locate = phonePosition }: { locate?: 
                 {p.isDefault ? <Text style={{ fontSize: 14, color: colors.brand }}>{t('places.default')}</Text> : null}
                 <PinMap start={p} height={160} />
                 <Button variant="secondary" label={t('places.move')} onPress={() => edit(p)} />
-                {!p.isDefault ? <Button variant="secondary" label={t('places.makeDefault')} onPress={() => save.mutate({ id: p.id, isDefault: true })} /> : null}
+                {!p.isDefault ? (
+                  <Button variant="secondary" label={t('places.makeDefault')} onPress={() => save.mutate({ id: p.id, isDefault: true })} />
+                ) : null}
                 <Button
                   variant="link"
                   label={t('places.remove')}

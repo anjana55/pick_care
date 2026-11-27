@@ -207,11 +207,21 @@ function QuickSearchDialog({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-[12vh]" role="dialog" aria-modal="true" aria-label={t('quickSearch.open')} onKeyDown={onKeyDown}>
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-[12vh]"
+      role="dialog"
+      aria-modal="true"
+      aria-label={t('quickSearch.open')}
+      onKeyDown={onKeyDown}
+    >
       <button type="button" className="absolute inset-0 bg-ink/40 backdrop-blur-[2px]" onClick={onClose} aria-label={t('common.cancel')} tabIndex={-1} />
       <div className="relative w-full max-w-2xl overflow-hidden rounded-xl border border-border bg-white shadow-2xl">
         <div className="flex items-center gap-3 border-b border-border px-5">
-          {isFetching ? <Loader2 size={20} className="shrink-0 animate-spin text-brand" aria-hidden /> : <Search size={20} className="shrink-0 text-brand" aria-hidden />}
+          {isFetching ? (
+            <Loader2 size={20} className="shrink-0 animate-spin text-brand" aria-hidden />
+          ) : (
+            <Search size={20} className="shrink-0 text-brand" aria-hidden />
+          )}
           {/* The page-wide focus outline would draw a box inside the dialog; the caret and the open dialog already show where typing goes. */}
           <input
             ref={inputRef}
@@ -230,7 +240,12 @@ function QuickSearchDialog({ onClose }: { onClose: () => void }) {
             style={{ outline: 'none' }}
             className="h-14 w-full min-w-0 border-0 bg-transparent text-base text-ink placeholder:text-ink/40"
           />
-          <button type="button" onClick={onClose} className="shrink-0 rounded border border-border bg-paper px-2 py-0.5 text-[11px] font-medium text-ink/55 hover:text-ink" aria-label={t('quickSearch.toClose')}>
+          <button
+            type="button"
+            onClick={onClose}
+            className="shrink-0 rounded border border-border bg-paper px-2 py-0.5 text-[11px] font-medium text-ink/55 hover:text-ink"
+            aria-label={t('quickSearch.toClose')}
+          >
             Esc
           </button>
         </div>
@@ -275,7 +290,12 @@ function QuickSearchDialog({ onClose }: { onClose: () => void }) {
                               style={{ outline: 'none' }}
                               className={cn('flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left', current ? 'bg-brand-light' : 'hover:bg-paper')}
                             >
-                              <span className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', current ? 'bg-white text-brand-dark' : 'bg-paper text-ink/50')}>
+                              <span
+                                className={cn(
+                                  'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg',
+                                  current ? 'bg-white text-brand-dark' : 'bg-paper text-ink/50',
+                                )}
+                              >
                                 <kind.icon size={16} aria-hidden />
                               </span>
                               <span className="min-w-0 flex-1">

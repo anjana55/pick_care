@@ -2,7 +2,17 @@ import { Inject, Injectable } from '@nestjs/common';
 import { and, eq, exists, gte, inArray, isNotNull, isNull, lte, or, sql } from 'drizzle-orm';
 import { PUBLIC_CAREGIVER_STATUSES, addDays, colomboToday, rateProblem, type CareType } from '@care-platform/shared';
 import { DRIZZLE, type Database } from '../database/database.module';
-import { CARE_TYPE_COLUMNS, availability, bookings, careTypePricing, caregiverRates, caregivers, cities, preferredLocations, requestOffers } from '../database/schema';
+import {
+  CARE_TYPE_COLUMNS,
+  availability,
+  bookings,
+  careTypePricing,
+  caregiverRates,
+  caregivers,
+  cities,
+  preferredLocations,
+  requestOffers,
+} from '../database/schema';
 import { ReviewStore } from '../reviews/review-store.service';
 import { ReviewSettingsService } from '../reviews/review-settings.service';
 import { ratingSignal } from '../reviews/review-rules';
@@ -13,7 +23,11 @@ const POOL_LIMIT = 300;
 const VERIFIED = new Set(['VERIFIED', 'ACTIVE']);
 /** A DATE column as YYYY-MM-DD, read with the same clock the driver built it with. */
 const dayOf = (d: Date | string | null): string | null =>
-  !d ? null : d instanceof Date ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` : String(d).slice(0, 10);
+  !d
+    ? null
+    : d instanceof Date
+      ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+      : String(d).slice(0, 10);
 
 /** One caregiver as facts() reads them: the row plus their availability record. */
 export interface CandidateRow {
@@ -45,7 +59,11 @@ export class CandidatePoolService {
    * the district, matches a stated gender preference, is not in `exclude`,
    * and - unless `anyCareType` - does this kind of care.
    */
-  async pool(match: MatchRequest, opts: { genderPreference?: string | null; exclude?: Set<string>; anyCareType?: boolean }, now = new Date()): Promise<MatchCandidate[]> {
+  async pool(
+    match: MatchRequest,
+    opts: { genderPreference?: string | null; exclude?: Set<string>; anyCareType?: boolean },
+    now = new Date(),
+  ): Promise<MatchCandidate[]> {
     const exclude = opts.exclude ?? new Set<string>();
     const travelsToDistrict = exists(
       this.db
@@ -99,27 +117,52 @@ export class CandidatePoolService {
     const [stats, settings, [pricing], rates, travels, running, history] = await Promise.all([
       this.reviewStore.statsFor(ids),
       this.reviewSettings.getResolved(),
-      this.db.select().from(careTypePricing).where(eq(careTypePricing.careType, match.careType as CareType)).limit(1),
-      this.db.select().from(caregiverRates).where(and(inArray(caregiverRates.caregiverId, ids), eq(caregiverRates.careType, match.careType as CareType))),
+      this.db
+        .select()
+        .from(careTypePricing)
+        .where(eq(careTypePricing.careType, match.careType as CareType))
+        .limit(1),
+      this.db
+        .select()
+        .from(caregiverRates)
+        .where(and(inArray(caregiverRates.caregiverId, ids), eq(caregiverRates.careType, match.careType as CareType))),
       match.cityId
-        ? this.db.select({ caregiverId: preferredLocations.caregiverId }).from(preferredLocations).where(and(inArray(preferredLocations.caregiverId, ids), eq(preferredLocations.cityId, match.cityId)))
+        ? this.db
+            .select({ caregiverId: preferredLocations.caregiverId })
+            .from(preferredLocations)
+            .where(and(inArray(preferredLocations.caregiverId, ids), eq(preferredLocations.cityId, match.cityId)))
         : Promise.resolve([] as { caregiverId: string }[]),
       this.db
         .select({ caregiverId: bookings.caregiverId, n: sql<number>`COUNT(*)` })
         .from(bookings)
-        .where(and(inArray(bookings.caregiverId, ids), eq(bookings.status, 'CONFIRMED'), lte(bookings.startDate, addDays(startDay, 7)), gte(bookings.endDate, startDay)))
+        .where(
+          and(
+            inArray(bookings.caregiverId, ids),
+            eq(bookings.status, 'CONFIRMED'),
+            lte(bookings.startDate, addDays(startDay, 7)),
+            gte(bookings.endDate, startDay),
+          ),
+        )
         .groupBy(bookings.caregiverId),
       this.db
         .select({ caregiverId: requestOffers.caregiverId, status: requestOffers.status, n: sql<number>`COUNT(*)` })
         .from(requestOffers)
         // Job offers only: a cover offer gives a quarter of an hour, and missing one says little about how someone answers a job.
-        .where(and(inArray(requestOffers.caregiverId, ids), eq(requestOffers.kind, 'JOB'), gte(requestOffers.createdAt, new Date(now.getTime() - 30 * 86_400_000)), inArray(requestOffers.status, ['DECLINED', 'EXPIRED', 'ACCEPTED'])))
+        .where(
+          and(
+            inArray(requestOffers.caregiverId, ids),
+            eq(requestOffers.kind, 'JOB'),
+            gte(requestOffers.createdAt, new Date(now.getTime() - 30 * 86_400_000)),
+            inArray(requestOffers.status, ['DECLINED', 'EXPIRED', 'ACCEPTED']),
+          ),
+        )
         .groupBy(requestOffers.caregiverId, requestOffers.status),
     ]);
     const rateOf = new Map(rates.map((r) => [r.caregiverId, r.amount]));
     const travelsTo = new Set(travels.map((t) => t.caregiverId));
     const runningOf = new Map(running.map((r) => [r.caregiverId, Number(r.n)]));
-    const count = (id: string, statuses: string[]) => history.filter((h) => h.caregiverId === id && statuses.includes(h.status)).reduce((sum, h) => sum + Number(h.n), 0);
+    const count = (id: string, statuses: string[]) =>
+      history.filter((h) => h.caregiverId === id && statuses.includes(h.status)).reduce((sum, h) => sum + Number(h.n), 0);
 
     return fit.map((r) => {
       const s = stats.get(r.id);

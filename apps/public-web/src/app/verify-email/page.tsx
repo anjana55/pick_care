@@ -76,60 +76,60 @@ function VerifyEmailInner() {
 
       <div className="flex flex-1 items-center justify-center px-4 py-10">
         <div className="w-full max-w-sm rounded-lg border border-border bg-white p-8 text-center">
-        {status === 'verifying' && <p className="text-sm text-ink/60">{t('verifyEmail.verifying')}</p>}
+          {status === 'verifying' && <p className="text-sm text-ink/60">{t('verifyEmail.verifying')}</p>}
 
-        {status === 'success' && (
-          <>
-            <CheckCircle2 size={40} className="mx-auto mb-4 text-brand" />
-            <h1 className="mb-2 text-lg font-semibold text-ink">{t('verifyEmail.successTitle')}</h1>
-            <p className="text-sm text-ink/60">{t('verifyEmail.successBody')}</p>
-          </>
-        )}
+          {status === 'success' && (
+            <>
+              <CheckCircle2 size={40} className="mx-auto mb-4 text-brand" />
+              <h1 className="mb-2 text-lg font-semibold text-ink">{t('verifyEmail.successTitle')}</h1>
+              <p className="text-sm text-ink/60">{t('verifyEmail.successBody')}</p>
+            </>
+          )}
 
-        {status === 'already' && (
-          <>
-            <CheckCircle2 size={40} className="mx-auto mb-4 text-brand" />
-            <h1 className="mb-2 text-lg font-semibold text-ink">{t('verifyEmail.alreadyTitle')}</h1>
-            <p className="mb-5 text-sm text-ink/60">{t('verifyEmail.alreadyBody')}</p>
-            <Link href={loginHref} className="text-sm font-medium text-brand-dark hover:underline">
-              {t('verifyEmail.goToLogin')}
-            </Link>
-          </>
-        )}
-
-        {status === 'error' && (
-          <>
-            <XCircle size={40} className="mx-auto mb-4 text-danger" />
-            <h1 className="mb-2 text-lg font-semibold text-ink">{t('verifyEmail.errorTitle')}</h1>
-            <p className="mb-5 text-sm text-ink/60">{t('verifyEmail.errorBody')}</p>
-            <form
-              className="mb-5 text-left"
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (resendEmail.trim() && !resendState.pending) void resend();
-              }}
-            >
-              <Label htmlFor="resendEmail">{t('verifyEmail.resendLabel')}</Label>
-              <Input id="resendEmail" type="email" autoComplete="email" value={resendEmail} onChange={(e) => setResendEmail(e.target.value)} />
-              <Button type="submit" className="mt-3 w-full" disabled={!resendEmail.trim() || resendState.pending}>
-                {resendState.pending ? t('common.loading') : t('verifyEmail.resendButton')}
-              </Button>
-              {resendState.message && (
-                <p role="status" className="mt-3 text-xs text-ink/60">
-                  {resendState.message}
-                </p>
-              )}
-            </form>
-            <div className="flex flex-col gap-2">
-              <Link href="/login" className="text-sm font-medium text-brand-dark hover:underline">
+          {status === 'already' && (
+            <>
+              <CheckCircle2 size={40} className="mx-auto mb-4 text-brand" />
+              <h1 className="mb-2 text-lg font-semibold text-ink">{t('verifyEmail.alreadyTitle')}</h1>
+              <p className="mb-5 text-sm text-ink/60">{t('verifyEmail.alreadyBody')}</p>
+              <Link href={loginHref} className="text-sm font-medium text-brand-dark hover:underline">
                 {t('verifyEmail.goToLogin')}
               </Link>
-              <Link href="/" className="text-sm text-ink/50 hover:text-ink/80">
-                {t('verifyEmail.backHome')}
-              </Link>
-            </div>
-          </>
-        )}
+            </>
+          )}
+
+          {status === 'error' && (
+            <>
+              <XCircle size={40} className="mx-auto mb-4 text-danger" />
+              <h1 className="mb-2 text-lg font-semibold text-ink">{t('verifyEmail.errorTitle')}</h1>
+              <p className="mb-5 text-sm text-ink/60">{t('verifyEmail.errorBody')}</p>
+              <form
+                className="mb-5 text-left"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (resendEmail.trim() && !resendState.pending) void resend();
+                }}
+              >
+                <Label htmlFor="resendEmail">{t('verifyEmail.resendLabel')}</Label>
+                <Input id="resendEmail" type="email" autoComplete="email" value={resendEmail} onChange={(e) => setResendEmail(e.target.value)} />
+                <Button type="submit" className="mt-3 w-full" disabled={!resendEmail.trim() || resendState.pending}>
+                  {resendState.pending ? t('common.loading') : t('verifyEmail.resendButton')}
+                </Button>
+                {resendState.message && (
+                  <p role="status" className="mt-3 text-xs text-ink/60">
+                    {resendState.message}
+                  </p>
+                )}
+              </form>
+              <div className="flex flex-col gap-2">
+                <Link href="/login" className="text-sm font-medium text-brand-dark hover:underline">
+                  {t('verifyEmail.goToLogin')}
+                </Link>
+                <Link href="/" className="text-sm text-ink/50 hover:text-ink/80">
+                  {t('verifyEmail.backHome')}
+                </Link>
+              </div>
+            </>
+          )}
         </div>
       </div>
 

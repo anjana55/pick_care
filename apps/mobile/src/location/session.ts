@@ -136,7 +136,10 @@ export function summarise(session: TrackSession, points: TrackPoint[], now: numb
   const first = withBattery[0];
   const last = withBattery[withBattery.length - 1];
   const hours = first && last ? (last.at - first.at) / 3_600_000 : 0;
-  const accuracies = sorted.map((p) => p.accuracyM).filter((a): a is number => a !== null).sort((a, b) => a - b);
+  const accuracies = sorted
+    .map((p) => p.accuracyM)
+    .filter((a): a is number => a !== null)
+    .sort((a, b) => a - b);
   return {
     points: sorted.length,
     minutes: Math.round((end - session.startedAt) / 60_000),
@@ -152,6 +155,8 @@ export function summarise(session: TrackSession, points: TrackPoint[], now: numb
 
 /** The test results as CSV, to send from the phone (Share) to whoever reads them. */
 export function toCsv(points: TrackPoint[]): string {
-  const rows = [...points].sort((a, b) => a.at - b.at).map((p) => [new Date(p.at).toISOString(), p.latitude, p.longitude, p.accuracyM ?? '', p.speed ?? '', p.mocked ? 1 : 0, p.battery ?? ''].join(','));
+  const rows = [...points]
+    .sort((a, b) => a.at - b.at)
+    .map((p) => [new Date(p.at).toISOString(), p.latitude, p.longitude, p.accuracyM ?? '', p.speed ?? '', p.mocked ? 1 : 0, p.battery ?? ''].join(','));
   return ['time,latitude,longitude,accuracy_m,speed_m_s,mocked,battery_pct', ...rows].join('\n');
 }

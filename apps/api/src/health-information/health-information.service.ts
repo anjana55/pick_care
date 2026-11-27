@@ -14,11 +14,7 @@ export class HealthInformationService {
   ) {}
 
   async findOne(caregiverId: string, requestedByUserId: string, ipAddress?: string) {
-    const [row] = await this.db
-      .select()
-      .from(caregiverHealthInformation)
-      .where(eq(caregiverHealthInformation.caregiverId, caregiverId))
-      .limit(1);
+    const [row] = await this.db.select().from(caregiverHealthInformation).where(eq(caregiverHealthInformation.caregiverId, caregiverId)).limit(1);
 
     // This table is never joined into normal caregiver list/search results;
     // every direct read is logged here, separately from generic @Audit().
@@ -34,17 +30,10 @@ export class HealthInformationService {
   }
 
   async upsert(caregiverId: string, dto: UpsertHealthInformationDto, updatedByUserId: string, ipAddress?: string) {
-    const [existing] = await this.db
-      .select()
-      .from(caregiverHealthInformation)
-      .where(eq(caregiverHealthInformation.caregiverId, caregiverId))
-      .limit(1);
+    const [existing] = await this.db.select().from(caregiverHealthInformation).where(eq(caregiverHealthInformation.caregiverId, caregiverId)).limit(1);
 
     if (existing) {
-      await this.db
-        .update(caregiverHealthInformation)
-        .set(dto)
-        .where(eq(caregiverHealthInformation.caregiverId, caregiverId));
+      await this.db.update(caregiverHealthInformation).set(dto).where(eq(caregiverHealthInformation.caregiverId, caregiverId));
     } else {
       await this.db.insert(caregiverHealthInformation).values({ id: uuid(), caregiverId, ...dto });
     }

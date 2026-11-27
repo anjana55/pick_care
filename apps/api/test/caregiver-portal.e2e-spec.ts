@@ -94,7 +94,7 @@ describe('Caregiver portal API (e2e)', () => {
   });
 
   describe('own record only', () => {
-    it('reads their own record but not another caregiver\'s', async () => {
+    it("reads their own record but not another caregiver's", async () => {
       await api().get(`/caregivers/${a.id}`).set(bearer(a.token)).expect(200);
       await api().get(`/caregivers/${b.id}`).set(bearer(a.token)).expect(403);
       await api().get(`/caregivers/${b.id}/documents`).set(bearer(a.token)).expect(403);
@@ -132,7 +132,7 @@ describe('Caregiver portal API (e2e)', () => {
       expect(after.permanentAddress).toBe('100 Another Road');
     });
 
-    it('cannot edit another caregiver\'s profile', async () => {
+    it("cannot edit another caregiver's profile", async () => {
       await api().patch(`/caregivers/${b.id}/profile`).set(bearer(a.token)).send({ permanentAddress: 'hijacked address' }).expect(403);
     });
 
@@ -152,7 +152,11 @@ describe('Caregiver portal API (e2e)', () => {
 
     it('still lets staff edit the record through the staff endpoint', async () => {
       await api().patch(`/caregivers/${a.id}`).set(bearer(adminToken)).send({ fullName: 'Staff Corrected Name' }).expect(200);
-      await api().patch(`/caregivers/${a.id}`).set(bearer(a.token)).send({ fullName: 'x'.repeat(10) }).expect(403);
+      await api()
+        .patch(`/caregivers/${a.id}`)
+        .set(bearer(a.token))
+        .send({ fullName: 'x'.repeat(10) })
+        .expect(403);
     });
 
     it('can submit the registration, and nothing further', async () => {
@@ -178,7 +182,7 @@ describe('Caregiver portal API (e2e)', () => {
       expect(file.headers['content-type']).toMatch(/application\/pdf/);
     });
 
-    it('cannot read another caregiver\'s document, even with a valid id', async () => {
+    it("cannot read another caregiver's document, even with a valid id", async () => {
       const theirs = await upload(b.token, b.id, PNG, 'nic.png', 'image/png').expect(201);
       await api().get(`/caregivers/${b.id}/documents/${theirs.body.id}/file`).set(bearer(a.token)).expect(403);
       // Their own scope with someone else's document id finds nothing.
@@ -211,7 +215,7 @@ describe('Caregiver portal API (e2e)', () => {
       expect(await db.select().from(caregiverDocuments).where(eq(caregiverDocuments.id, doc.id))).toHaveLength(0);
     });
 
-    it('cannot delete another caregiver\'s document, and cannot verify its own', async () => {
+    it("cannot delete another caregiver's document, and cannot verify its own", async () => {
       const theirs = (await upload(b.token, b.id, PDF, 'x.pdf', 'application/pdf').expect(201)).body;
       await api().delete(`/caregivers/${b.id}/documents/${theirs.id}`).set(bearer(a.token)).expect(403);
       const own = (await upload(a.token, a.id, PDF, 'y.pdf', 'application/pdf').expect(201)).body;
@@ -231,7 +235,16 @@ describe('Caregiver portal API (e2e)', () => {
       const put = await api()
         .put(`/caregivers/${a.id}/availability`)
         .set(bearer(a.token))
-        .send({ dayDuty: true, nightDuty: false, liveIn24h: true, preferredShift: 'DAY', availableFrom: '2026-11-01', expectedDailyRate: '6500', expectedLeaveDays: 4, preferredLeavePattern: 'Weekends' })
+        .send({
+          dayDuty: true,
+          nightDuty: false,
+          liveIn24h: true,
+          preferredShift: 'DAY',
+          availableFrom: '2026-11-01',
+          expectedDailyRate: '6500',
+          expectedLeaveDays: 4,
+          preferredLeavePattern: 'Weekends',
+        })
         .expect(200);
       expect(put.body).toMatchObject({ dayDuty: true, nightDuty: false, liveIn24h: true, preferredShift: 'DAY', expectedLeaveDays: 4 });
 
@@ -251,7 +264,7 @@ describe('Caregiver portal API (e2e)', () => {
       await api().put(`/caregivers/${a.id}/availability`).set(bearer(a.token)).send({ availableFrom: 'tomorrow-ish' }).expect(400);
     });
 
-    it('cannot change another caregiver\'s availability', async () => {
+    it("cannot change another caregiver's availability", async () => {
       await api().put(`/caregivers/${b.id}/availability`).set(bearer(a.token)).send({ dayDuty: false }).expect(403);
     });
   });
@@ -262,7 +275,11 @@ describe('Caregiver portal API (e2e)', () => {
 
     it('adds and edits their own entries', async () => {
       const q = (await api().post(`/caregivers/${a.id}/qualifications`).set(bearer(a.token)).send(qual).expect(201)).body;
-      const edited = await api().patch(`/caregivers/${a.id}/qualifications/${q.id}`).set(bearer(a.token)).send({ institution: 'Another Institute' }).expect(200);
+      const edited = await api()
+        .patch(`/caregivers/${a.id}/qualifications/${q.id}`)
+        .set(bearer(a.token))
+        .send({ institution: 'Another Institute' })
+        .expect(200);
       expect(edited.body.institution).toBe('Another Institute');
       await api().post(`/caregivers/${a.id}/experiences`).set(bearer(a.token)).send(exp).expect(201);
     });
@@ -298,7 +315,7 @@ describe('Caregiver portal API (e2e)', () => {
       expect((await db.select().from(qualifications).where(eq(qualifications.id, q.id)))[0].verificationStatus).toBe('VERIFIED');
     });
 
-    it('cannot verify entries, can withdraw unchecked ones but not verified ones, and cannot touch another caregiver\'s', async () => {
+    it("cannot verify entries, can withdraw unchecked ones but not verified ones, and cannot touch another caregiver's", async () => {
       const q = (await api().post(`/caregivers/${a.id}/qualifications`).set(bearer(a.token)).send(qual).expect(201)).body;
       await api().patch(`/caregivers/${a.id}/qualifications/${q.id}/verification`).set(bearer(a.token)).send({ status: 'VERIFIED' }).expect(403);
       await api().post(`/caregivers/${b.id}/qualifications`).set(bearer(a.token)).send(qual).expect(403);

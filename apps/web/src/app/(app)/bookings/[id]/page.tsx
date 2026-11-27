@@ -111,8 +111,8 @@ export default function BookingPage() {
     <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3 print:hidden">
         <Link href="/bookings" className="inline-flex items-center gap-1 text-sm text-ink/60 hover:text-ink">
-        <ChevronLeft size={16} />
-        {t('bookings.back')}
+          <ChevronLeft size={16} />
+          {t('bookings.back')}
         </Link>
         <RecordPager kind="bookings" id={id} />
       </div>
@@ -125,8 +125,10 @@ export default function BookingPage() {
             <BookingStatusBadge status={booking.status} label={t(`bookings.status.${booking.status}`)} />
           </h1>
           <p className="mt-1 text-sm text-ink/60">
-            {t(`bookings.scheduleType.${booking.scheduleType}`)} · {booking.daysOfWeek.map((d) => fmtWeekday(d, locale)).join(' ')} · {booking.shiftStartTime}–{booking.shiftEndTime}
-            {booking.shiftEndTime <= booking.shiftStartTime && ` (${t('bookings.detail.nextDay')})`} · {fmtDate(booking.startDate, locale)} – {fmtDate(booking.endDate, locale)}
+            {t(`bookings.scheduleType.${booking.scheduleType}`)} · {booking.daysOfWeek.map((d) => fmtWeekday(d, locale)).join(' ')} · {booking.shiftStartTime}–
+            {booking.shiftEndTime}
+            {booking.shiftEndTime <= booking.shiftStartTime && ` (${t('bookings.detail.nextDay')})`} · {fmtDate(booking.startDate, locale)} –{' '}
+            {fmtDate(booking.endDate, locale)}
           </p>
           {booking.careRequest && (
             <p className="mt-1 text-sm text-ink/60">
@@ -238,7 +240,11 @@ export default function BookingPage() {
           {open && <AddShiftCard booking={booking} />}
           {booking.status !== 'DRAFT' && <RelatedInvoices bookingId={booking.id} />}
           {booking.status !== 'DRAFT' && (
-            <BookingCorrections bookingId={booking.id} canCorrect={booking.status === 'CONFIRMED' || booking.status === 'COMPLETED'} onCorrectFrom={(issue) => startCorrecting({ issue })} />
+            <BookingCorrections
+              bookingId={booking.id}
+              canCorrect={booking.status === 'CONFIRMED' || booking.status === 'COMPLETED'}
+              onCorrectFrom={(issue) => startCorrecting({ issue })}
+            />
           )}
           {booking.status !== 'DRAFT' && <BookingRatingsCard bookingId={booking.id} />}
         </div>
@@ -247,7 +253,6 @@ export default function BookingPage() {
     </div>
   );
 }
-
 
 /**
  * Visits paused for an unpaid month: which invoice, since when, and the staff
@@ -280,9 +285,19 @@ function VisitsPaused({ booking }: { booking: BookingDetail }) {
       {open && (
         <div className="mt-2 border-t border-danger/30 pt-2">
           <Label htmlFor="resumeReason">{t('bookings.paused.reasonLabel')}</Label>
-          <Input id="resumeReason" maxLength={300} value={reason} onChange={(e) => setReason(e.target.value)} placeholder={t('bookings.payFirst.reasonPlaceholder')} />
+          <Input
+            id="resumeReason"
+            maxLength={300}
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder={t('bookings.payFirst.reasonPlaceholder')}
+          />
           <div className="mt-2 flex gap-2">
-            <Button size="sm" disabled={resume.isPending || reason.trim().length < 3} onClick={() => resume.mutate(reason.trim(), { onSuccess: () => setOpen(false) })}>
+            <Button
+              size="sm"
+              disabled={resume.isPending || reason.trim().length < 3}
+              onClick={() => resume.mutate(reason.trim(), { onSuccess: () => setOpen(false) })}
+            >
               {t('bookings.paused.resumeConfirm')}
             </Button>
             <Button size="sm" variant="secondary" onClick={() => setOpen(false)}>
@@ -342,9 +357,19 @@ function PaymentHold({ booking }: { booking: BookingDetail }) {
       {!paid && overriding && (
         <div className="mt-2 border-t border-accent/30 pt-2">
           <Label htmlFor="overrideReason">{t('bookings.payFirst.reasonLabel')}</Label>
-          <Input id="overrideReason" maxLength={300} value={reason} onChange={(e) => setReason(e.target.value)} placeholder={t('bookings.payFirst.reasonPlaceholder')} />
+          <Input
+            id="overrideReason"
+            maxLength={300}
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder={t('bookings.payFirst.reasonPlaceholder')}
+          />
           <div className="mt-2 flex gap-2">
-            <Button size="sm" disabled={confirm.isPending || reason.trim().length < 3} onClick={() => confirm.mutate({ withoutPayment: true, reason: reason.trim() })}>
+            <Button
+              size="sm"
+              disabled={confirm.isPending || reason.trim().length < 3}
+              onClick={() => confirm.mutate({ withoutPayment: true, reason: reason.trim() })}
+            >
               {t('bookings.payFirst.overrideConfirm')}
             </Button>
             <Button size="sm" variant="secondary" onClick={() => setOverriding(false)}>
@@ -368,17 +393,26 @@ function ClientCheck({ booking }: { booking: BookingDetail }) {
   const ask = useAskClient(booking.id);
   const status = booking.clientReviewStatus;
   const noRate = !booking.rateType || !booking.rateAmount;
-  const tone = status === 'ACCEPTED' ? 'border-brand/30 bg-brand-light' : status === 'CHANGES_REQUESTED' ? 'border-accent/40 bg-accent-light' : 'border-border bg-paper';
+  const tone =
+    status === 'ACCEPTED' ? 'border-brand/30 bg-brand-light' : status === 'CHANGES_REQUESTED' ? 'border-accent/40 bg-accent-light' : 'border-border bg-paper';
   return (
     <div className={`mb-4 flex flex-wrap items-center justify-between gap-3 rounded border px-3 py-2 ${tone}`}>
       <div className="min-w-0 text-sm">
-        <p className="font-medium text-ink">{t(`bookings.clientCheck.${status === 'ACCEPTED' && booking.advancePayment.required && booking.advancePayment.state !== 'PAID' ? 'ACCEPTED_UNPAID' : (status ?? 'NONE')}`)}</p>
-        {status === 'CHANGES_REQUESTED' && booking.clientReviewNote && <p className="mt-0.5 whitespace-pre-wrap text-ink/80">&ldquo;{booking.clientReviewNote}&rdquo;</p>}
+        <p className="font-medium text-ink">
+          {t(
+            `bookings.clientCheck.${status === 'ACCEPTED' && booking.advancePayment.required && booking.advancePayment.state !== 'PAID' ? 'ACCEPTED_UNPAID' : (status ?? 'NONE')}`,
+          )}
+        </p>
+        {status === 'CHANGES_REQUESTED' && booking.clientReviewNote && (
+          <p className="mt-0.5 whitespace-pre-wrap text-ink/80">&ldquo;{booking.clientReviewNote}&rdquo;</p>
+        )}
         <p className="mt-0.5 text-xs text-ink/60">
           {status === 'ASKED' && booking.clientAskedAt
             ? t('bookings.clientCheck.askedAt', { when: new Date(booking.clientAskedAt).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' }) })
             : status && booking.clientAnsweredAt
-              ? t('bookings.clientCheck.answeredAt', { when: new Date(booking.clientAnsweredAt).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' }) })
+              ? t('bookings.clientCheck.answeredAt', {
+                  when: new Date(booking.clientAnsweredAt).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' }),
+                })
               : noRate
                 ? t('bookings.clientCheck.needsRate')
                 : t('bookings.clientCheck.hint')}
@@ -411,7 +445,9 @@ function BookingActions({
   const confirm = useConfirmBooking(booking.id);
   const complete = useCompleteBooking(booking.id);
   // Closing cancels upcoming shifts; when some are already billed, the close goes through a correction instead.
-  const billedUpcoming = booking.status === 'CONFIRMED' && booking.shifts.some((s) => s.status === 'SCHEDULED' && new Date(s.startsAt).getTime() > Date.now() && Boolean(s.invoice || s.payout));
+  const billedUpcoming =
+    booking.status === 'CONFIRMED' &&
+    booking.shifts.some((s) => s.status === 'SCHEDULED' && new Date(s.startsAt).getTime() > Date.now() && Boolean(s.invoice || s.payout));
   const cancel = useCancelBooking(booking.id);
   const extend = useExtendBooking(booking.id);
   const [mode, setMode] = useState<'cancel' | 'extend' | null>(null);
@@ -451,7 +487,11 @@ function BookingActions({
           {t('bookings.detail.extend')}
         </Button>
         {booking.status === 'CONFIRMED' && (
-          <Button variant="secondary" disabled={complete.isPending} onClick={() => (billedUpcoming ? onCorrect({ close: 'COMPLETED' }) : complete.mutate(undefined))}>
+          <Button
+            variant="secondary"
+            disabled={complete.isPending}
+            onClick={() => (billedUpcoming ? onCorrect({ close: 'COMPLETED' }) : complete.mutate(undefined))}
+          >
             {t('bookings.detail.complete')}
           </Button>
         )}
@@ -478,7 +518,12 @@ function BookingActions({
           </Label>
           <Input id="cancelReason" value={reason} onChange={(e) => setReason(e.target.value)} />
           <div className="mt-2 flex gap-2">
-            <Button size="sm" variant="danger" disabled={!reason.trim() || cancel.isPending} onClick={() => cancel.mutate(reason.trim(), { onSuccess: () => setMode(null) })}>
+            <Button
+              size="sm"
+              variant="danger"
+              disabled={!reason.trim() || cancel.isPending}
+              onClick={() => cancel.mutate(reason.trim(), { onSuccess: () => setMode(null) })}
+            >
               {t('bookings.detail.cancelConfirm')}
             </Button>
             <Button size="sm" variant="secondary" onClick={() => setMode(null)}>
@@ -514,8 +559,17 @@ function RateCard({ booking, editable }: { booking: BookingDetail; editable: boo
   // Moving a side to MONTHLY folds its shifts into a monthly line, which drops their own rates (the API does this on save).
   const clientOwn = booking.shifts.filter((s) => s.rateType).length;
   const payOwnBooked = booking.shifts.filter((s) => s.payRateType && !s.isCover).length;
-  const rate = (type: RateType | null, amount: string | null, none: string) => (type && amount ? `${formatLkr(amount)} ${t(`bookings.rateUnit.${type}`)}` : none);
-  const picker = (id: string, value: RateType | '', set: (v: RateType | '') => void, amount: string, setAmount: (v: string) => void, none: string, label: string) => (
+  const rate = (type: RateType | null, amount: string | null, none: string) =>
+    type && amount ? `${formatLkr(amount)} ${t(`bookings.rateUnit.${type}`)}` : none;
+  const picker = (
+    id: string,
+    value: RateType | '',
+    set: (v: RateType | '') => void,
+    amount: string,
+    setAmount: (v: string) => void,
+    none: string,
+    label: string,
+  ) => (
     <div className="grid grid-cols-2 gap-2">
       <Select id={id} value={value} onChange={(ev) => set(ev.target.value as RateType | '')} aria-label={label}>
         <option value="">{none}</option>
@@ -545,15 +599,30 @@ function RateCard({ booking, editable }: { booking: BookingDetail; editable: boo
             <p className="text-xs font-medium text-ink/60">{t('bookings.new.rateTitle')}</p>
             {picker('rateTypeEdit', rateType, setRateType, rateAmount, setRateAmount, t('bookings.new.noRate'), t('bookings.new.rateType'))}
             <p className="text-xs font-medium text-ink/60">{t('bookings.new.payRateType')}</p>
-            {picker('payRateTypeEdit', payRateType, setPayRateType, payRateAmount, setPayRateAmount, t('bookings.new.noPayRate'), t('bookings.new.payRateType'))}
-            {rateType === 'MONTHLY' && booking.rateType !== 'MONTHLY' && clientOwn > 0 && <p className="text-xs text-accent">{t('bookings.detail.monthlyClears', { count: clientOwn })}</p>}
+            {picker(
+              'payRateTypeEdit',
+              payRateType,
+              setPayRateType,
+              payRateAmount,
+              setPayRateAmount,
+              t('bookings.new.noPayRate'),
+              t('bookings.new.payRateType'),
+            )}
+            {rateType === 'MONTHLY' && booking.rateType !== 'MONTHLY' && clientOwn > 0 && (
+              <p className="text-xs text-accent">{t('bookings.detail.monthlyClears', { count: clientOwn })}</p>
+            )}
             {payRateType === 'MONTHLY' && booking.payRateType !== 'MONTHLY' && payOwnBooked > 0 && (
               <p className="text-xs text-accent">{t('bookings.detail.monthlyPayClears', { count: payOwnBooked })}</p>
             )}
             <label htmlFor="billingTimingEdit" className="block text-xs font-medium text-ink/60">
               {t('bookings.billingTiming.label')}
             </label>
-            <Select id="billingTimingEdit" value={billingTiming} aria-describedby="billingTimingEditHint" onChange={(ev) => setBillingTiming(ev.target.value as BillingTiming)}>
+            <Select
+              id="billingTimingEdit"
+              value={billingTiming}
+              aria-describedby="billingTimingEditHint"
+              onChange={(ev) => setBillingTiming(ev.target.value as BillingTiming)}
+            >
               {BILLING_TIMINGS.map((b) => (
                 <option key={b} value={b}>
                   {t(`bookings.billingTiming.${b}`)}
@@ -613,7 +682,9 @@ function RateCard({ booking, editable }: { booking: BookingDetail; editable: boo
           </ul>
         )}
         {((e.total && e.unpriced > 0) || (pay.total && pay.unpriced > 0)) && (
-          <p className="text-xs text-accent">{t('bookings.detail.unpricedShifts', { count: Math.max(e.total ? e.unpriced : 0, pay.total ? pay.unpriced : 0) })}</p>
+          <p className="text-xs text-accent">
+            {t('bookings.detail.unpricedShifts', { count: Math.max(e.total ? e.unpriced : 0, pay.total ? pay.unpriced : 0) })}
+          </p>
         )}
         <dl className="space-y-1 border-t border-border pt-2">
           {e.total && (
@@ -730,9 +801,24 @@ function ShiftRow({ booking, shift }: { booking: BookingDetail; shift: BookingSh
         <div className="w-28 shrink-0 text-sm font-medium text-ink">{fmtDay(shift.startsAt, locale)}</div>
         {editing ? (
           <div className="flex flex-wrap items-center gap-2">
-            <Input type="datetime-local" step={900} className="w-52" value={start} onChange={(e) => setStart(e.target.value)} aria-label={t('bookings.new.startTime')} />
+            <Input
+              type="datetime-local"
+              step={900}
+              className="w-52"
+              value={start}
+              onChange={(e) => setStart(e.target.value)}
+              aria-label={t('bookings.new.startTime')}
+            />
             <span className="text-ink/40">→</span>
-            <Input type="datetime-local" step={900} className="w-52" value={end} min={start} onChange={(e) => setEnd(e.target.value)} aria-label={t('bookings.new.endTime')} />
+            <Input
+              type="datetime-local"
+              step={900}
+              className="w-52"
+              value={end}
+              min={start}
+              onChange={(e) => setEnd(e.target.value)}
+              aria-label={t('bookings.new.endTime')}
+            />
             <Button size="sm" disabled={update.isPending} onClick={() => save({ shiftId: shift.id, start, end }, () => setEditing(false))}>
               {t('common.save')}
             </Button>
@@ -761,7 +847,9 @@ function ShiftRow({ booking, shift }: { booking: BookingDetail; shift: BookingSh
               {shift.note && <span className="ml-2 text-xs text-ink/50">· {shift.note}</span>}
             </div>
             {/* Check-in, once there is something to say: due, late, there, gone, or never recorded. */}
-            {shift.checkIn && shift.checkIn.state !== 'UPCOMING' && (shift.status === 'SCHEDULED' || shift.status === 'COMPLETED') && <VisitChip checkIn={shift.checkIn} />}
+            {shift.checkIn && shift.checkIn.state !== 'UPCOMING' && (shift.status === 'SCHEDULED' || shift.status === 'COMPLETED') && (
+              <VisitChip checkIn={shift.checkIn} />
+            )}
             {shift.checkIn?.presence && <PresenceStrip shiftId={shift.id} presence={shift.checkIn.presence} withMap />}
             <ShiftStatusBadge status={shift.status} label={t(`bookings.shiftStatus.${shift.status}`)} />
             {open && (
@@ -772,7 +860,13 @@ function ShiftRow({ booking, shift }: { booking: BookingDetail; shift: BookingSh
                   </span>
                 )}
                 {!billed && shift.status !== 'CANCELLED' && shift.status !== 'MISSED' && (
-                  <button type="button" onClick={() => setEditing(true)} className="rounded p-1.5 text-ink/50 hover:bg-paper hover:text-ink" aria-label={t('bookings.detail.editTimes')} title={t('bookings.detail.editTimes')}>
+                  <button
+                    type="button"
+                    onClick={() => setEditing(true)}
+                    className="rounded p-1.5 text-ink/50 hover:bg-paper hover:text-ink"
+                    aria-label={t('bookings.detail.editTimes')}
+                    title={t('bookings.detail.editTimes')}
+                  >
                     <Pencil size={14} />
                   </button>
                 )}
@@ -789,7 +883,13 @@ function ShiftRow({ booking, shift }: { booking: BookingDetail; shift: BookingSh
                   </button>
                 )}
                 {!billed && shift.status !== 'CANCELLED' && (
-                  <button type="button" onClick={() => setCovering((v) => !v)} className="rounded p-1.5 text-ink/50 hover:bg-paper hover:text-ink" aria-label={t('bookings.detail.cover')} title={t('bookings.detail.cover')}>
+                  <button
+                    type="button"
+                    onClick={() => setCovering((v) => !v)}
+                    className="rounded p-1.5 text-ink/50 hover:bg-paper hover:text-ink"
+                    aria-label={t('bookings.detail.cover')}
+                    title={t('bookings.detail.cover')}
+                  >
                     <UserRoundCog size={14} />
                   </button>
                 )}
@@ -838,9 +938,17 @@ function ShiftRow({ booking, shift }: { booking: BookingDetail; shift: BookingSh
       )}
       {covering && (
         <div className="mt-2 sm:pl-32">
-          <CaregiverPicker autoFocus onPick={(c) => save({ shiftId: shift.id, caregiverId: c.id }, () => setCovering(false))} onCancel={() => setCovering(false)} />
+          <CaregiverPicker
+            autoFocus
+            onPick={(c) => save({ shiftId: shift.id, caregiverId: c.id }, () => setCovering(false))}
+            onCancel={() => setCovering(false)}
+          />
           {shift.isCover && booking.caregiver && (
-            <button type="button" className="mt-1 text-xs text-brand-dark hover:underline" onClick={() => save({ shiftId: shift.id, caregiverId: booking.caregiver!.id }, () => setCovering(false))}>
+            <button
+              type="button"
+              className="mt-1 text-xs text-brand-dark hover:underline"
+              onClick={() => save({ shiftId: shift.id, caregiverId: booking.caregiver!.id }, () => setCovering(false))}
+            >
               {t('bookings.detail.backToBooked', { name: booking.caregiver.fullName })}
             </button>
           )}
@@ -884,7 +992,13 @@ function AddShiftCard({ booking }: { booking: BookingDetail }) {
             <Input id="addEnd" type="datetime-local" step={900} value={end} min={start} onChange={(e) => setEnd(e.target.value)} />
           </div>
         </div>
-        <Input placeholder={t('bookings.detail.shiftNote')} value={note} maxLength={500} onChange={(e) => setNote(e.target.value)} aria-label={t('bookings.detail.shiftNote')} />
+        <Input
+          placeholder={t('bookings.detail.shiftNote')}
+          value={note}
+          maxLength={500}
+          onChange={(e) => setNote(e.target.value)}
+          aria-label={t('bookings.detail.shiftNote')}
+        />
         <label className="flex items-center gap-2 text-sm text-ink/70">
           <input type="checkbox" checked={ownRate} onChange={(e) => setOwnRate(e.target.checked)} className="h-4 w-4 rounded border-border" />
           {t('bookings.shiftRate.different')}
@@ -939,7 +1053,14 @@ function BookingHistory({ booking }: { booking: BookingDetail }) {
             if (note.trim()) addNote.mutate(note.trim(), { onSuccess: () => setNote('') });
           }}
         >
-          <Textarea rows={2} maxLength={2000} placeholder={t('requests.detail.notePlaceholder')} value={note} onChange={(e) => setNote(e.target.value)} aria-label={t('requests.detail.addNote')} />
+          <Textarea
+            rows={2}
+            maxLength={2000}
+            placeholder={t('requests.detail.notePlaceholder')}
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            aria-label={t('requests.detail.addNote')}
+          />
           <Button type="submit" size="sm" variant="secondary" className="mt-2" disabled={!note.trim() || addNote.isPending}>
             {t('requests.detail.addNote')}
           </Button>

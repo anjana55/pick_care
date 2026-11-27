@@ -54,7 +54,9 @@ export const useSetFunctionEndpoints = () =>
 
 export const useSaveEndpoint = () =>
   useOverviewMutation((v: { id?: string; input: AutomationEndpointInput & { copyDefault?: boolean } }) =>
-    v.id ? api.patch<AutomationOverview>(`/settings/automation/endpoints/${v.id}`, v.input) : api.post<AutomationOverview>('/settings/automation/endpoints', v.input),
+    v.id
+      ? api.patch<AutomationOverview>(`/settings/automation/endpoints/${v.id}`, v.input)
+      : api.post<AutomationOverview>('/settings/automation/endpoints', v.input),
   );
 
 export const useDeleteEndpoint = () => useOverviewMutation((v: { id: string }) => api.delete<AutomationOverview>(`/settings/automation/endpoints/${v.id}`));

@@ -15,11 +15,7 @@ import {
 import { useAuth } from '@/lib/api/auth-context';
 import { useTranslation } from '@/lib/i18n/provider';
 import { ApiError } from '@/lib/api/client';
-import {
-  useMobileAppSettings,
-  useUpdateMobileAppSettings,
-  type MobileAppSettings,
-} from '@/lib/hooks/use-mobile-app-settings';
+import { useMobileAppSettings, useUpdateMobileAppSettings, type MobileAppSettings } from '@/lib/hooks/use-mobile-app-settings';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input, Label, Textarea } from '@/components/ui/input';
@@ -59,12 +55,7 @@ function problems(platform: AppPlatform, d: PlatformDraft) {
   const url = d.storeUrl.trim();
   return {
     minimumVersion: min && !APP_VERSION_RE.test(min) ? 'versionInvalid' : null,
-    latestVersion:
-      latest && !APP_VERSION_RE.test(latest)
-        ? 'versionInvalid'
-        : min && latest && compareAppVersions(min, latest) === 1
-          ? 'minAboveLatest'
-          : null,
+    latestVersion: latest && !APP_VERSION_RE.test(latest) ? 'versionInvalid' : min && latest && compareAppVersions(min, latest) === 1 ? 'minAboveLatest' : null,
     storeUrl: url && !isStoreUrl(platform, url) ? 'storeUrlInvalid' : min && !url ? 'minNeedsStore' : null,
   } as const;
 }
@@ -206,7 +197,6 @@ export default function MobileAppSettingsPage() {
             </Card>
           );
         })}
-
 
         <Card>
           <CardHeader>

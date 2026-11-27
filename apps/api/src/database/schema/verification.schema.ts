@@ -22,8 +22,12 @@ export const references = mysqlTable(
     confirmAnswer: json('confirm_answer').$type<ReferenceAnswer>(),
     confirmAnsweredAt: datetime('confirm_answered_at'),
     confirmEscalatedAt: datetime('confirm_escalated_at'),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     caregiverIdx: index('references_caregiver_idx').on(table.caregiverId),
@@ -31,14 +35,7 @@ export const references = mysqlTable(
   }),
 );
 
-export const verificationTypeEnum = [
-  'IDENTITY',
-  'POLICE_CLEARANCE',
-  'QUALIFICATION',
-  'EXPERIENCE',
-  'REFERENCE',
-  'OVERALL',
-] as const;
+export const verificationTypeEnum = ['IDENTITY', 'POLICE_CLEARANCE', 'QUALIFICATION', 'EXPERIENCE', 'REFERENCE', 'OVERALL'] as const;
 
 export const verifications = mysqlTable(
   'verifications',
@@ -50,8 +47,12 @@ export const verifications = mysqlTable(
     verifiedByUserId: varchar('verified_by_user_id', { length: 36 }),
     verifiedAt: datetime('verified_at'),
     notes: text('notes'),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     caregiverIdx: index('verifications_caregiver_idx').on(table.caregiverId),
@@ -75,7 +76,9 @@ export const onboardingFiles = mysqlTable('onboarding_files', {
   documentsEscalatedAt: datetime('documents_escalated_at'),
   /** The one reminder to the caregiver, before staff are told. */
   documentsRemindedAt: datetime('documents_reminded_at'),
-  updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: datetime('updated_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
 });
 
 /**

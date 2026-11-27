@@ -68,7 +68,14 @@ const invoice = (over: Partial<ClientInvoice> = {}): ClientInvoice => ({
   periodStart: '2026-10-01',
   periodEnd: '2026-10-31',
   bookingReference: 'BK-7Q2',
-  seller: { name: 'Pick Care', address: 'Colombo 3', phone: '0112345678', email: 'billing@pickcare.lk', registrationNumber: 'PV 1234', taxRegistrationNumber: null } as never,
+  seller: {
+    name: 'Pick Care',
+    address: 'Colombo 3',
+    phone: '0112345678',
+    email: 'billing@pickcare.lk',
+    registrationNumber: 'PV 1234',
+    taxRegistrationNumber: null,
+  } as never,
   billTo: { name: 'Amaya <Perera>', address: '12 Galle Rd\nColombo 4', phone: '+94771234567', email: 'amaya@example.lk' },
   lines: [{ description: 'Day care', serviceDate: '2026-10-02', quantity: '5', unit: 'DAY', unitPrice: '2500.00', discount: '0', amount: '12500.00' } as never],
   subtotal: '12500.00',
@@ -159,7 +166,12 @@ describe('downloading an invoice as a PDF', () => {
 describe('the PDF page', () => {
   it('has the whole invoice, with everything escaped', () => {
     const html = invoiceHtml(
-      invoice({ status: 'PAID', amountPaid: '12500.00', balance: '0.00', payments: [{ paidOn: '2026-11-03', amount: '12500.00', paymentType: 'ONLINE', method: 'PAYHERE', reference: 'PH-1' } as never] }),
+      invoice({
+        status: 'PAID',
+        amountPaid: '12500.00',
+        balance: '0.00',
+        payments: [{ paidOn: '2026-11-03', amount: '12500.00', paymentType: 'ONLINE', method: 'PAYHERE', reference: 'PH-1' } as never],
+      }),
       t,
       'en',
       '#0f766e',

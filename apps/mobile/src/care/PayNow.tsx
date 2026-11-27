@@ -20,7 +20,9 @@ export function PayNow({ invoice, why }: { invoice: PayableInvoice; why: string 
   if (Number(invoice.balance) <= 0) return null;
   return (
     <View style={[styles.box, { borderColor: colors.brand, backgroundColor: colors.surface }]} testID={`pay-${invoice.id}`}>
-      <Text style={{ fontSize: 16, fontWeight: '600', color: colors.ink }}>{t('payNow.amount', { amount: formatLkr(invoice.balance), number: invoice.number ?? '' })}</Text>
+      <Text style={{ fontSize: 16, fontWeight: '600', color: colors.ink }}>
+        {t('payNow.amount', { amount: formatLkr(invoice.balance), number: invoice.number ?? '' })}
+      </Text>
       <Text style={{ fontSize: 14, color: colors.muted }}>
         {why}
         {invoice.dueDate ? ` ${t('payNow.due', { date: formatDate(invoice.dueDate, locale) })}` : ''}

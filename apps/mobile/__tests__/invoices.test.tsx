@@ -36,7 +36,16 @@ const RETURN = `https://pickcare.lk/account/invoices/${INV}?payment=return`;
 const CANCEL = `https://pickcare.lk/account/invoices/${INV}?payment=cancelled`;
 const CHECKOUT = {
   action: 'https://sandbox.payhere.lk/pay/checkout',
-  fields: { merchant_id: '1211149', order_id: 'o-1', amount: '12500.00', currency: 'LKR', return_url: RETURN, cancel_url: CANCEL, hash: 'ABC', items: 'Invoice INV-7 "Nov"' },
+  fields: {
+    merchant_id: '1211149',
+    order_id: 'o-1',
+    amount: '12500.00',
+    currency: 'LKR',
+    return_url: RETURN,
+    cancel_url: CANCEL,
+    hash: 'ABC',
+    items: 'Invoice INV-7 "Nov"',
+  },
 };
 
 const invoice = (over: Partial<ClientInvoice> = {}): ClientInvoice => ({
@@ -48,7 +57,14 @@ const invoice = (over: Partial<ClientInvoice> = {}): ClientInvoice => ({
   periodStart: '2026-10-01',
   periodEnd: '2026-10-31',
   bookingReference: 'BK-7Q2',
-  seller: { name: 'Pick Care', address: 'Colombo 3', phone: '0112345678', email: 'billing@pickcare.lk', registrationNumber: 'PV 1234', taxRegistrationNumber: null } as never,
+  seller: {
+    name: 'Pick Care',
+    address: 'Colombo 3',
+    phone: '0112345678',
+    email: 'billing@pickcare.lk',
+    registrationNumber: 'PV 1234',
+    taxRegistrationNumber: null,
+  } as never,
   billTo: { name: 'Amaya Perera', address: null, phone: '+94771234567', email: 'amaya@example.lk' },
   lines: [{ description: 'Day care', serviceDate: null, quantity: '5', unit: 'DAY', unitPrice: '2500.00', discount: '0', amount: '12500.00' } as never],
   subtotal: '12500.00',
@@ -68,7 +84,8 @@ const invoice = (over: Partial<ClientInvoice> = {}): ClientInvoice => ({
   ...over,
 });
 
-const client = (extra: Record<string, unknown> = { email: 'amaya@example.lk' }) => tokenStore.set(tokensFor('PATIENT_GUARDIAN', { patientId: 'p-1', ...extra }));
+const client = (extra: Record<string, unknown> = { email: 'amaya@example.lk' }) =>
+  tokenStore.set(tokensFor('PATIENT_GUARDIAN', { patientId: 'p-1', ...extra }));
 const show = (ui: React.ReactElement) => render(<AppProviders>{ui}</AppProviders>);
 
 beforeEach(() => {
@@ -83,7 +100,11 @@ describe('the invoices list', () => {
     serveApi({
       'GET /me/invoices': () => ({
         status: 200,
-        body: [invoice({ id: 'paid-1', number: 'INV-0001', status: 'PAID', balance: '0', canPayOnline: false }), invoice({ overdue: true }), invoice({ id: 'i-2', number: 'INV-0008', balance: '2500.00' })],
+        body: [
+          invoice({ id: 'paid-1', number: 'INV-0001', status: 'PAID', balance: '0', canPayOnline: false }),
+          invoice({ overdue: true }),
+          invoice({ id: 'i-2', number: 'INV-0008', balance: '2500.00' }),
+        ],
       }),
     });
     await show(<Invoices />);
@@ -105,7 +126,10 @@ describe('paying an invoice with PayHere', () => {
     await client();
     let status: ClientInvoice['status'] = 'ISSUED';
     const calls = serveApi({
-      [`GET /me/invoices/${INV}`]: () => ({ status: 200, body: invoice(status === 'PAID' ? { status, balance: '0', amountPaid: '12500.00', canPayOnline: false } : {}) }),
+      [`GET /me/invoices/${INV}`]: () => ({
+        status: 200,
+        body: invoice(status === 'PAID' ? { status, balance: '0', amountPaid: '12500.00', canPayOnline: false } : {}),
+      }),
       [`POST /me/invoices/${INV}/payhere`]: () => ({ status: 200, body: CHECKOUT }),
     });
     mockRouter.params = { id: INV };
@@ -282,7 +306,11 @@ describe('reporting a problem on a booking', () => {
     await fireEvent.press(screen.getByRole('button', { name: en.issues.send }));
 
     expect(await screen.findByText(en.issues.sent)).toBeTruthy();
-    expect(calls.find((c) => c.route === 'POST /me/bookings/b-1/issues')!.body).toEqual({ category: 'TIMES', message: 'She left at 4 pm, not 8 pm', shiftId: 's-1' });
+    expect(calls.find((c) => c.route === 'POST /me/bookings/b-1/issues')!.body).toEqual({
+      category: 'TIMES',
+      message: 'She left at 4 pm, not 8 pm',
+      shiftId: 's-1',
+    });
     await waitFor(() => expect(calls.filter((c) => c.route === 'GET /me/issues').length).toBe(2));
   });
 });

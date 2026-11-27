@@ -71,21 +71,14 @@ export class AccountClaimService {
       if (!issued.issued) return { ...generic, resendAfterSeconds: issued.retryAfterSeconds };
       // Not awaited, as in WhatsappAuthService.requestOtp: a slow provider call
       // must not make "sent" and "nothing to send" distinguishable by timing.
-      void this.whatsapp
-        .sendOtp(s, phone, issued.code)
-        .catch((err: Error) => this.logger.error(`Claim code delivery failed: ${err.message}`));
+      void this.whatsapp.sendOtp(s, phone, issued.code).catch((err: Error) => this.logger.error(`Claim code delivery failed: ${err.message}`));
       return { ...generic, resendAfterSeconds: s.otpResendCooldownSeconds, ...(this.whatsapp.isDevConsole(s) ? { devCode: issued.code } : {}) };
     }
 
     if (user?.email) {
       const issued = await this.claimCodes.issue(caregiver.id, 'EMAIL');
       if (!issued.issued) return { ...generic, resendAfterSeconds: issued.retryAfterSeconds };
-      void this.email.sendClaimCodeEmail(
-        user.email,
-        issued.code,
-        caregiver.registrationNumber,
-        CLAIM_CODE_POLICY.EMAIL.ttlMs / 60_000,
-      );
+      void this.email.sendClaimCodeEmail(user.email, issued.code, caregiver.registrationNumber, CLAIM_CODE_POLICY.EMAIL.ttlMs / 60_000);
       return { ...generic, ...(this.isProduction() ? {} : { devCode: issued.code }) };
     }
 
@@ -115,8 +108,7 @@ export class AccountClaimService {
       // A phone just proven over WhatsApp becomes the login's number - unless
       // some other login already holds it, in which case it is left alone
       // rather than stolen; the claim still succeeds.
-      const provenPhone =
-        channel === 'WHATSAPP' && phone && !(await this.phoneHeldByAnotherLogin(txDb, phone, user?.id)) ? phone : null;
+      const provenPhone = channel === 'WHATSAPP' && phone && !(await this.phoneHeldByAnotherLogin(txDb, phone, user?.id)) ? phone : null;
 
       if (!user) {
         // A staff-entered caregiver: claiming is what gives them a login.

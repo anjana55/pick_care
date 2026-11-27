@@ -57,10 +57,31 @@ function toDraft(s: AdminAiSettings): Draft {
   };
 }
 
-function Toggle({ id, checked, onChange, label, hint, disabled }: { id: string; checked: boolean; onChange: (v: boolean) => void; label: string; hint: string; disabled?: boolean }) {
+function Toggle({
+  id,
+  checked,
+  onChange,
+  label,
+  hint,
+  disabled,
+}: {
+  id: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  label: string;
+  hint: string;
+  disabled?: boolean;
+}) {
   return (
     <label htmlFor={id} className={`flex items-start gap-3 py-2 text-sm ${disabled ? 'opacity-50' : ''}`}>
-      <input id={id} type="checkbox" checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} className="mt-0.5 h-4 w-4 rounded border-border text-brand focus:ring-brand" />
+      <input
+        id={id}
+        type="checkbox"
+        checked={checked}
+        disabled={disabled}
+        onChange={(e) => onChange(e.target.checked)}
+        className="mt-0.5 h-4 w-4 rounded border-border text-brand focus:ring-brand"
+      />
       <span>
         <span className="font-medium text-ink">{label}</span>
         <span className="block text-xs text-ink/50">{hint}</span>
@@ -118,7 +139,14 @@ export default function AiSettingsPage() {
     mutationFn: () => api.post<AiTestResult>('/settings/ai/test'),
     onSuccess: setTestResult,
     onError: (err: unknown) =>
-      setTestResult({ ok: false, provider: draft!.provider, model: draft!.model, latencyMs: 0, toolCalling: false, message: err instanceof ApiError ? err.message : t('aiAdmin.saveError') }),
+      setTestResult({
+        ok: false,
+        provider: draft!.provider,
+        model: draft!.model,
+        latencyMs: 0,
+        toolCalling: false,
+        message: err instanceof ApiError ? err.message : t('aiAdmin.saveError'),
+      }),
   });
 
   if (user?.role !== 'ADMIN' || isLoading || !draft || !settings) {
@@ -130,7 +158,7 @@ export default function AiSettingsPage() {
     setDraft({ ...draft, [key]: value });
   };
   const setProvider = (provider: AiProvider) => {
-    const wasDefault = (Object.values(DEFAULTS) as { baseUrl: string; model: string }[]);
+    const wasDefault = Object.values(DEFAULTS) as { baseUrl: string; model: string }[];
     setSaved(false);
     setDraft({
       ...draft,
@@ -156,19 +184,44 @@ export default function AiSettingsPage() {
 
       <div className="space-y-5">
         <Card>
-          <CardHeader><CardTitle>{t('aiAdmin.featuresTitle')}</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>{t('aiAdmin.featuresTitle')}</CardTitle>
+          </CardHeader>
           <CardContent>
             <Toggle id="enabled" checked={draft.enabled} onChange={(v) => set('enabled', v)} label={t('aiAdmin.enabled')} hint={t('aiAdmin.enabledHint')} />
             <div className="ml-7 border-l border-border pl-4">
-              <Toggle id="publicSearch" disabled={!draft.enabled} checked={draft.publicSearchEnabled} onChange={(v) => set('publicSearchEnabled', v)} label={t('aiAdmin.publicSearch')} hint={t('aiAdmin.publicSearchHint')} />
-              <Toggle id="staffMatching" disabled={!draft.enabled} checked={draft.staffMatchingEnabled} onChange={(v) => set('staffMatchingEnabled', v)} label={t('aiAdmin.staffMatching')} hint={t('aiAdmin.staffMatchingHint')} />
-              <Toggle id="assistant" disabled={!draft.enabled} checked={draft.staffAssistantEnabled} onChange={(v) => set('staffAssistantEnabled', v)} label={t('aiAdmin.assistant')} hint={t('aiAdmin.assistantHint')} />
+              <Toggle
+                id="publicSearch"
+                disabled={!draft.enabled}
+                checked={draft.publicSearchEnabled}
+                onChange={(v) => set('publicSearchEnabled', v)}
+                label={t('aiAdmin.publicSearch')}
+                hint={t('aiAdmin.publicSearchHint')}
+              />
+              <Toggle
+                id="staffMatching"
+                disabled={!draft.enabled}
+                checked={draft.staffMatchingEnabled}
+                onChange={(v) => set('staffMatchingEnabled', v)}
+                label={t('aiAdmin.staffMatching')}
+                hint={t('aiAdmin.staffMatchingHint')}
+              />
+              <Toggle
+                id="assistant"
+                disabled={!draft.enabled}
+                checked={draft.staffAssistantEnabled}
+                onChange={(v) => set('staffAssistantEnabled', v)}
+                label={t('aiAdmin.assistant')}
+                hint={t('aiAdmin.assistantHint')}
+              />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader><CardTitle>{t('aiAdmin.modelTitle')}</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>{t('aiAdmin.modelTitle')}</CardTitle>
+          </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div>
               <Label htmlFor="provider">{t('aiAdmin.provider')}</Label>
@@ -179,16 +232,22 @@ export default function AiSettingsPage() {
               </Select>
             </div>
             <div>
-              <Label htmlFor="model" required>{t('aiAdmin.model')}</Label>
+              <Label htmlFor="model" required>
+                {t('aiAdmin.model')}
+              </Label>
               <Input id="model" autoComplete="off" value={draft.model} onChange={(e) => set('model', e.target.value)} />
             </div>
             <div className="sm:col-span-2">
-              <Label htmlFor="baseUrl" required>{t('aiAdmin.baseUrl')}</Label>
+              <Label htmlFor="baseUrl" required>
+                {t('aiAdmin.baseUrl')}
+              </Label>
               <Input id="baseUrl" autoComplete="off" value={draft.baseUrl} onChange={(e) => set('baseUrl', e.target.value)} />
               <p className="mt-1 text-xs text-ink/50">{t(`aiAdmin.baseUrlHint.${draft.provider}`)}</p>
             </div>
             <div className="sm:col-span-2">
-              <Label htmlFor="apiKey" required={needsKey && !settings.apiKeySet}>{t('aiAdmin.apiKey')}</Label>
+              <Label htmlFor="apiKey" required={needsKey && !settings.apiKeySet}>
+                {t('aiAdmin.apiKey')}
+              </Label>
               <Input
                 id="apiKey"
                 type="password"
@@ -200,7 +259,12 @@ export default function AiSettingsPage() {
               <p className="mt-1 text-xs text-ink/50">{needsKey ? t('aiAdmin.apiKeyHint') : t('aiAdmin.apiKeyHintOllama')}</p>
               {settings.apiKeySet && (
                 <label className="mt-2 flex items-center gap-2 text-xs text-ink/70">
-                  <input type="checkbox" checked={draft.clearApiKey} onChange={(e) => setDraft({ ...draft, clearApiKey: e.target.checked, apiKey: '' })} className="h-3.5 w-3.5 rounded border-border text-brand focus:ring-brand" />
+                  <input
+                    type="checkbox"
+                    checked={draft.clearApiKey}
+                    onChange={(e) => setDraft({ ...draft, clearApiKey: e.target.checked, apiKey: '' })}
+                    className="h-3.5 w-3.5 rounded border-border text-brand focus:ring-brand"
+                  />
                   {t('aiAdmin.apiKeyRemove')}
                 </label>
               )}
@@ -209,32 +273,67 @@ export default function AiSettingsPage() {
         </Card>
 
         <Card>
-          <CardHeader><CardTitle>{t('aiAdmin.tuningTitle')}</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>{t('aiAdmin.tuningTitle')}</CardTitle>
+          </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div>
               <Label htmlFor="temperature">{t('aiAdmin.temperature')}</Label>
-              <Input id="temperature" type="number" min={0} max={1} step={0.05} placeholder={t('aiAdmin.temperatureDefault')} value={draft.temperature} onChange={(e) => set('temperature', e.target.value)} />
+              <Input
+                id="temperature"
+                type="number"
+                min={0}
+                max={1}
+                step={0.05}
+                placeholder={t('aiAdmin.temperatureDefault')}
+                value={draft.temperature}
+                onChange={(e) => set('temperature', e.target.value)}
+              />
               <p className="mt-1 text-xs text-ink/50">{t('aiAdmin.temperatureHint')}</p>
             </div>
             <div>
               <Label htmlFor="maxTokens">{t('aiAdmin.maxTokens')}</Label>
-              <Input id="maxTokens" type="number" min={256} max={8192} step={128} value={draft.maxTokens} onChange={(e) => set('maxTokens', Number(e.target.value))} />
+              <Input
+                id="maxTokens"
+                type="number"
+                min={256}
+                max={8192}
+                step={128}
+                value={draft.maxTokens}
+                onChange={(e) => set('maxTokens', Number(e.target.value))}
+              />
             </div>
             <div>
               <Label htmlFor="timeout">{t('aiAdmin.timeout')}</Label>
-              <Input id="timeout" type="number" min={3} max={120} value={draft.timeoutSeconds} onChange={(e) => set('timeoutSeconds', Number(e.target.value))} />
+              <Input
+                id="timeout"
+                type="number"
+                min={3}
+                max={120}
+                value={draft.timeoutSeconds}
+                onChange={(e) => set('timeoutSeconds', Number(e.target.value))}
+              />
               <p className="mt-1 text-xs text-ink/50">{t('aiAdmin.timeoutHint')}</p>
             </div>
             <div>
               <Label htmlFor="pool">{t('aiAdmin.pool')}</Label>
-              <Input id="pool" type="number" min={5} max={50} value={draft.candidatePoolSize} onChange={(e) => set('candidatePoolSize', Number(e.target.value))} />
+              <Input
+                id="pool"
+                type="number"
+                min={5}
+                max={50}
+                value={draft.candidatePoolSize}
+                onChange={(e) => set('candidatePoolSize', Number(e.target.value))}
+              />
               <p className="mt-1 text-xs text-ink/50">{t('aiAdmin.poolHint')}</p>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader><CardTitle>{t('aiAdmin.promptsTitle')}</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>{t('aiAdmin.promptsTitle')}</CardTitle>
+          </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-xs text-ink/50">{t('aiAdmin.promptsHint')}</p>
             <div>
@@ -262,10 +361,19 @@ export default function AiSettingsPage() {
         </div>
 
         <Card>
-          <CardHeader><CardTitle>{t('aiAdmin.testTitle')}</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>{t('aiAdmin.testTitle')}</CardTitle>
+          </CardHeader>
           <CardContent>
             <p className="mb-3 text-xs text-ink/50">{t('aiAdmin.testHint')}</p>
-            <Button variant="secondary" onClick={() => { setTestResult(null); test.mutate(); }} disabled={test.isPending || dirty}>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setTestResult(null);
+                test.mutate();
+              }}
+              disabled={test.isPending || dirty}
+            >
               {test.isPending ? t('aiAdmin.testRunning') : t('aiAdmin.testRun')}
             </Button>
             {dirty && <p className="mt-2 text-xs text-ink/50">{t('aiAdmin.testSaveFirst')}</p>}

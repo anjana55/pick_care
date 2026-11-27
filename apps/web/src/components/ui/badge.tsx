@@ -23,11 +23,7 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 export function StatusBadge({ status, label }: { status: CaregiverStatus | ClientStatus; label: string }) {
-  return (
-    <span className={cn('inline-flex items-center rounded px-2 py-0.5 text-xs font-medium', STATUS_STYLES[status])}>
-      {label}
-    </span>
-  );
+  return <span className={cn('inline-flex items-center rounded px-2 py-0.5 text-xs font-medium', STATUS_STYLES[status])}>{label}</span>;
 }
 
 export function VerificationBadge({ status, label }: { status: string; label?: string }) {
@@ -38,8 +34,6 @@ export function VerificationBadge({ status, label }: { status: string; label?: s
     REJECTED: 'bg-danger-light text-danger',
   };
   return (
-    <span className={cn('inline-flex items-center rounded px-2 py-0.5 text-xs font-medium', styles[status] ?? '')}>
-      {label ?? status.replace('_', ' ')}
-    </span>
+    <span className={cn('inline-flex items-center rounded px-2 py-0.5 text-xs font-medium', styles[status] ?? '')}>{label ?? status.replace('_', ' ')}</span>
   );
 }

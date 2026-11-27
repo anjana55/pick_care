@@ -114,12 +114,19 @@ export function IssueReportList({ reports, showBooking = false }: { reports: MyI
                 {r.shiftStartsAt ? fmtDay(r.shiftStartsAt, locale) : t('issues.wholeBooking')}
               </Text>
             </Text>
-            <Text style={[styles.badge, { color: r.status === 'OPEN' ? colors.ink : colors.brand, borderColor: r.status === 'OPEN' ? colors.border : colors.brand }]}>
+            <Text
+              style={[
+                styles.badge,
+                { color: r.status === 'OPEN' ? colors.ink : colors.brand, borderColor: r.status === 'OPEN' ? colors.border : colors.brand },
+              ]}
+            >
               {t(`issues.status.${r.status}`)}
             </Text>
           </View>
           <Text style={{ fontSize: 14, lineHeight: 20, color: colors.muted }}>{r.message}</Text>
-          {r.resolutionNote ? <Text style={{ fontSize: 14, lineHeight: 20, color: colors.ink }}>{t('issues.ourAnswer', { note: r.resolutionNote })}</Text> : null}
+          {r.resolutionNote ? (
+            <Text style={{ fontSize: 14, lineHeight: 20, color: colors.ink }}>{t('issues.ourAnswer', { note: r.resolutionNote })}</Text>
+          ) : null}
         </View>
       ))}
     </View>

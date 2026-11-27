@@ -22,7 +22,10 @@ const HOUR_MS = 60 * 60 * 1000;
 const PAUSED_CLIENT = {
   en: { title: 'Your visits are paused', body: 'Invoice {number} is past its due date. Your visits resume as soon as it is paid - you can pay it now.' },
   si: { title: 'ඔබගේ හමුවීම් තාවකාලිකව නවතා ඇත', body: '{number} ඉන්වොයිසිය ගෙවිය යුතු දිනය ඉක්මවා ඇත. එය ගෙවූ වහාම ඔබගේ හමුවීම් නැවත ආරම්භ වේ - ඔබට දැන් එය ගෙවිය හැක.' },
-  ta: { title: 'உங்கள் வருகைகள் இடைநிறுத்தப்பட்டுள்ளன', body: 'விலைப்பட்டியல் {number} செலுத்த வேண்டிய நாளைக் கடந்துவிட்டது. அது செலுத்தப்பட்டவுடன் உங்கள் வருகைகள் மீண்டும் தொடங்கும் - இப்போதே செலுத்தலாம்.' },
+  ta: {
+    title: 'உங்கள் வருகைகள் இடைநிறுத்தப்பட்டுள்ளன',
+    body: 'விலைப்பட்டியல் {number} செலுத்த வேண்டிய நாளைக் கடந்துவிட்டது. அது செலுத்தப்பட்டவுடன் உங்கள் வருகைகள் மீண்டும் தொடங்கும் - இப்போதே செலுத்தலாம்.',
+  },
 } as const;
 const RESUMED_CLIENT = {
   en: { title: 'Your visits go ahead again', body: 'Thank you. Your caregiver will come as booked.' },
@@ -88,7 +91,9 @@ export class AdvancePaymentService implements OnApplicationBootstrap, OnModuleDe
     this.bookingsService.registerPayable((ids) => this.payable(ids));
     if (this.config.get<string>('NODE_ENV') === 'test') return;
     const queue = () =>
-      void this.jobs.enqueue(UNPAID_SWEEP_JOB, {}, { uniqueKey: `${UNPAID_SWEEP_JOB}:${Math.floor(Date.now() / HOUR_MS)}`, maxAttempts: 2 }).catch((e) => this.logger.warn(`Unpaid-booking check not queued: ${(e as Error).message}`));
+      void this.jobs
+        .enqueue(UNPAID_SWEEP_JOB, {}, { uniqueKey: `${UNPAID_SWEEP_JOB}:${Math.floor(Date.now() / HOUR_MS)}`, maxAttempts: 2 })
+        .catch((e) => this.logger.warn(`Unpaid-booking check not queued: ${(e as Error).message}`));
     this.timer = setInterval(queue, HOUR_MS);
     this.timer.unref?.();
   }
@@ -101,8 +106,13 @@ export class AdvancePaymentService implements OnApplicationBootstrap, OnModuleDe
   async send(bookingId: string, actor: AuthenticatedUser, now = new Date()) {
     const [b] = await this.db.select().from(bookings).where(eq(bookings.id, bookingId)).limit(1);
     if (!b) throw new NotFoundException('Booking not found');
-    if (b.status !== 'DRAFT' || b.billingTiming !== 'ADVANCE') throw new BadRequestException('Only a draft booking billed in advance has a first invoice to send before it is confirmed');
-    const [existing] = await this.db.select({ id: invoices.id }).from(invoices).where(and(eq(invoices.bookingId, bookingId), ne(invoices.status, 'VOID'))).limit(1);
+    if (b.status !== 'DRAFT' || b.billingTiming !== 'ADVANCE')
+      throw new BadRequestException('Only a draft booking billed in advance has a first invoice to send before it is confirmed');
+    const [existing] = await this.db
+      .select({ id: invoices.id })
+      .from(invoices)
+      .where(and(eq(invoices.bookingId, bookingId), ne(invoices.status, 'VOID')))
+      .limit(1);
     if (existing) throw new ConflictException('This booking already has its first invoice');
     const [period] = advancePeriods(b, colomboToday(now));
     if (!period) throw new BadRequestException('This booking has no dates left to bill');
@@ -119,7 +129,14 @@ export class AdvancePaymentService implements OnApplicationBootstrap, OnModuleDe
     if (!invoiceIds.length) return new Map();
     const [rows, settings] = await Promise.all([
       this.db
-        .select({ id: invoices.id, number: invoices.number, status: invoices.status, total: invoices.total, paid: invoices.amountPaid, dueDate: invoices.dueDate })
+        .select({
+          id: invoices.id,
+          number: invoices.number,
+          status: invoices.status,
+          total: invoices.total,
+          paid: invoices.amountPaid,
+          dueDate: invoices.dueDate,
+        })
         .from(invoices)
         .where(inArray(invoices.id, invoiceIds)),
       this.billingSettings.getResolved(),
@@ -129,7 +146,14 @@ export class AdvancePaymentService implements OnApplicationBootstrap, OnModuleDe
         const balanceCents = Math.round(Number(r.total) * 100) - Math.round(Number(r.paid) * 100);
         return [
           r.id,
-          { id: r.id, number: r.number, total: r.total, balance: (balanceCents / 100).toFixed(2), dueDate: r.dueDate, canPayOnline: r.status === 'ISSUED' && balanceCents > 0 && settings.payhereUsable },
+          {
+            id: r.id,
+            number: r.number,
+            total: r.total,
+            balance: (balanceCents / 100).toFixed(2),
+            dueDate: r.dueDate,
+            canPayOnline: r.status === 'ISSUED' && balanceCents > 0 && settings.payhereUsable,
+          },
         ];
       }),
     );
@@ -146,11 +170,26 @@ export class AdvancePaymentService implements OnApplicationBootstrap, OnModuleDe
   async holdUnpaid(now = new Date(), only?: string[]): Promise<number> {
     const today = colomboToday(now);
     const rows = await this.db
-      .select({ bookingId: bookings.id, reference: bookings.reference, patientUserId: patients.userId, waived: bookings.paymentHoldWaivedInvoiceId, invoiceId: invoices.id, number: invoices.number, dueDate: invoices.dueDate })
+      .select({
+        bookingId: bookings.id,
+        reference: bookings.reference,
+        patientUserId: patients.userId,
+        waived: bookings.paymentHoldWaivedInvoiceId,
+        invoiceId: invoices.id,
+        number: invoices.number,
+        dueDate: invoices.dueDate,
+      })
       .from(bookings)
       .innerJoin(patients, eq(patients.id, bookings.patientId))
       .innerJoin(invoices, and(eq(invoices.bookingId, bookings.id), eq(invoices.status, 'ISSUED'), isNotNull(invoices.dueDate), lt(invoices.dueDate, today)))
-      .where(and(eq(bookings.status, 'CONFIRMED'), eq(bookings.billingTiming, 'ADVANCE'), isNull(bookings.paymentHoldInvoiceId), only ? inArray(bookings.id, only.length ? only : ['']) : undefined))
+      .where(
+        and(
+          eq(bookings.status, 'CONFIRMED'),
+          eq(bookings.billingTiming, 'ADVANCE'),
+          isNull(bookings.paymentHoldInvoiceId),
+          only ? inArray(bookings.id, only.length ? only : ['']) : undefined,
+        ),
+      )
       .orderBy(asc(invoices.dueDate))
       .limit(500);
     let held = 0;
@@ -163,13 +202,28 @@ export class AdvancePaymentService implements OnApplicationBootstrap, OnModuleDe
         .set({ paymentHoldInvoiceId: r.invoiceId, paymentHoldAt: now })
         .where(and(eq(bookings.id, r.bookingId), isNull(bookings.paymentHoldInvoiceId)));
       if (!(set as { affectedRows: number }).affectedRows) continue;
-      await this.db.insert(bookingEvents).values({ id: uuid(), bookingId: r.bookingId, type: 'NOTE', note: `Visits paused: invoice ${r.number} was due on ${r.dueDate} and is not paid`, actorUserId: null });
+      await this.db.insert(bookingEvents).values({
+        id: uuid(),
+        bookingId: r.bookingId,
+        type: 'NOTE',
+        note: `Visits paused: invoice ${r.number} was due on ${r.dueDate} and is not paid`,
+        actorUserId: null,
+      });
       await this.automation.setHandoverNote(
         { caseType: 'BOOKING', caseId: r.bookingId },
-        { done: `Visits paused: invoice ${r.number} was due on ${r.dueDate} and is not paid`, waiting: `The client to pay invoice ${r.number}`, next: 'Visits resume when it is paid, or when staff resume them' },
+        {
+          done: `Visits paused: invoice ${r.number} was due on ${r.dueDate} and is not paid`,
+          waiting: `The client to pay invoice ${r.number}`,
+          next: 'Visits resume when it is paid, or when staff resume them',
+        },
       );
       await this.tellCaregivers(r.bookingId, now, 'paused');
-      this.notices.notify([r.patientUserId], (lang) => ({ title: PAUSED_CLIENT[lang].title, body: PAUSED_CLIENT[lang].body.replace('{number}', r.number ?? '') }), `/invoices/${r.invoiceId}`, `visits paused ${r.bookingId}`);
+      this.notices.notify(
+        [r.patientUserId],
+        (lang) => ({ title: PAUSED_CLIENT[lang].title, body: PAUSED_CLIENT[lang].body.replace('{number}', r.number ?? '') }),
+        `/invoices/${r.invoiceId}`,
+        `visits paused ${r.bookingId}`,
+      );
       await this.tellStaff(
         `Visits paused: ${r.reference}`,
         [
@@ -195,7 +249,12 @@ export class AdvancePaymentService implements OnApplicationBootstrap, OnModuleDe
   }
 
   /** Lifts a pause: the booking's visits go ahead again and everyone who was told is told. */
-  private async release(b: { id: string; reference: string; patientId: string; paymentHoldInvoiceId: string | null }, note: string, actorUserId: string | null, waive: boolean) {
+  private async release(
+    b: { id: string; reference: string; patientId: string; paymentHoldInvoiceId: string | null },
+    note: string,
+    actorUserId: string | null,
+    waive: boolean,
+  ) {
     const invoiceId = b.paymentHoldInvoiceId!;
     const [cleared] = await this.db
       .update(bookings)
@@ -220,7 +279,12 @@ export class AdvancePaymentService implements OnApplicationBootstrap, OnModuleDe
       .where(and(eq(bookingShifts.bookingId, bookingId), eq(bookingShifts.status, 'SCHEDULED'), gt(bookingShifts.endsAt, now)));
     const [b] = await this.db.select({ reference: bookings.reference }).from(bookings).where(eq(bookings.id, bookingId)).limit(1);
     const text = what === 'paused' ? PAUSED_CAREGIVER : RESUMED_CAREGIVER;
-    this.notices.notify(rows.map((r) => r.userId), (lang) => ({ title: text[lang].title, body: text[lang].body.replace('{reference}', b?.reference ?? '') }), '/shifts', `visits ${what} ${bookingId}`);
+    this.notices.notify(
+      rows.map((r) => r.userId),
+      (lang) => ({ title: text[lang].title, body: text[lang].body.replace('{reference}', b?.reference ?? '') }),
+      '/shifts',
+      `visits ${what} ${bookingId}`,
+    );
   }
 
   /** An invoice was paid in full. A booking paused for it resumes; a draft waiting for it can be confirmed. */
@@ -228,7 +292,15 @@ export class AdvancePaymentService implements OnApplicationBootstrap, OnModuleDe
     const [paused] = await this.db.select().from(bookings).where(eq(bookings.paymentHoldInvoiceId, invoiceId)).limit(1);
     const [inv] = await this.db.select({ number: invoices.number, status: invoices.status }).from(invoices).where(eq(invoices.id, invoiceId)).limit(1);
     if (paused && inv?.status === 'PAID' && (await this.release(paused, `Visits resumed: invoice ${inv.number} is paid`, null, false))) {
-      await this.tellStaff(`Paid, visits resumed: ${paused.reference}`, [`Invoice ${inv.number} for booking ${paused.reference} has been paid in full.`, 'Its visits were paused for this payment and now go ahead again. The caregivers and the client have been told.'], paused.id, `visits resumed ${invoiceId}`);
+      await this.tellStaff(
+        `Paid, visits resumed: ${paused.reference}`,
+        [
+          `Invoice ${inv.number} for booking ${paused.reference} has been paid in full.`,
+          'Its visits were paused for this payment and now go ahead again. The caregivers and the client have been told.',
+        ],
+        paused.id,
+        `visits resumed ${invoiceId}`,
+      );
       return true;
     }
     return this.onFirstPaid(invoiceId);
@@ -244,7 +316,12 @@ export class AdvancePaymentService implements OnApplicationBootstrap, OnModuleDe
       .limit(1);
     if (!row || row.status !== 'DRAFT' || row.timing !== 'ADVANCE') return false;
     // Only the booking's first invoice holds it.
-    const [first] = await this.db.select({ id: invoices.id }).from(invoices).where(and(eq(invoices.bookingId, row.bookingId), ne(invoices.status, 'VOID'))).orderBy(asc(invoices.createdAt)).limit(1);
+    const [first] = await this.db
+      .select({ id: invoices.id })
+      .from(invoices)
+      .where(and(eq(invoices.bookingId, row.bookingId), ne(invoices.status, 'VOID')))
+      .orderBy(asc(invoices.createdAt))
+      .limit(1);
     if (first?.id !== invoiceId) return false;
 
     await this.automation.setHandoverNote(
@@ -252,7 +329,12 @@ export class AdvancePaymentService implements OnApplicationBootstrap, OnModuleDe
       { done: `Invoice ${row.number} is paid`, waiting: 'The booking to be confirmed', next: 'Confirm the booking - it is no longer waiting for payment' },
     );
     await nudgeBookingConfirm(this.jobs, this.automation, row.bookingId);
-    await this.tellStaff(`Paid, ready to confirm: ${row.reference}`, [`Invoice ${row.number} for booking ${row.reference} has been paid in full.`, 'The booking was waiting for this payment and can now be confirmed.'], row.bookingId, `advance paid ${invoiceId}`);
+    await this.tellStaff(
+      `Paid, ready to confirm: ${row.reference}`,
+      [`Invoice ${row.number} for booking ${row.reference} has been paid in full.`, 'The booking was waiting for this payment and can now be confirmed.'],
+      row.bookingId,
+      `advance paid ${invoiceId}`,
+    );
     return true;
   }
 
@@ -264,7 +346,15 @@ export class AdvancePaymentService implements OnApplicationBootstrap, OnModuleDe
   async alertUnpaid(now = new Date(), only?: string[]): Promise<number> {
     const today = colomboToday(now);
     const rows = await this.db
-      .select({ bookingId: bookings.id, reference: bookings.reference, startDate: bookings.startDate, invoiceId: invoices.id, number: invoices.number, dueDate: invoices.dueDate, createdAt: invoices.createdAt })
+      .select({
+        bookingId: bookings.id,
+        reference: bookings.reference,
+        startDate: bookings.startDate,
+        invoiceId: invoices.id,
+        number: invoices.number,
+        dueDate: invoices.dueDate,
+        createdAt: invoices.createdAt,
+      })
       .from(bookings)
       .innerJoin(invoices, and(eq(invoices.bookingId, bookings.id), eq(invoices.status, 'ISSUED')))
       .where(and(eq(bookings.status, 'DRAFT'), eq(bookings.billingTiming, 'ADVANCE'), only ? inArray(bookings.id, only.length ? only : ['']) : undefined))
@@ -278,7 +368,11 @@ export class AdvancePaymentService implements OnApplicationBootstrap, OnModuleDe
       const overdue = !!r.dueDate && r.dueDate < today;
       const startsSoon = r.startDate <= addDays(today, UNPAID_ALERT_DAYS_BEFORE_START);
       if (!overdue && !startsSoon) continue;
-      const [done] = await this.db.select({ id: bookingEvents.id }).from(bookingEvents).where(and(eq(bookingEvents.bookingId, r.bookingId), like(bookingEvents.note, `${ALERTED}%`))).limit(1);
+      const [done] = await this.db
+        .select({ id: bookingEvents.id })
+        .from(bookingEvents)
+        .where(and(eq(bookingEvents.bookingId, r.bookingId), like(bookingEvents.note, `${ALERTED}%`)))
+        .limit(1);
       if (done) continue;
       const why = overdue ? `invoice ${r.number} was due on ${r.dueDate}` : `the booking starts on ${r.startDate}`;
       await this.db.insert(bookingEvents).values({ id: uuid(), bookingId: r.bookingId, type: 'NOTE', note: `${ALERTED} (${why})`, actorUserId: null });
@@ -301,7 +395,11 @@ export class AdvancePaymentService implements OnApplicationBootstrap, OnModuleDe
     const to = await this.staffRecipients();
     if (!to.length) return void this.logger.warn(`${subject} - but there is nobody to email`);
     const base = (this.config.get<string>('CAREGIVER_WEB_URL') ?? 'http://localhost:3000/staff').replace(/\/+$/, '');
-    await this.email.sendNotificationEmail(to, { subject, blocks: [{ lang: 'en', heading: subject, paragraphs }], cta: { label: 'Open the booking', url: `${base}/bookings/${bookingId}` } }, label);
+    await this.email.sendNotificationEmail(
+      to,
+      { subject, blocks: [{ lang: 'en', heading: subject, paragraphs }], cta: { label: 'Open the booking', url: `${base}/bookings/${bookingId}` } },
+      label,
+    );
   }
 
   /** The configured alert list, or else every active admin and staff account with an email address. */

@@ -34,7 +34,9 @@ it("serves the API's app, as JSON Android can cache for a few minutes", async ()
 
 it('rebuilds the file from the package and fingerprints alone', async () => {
   answer(async () =>
-    Response.json([{ ...STATEMENT, relation: ['delegate_permission/common.get_login_creds'], target: { ...STATEMENT.target, sha256_cert_fingerprints: [FP, 'junk'] } }]),
+    Response.json([
+      { ...STATEMENT, relation: ['delegate_permission/common.get_login_creds'], target: { ...STATEMENT.target, sha256_cert_fingerprints: [FP, 'junk'] } },
+    ]),
   );
   expect(await (await GET()).json()).toEqual([STATEMENT]);
 });

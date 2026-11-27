@@ -66,57 +66,120 @@ describe('Live-care agent (e2e)', () => {
     const reg = await api()
       .post('/auth/register-caregiver/unified')
       .send({
-        phone, consentAccepted: true, fullName: `Watched Caregiver ${phone}`, permanentAddress: '1 Lake Road, Kandy', dateOfBirth: '1988-01-20', gender: 'FEMALE',
-        civilStatus: 'MARRIED', emergencyContactName: 'EC', emergencyContactNumber: '0770001111', emergencyContactRelationship: 'Husband',
+        phone,
+        consentAccepted: true,
+        fullName: `Watched Caregiver ${phone}`,
+        permanentAddress: '1 Lake Road, Kandy',
+        dateOfBirth: '1988-01-20',
+        gender: 'FEMALE',
+        civilStatus: 'MARRIED',
+        emergencyContactName: 'EC',
+        emergencyContactNumber: '0770001111',
+        emergencyContactRelationship: 'Husband',
       })
       .expect(201);
     const [cg] = await db.select().from(caregivers).where(eq(caregivers.registrationNumber, reg.body.registrationNumber));
-    await db.update(caregivers).set({ status: 'ACTIVE', ...(over.phoneOnly ? { preferredContactMethod: 'PHONE_CALL' as const } : {}) }).where(eq(caregivers.id, cg.id));
+    await db
+      .update(caregivers)
+      .set({ status: 'ACTIVE', ...(over.phoneOnly ? { preferredContactMethod: 'PHONE_CALL' as const } : {}) })
+      .where(eq(caregivers.id, cg.id));
     const cgToken = jwt.sign({ sub: cg.userId, role: 'CAREGIVER', caregiverId: cg.id }, { secret: accessSecret, expiresIn: '10m' });
     const client = await api()
       .post('/auth/register-patient')
-      .send({ email: `watched-client-${run}-${++n}@example.com`, password: 'SelfRegPass123', fullName: 'Nimal Kumara Perera', phone: newPhone('077'), consentAccepted: true, ...intake })
+      .send({
+        email: `watched-client-${run}-${++n}@example.com`,
+        password: 'SelfRegPass123',
+        fullName: 'Nimal Kumara Perera',
+        phone: newPhone('077'),
+        consentAccepted: true,
+        ...intake,
+      })
       .expect(201);
     const [patient] = await db.select().from(patients).where(eq(patients.id, client.body.patientId));
     const monday = freshMonday();
     const draft = await api()
       .post('/bookings')
       .set(bearer(staffToken))
-      .send({ patientId: patient.id, caregiverId: cg.id, scheduleType: 'DAY', daysOfWeek: [1], shiftStartTime: '08:00', shiftEndTime: '17:00', startDate: monday, endDate: monday, rateType: 'DAILY', rateAmount: '3500' })
+      .send({
+        patientId: patient.id,
+        caregiverId: cg.id,
+        scheduleType: 'DAY',
+        daysOfWeek: [1],
+        shiftStartTime: '08:00',
+        shiftEndTime: '17:00',
+        startDate: monday,
+        endDate: monday,
+        rateType: 'DAILY',
+        rateAmount: '3500',
+      })
       .expect(201);
     const booking = (await api().post(`/bookings/${draft.body.id}/confirm`).set(bearer(staffToken)).expect(200)).body;
     const shiftId = booking.shifts[0].id as string;
     const startsAt = minutes(startsIn);
-    await db.update(bookingShifts).set({ startsAt, endsAt: minutes(startsIn + 240) }).where(eq(bookingShifts.id, shiftId));
+    await db
+      .update(bookingShifts)
+      .set({ startsAt, endsAt: minutes(startsIn + 240) })
+      .where(eq(bookingShifts.id, shiftId));
     const [stored] = await db.select().from(bookingShifts).where(eq(bookingShifts.id, shiftId));
     return {
-      id: shiftId, bookingId: booking.id as string, reference: booking.reference as string, reg: cg.registrationNumber, cgUserId: cg.userId!, cgToken, cgPhone: phone,
-      patientUserId: patient.userId, time: toColombo(stored.startsAt).time,
+      id: shiftId,
+      bookingId: booking.id as string,
+      reference: booking.reference as string,
+      reg: cg.registrationNumber,
+      cgUserId: cg.userId!,
+      cgToken,
+      cgPhone: phone,
+      patientUserId: patient.userId,
+      time: toColombo(stored.startsAt).time,
     };
   }
   type Visit = Awaited<ReturnType<typeof visit>>;
 
   const mode = (m: string) => api().patch('/settings/automation/functions/LIVE_CARE').set(bearer(adminToken)).send({ mode: m }).expect(200);
-  const checkInSetting = (enabled: boolean) => api().patch('/settings/check-in').set(bearer(adminToken)).send({ enabled, earlyMinutes: 60, lateAfterMinutes: 15 }).expect(200);
-  const sweep = (at: Date, ...visits: { id: string }[]) => agent.sweep(at, visits.map((v) => v.id));
-  const decisionsFor = async (v: Visit, action?: string) =>
-    (await db.select().from(agentDecisions).where(and(eq(agentDecisions.caseType, 'BOOKING'), eq(agentDecisions.caseId, v.bookingId))).orderBy(agentDecisions.createdAt)).filter(
-      (d) => d.function === 'LIVE_CARE' && (!action || d.action === action),
+  const checkInSetting = (enabled: boolean) =>
+    api().patch('/settings/check-in').set(bearer(adminToken)).send({ enabled, earlyMinutes: 60, lateAfterMinutes: 15 }).expect(200);
+  const sweep = (at: Date, ...visits: { id: string }[]) =>
+    agent.sweep(
+      at,
+      visits.map((v) => v.id),
     );
+  const decisionsFor = async (v: Visit, action?: string) =>
+    (
+      await db
+        .select()
+        .from(agentDecisions)
+        .where(and(eq(agentDecisions.caseType, 'BOOKING'), eq(agentDecisions.caseId, v.bookingId)))
+        .orderBy(agentDecisions.createdAt)
+    ).filter((d) => d.function === 'LIVE_CARE' && (!action || d.action === action));
   const shiftNow = async (v: Visit) =>
-    ((await api().get(`/bookings/${v.bookingId}`).set(bearer(staffToken)).expect(200)).body.shifts as { id: string; status: string; updatedBy: { fullName: string } | null; checkIn: StaffCheckIn }[]).find((s) => s.id === v.id)!;
+    (
+      (await api().get(`/bookings/${v.bookingId}`).set(bearer(staffToken)).expect(200)).body.shifts as {
+        id: string;
+        status: string;
+        updatedBy: { fullName: string } | null;
+        checkIn: StaffCheckIn;
+      }[]
+    ).find((s) => s.id === v.id)!;
   const note = async (v: Visit) => (await api().get(`/automation/cases/BOOKING/${v.bookingId}`).set(bearer(staffToken)).expect(200)).body.handoverNote;
-  const staffRecord = (v: Visit, what: 'check-in' | 'check-out', at: Date) => api().post(`/visits/${v.id}/${what}`).set(bearer(staffToken)).send({ at: at.toISOString() }).expect(200);
+  const staffRecord = (v: Visit, what: 'check-in' | 'check-out', at: Date) =>
+    api().post(`/visits/${v.id}/${what}`).set(bearer(staffToken)).send({ at: at.toISOString() }).expect(200);
   const toldCaregiver = (v: Visit) => notify.mock.calls.filter((c) => c[3] === `check-in chase ${v.id}`);
   /** Emails to staff about this visit: [to, { subject, blocks, cta }, label]. */
   const toldStaff = (v: Visit) => sendEmail.mock.calls.filter((c) => typeof c[2] === 'string' && c[2].startsWith(`visit ${v.id} `));
   /** WhatsApp messages from the agent (confirming a booking sends its own). */
   const chaseMessages = () => sendUpdate.mock.calls.filter((c) => String(c[3]).includes('Please check in for your shift'));
   const alertTitle = (v: Visit) => (toldStaff(v)[0][1] as { subject: string }).subject;
-  const queued = (v: Visit) => db.select().from(jobs).where(and(eq(jobs.type, LIVE_CARE_SHIFT_JOB), sql`JSON_EXTRACT(${jobs.payload}, '$.shiftId') = ${v.id}`));
+  const queued = (v: Visit) =>
+    db
+      .select()
+      .from(jobs)
+      .where(and(eq(jobs.type, LIVE_CARE_SHIFT_JOB), sql`JSON_EXTRACT(${jobs.payload}, '$.shiftId') = ${v.id}`));
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).overrideProvider(ThrottlerStorage).useValue(unlimitedThrottle).compile();
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+      .overrideProvider(ThrottlerStorage)
+      .useValue(unlimitedThrottle)
+      .compile();
     app = moduleRef.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
     await app.init();
@@ -131,9 +194,17 @@ describe('Live-care agent (e2e)', () => {
     const districtId = tree.flatMap((p) => p.districts)[0].id;
     const cityId = (await api().get(`/public/meta/locations/cities?districtId=${districtId}&locale=en`).expect(200)).body[0].id;
     intake = {
-      registrantType: 'GUARDIAN', recipientName: 'Sunil Fernando', recipientRelationship: 'PARENT', recipientAge: 78, recipientGender: 'MALE',
-      preferredContactMethod: 'PHONE_CALL', districtId, cityId, careNeeds: 'Needs help with bathing, meals and medication reminders.',
-      careSchedule: 'DAY', careStart: 'WITHIN_WEEK',
+      registrantType: 'GUARDIAN',
+      recipientName: 'Sunil Fernando',
+      recipientRelationship: 'PARENT',
+      recipientAge: 78,
+      recipientGender: 'MALE',
+      preferredContactMethod: 'PHONE_CALL',
+      districtId,
+      cityId,
+      careNeeds: 'Needs help with bathing, meals and medication reminders.',
+      careSchedule: 'DAY',
+      careStart: 'WITHIN_WEEK',
     };
     await api().post('/settings/automation/master').set(bearer(adminToken)).send({ on: false }).expect(200);
     await checkInSetting(true);
@@ -196,14 +267,20 @@ describe('Live-care agent (e2e)', () => {
     expect(bell[2]).toBe('/shifts');
     const text = (bell[1] as (l: 'en' | 'si') => { title: string; body: string })('en');
     expect(text.title).toBe('Please check in for your shift');
-    expect(text.body).toBe(`Your shift started at ${v.time} and you have not checked in. If you are with the client, check in now with their code. If you cannot be there, call the office.`);
+    expect(text.body).toBe(
+      `Your shift started at ${v.time} and you have not checked in. If you are with the client, check in now with their code. If you cannot be there, call the office.`,
+    );
     expect((bell[1] as (l: 'si') => { title: string })('si').title).not.toBe(text.title);
     expect(chaseMessages()).toHaveLength(1);
     const message = chaseMessages()[0][3] as string;
     expect(chaseMessages()[0][1]).toBe(`+94${v.cgPhone.slice(1)}`);
     for (const secret of ['Nimal', 'Perera', 'Sunil', 'Fernando', 'bathing', v.reference]) expect(message + JSON.stringify(text)).not.toContain(secret);
-    for (const secret of ['Nimal', 'Perera', 'Sunil', 'Fernando', 'bathing', 'Watched Caregiver', v.cgPhone]) expect(JSON.stringify(chase)).not.toContain(secret);
-    expect(await note(v)).toMatchObject({ done: `Asked ${v.reg} to check in for the ${v.time} visit (bell and whatsapp)`, waiting: 'The caregiver to check in' });
+    for (const secret of ['Nimal', 'Perera', 'Sunil', 'Fernando', 'bathing', 'Watched Caregiver', v.cgPhone])
+      expect(JSON.stringify(chase)).not.toContain(secret);
+    expect(await note(v)).toMatchObject({
+      done: `Asked ${v.reg} to check in for the ${v.time} visit (bell and whatsapp)`,
+      waiting: 'The caregiver to check in',
+    });
     // The client is told nothing by the agent, now or later.
     expect(toldCaregiver(v).some((c) => (c[0] as string[]).includes(v.patientUserId!))).toBe(false);
 
@@ -284,7 +361,11 @@ describe('Live-care agent (e2e)', () => {
     const ended = await visit(-300); // ended an hour ago
     const old = await visit(-(13 * 60 + 240)); // ended thirteen hours ago
     const taken = await visit(-20);
-    await api().post(`/automation/cases/BOOKING/${taken.bookingId}/take-over`).set(bearer(staffToken)).send({ reason: 'I am on the phone with the family' }).expect(200);
+    await api()
+      .post(`/automation/cases/BOOKING/${taken.bookingId}/take-over`)
+      .set(bearer(staffToken))
+      .send({ reason: 'I am on the phone with the family' })
+      .expect(200);
 
     expect(await sweep(new Date(), ended, old, taken)).toMatchObject({ considered: 2, decided: 1, leftToStaff: 1 });
     const [flag] = await decisionsFor(ended);

@@ -27,11 +27,7 @@ export class SocialAuthSettingsController {
 
   @Patch(':provider')
   @Audit({ action: 'UPDATE_SOCIAL_AUTH_SETTINGS', entityType: 'SocialAuthSettings' })
-  update(
-    @Param('provider') provider: string,
-    @Body() dto: UpdateSocialProviderSettingsDto,
-    @CurrentUser() user: AuthenticatedUser,
-  ) {
+  update(@Param('provider') provider: string, @Body() dto: UpdateSocialProviderSettingsDto, @CurrentUser() user: AuthenticatedUser) {
     return this.settings.update(parseSocialProvider(provider), dto, user.userId);
   }
 

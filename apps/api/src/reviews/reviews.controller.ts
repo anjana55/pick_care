@@ -30,7 +30,12 @@ export class MyReviewsController {
 
   @Get('bookings/:bookingId/reviews/:publicId')
   @Roles('PATIENT_GUARDIAN')
-  one(@Param('bookingId', ParseUUIDPipe) bookingId: string, @Param('publicId') publicId: string, @CurrentUser() user: AuthenticatedUser, @Req() req: RequestWithLanguage) {
+  one(
+    @Param('bookingId', ParseUUIDPipe) bookingId: string,
+    @Param('publicId') publicId: string,
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: RequestWithLanguage,
+  ) {
     return this.reviews.one(user, bookingId, publicIdOrThrow(publicId), req.lang);
   }
 

@@ -16,7 +16,6 @@ import { Input, Label, RequiredLegend } from '@/components/ui/input';
 import type { OtpRequestResult } from '@care-platform/shared';
 import { hardNavigate } from '@/lib/navigation';
 
-
 /**
  * WhatsApp sign-in and password recovery for caregivers. Structurally the same
  * two-step flow as the patient page at /login/whatsapp, but gated on the
@@ -83,7 +82,9 @@ function WhatsappCaregiverLoginInner() {
               <form onSubmit={requestCode}>
                 <RequiredLegend label={t('common.requiredField')} />
                 <div className="mb-5">
-                  <Label htmlFor="phone" required>{t('whatsapp.login.phone')}</Label>
+                  <Label htmlFor="phone" required>
+                    {t('whatsapp.login.phone')}
+                  </Label>
                   <Input
                     id="phone"
                     type="tel"
@@ -96,14 +97,18 @@ function WhatsappCaregiverLoginInner() {
                   />
                   <p className="mt-1 text-xs text-ink/50">{t('whatsapp.login.phoneHint')}</p>
                 </div>
-                {error && <p role="alert" className="mb-4 text-sm text-danger">{error}</p>}
+                {error && (
+                  <p role="alert" className="mb-4 text-sm text-danger">
+                    {error}
+                  </p>
+                )}
                 <Button type="submit" className="w-full" disabled={loading || phone.trim().length < 7}>
                   {loading ? t('common.loading') : t('whatsapp.login.sendCode')}
                 </Button>
               </form>
             ) : (
               <WhatsappOtpForm
-              portal="caregiver"
+                portal="caregiver"
                 phone={phone}
                 purpose={purpose}
                 codeLength={config?.otpLength ?? 6}

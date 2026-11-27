@@ -17,15 +17,7 @@ import { useBranding } from '@/lib/branding/provider';
  */
 export const PUBLIC_SITE_URL = '/';
 
-export function BrandMark({
-  size = 'sm',
-  showName = true,
-  className,
-}: {
-  size?: 'sm' | 'lg';
-  showName?: boolean;
-  className?: string;
-}) {
+export function BrandMark({ size = 'sm', showName = true, className }: { size?: 'sm' | 'lg'; showName?: boolean; className?: string }) {
   const large = size === 'lg';
   const { companyName, shortName, logoUrl } = useBranding();
 
@@ -57,21 +49,9 @@ export function BrandMark({
 }
 
 /** A "back to the public site" link. Anchor, not next/link - see above. */
-export function PublicSiteLink({
-  className,
-  children,
-}: {
-  className?: string;
-  children: React.ReactNode;
-}) {
+export function PublicSiteLink({ className, children }: { className?: string; children: React.ReactNode }) {
   return (
-    <a
-      href={PUBLIC_SITE_URL}
-      className={cn(
-        'inline-flex items-center gap-1.5 text-sm font-medium text-ink/60 transition-colors hover:text-brand',
-        className,
-      )}
-    >
+    <a href={PUBLIC_SITE_URL} className={cn('inline-flex items-center gap-1.5 text-sm font-medium text-ink/60 transition-colors hover:text-brand', className)}>
       {children}
     </a>
   );
@@ -89,10 +69,7 @@ export function AuthHeader() {
 
   return (
     <header className="flex items-center justify-between gap-4 border-b border-border bg-white px-4 py-3 sm:px-6">
-      <Link
-        href="/login"
-        className="rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-      >
+      <Link href="/login" className="rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
         <BrandMark />
       </Link>
       <PublicSiteLink className="shrink-0">

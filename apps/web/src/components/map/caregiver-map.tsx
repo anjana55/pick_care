@@ -150,9 +150,7 @@ export function CaregiverMap({
         // renamed and moved, so it would 404 and no tiles or GeoJSON would ever draw.
         // The build copies the worker to public/maplibre/<version>/
         // (packages/shared/scripts/copy-maplibre-worker.mjs).
-        maplibre.setWorkerUrl(
-          new URL(`${BASE_PATH}/maplibre/${maplibre.getVersion()}/maplibre-gl-worker.mjs`, window.location.origin).href,
-        );
+        maplibre.setWorkerUrl(new URL(`${BASE_PATH}/maplibre/${maplibre.getVersion()}/maplibre-gl-worker.mjs`, window.location.origin).href);
         if (cancelled || !container.current) return;
         lib.current = maplibre;
         const instance = new maplibre.Map({
@@ -220,9 +218,7 @@ export function CaregiverMap({
     const radius = instance.getSource('radius') as GeoJSONSource | undefined;
     radius?.setData({
       type: 'FeatureCollection',
-      features: origin
-        ? [{ type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [circlePolygon(origin, origin.radiusKm)] } }]
-        : [],
+      features: origin ? [{ type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [circlePolygon(origin, origin.radiusKm)] } }] : [],
     });
 
     const add = (element: HTMLElement, at: GeoPoint, popup?: string, offset?: [number, number]) => {
@@ -268,7 +264,13 @@ export function CaregiverMap({
           ? highlight.serviceArea.map((city) => ({
               type: 'Feature' as const,
               properties: {},
-              geometry: { type: 'LineString' as const, coordinates: [[home.longitude, home.latitude], [city.longitude, city.latitude]] },
+              geometry: {
+                type: 'LineString' as const,
+                coordinates: [
+                  [home.longitude, home.latitude],
+                  [city.longitude, city.latitude],
+                ],
+              },
             }))
           : [],
       });

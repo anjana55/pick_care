@@ -102,10 +102,7 @@ it('asks for the registration number before doing anything', () => {
 // A pasted note in the number box used to be carried to the code step and
 // echoed as "Registration number: ADD A WAY TO CHANGE...", failing only when
 // the code was submitted, with a misleading "Enter your registration number".
-it.each([
-  ['Send me a code'],
-  ['I have a code from the Pick Care office'],
-])('stops on step one when the number is not a registration number (%s)', (button) => {
+it.each([['Send me a code'], ['I have a code from the Pick Care office']])('stops on step one when the number is not a registration number (%s)', (button) => {
   renderPage();
   fireEvent.change(screen.getByLabelText(/Registration number/), {
     target: { value: 'add a way to change caregiver email address. right now, before signin' },

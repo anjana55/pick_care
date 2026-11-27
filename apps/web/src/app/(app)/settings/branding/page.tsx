@@ -23,11 +23,7 @@ import {
 import { useAuth } from '@/lib/api/auth-context';
 import { useTranslation } from '@/lib/i18n/provider';
 import { API_URL, ApiError } from '@/lib/api/client';
-import {
-  useBrandingSettings,
-  useUpdateBrandingSettings,
-  type BrandingSettings,
-} from '@/lib/hooks/use-branding-settings';
+import { useBrandingSettings, useUpdateBrandingSettings, type BrandingSettings } from '@/lib/hooks/use-branding-settings';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input, Label, Select } from '@/components/ui/input';
@@ -113,7 +109,13 @@ export default function BrandingSettingsPage() {
 
   const submit = () => {
     save.mutate(
-      { ...draft, companyName: draft.companyName.trim(), shortName: draft.shortName.trim(), tagline: draft.tagline.trim(), officePhone: draft.officePhone.trim() },
+      {
+        ...draft,
+        companyName: draft.companyName.trim(),
+        shortName: draft.shortName.trim(),
+        tagline: draft.tagline.trim(),
+        officePhone: draft.officePhone.trim(),
+      },
       {
         onSuccess: (data) => {
           setDraft(toDraft(data));
@@ -145,7 +147,9 @@ export default function BrandingSettingsPage() {
           <CardContent className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_8rem]">
             <p className="text-sm text-ink/60 sm:col-span-2">{t('brandingAdmin.companyHint')}</p>
             <div>
-              <Label htmlFor="companyName" required>{t('brandingAdmin.companyName')}</Label>
+              <Label htmlFor="companyName" required>
+                {t('brandingAdmin.companyName')}
+              </Label>
               <Input id="companyName" maxLength={120} value={draft.companyName} onChange={(e) => set('companyName', e.target.value)} />
             </div>
             <div>
@@ -161,12 +165,26 @@ export default function BrandingSettingsPage() {
             <p className="-mt-1 text-xs text-ink/50 sm:col-span-2">{t('brandingAdmin.shortNameHint')}</p>
             <div className="sm:col-span-2">
               <Label htmlFor="tagline">{t('brandingAdmin.tagline')}</Label>
-              <Input id="tagline" maxLength={160} value={draft.tagline} onChange={(e) => set('tagline', e.target.value)} placeholder={t('brandingAdmin.taglinePlaceholder')} />
+              <Input
+                id="tagline"
+                maxLength={160}
+                value={draft.tagline}
+                onChange={(e) => set('tagline', e.target.value)}
+                placeholder={t('brandingAdmin.taglinePlaceholder')}
+              />
               <p className="mt-1 text-xs text-ink/50">{t('brandingAdmin.taglineHint')}</p>
             </div>
             <div className="sm:col-span-2">
               <Label htmlFor="officePhone">{t('brandingAdmin.officePhone')}</Label>
-              <Input id="officePhone" type="tel" inputMode="tel" maxLength={32} value={draft.officePhone} onChange={(e) => set('officePhone', e.target.value)} placeholder="011 234 5678" />
+              <Input
+                id="officePhone"
+                type="tel"
+                inputMode="tel"
+                maxLength={32}
+                value={draft.officePhone}
+                onChange={(e) => set('officePhone', e.target.value)}
+                placeholder="011 234 5678"
+              />
               <p className="mt-1 text-xs text-ink/50">{t('brandingAdmin.officePhoneHint')}</p>
             </div>
           </CardContent>
@@ -190,11 +208,11 @@ export default function BrandingSettingsPage() {
                     <span className="px-2 text-center text-sm font-semibold text-white">{draft.companyName}</span>
                   ) : (
                     <span
-                className="flex h-11 min-w-11 items-center justify-center rounded px-1 text-base font-bold text-white"
-                style={{ backgroundColor: brandColor }}
-              >
-                {shortNamePreview}
-              </span>
+                      className="flex h-11 min-w-11 items-center justify-center rounded px-1 text-base font-bold text-white"
+                      style={{ backgroundColor: brandColor }}
+                    >
+                      {shortNamePreview}
+                    </span>
                   )
                 }
               />
@@ -222,8 +240,20 @@ export default function BrandingSettingsPage() {
           <CardContent className="space-y-4">
             <p className="text-sm text-ink/60">{t('brandingAdmin.colorsHint')}</p>
             <div className="grid gap-4 sm:grid-cols-2">
-              <ColorField id="primaryColor" label={t('brandingAdmin.primaryColor')} hint={t('brandingAdmin.primaryHint')} value={draft.primaryColor} onChange={(v) => set('primaryColor', v)} />
-              <ColorField id="accentColor" label={t('brandingAdmin.accentColor')} hint={t('brandingAdmin.accentHint')} value={draft.accentColor} onChange={(v) => set('accentColor', v)} />
+              <ColorField
+                id="primaryColor"
+                label={t('brandingAdmin.primaryColor')}
+                hint={t('brandingAdmin.primaryHint')}
+                value={draft.primaryColor}
+                onChange={(v) => set('primaryColor', v)}
+              />
+              <ColorField
+                id="accentColor"
+                label={t('brandingAdmin.accentColor')}
+                hint={t('brandingAdmin.accentHint')}
+                value={draft.accentColor}
+                onChange={(v) => set('accentColor', v)}
+              />
             </div>
           </CardContent>
         </Card>
@@ -249,7 +279,13 @@ export default function BrandingSettingsPage() {
                     )}
                     title={last ? t('brandingAdmin.lastLanguage') : undefined}
                   >
-                    <input type="checkbox" className="h-4 w-4 accent-brand" checked={on} disabled={last} onChange={(e) => toggleLocale(code, e.target.checked)} />
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4 accent-brand"
+                      checked={on}
+                      disabled={last}
+                      onChange={(e) => toggleLocale(code, e.target.checked)}
+                    />
                     <span lang={code}>{LANGUAGE_NAMES[code]}</span>
                   </label>
                 );

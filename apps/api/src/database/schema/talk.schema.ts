@@ -14,7 +14,9 @@ export const talkRequests = mysqlTable(
     message: text('message').notNull(),
     contact: mysqlEnum('contact', TALK_CONTACT_METHODS).notNull(),
     status: mysqlEnum('status', ['OPEN', 'HANDLED']).notNull().default('OPEN'),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
     handledAt: datetime('handled_at'),
     handledByUserId: varchar('handled_by_user_id', { length: 36 }),
     staffNote: varchar('staff_note', { length: 500 }),

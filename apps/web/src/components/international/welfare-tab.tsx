@@ -22,7 +22,13 @@ export const SEVERITY_STYLES: Record<WelfareSeverity, string> = {
 const FILTERS = ['open', 'OPEN', 'ACKNOWLEDGED', 'RESOLVED', 'all'] as const;
 
 const when = (iso: string, locale: string) =>
-  new Date(iso).toLocaleString(locale === 'en' ? 'en-GB' : `${locale}-LK`, { timeZone: 'Asia/Colombo', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  new Date(iso).toLocaleString(locale === 'en' ? 'en-GB' : `${locale}-LK`, {
+    timeZone: 'Asia/Colombo',
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 
 /**
  * Caregivers abroad telling us something is wrong. SOS and urgent first,
@@ -47,7 +53,12 @@ export function WelfareTab() {
     <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <p className="max-w-2xl text-sm text-ink/60">{t('international.welfare.hint')}</p>
-        <Select className="sm:w-56" value={filter} onChange={(e) => setFilter(e.target.value as (typeof FILTERS)[number])} aria-label={t('international.welfare.filter')}>
+        <Select
+          className="sm:w-56"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value as (typeof FILTERS)[number])}
+          aria-label={t('international.welfare.filter')}
+        >
           {FILTERS.map((f) => (
             <option key={f} value={f}>
               {t(`international.welfare.filters.${f}`)}
@@ -56,10 +67,16 @@ export function WelfareTab() {
         </Select>
       </div>
       {isLoading && <p className="py-8 text-center text-sm text-ink/50">{t('common.loading')}</p>}
-      {!isLoading && data.length === 0 && <p className="rounded-lg border border-dashed border-border bg-white py-10 text-center text-sm text-ink/50">{t('international.welfare.empty')}</p>}
+      {!isLoading && data.length === 0 && (
+        <p className="rounded-lg border border-dashed border-border bg-white py-10 text-center text-sm text-ink/50">{t('international.welfare.empty')}</p>
+      )}
       <ul className="space-y-2">
         {data.map((r) => (
-          <ReportRow key={`${r.id}-${focus}`} report={r} initiallyOpen={r.id === focus || (r.status === 'OPEN' && (r.severity === 'SOS' || r.severity === 'URGENT'))} />
+          <ReportRow
+            key={`${r.id}-${focus}`}
+            report={r}
+            initiallyOpen={r.id === focus || (r.status === 'OPEN' && (r.severity === 'SOS' || r.severity === 'URGENT'))}
+          />
         ))}
       </ul>
     </div>
@@ -109,22 +126,47 @@ function ReportRow({ report: r, initiallyOpen }: { report: StaffWelfareReport; i
                 send.mutate({ id: r.id, body: reply.trim() }, { onSuccess: () => setReply('') });
               }}
             >
-              <Textarea rows={2} maxLength={3000} value={reply} onChange={(e) => setReply(e.target.value)} placeholder={t('international.welfare.replyPlaceholder')} aria-label={t('international.welfare.reply')} />
+              <Textarea
+                rows={2}
+                maxLength={3000}
+                value={reply}
+                onChange={(e) => setReply(e.target.value)}
+                placeholder={t('international.welfare.replyPlaceholder')}
+                aria-label={t('international.welfare.reply')}
+              />
               <div className="flex flex-wrap gap-2">
                 <Button size="sm" type="submit" disabled={!reply.trim() || send.isPending}>
                   {t('international.welfare.send')}
                 </Button>
                 {r.status === 'OPEN' && (
-                  <Button size="sm" type="button" variant="secondary" disabled={setStatus.isPending} onClick={() => setStatus.mutate({ id: r.id, status: 'ACKNOWLEDGED' })}>
+                  <Button
+                    size="sm"
+                    type="button"
+                    variant="secondary"
+                    disabled={setStatus.isPending}
+                    onClick={() => setStatus.mutate({ id: r.id, status: 'ACKNOWLEDGED' })}
+                  >
                     {t('international.welfare.acknowledge')}
                   </Button>
                 )}
                 {r.status !== 'RESOLVED' ? (
-                  <Button size="sm" type="button" variant="ghost" disabled={setStatus.isPending} onClick={() => setStatus.mutate({ id: r.id, status: 'RESOLVED' })}>
+                  <Button
+                    size="sm"
+                    type="button"
+                    variant="ghost"
+                    disabled={setStatus.isPending}
+                    onClick={() => setStatus.mutate({ id: r.id, status: 'RESOLVED' })}
+                  >
                     {t('international.welfare.resolve')}
                   </Button>
                 ) : (
-                  <Button size="sm" type="button" variant="ghost" disabled={setStatus.isPending} onClick={() => setStatus.mutate({ id: r.id, status: 'ACKNOWLEDGED' })}>
+                  <Button
+                    size="sm"
+                    type="button"
+                    variant="ghost"
+                    disabled={setStatus.isPending}
+                    onClick={() => setStatus.mutate({ id: r.id, status: 'ACKNOWLEDGED' })}
+                  >
                     {t('international.welfare.reopen')}
                   </Button>
                 )}
@@ -134,7 +176,11 @@ function ReportRow({ report: r, initiallyOpen }: { report: StaffWelfareReport; i
             </form>
             {r.status === 'RESOLVED' && (
               <div className="flex justify-end">
-                <DeleteRecordButton path={`/international/welfare/${r.id}`} title={t('overseasAdmin.welfare.deleteTitle', { reference: r.reference })} body={t('overseasAdmin.welfare.deleteBody')} />
+                <DeleteRecordButton
+                  path={`/international/welfare/${r.id}`}
+                  title={t('overseasAdmin.welfare.deleteTitle', { reference: r.reference })}
+                  body={t('overseasAdmin.welfare.deleteBody')}
+                />
               </div>
             )}
           </div>
@@ -146,7 +192,15 @@ function ReportRow({ report: r, initiallyOpen }: { report: StaffWelfareReport; i
             <dl className="space-y-2">
               <div>
                 <dt className="text-xs text-ink/50">{t('international.welfare.phoneAbroad')}</dt>
-                <dd className="font-medium text-ink">{r.contact.phoneAbroad ? <a href={`tel:${r.contact.phoneAbroad.replace(/[^+\d]/g, '')}`} className="text-brand-dark hover:underline">{r.contact.phoneAbroad}</a> : '-'}</dd>
+                <dd className="font-medium text-ink">
+                  {r.contact.phoneAbroad ? (
+                    <a href={`tel:${r.contact.phoneAbroad.replace(/[^+\d]/g, '')}`} className="text-brand-dark hover:underline">
+                      {r.contact.phoneAbroad}
+                    </a>
+                  ) : (
+                    '-'
+                  )}
+                </dd>
               </div>
               <div>
                 <dt className="text-xs text-ink/50">{t('international.welfare.addressAbroad')}</dt>

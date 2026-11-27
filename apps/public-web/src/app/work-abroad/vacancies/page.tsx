@@ -69,7 +69,11 @@ export default function VacancyBoardPage() {
             </div>
             <div>
               <Label htmlFor="vb-setting">{t('vacancies.filters.setting')}</Label>
-              <Select id="vb-setting" value={filters.careSetting ?? ''} onChange={(e) => setFilters((f) => ({ ...f, careSetting: e.target.value || undefined }))}>
+              <Select
+                id="vb-setting"
+                value={filters.careSetting ?? ''}
+                onChange={(e) => setFilters((f) => ({ ...f, careSetting: e.target.value || undefined }))}
+              >
                 <option value="">{t('vacancies.filters.anySetting')}</option>
                 {careTypeValues.map((c) => (
                   <option key={c} value={c}>
@@ -80,7 +84,13 @@ export default function VacancyBoardPage() {
             </div>
             <div>
               <Label htmlFor="vb-search">{t('vacancies.filters.search')}</Label>
-              <Input id="vb-search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('vacancies.filters.searchPlaceholder')} maxLength={100} />
+              <Input
+                id="vb-search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={t('vacancies.filters.searchPlaceholder')}
+                maxLength={100}
+              />
             </div>
             <Button type="submit" variant="secondary">
               <Search className="h-4 w-4" aria-hidden />

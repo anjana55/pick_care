@@ -169,7 +169,14 @@ describe('To do', () => {
       badge: 3,
       todos: [
         todo({ key: 'document:police', kind: 'DOCUMENT_REJECTED', path: '/documents', dueOn: null, params: { document: 'police' } }),
-        todo({ key: 'expiry:x', kind: 'DOCUMENT_EXPIRING', path: '/documents', urgent: false, dueOn: '2026-11-20', params: { document: 'PASSPORT', daysLeft: 16 } }),
+        todo({
+          key: 'expiry:x',
+          kind: 'DOCUMENT_EXPIRING',
+          path: '/documents',
+          urgent: false,
+          dueOn: '2026-11-20',
+          params: { document: 'PASSPORT', daysLeft: 16 },
+        }),
         todo({ key: 'shift:x', kind: 'SHIFT_TODAY', path: '/shifts', params: { time: '08:00', reference: 'BK-3' } }),
       ],
     });
@@ -191,7 +198,11 @@ describe('To do', () => {
   it('reads in Sinhala', async () => {
     window.localStorage.setItem('care-platform-public-locale', 'si');
     try {
-      answer({ unread: 0, badge: 1, todos: [todo({ kind: 'RATE_CAREGIVER', key: 'r', path: '/bookings/b/rate/p', urgent: false, params: { reference: 'BK-9' } })] });
+      answer({
+        unread: 0,
+        badge: 1,
+        todos: [todo({ kind: 'RATE_CAREGIVER', key: 'r', path: '/bookings/b/rate/p', urgent: false, params: { reference: 'BK-9' } })],
+      });
       renderUi(<TodoCards />);
       expect(await screen.findByText(/BK-9/)).toHaveTextContent('සත්කාරකයා ශ්‍රේණිගත කරන්න');
     } finally {
@@ -202,7 +213,15 @@ describe('To do', () => {
 
 describe('the notifications page', () => {
   it('lists the history, pins important unread notices, opens announcement links, and loads older ones', async () => {
-    const announcement = notice({ id: 'n-2', category: 'ANNOUNCEMENT', title: 'Office closed on Poya day', body: 'Closed Friday', path: '/notifications', link: 'https://example.lk/hours', important: true });
+    const announcement = notice({
+      id: 'n-2',
+      category: 'ANNOUNCEMENT',
+      title: 'Office closed on Poya day',
+      body: 'Closed Friday',
+      path: '/notifications',
+      link: 'https://example.lk/hours',
+      important: true,
+    });
     answer({ unread: 2, todos: [], badge: 2 }, { items: [notice(), announcement], nextCursor: 'c-1' });
     renderUi(<NotificationsPage />);
     const items = await screen.findAllByRole('listitem');

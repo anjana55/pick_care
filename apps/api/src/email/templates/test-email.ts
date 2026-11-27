@@ -9,7 +9,6 @@ const INK = '#1F2A24';
 const PAPER = '#FBF9F4';
 const BORDER = '#E4DFD3';
 
-
 export function testEmail(params: { host: string; port: number; deliveryEnabled: boolean; brand?: EmailBrand }) {
   const { host, port, deliveryEnabled, brand = DEFAULT_EMAIL_BRAND } = params;
   const BRAND = brand.color;

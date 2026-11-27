@@ -23,13 +23,24 @@ const applyTokens = jest.fn();
 let officePhone: string | null = '011 234 5678';
 
 jest.mock('@/lib/api/auth-context', () => ({ useAuth: () => ({ user: null, logout: jest.fn(), applyTokens: (...a: unknown[]) => applyTokens(...a) }) }));
-jest.mock('@/lib/branding/provider', () => ({ useBranding: () => ({ ...jest.requireActual('@care-platform/shared').DEFAULT_BRANDING, officePhone, logoUrl: null }) }));
+jest.mock('@/lib/branding/provider', () => ({
+  useBranding: () => ({ ...jest.requireActual('@care-platform/shared').DEFAULT_BRANDING, officePhone, logoUrl: null }),
+}));
 jest.mock('@/lib/api/client', () => ({
   ...jest.requireActual('@/lib/api/client'),
   api: { get: (...a: unknown[]) => get(...a), post: (...a: unknown[]) => post(...a) },
 }));
 
-const TREE = [{ id: 1, name: 'Western Province', districts: [{ id: 1, name: 'Colombo' }, { id: 2, name: 'Gampaha' }] }];
+const TREE = [
+  {
+    id: 1,
+    name: 'Western Province',
+    districts: [
+      { id: 1, name: 'Colombo' },
+      { id: 2, name: 'Gampaha' },
+    ],
+  },
+];
 
 function renderPage(node: ReactElement) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -102,7 +113,16 @@ describe('caregiver registration', () => {
     post.mockImplementation((path: string) => {
       if (path === '/auth/signup/whatsapp/request-otp') return Promise.resolve({ phone: '+94771234567', resendAfterSeconds: 60, expiresInSeconds: 300 });
       if (path === '/auth/signup/whatsapp/verify-otp') {
-        return Promise.resolve({ signedIn: false, ticket: 'wa', expiresInSeconds: 3600, method: 'WHATSAPP', side: 'caregiver', phone: '+94771234567', email: null, name: null });
+        return Promise.resolve({
+          signedIn: false,
+          ticket: 'wa',
+          expiresInSeconds: 3600,
+          method: 'WHATSAPP',
+          side: 'caregiver',
+          phone: '+94771234567',
+          email: null,
+          name: null,
+        });
       }
       return Promise.resolve({ signedIn: true, method: 'WHATSAPP', tokens: { accessToken: 'a', refreshToken: 'r' }, registrationNumber: 'CG-1' });
     });

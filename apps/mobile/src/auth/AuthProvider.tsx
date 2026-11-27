@@ -39,12 +39,7 @@ interface AuthProviderProps {
   subscribeExpired?: (listener: () => void) => () => void;
 }
 
-export function AuthProvider({
-  children,
-  api = defaultApi,
-  tokens = defaultTokenStore,
-  subscribeExpired = defaultOnSessionExpired,
-}: AuthProviderProps) {
+export function AuthProvider({ children, api = defaultApi, tokens = defaultTokenStore, subscribeExpired = defaultOnSessionExpired }: AuthProviderProps) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [ready, setReady] = useState(false);
 
@@ -83,12 +78,15 @@ export function AuthProvider({
     [tokens],
   );
 
-  const signOut = useCallback(async ({ serverEnded = false }: { serverEnded?: boolean } = {}) => {
-    // Revoke on the server first (best effort - offline must not trap anyone signed in).
-    if (tokens.get() && !serverEnded) await api.post('/auth/logout').catch(() => undefined);
-    await tokens.clear();
-    setUser(null);
-  }, [api, tokens]);
+  const signOut = useCallback(
+    async ({ serverEnded = false }: { serverEnded?: boolean } = {}) => {
+      // Revoke on the server first (best effort - offline must not trap anyone signed in).
+      if (tokens.get() && !serverEnded) await api.post('/auth/logout').catch(() => undefined);
+      await tokens.clear();
+      setUser(null);
+    },
+    [api, tokens],
+  );
 
   const value = useMemo(() => ({ user, ready, signIn, signOut }), [user, ready, signIn, signOut]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

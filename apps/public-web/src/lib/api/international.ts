@@ -55,7 +55,8 @@ export const internationalApi = {
     api.get<PublicTalentList>('/public/talent', params),
   talentProfile: (slug: string, locale: Locale) => api.get<PublicTalentProfile>(`/public/talent/${encodeURIComponent(slug)}`, { locale }),
   training: (locale: Locale) => api.get<PublicTrainingProgramme[]>('/public/training', { locale }),
-  vacancies: (params: { page?: number; pageSize?: number; country?: string; careSetting?: string; search?: string }) => api.get<PublicVacancyList>('/public/vacancies', params),
+  vacancies: (params: { page?: number; pageSize?: number; country?: string; careSetting?: string; search?: string }) =>
+    api.get<PublicVacancyList>('/public/vacancies', params),
   vacancy: (reference: string) => api.get<PublicVacancy>(`/public/vacancies/${encodeURIComponent(reference)}`),
   checkCertificate: (code: string) => api.get<PublicCertificateCheck>(`/public/certificates/${encodeURIComponent(code)}`),
 };
@@ -84,7 +85,8 @@ export const workAbroadApi = {
   applications: (id: string) => api.get<CaregiverVacancyApplication[]>(`/caregivers/${id}/vacancy-applications`),
   apply: (id: string, reference: string, message?: string) =>
     api.post<CaregiverVacancyApplication[]>(`/caregivers/${id}/vacancies/${encodeURIComponent(reference)}/apply`, message ? { message } : {}),
-  withdrawApplication: (id: string, applicationId: string) => api.delete<CaregiverVacancyApplication[]>(`/caregivers/${id}/vacancy-applications/${applicationId}`),
+  withdrawApplication: (id: string, applicationId: string) =>
+    api.delete<CaregiverVacancyApplication[]>(`/caregivers/${id}/vacancy-applications/${applicationId}`),
   placements: (id: string) => api.get<CaregiverPlacement[]>(`/caregivers/${id}/overseas/placements`),
   datedDocuments: (id: string) => api.get<CaregiverExpiringDocument[]>(`/caregivers/${id}/overseas/documents`),
   assessments: (id: string) => api.get<CaregiverAssessment[]>(`/caregivers/${id}/overseas/assessments`),
@@ -92,11 +94,15 @@ export const workAbroadApi = {
   removeAssessment: (id: string, assessmentId: string) => api.delete<CaregiverAssessment[]>(`/caregivers/${id}/overseas/assessments/${assessmentId}`),
   interviews: (id: string) => api.get<CaregiverInterview[]>(`/caregivers/${id}/overseas/interviews`),
   offers: (id: string) => api.get<CaregiverJobOffer[]>(`/caregivers/${id}/overseas/offers`),
-  respondOffer: (id: string, offerId: string, body: OfferResponse) => api.post<CaregiverJobOffer[]>(`/caregivers/${id}/overseas/offers/${offerId}/respond`, body),
-  saveContact: (id: string, placementId: string, body: ContactAbroad) => api.put<CaregiverPlacement[]>(`/caregivers/${id}/overseas/placements/${placementId}/contact`, body),
+  respondOffer: (id: string, offerId: string, body: OfferResponse) =>
+    api.post<CaregiverJobOffer[]>(`/caregivers/${id}/overseas/offers/${offerId}/respond`, body),
+  saveContact: (id: string, placementId: string, body: ContactAbroad) =>
+    api.put<CaregiverPlacement[]>(`/caregivers/${id}/overseas/placements/${placementId}/contact`, body),
   welfare: (id: string) => api.get<WelfareReport[]>(`/caregivers/${id}/overseas/welfare`),
-  report: (id: string, placementId: string, body: WelfareReportInput) => api.post<WelfareReport[]>(`/caregivers/${id}/overseas/placements/${placementId}/welfare`, body),
-  welfareMessage: (id: string, reportId: string, body: string) => api.post<WelfareReport[]>(`/caregivers/${id}/overseas/welfare/${reportId}/messages`, { body }),
+  report: (id: string, placementId: string, body: WelfareReportInput) =>
+    api.post<WelfareReport[]>(`/caregivers/${id}/overseas/placements/${placementId}/welfare`, body),
+  welfareMessage: (id: string, reportId: string, body: string) =>
+    api.post<WelfareReport[]>(`/caregivers/${id}/overseas/welfare/${reportId}/messages`, { body }),
 };
 
 /** An overseas employer's own account. */

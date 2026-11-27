@@ -49,8 +49,7 @@ export default function Verify() {
         // Back to the screen they came from, closing the sign-in screens on the way.
         if (next === params.returnTo) router.dismissTo(next as never);
         else router.replace(next as never);
-      }
-      else setError(t('otp.error'));
+      } else setError(t('otp.error'));
     } catch (err) {
       setError(messageFor(err, t('otp.error')));
     } finally {

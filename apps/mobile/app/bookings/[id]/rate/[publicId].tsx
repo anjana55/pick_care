@@ -108,12 +108,21 @@ export default function RateCaregiver() {
             ) : null}
             {review.comment ? <Text style={{ fontSize: 16, lineHeight: 24, color: colors.ink }}>{review.comment}</Text> : null}
             {review.comment && review.commentStatus !== 'NONE' ? (
-              <Text style={{ fontSize: 14, color: colors.muted }}>{t(`reviews.commentStatus.${review.commentStatus}`, { reason: review.commentRejectReason ?? '' })}</Text>
+              <Text style={{ fontSize: 14, color: colors.muted }}>
+                {t(`reviews.commentStatus.${review.commentStatus}`, { reason: review.commentRejectReason ?? '' })}
+              </Text>
             ) : null}
             {data.canReview && !review.hidden ? (
               <>
                 <Text style={{ fontSize: 14, color: colors.muted }}>{t('reviews.until', { date: formatDate(data.reviewUntil.slice(0, 10), locale) })}</Text>
-                <Button variant="secondary" label={t('reviews.edit')} onPress={() => { setEditing(true); setDone(null); }} />
+                <Button
+                  variant="secondary"
+                  label={t('reviews.edit')}
+                  onPress={() => {
+                    setEditing(true);
+                    setDone(null);
+                  }}
+                />
               </>
             ) : null}
             <Button variant="link" label={t('reviews.form.delete')} onPress={confirmDelete} />

@@ -61,8 +61,7 @@ export function ClientFiltersPanel({
 }) {
   const { t } = useTranslation();
   const activeCount = countClientFilters(filters);
-  const set = (key: keyof ClientIntakeFilters) => (e: React.ChangeEvent<HTMLSelectElement>) =>
-    onChange({ ...filters, [key]: e.target.value });
+  const set = (key: keyof ClientIntakeFilters) => (e: React.ChangeEvent<HTMLSelectElement>) => onChange({ ...filters, [key]: e.target.value });
 
   return (
     <div className="rounded-lg border border-border bg-white p-4">
@@ -70,17 +69,11 @@ export function ClientFiltersPanel({
         <div className="flex items-center gap-2 text-sm font-semibold text-ink">
           <SlidersHorizontal size={15} />
           {t('filters.advanced')}
-          {activeCount > 0 && (
-            <span className="rounded-full bg-brand px-1.5 py-0.5 text-[10px] font-semibold text-white">{activeCount}</span>
-          )}
+          {activeCount > 0 && <span className="rounded-full bg-brand px-1.5 py-0.5 text-[10px] font-semibold text-white">{activeCount}</span>}
         </div>
         <div className="flex items-center gap-2">
           {activeCount > 0 && (
-            <button
-              type="button"
-              onClick={() => onChange(EMPTY_CLIENT_FILTERS)}
-              className="text-xs font-medium text-ink/50 hover:text-danger"
-            >
+            <button type="button" onClick={() => onChange(EMPTY_CLIENT_FILTERS)} className="text-xs font-medium text-ink/50 hover:text-danger">
               {t('filters.clearAll')}
             </button>
           )}
@@ -166,26 +159,13 @@ export function ClientFilterChips({
   return (
     <div className="mb-4 flex flex-wrap items-center gap-2">
       {filters.districtId && <FilterChip label={districtName} onRemove={clear('districtId')} />}
-      {filters.careSchedule && (
-        <FilterChip label={t(`clients.options.careSchedule.${filters.careSchedule}`)} onRemove={clear('careSchedule')} />
-      )}
-      {filters.careStart && (
-        <FilterChip label={t(`clients.options.careStart.${filters.careStart}`)} onRemove={clear('careStart')} />
-      )}
-      {filters.contactMethod && (
-        <FilterChip label={t(`clients.options.contactMethod.${filters.contactMethod}`)} onRemove={clear('contactMethod')} />
-      )}
+      {filters.careSchedule && <FilterChip label={t(`clients.options.careSchedule.${filters.careSchedule}`)} onRemove={clear('careSchedule')} />}
+      {filters.careStart && <FilterChip label={t(`clients.options.careStart.${filters.careStart}`)} onRemove={clear('careStart')} />}
+      {filters.contactMethod && <FilterChip label={t(`clients.options.contactMethod.${filters.contactMethod}`)} onRemove={clear('contactMethod')} />}
       {filters.verification && (
-        <FilterChip
-          label={filters.verification === 'VERIFIED' ? t('clients.verified') : t('clients.unverified')}
-          onRemove={clear('verification')}
-        />
+        <FilterChip label={filters.verification === 'VERIFIED' ? t('clients.verified') : t('clients.unverified')} onRemove={clear('verification')} />
       )}
-      <button
-        type="button"
-        onClick={() => onChange(EMPTY_CLIENT_FILTERS)}
-        className="text-xs font-medium text-ink/40 hover:text-danger"
-      >
+      <button type="button" onClick={() => onChange(EMPTY_CLIENT_FILTERS)} className="text-xs font-medium text-ink/40 hover:text-danger">
         {t('filters.clearAll')}
       </button>
     </div>

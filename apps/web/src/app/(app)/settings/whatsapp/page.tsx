@@ -19,10 +19,31 @@ function toDraft(s: WhatsappSettings): Draft {
   return { ...rest, accessToken: '', clearAccessToken: false };
 }
 
-function Toggle({ id, label, hint, checked, onChange, disabled }: { id: string; label: string; hint?: string; checked: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
+function Toggle({
+  id,
+  label,
+  hint,
+  checked,
+  onChange,
+  disabled,
+}: {
+  id: string;
+  label: string;
+  hint?: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  disabled?: boolean;
+}) {
   return (
     <label htmlFor={id} className={`flex items-start gap-3 py-2 text-sm ${disabled ? 'opacity-50' : ''}`}>
-      <input id={id} type="checkbox" checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} className="mt-0.5 h-4 w-4 rounded border-border text-brand focus:ring-brand" />
+      <input
+        id={id}
+        type="checkbox"
+        checked={checked}
+        disabled={disabled}
+        onChange={(e) => onChange(e.target.checked)}
+        className="mt-0.5 h-4 w-4 rounded border-border text-brand focus:ring-brand"
+      />
       <span>
         <span className="font-medium text-ink">{label}</span>
         {hint && <span className="block text-xs text-ink/50">{hint}</span>}
@@ -105,21 +126,62 @@ export default function WhatsappSettingsPage() {
 
       <div className="space-y-5">
         <Card>
-          <CardHeader><CardTitle>{t('whatsappAdmin.togglesTitle')}</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>{t('whatsappAdmin.togglesTitle')}</CardTitle>
+          </CardHeader>
           <CardContent>
-            <Toggle id="enabled" label={t('whatsappAdmin.enabled')} hint={t('whatsappAdmin.enabledHint')} checked={draft.enabled} onChange={(v) => set('enabled', v)} />
+            <Toggle
+              id="enabled"
+              label={t('whatsappAdmin.enabled')}
+              hint={t('whatsappAdmin.enabledHint')}
+              checked={draft.enabled}
+              onChange={(v) => set('enabled', v)}
+            />
             <div className="mt-1 grid gap-x-8 border-t border-border pt-2 sm:grid-cols-2">
-              <Toggle id="caregiverEnabled" label={t('whatsappAdmin.caregivers')} checked={draft.caregiverEnabled} onChange={(v) => set('caregiverEnabled', v)} disabled={!draft.enabled} />
-              <Toggle id="customerEnabled" label={t('whatsappAdmin.customers')} checked={draft.customerEnabled} onChange={(v) => set('customerEnabled', v)} disabled={!draft.enabled} />
-              <Toggle id="registrationEnabled" label={t('whatsappAdmin.registration')} hint={t('whatsappAdmin.registrationHint')} checked={draft.registrationEnabled} onChange={(v) => set('registrationEnabled', v)} disabled={!draft.enabled} />
-              <Toggle id="loginEnabled" label={t('whatsappAdmin.login')} checked={draft.loginEnabled} onChange={(v) => set('loginEnabled', v)} disabled={!draft.enabled} />
-              <Toggle id="recoveryEnabled" label={t('whatsappAdmin.recovery')} checked={draft.recoveryEnabled} onChange={(v) => set('recoveryEnabled', v)} disabled={!draft.enabled} />
+              <Toggle
+                id="caregiverEnabled"
+                label={t('whatsappAdmin.caregivers')}
+                checked={draft.caregiverEnabled}
+                onChange={(v) => set('caregiverEnabled', v)}
+                disabled={!draft.enabled}
+              />
+              <Toggle
+                id="customerEnabled"
+                label={t('whatsappAdmin.customers')}
+                checked={draft.customerEnabled}
+                onChange={(v) => set('customerEnabled', v)}
+                disabled={!draft.enabled}
+              />
+              <Toggle
+                id="registrationEnabled"
+                label={t('whatsappAdmin.registration')}
+                hint={t('whatsappAdmin.registrationHint')}
+                checked={draft.registrationEnabled}
+                onChange={(v) => set('registrationEnabled', v)}
+                disabled={!draft.enabled}
+              />
+              <Toggle
+                id="loginEnabled"
+                label={t('whatsappAdmin.login')}
+                checked={draft.loginEnabled}
+                onChange={(v) => set('loginEnabled', v)}
+                disabled={!draft.enabled}
+              />
+              <Toggle
+                id="recoveryEnabled"
+                label={t('whatsappAdmin.recovery')}
+                checked={draft.recoveryEnabled}
+                onChange={(v) => set('recoveryEnabled', v)}
+                disabled={!draft.enabled}
+              />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader><CardTitle>{t('whatsappAdmin.deliveryTitle')}</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>{t('whatsappAdmin.deliveryTitle')}</CardTitle>
+          </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
               <Label htmlFor="provider">{t('whatsappAdmin.provider')}</Label>
@@ -132,7 +194,9 @@ export default function WhatsappSettingsPage() {
             {meta && (
               <>
                 <div>
-                  <Label htmlFor="phoneNumberId" required>{t('whatsappAdmin.phoneNumberId')}</Label>
+                  <Label htmlFor="phoneNumberId" required>
+                    {t('whatsappAdmin.phoneNumberId')}
+                  </Label>
                   <Input id="phoneNumberId" value={draft.phoneNumberId ?? ''} onChange={(e) => set('phoneNumberId', e.target.value)} />
                 </div>
                 <div>
@@ -140,7 +204,9 @@ export default function WhatsappSettingsPage() {
                   <Input id="businessAccountId" value={draft.businessAccountId ?? ''} onChange={(e) => set('businessAccountId', e.target.value)} />
                 </div>
                 <div className="sm:col-span-2">
-                  <Label htmlFor="accessToken" required>{t('whatsappAdmin.accessToken')}</Label>
+                  <Label htmlFor="accessToken" required>
+                    {t('whatsappAdmin.accessToken')}
+                  </Label>
                   <Input
                     id="accessToken"
                     type="password"
@@ -152,7 +218,12 @@ export default function WhatsappSettingsPage() {
                   <p className="mt-1 text-xs text-ink/50">{t('whatsappAdmin.tokenHint')}</p>
                   {settings.accessTokenSet && (
                     <label className="mt-2 flex items-center gap-2 text-xs text-ink/70">
-                      <input type="checkbox" checked={draft.clearAccessToken} onChange={(e) => setDraft({ ...draft, clearAccessToken: e.target.checked, accessToken: '' })} className="h-3.5 w-3.5 rounded border-border text-brand focus:ring-brand" />
+                      <input
+                        type="checkbox"
+                        checked={draft.clearAccessToken}
+                        onChange={(e) => setDraft({ ...draft, clearAccessToken: e.target.checked, accessToken: '' })}
+                        className="h-3.5 w-3.5 rounded border-border text-brand focus:ring-brand"
+                      />
                       {t('whatsappAdmin.tokenRemove')}
                     </label>
                   )}
@@ -171,7 +242,9 @@ export default function WhatsappSettingsPage() {
         </Card>
 
         <Card>
-          <CardHeader><CardTitle>{t('whatsappAdmin.templateTitle')}</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>{t('whatsappAdmin.templateTitle')}</CardTitle>
+          </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div>
               <Label htmlFor="templateName">{t('whatsappAdmin.templateName')}</Label>
@@ -182,13 +255,21 @@ export default function WhatsappSettingsPage() {
               <Input id="templateLanguage" value={draft.templateLanguage} onChange={(e) => set('templateLanguage', e.target.value)} />
             </div>
             <div className="sm:col-span-2">
-              <Toggle id="copyCode" label={t('whatsappAdmin.copyCode')} hint={t('whatsappAdmin.templateHint')} checked={draft.templateHasCopyCodeButton} onChange={(v) => set('templateHasCopyCodeButton', v)} />
+              <Toggle
+                id="copyCode"
+                label={t('whatsappAdmin.copyCode')}
+                hint={t('whatsappAdmin.templateHint')}
+                checked={draft.templateHasCopyCodeButton}
+                onChange={(v) => set('templateHasCopyCodeButton', v)}
+              />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader><CardTitle>{t('whatsappAdmin.updatesTitle')}</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>{t('whatsappAdmin.updatesTitle')}</CardTitle>
+          </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
               <Toggle
@@ -208,7 +289,9 @@ export default function WhatsappSettingsPage() {
         </Card>
 
         <Card>
-          <CardHeader><CardTitle>{t('whatsappAdmin.otpTitle')}</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>{t('whatsappAdmin.otpTitle')}</CardTitle>
+          </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div>
               <Label htmlFor="otpLength">{t('whatsappAdmin.otpLength')}</Label>
@@ -224,7 +307,14 @@ export default function WhatsappSettingsPage() {
             </div>
             <div>
               <Label htmlFor="otpResendCooldownSeconds">{t('whatsappAdmin.otpCooldown')}</Label>
-              <Input id="otpResendCooldownSeconds" type="number" min={15} max={600} value={draft.otpResendCooldownSeconds} onChange={num('otpResendCooldownSeconds')} />
+              <Input
+                id="otpResendCooldownSeconds"
+                type="number"
+                min={15}
+                max={600}
+                value={draft.otpResendCooldownSeconds}
+                onChange={num('otpResendCooldownSeconds')}
+              />
             </div>
             <div>
               <Label htmlFor="otpMaxSendsPerHour">{t('whatsappAdmin.otpPerHour')}</Label>
@@ -247,7 +337,9 @@ export default function WhatsappSettingsPage() {
         </div>
 
         <Card>
-          <CardHeader><CardTitle>{t('whatsappAdmin.testTitle')}</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>{t('whatsappAdmin.testTitle')}</CardTitle>
+          </CardHeader>
           <CardContent>
             <p className="mb-3 text-xs text-ink/50">{t('whatsappAdmin.testHint')}</p>
             <div className="flex items-end gap-3">
@@ -255,7 +347,14 @@ export default function WhatsappSettingsPage() {
                 <Label htmlFor="testPhone">{t('whatsappAdmin.testPhone')}</Label>
                 <Input id="testPhone" type="tel" placeholder="0771234567" value={testPhone} onChange={(e) => setTestPhone(e.target.value)} />
               </div>
-              <Button variant="secondary" onClick={() => { setTestResult(null); test.mutate(); }} disabled={test.isPending || testPhone.trim().length < 7 || dirty}>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setTestResult(null);
+                  test.mutate();
+                }}
+                disabled={test.isPending || testPhone.trim().length < 7 || dirty}
+              >
                 {test.isPending ? t('common.loading') : t('whatsappAdmin.testSend')}
               </Button>
             </div>

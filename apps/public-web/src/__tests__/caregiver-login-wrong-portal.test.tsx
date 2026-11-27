@@ -26,7 +26,11 @@ const push = jest.fn();
 jest.mock('next/navigation', () => ({ useRouter: () => ({ push, replace: jest.fn() }), usePathname: () => '/login' }));
 jest.mock('next/link', () => ({
   __esModule: true,
-  default: ({ href, children, ...rest }: { href: string; children: React.ReactNode }) => <a href={href} {...rest}>{children}</a>,
+  default: ({ href, children, ...rest }: { href: string; children: React.ReactNode }) => (
+    <a href={href} {...rest}>
+      {children}
+    </a>
+  ),
 }));
 jest.mock('@/lib/api/client', () => ({
   ...jest.requireActual('@/lib/api/client'),
@@ -63,7 +67,11 @@ beforeEach(() => {
   assign = jest.fn();
   jest.mocked(hardNavigate).mockImplementation(assign);
   get.mockImplementation((path: string) =>
-    Promise.resolve(path === '/auth/whatsapp/config' ? { enabled: false, caregiver: { register: false, login: false, recovery: false }, customer: { register: false, login: false, recovery: false } } : {}),
+    Promise.resolve(
+      path === '/auth/whatsapp/config'
+        ? { enabled: false, caregiver: { register: false, login: false, recovery: false }, customer: { register: false, login: false, recovery: false } }
+        : {},
+    ),
   );
 });
 

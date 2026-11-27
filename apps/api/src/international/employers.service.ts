@@ -192,14 +192,22 @@ export class EmployersService {
       },
       REJECTED: {
         subject: 'We could not verify your organisation',
-        paragraphs: [`We were not able to verify ${row.organisationName}.`, ...(note ? [`Our team says: ${note}`] : []), 'You can update your details and we will look again.'],
+        paragraphs: [
+          `We were not able to verify ${row.organisationName}.`,
+          ...(note ? [`Our team says: ${note}`] : []),
+          'You can update your details and we will look again.',
+        ],
       },
       SUSPENDED: {
         subject: 'Your employer account has been suspended',
         paragraphs: [`The employer account for ${row.organisationName} has been suspended.`, ...(note ? [`Our team says: ${note}`] : [])],
       },
     } as const;
-    await this.notifier.toAddress(email, `employer ${status.toLowerCase()}`, { ...notices[status], paragraphs: [...notices[status].paragraphs], cta: { label: 'Open your account', url } });
+    await this.notifier.toAddress(email, `employer ${status.toLowerCase()}`, {
+      ...notices[status],
+      paragraphs: [...notices[status].paragraphs],
+      cta: { label: 'Open your account', url },
+    });
   }
 
   private async row(employerId: string): Promise<EmployerRow> {

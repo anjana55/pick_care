@@ -1,7 +1,15 @@
 import type { ReactElement } from 'react';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import type { CaregiverExpiringDocument, CaregiverVacancyApplication, EmployerAccount, EmployerPlacement, PlacementInvoice, PublicVacancy, Vacancy } from '@care-platform/shared';
+import type {
+  CaregiverExpiringDocument,
+  CaregiverVacancyApplication,
+  EmployerAccount,
+  EmployerPlacement,
+  PlacementInvoice,
+  PublicVacancy,
+  Vacancy,
+} from '@care-platform/shared';
 import { I18nProvider } from '@/lib/i18n';
 import type { AuthUser } from '@/lib/api/auth-context';
 
@@ -171,8 +179,18 @@ describe("a caregiver's Work abroad status", () => {
     const { MyApplicationsCard } = await import('@/components/international/overseas-status');
     auth = { user: CAREGIVER, loading: false };
     const applications: CaregiverVacancyApplication[] = [
-      { id: 'a1', status: 'APPLIED', createdAt: '2026-10-26T08:00:00Z', vacancy: { reference: 'VC-AAAAAA', title: 'Night carer', country: 'JP', city: null, organisationType: 'CARE_HOME', open: true } },
-      { id: 'a2', status: 'PUT_FORWARD', createdAt: '2026-10-20T08:00:00Z', vacancy: { reference: 'VC-BBBBBB', title: 'Live-in carer', country: 'GB', city: null, organisationType: 'PRIVATE_FAMILY', open: true } },
+      {
+        id: 'a1',
+        status: 'APPLIED',
+        createdAt: '2026-10-26T08:00:00Z',
+        vacancy: { reference: 'VC-AAAAAA', title: 'Night carer', country: 'JP', city: null, organisationType: 'CARE_HOME', open: true },
+      },
+      {
+        id: 'a2',
+        status: 'PUT_FORWARD',
+        createdAt: '2026-10-20T08:00:00Z',
+        vacancy: { reference: 'VC-BBBBBB', title: 'Live-in carer', country: 'GB', city: null, organisationType: 'PRIVATE_FAMILY', open: true },
+      },
     ];
     route({ '/caregivers/cg-1/vacancy-applications': applications });
     del.mockResolvedValue([applications[1]]);
@@ -232,7 +250,15 @@ describe("an employer's vacancies", () => {
     await waitFor(() => expect(post).toHaveBeenCalled());
     expect(post.mock.calls[0]).toEqual([
       '/employer/vacancies',
-      expect.objectContaining({ title: 'Care assistant', country: 'JP', careSetting: 'NURSING_HOME', salaryMin: 2200, salaryMax: 2600, salaryCurrency: 'JPY', salaryPeriod: 'MONTH' }),
+      expect.objectContaining({
+        title: 'Care assistant',
+        country: 'JP',
+        careSetting: 'NURSING_HOME',
+        salaryMin: 2200,
+        salaryMax: 2600,
+        salaryCurrency: 'JPY',
+        salaryPeriod: 'MONTH',
+      }),
     ]);
     expect(await screen.findByText(/VC-NEW123/)).toBeInTheDocument();
   });
@@ -276,7 +302,20 @@ describe("an employer's placements and invoices", () => {
       contractStartOn: '2026-11-02',
       contractEndsOn: '2028-11-02',
       guaranteeEndsOn: '2027-02-02',
-      invoices: [{ id: 'i1', number: 'PF-2026-0001', status: 'ISSUED', currency: 'USD', amount: '2500.00', amountPaid: '0.00', balance: '2500.00', issueDate: '2026-11-02', dueDate: '2026-11-16', overdue: true }],
+      invoices: [
+        {
+          id: 'i1',
+          number: 'PF-2026-0001',
+          status: 'ISSUED',
+          currency: 'USD',
+          amount: '2500.00',
+          amountPaid: '0.00',
+          balance: '2500.00',
+          issueDate: '2026-11-02',
+          dueDate: '2026-11-16',
+          overdue: true,
+        },
+      ],
     };
     route({ '/employer/placements': [placement], '/employer/invoices': placement.invoices });
     renderUi(<Placements />);
@@ -316,7 +355,9 @@ describe("an employer's placements and invoices", () => {
       footer: 'Bank: Commercial Bank, A/C 1234',
       notes: null,
       voidReason: null,
-      payments: [{ id: 'pay1', amount: '1000.00', method: 'BANK_TRANSFER', paidOn: '2026-11-05', reference: 'SWIFT 1', note: null, createdAt: '2026-11-05T08:00:00Z' }],
+      payments: [
+        { id: 'pay1', amount: '1000.00', method: 'BANK_TRANSFER', paidOn: '2026-11-05', reference: 'SWIFT 1', note: null, createdAt: '2026-11-05T08:00:00Z' },
+      ],
       payOnline: true,
       createdAt: '2026-11-02T08:00:00Z',
     };

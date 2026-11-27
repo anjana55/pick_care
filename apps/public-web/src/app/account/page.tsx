@@ -90,7 +90,10 @@ export default function AccountHomePage() {
                     <span className="block text-sm text-ink/60">{t(`clientHome.hints.${tile.key}`)}</span>
                   </span>
                   {count > 0 ? (
-                    <span className="shrink-0 rounded-full bg-accent px-2.5 py-0.5 text-sm font-semibold tabular-nums text-white" aria-label={t('clientHome.waiting', { count })}>
+                    <span
+                      className="shrink-0 rounded-full bg-accent px-2.5 py-0.5 text-sm font-semibold tabular-nums text-white"
+                      aria-label={t('clientHome.waiting', { count })}
+                    >
                       {count}
                     </span>
                   ) : (

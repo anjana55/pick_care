@@ -106,8 +106,17 @@ export class NotificationsService {
   notifyStaff(title: string, body: string, path: string, label: string): void {
     void (async () => {
       try {
-        const staff = await this.db.select({ id: users.id }).from(users).where(and(inArray(users.role, ['ADMIN', 'STAFF']), eq(users.isActive, true)));
-        await this.deliver(staff.map((u) => u.id), () => ({ title, body }), path, label, { category: 'OTHER', push: false });
+        const staff = await this.db
+          .select({ id: users.id })
+          .from(users)
+          .where(and(inArray(users.role, ['ADMIN', 'STAFF']), eq(users.isActive, true)));
+        await this.deliver(
+          staff.map((u) => u.id),
+          () => ({ title, body }),
+          path,
+          label,
+          { category: 'OTHER', push: false },
+        );
       } catch (err) {
         this.logger.warn(`Staff notice (${label}) not kept: ${(err as Error).message}`);
       }
@@ -115,7 +124,13 @@ export class NotificationsService {
   }
 
   /** notify(), awaitable: resolves to the ids of the rows written (by user). Never throws. */
-  async deliver(userIds: (string | null | undefined)[], build: (lang: PushLanguage) => PushText, path: string, label: string, opts: NotifyOptions = {}): Promise<Map<string, string>> {
+  async deliver(
+    userIds: (string | null | undefined)[],
+    build: (lang: PushLanguage) => PushText,
+    path: string,
+    label: string,
+    opts: NotifyOptions = {},
+  ): Promise<Map<string, string>> {
     const ids = [...new Set(userIds.filter((v): v is string => Boolean(v)))];
     const written = new Map<string, string>();
     if (!ids.length) return written;

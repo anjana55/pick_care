@@ -27,7 +27,11 @@ export class MyNotificationsController {
   @Get('summary')
   @Throttle({ default: { limit: 60, ttl: 60_000 } })
   async summary(@CurrentUser() user: AuthenticatedUser): Promise<NotificationsSummary> {
-    const [unreadBy, todos, firstName] = await Promise.all([this.notices.unreadByCategory(user.userId), this.todos.forUser(user), this.notices.firstName(user)]);
+    const [unreadBy, todos, firstName] = await Promise.all([
+      this.notices.unreadByCategory(user.userId),
+      this.todos.forUser(user),
+      this.notices.firstName(user),
+    ]);
     const unread = Object.values(unreadBy).reduce((a, b) => a + (b ?? 0), 0);
     return { unread, unreadBy, todos, badge: unread + todos.length, firstName };
   }

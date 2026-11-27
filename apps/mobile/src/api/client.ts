@@ -140,8 +140,7 @@ export function createApiClient({
     request,
     refreshSession,
     get: <T>(path: string, params?: QueryParams) => request<T>(path, { params }),
-    post: <T>(path: string, body?: unknown, options?: Omit<RequestOptions, 'method' | 'body'>) =>
-      request<T>(path, { ...options, method: 'POST', body }),
+    post: <T>(path: string, body?: unknown, options?: Omit<RequestOptions, 'method' | 'body'>) => request<T>(path, { ...options, method: 'POST', body }),
     put: <T>(path: string, body?: unknown) => request<T>(path, { method: 'PUT', body }),
     patch: <T>(path: string, body?: unknown) => request<T>(path, { method: 'PATCH', body }),
     delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),

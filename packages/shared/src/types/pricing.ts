@@ -52,7 +52,10 @@ export function clientPriceFor(rate: number, feePercent: number): number {
 }
 
 /** Why a rate is not acceptable, or null when it is. Used by the API and by the forms before they send. */
-export function rateProblem(amount: number, pricing: Pick<CareTypePricing, 'enabled' | 'minRate' | 'maxRate'>): 'DISABLED' | 'NOT_A_NUMBER' | 'TOO_LOW' | 'TOO_HIGH' | null {
+export function rateProblem(
+  amount: number,
+  pricing: Pick<CareTypePricing, 'enabled' | 'minRate' | 'maxRate'>,
+): 'DISABLED' | 'NOT_A_NUMBER' | 'TOO_LOW' | 'TOO_HIGH' | null {
   if (!pricing.enabled) return 'DISABLED';
   if (!Number.isFinite(amount) || amount <= 0) return 'NOT_A_NUMBER';
   if (amount < pricing.minRate) return 'TOO_LOW';

@@ -11,31 +11,45 @@ import { payhereModeEnum } from '../../database/schema';
  */
 export class UpdateBillingSettingsDto {
   @ApiPropertyOptional({ example: 'Pick Care (Pvt) Ltd' })
-  @IsOptional() @IsString() @MaxLength(200)
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
   businessName?: string;
 
   @ApiPropertyOptional()
-  @IsOptional() @IsString() @MaxLength(500)
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
   businessAddress?: string;
 
   @ApiPropertyOptional()
-  @IsOptional() @IsString() @MaxLength(40)
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
   businessPhone?: string;
 
   @ApiPropertyOptional()
-  @IsOptional() @ValidateIf((_, v) => v !== '') @IsEmail({}, { message: 'Enter a valid email address for invoices' }) @MaxLength(255)
+  @IsOptional()
+  @ValidateIf((_, v) => v !== '')
+  @IsEmail({}, { message: 'Enter a valid email address for invoices' })
+  @MaxLength(255)
   businessEmail?: string;
 
   @ApiPropertyOptional({ description: 'Business registration number (e.g. PV 12345)' })
-  @IsOptional() @IsString() @MaxLength(60)
+  @IsOptional()
+  @IsString()
+  @MaxLength(60)
   registrationNumber?: string;
 
   @ApiPropertyOptional()
-  @IsOptional() @IsBoolean()
+  @IsOptional()
+  @IsBoolean()
   taxEnabled?: boolean;
 
   @ApiPropertyOptional({ example: 'VAT' })
-  @IsOptional() @IsString() @MaxLength(40)
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
   taxName?: string;
 
   @ApiPropertyOptional({ example: '18.00' })
@@ -44,7 +58,9 @@ export class UpdateBillingSettingsDto {
   taxRate?: string;
 
   @ApiPropertyOptional()
-  @IsOptional() @IsString() @MaxLength(60)
+  @IsOptional()
+  @IsString()
+  @MaxLength(60)
   taxRegistrationNumber?: string;
 
   @ApiPropertyOptional({ example: 'INV' })
@@ -53,11 +69,17 @@ export class UpdateBillingSettingsDto {
   invoicePrefix?: string;
 
   @ApiPropertyOptional({ description: 'The number the next issued invoice takes. Can only move forward.' })
-  @IsOptional() @IsInt() @Min(1) @Max(99_999_999)
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(99_999_999)
   nextInvoiceNumber?: number;
 
   @ApiPropertyOptional({ example: 7 })
-  @IsOptional() @IsInt() @Min(0) @Max(120)
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(120)
   paymentTermsDays?: number;
 
   @ApiPropertyOptional({ enum: BILLING_TIMINGS, description: 'What a new booking starts with: billed after the work, or in advance' })
@@ -65,7 +87,12 @@ export class UpdateBillingSettingsDto {
   @IsIn(BILLING_TIMINGS, { message: 'Choose when clients are billed' })
   defaultBillingTiming?: BillingTiming;
 
-  @ApiPropertyOptional({ example: 5, minimum: ADVANCE_INVOICE_LEAD_LIMITS.min, maximum: ADVANCE_INVOICE_LEAD_LIMITS.max, description: 'Billed in advance: days before a month begins that its invoice goes out' })
+  @ApiPropertyOptional({
+    example: 5,
+    minimum: ADVANCE_INVOICE_LEAD_LIMITS.min,
+    maximum: ADVANCE_INVOICE_LEAD_LIMITS.max,
+    description: 'Billed in advance: days before a month begins that its invoice goes out',
+  })
   @IsOptional()
   @IsInt({ message: 'Enter the number of days before the month' })
   @Min(ADVANCE_INVOICE_LEAD_LIMITS.min, { message: 'Enter between 1 and 28 days' })
@@ -73,32 +100,43 @@ export class UpdateBillingSettingsDto {
   advanceLeadDays?: number;
 
   @ApiPropertyOptional({ description: 'Printed at the foot of every invoice, e.g. bank details' })
-  @IsOptional() @IsString() @MaxLength(2000)
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
   invoiceFooter?: string;
 
   @ApiPropertyOptional()
-  @IsOptional() @IsBoolean()
+  @IsOptional()
+  @IsBoolean()
   payhereEnabled?: boolean;
 
   @ApiPropertyOptional({ enum: payhereModeEnum })
-  @IsOptional() @IsIn(payhereModeEnum)
+  @IsOptional()
+  @IsIn(payhereModeEnum)
   payhereMode?: (typeof payhereModeEnum)[number];
 
   @ApiPropertyOptional()
-  @IsOptional() @IsString() @MaxLength(40)
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
   @Matches(/^$|^\d{4,40}$/, { message: 'The PayHere merchant ID is a number' })
   payhereMerchantId?: string;
 
   @ApiPropertyOptional({ description: 'Write-only. Omit to keep the stored secret.' })
-  @IsOptional() @IsString() @MaxLength(255)
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
   payhereMerchantSecret?: string;
 
   @ApiPropertyOptional({ description: 'Remove the stored merchant secret' })
-  @IsOptional() @IsBoolean()
+  @IsOptional()
+  @IsBoolean()
   clearPayhereMerchantSecret?: boolean;
 
   @ApiPropertyOptional({ example: 'https://pickcare.lk/api', description: 'Empty = PUBLIC_WEB_URL + /api' })
-  @IsOptional() @IsString() @MaxLength(255)
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
   @Matches(/^$|^https?:\/\/[^\s]+$/, { message: 'Enter the API address starting with https://' })
   payhereNotifyBaseUrl?: string;
 }

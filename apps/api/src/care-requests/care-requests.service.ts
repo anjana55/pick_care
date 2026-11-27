@@ -1,14 +1,19 @@
-import {
-  BadRequestException,
-  ConflictException,
-  ForbiddenException,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { randomInt, randomUUID as uuid } from 'crypto';
 import { and, asc, count, desc, eq, inArray, isNull, like, or, sql, type SQL } from 'drizzle-orm';
-import { INTAKE_MAX_START_DAYS, PUBLIC_CAREGIVER_STATUSES, addDays, colomboToday, isValidDate, requestGaps, resolveLocale, type CaregiverRelation, type ClientCareRequest, type IntakeGap, type RequestIntake } from '@care-platform/shared';
+import {
+  INTAKE_MAX_START_DAYS,
+  PUBLIC_CAREGIVER_STATUSES,
+  addDays,
+  colomboToday,
+  isValidDate,
+  requestGaps,
+  resolveLocale,
+  type CaregiverRelation,
+  type ClientCareRequest,
+  type IntakeGap,
+  type RequestIntake,
+} from '@care-platform/shared';
 import { DRIZZLE, type Database } from '../database/database.module';
 import {
   careRequests,
@@ -109,11 +114,7 @@ export class CareRequestsService {
     if (user.role !== 'PATIENT_GUARDIAN' || !user.patientId) {
       throw new ForbiddenException('You do not have permission to perform this action');
     }
-    const [patient] = await this.db
-      .select({ id: patients.id, status: patients.status })
-      .from(patients)
-      .where(eq(patients.id, user.patientId))
-      .limit(1);
+    const [patient] = await this.db.select({ id: patients.id, status: patients.status }).from(patients).where(eq(patients.id, user.patientId)).limit(1);
     if (!patient) throw new ForbiddenException('You do not have permission to perform this action');
     return patient;
   }
@@ -145,9 +146,7 @@ export class CareRequestsService {
       .from(careRequests)
       .where(and(eq(careRequests.patientId, patient.id), inArray(careRequests.status, [...OPEN_CARE_REQUEST_STATUSES])));
     if (open >= MAX_OPEN_REQUESTS_PER_CLIENT) {
-      throw new BadRequestException(
-        'You already have the most open requests allowed. Our team will be in touch - you can cancel one to send another.',
-      );
+      throw new BadRequestException('You already have the most open requests allowed. Our team will be in touch - you can cancel one to send another.');
     }
 
     const id = uuid();
@@ -260,7 +259,11 @@ export class CareRequestsService {
    */
   async addDetailsByClient(user: AuthenticatedUser, id: string, dto: RequestDetailsDto, now = new Date()): Promise<ClientCareRequest> {
     const patient = await this.requireClient(user);
-    const [row] = await this.db.select().from(careRequests).where(and(eq(careRequests.id, id), eq(careRequests.patientId, patient.id))).limit(1);
+    const [row] = await this.db
+      .select()
+      .from(careRequests)
+      .where(and(eq(careRequests.id, id), eq(careRequests.patientId, patient.id)))
+      .limit(1);
     if (!row) throw new NotFoundException('Request not found');
     if (!OPEN_CARE_REQUEST_STATUSES.includes(row.status)) throw new BadRequestException('This request is no longer open');
     const asked = (row.detailsAsked?.split(',') ?? []) as IntakeGap[];
@@ -290,7 +293,9 @@ export class CareRequestsService {
     if (!said.length) throw new BadRequestException('Fill in at least one detail');
     await this.db.transaction(async (tx) => {
       await tx.update(careRequests).set(set).where(eq(careRequests.id, id));
-      await tx.insert(careRequestEvents).values({ id: uuid(), requestId: id, type: 'NOTE', note: `The client added: ${said.join(', ')}`, actorUserId: user.userId });
+      await tx
+        .insert(careRequestEvents)
+        .values({ id: uuid(), requestId: id, type: 'NOTE', note: `The client added: ${said.join(', ')}`, actorUserId: user.userId });
     });
     await nudgeIntake(this.jobs, this.automation, id);
     await nudgeMatching(this.jobs, this.automation, id);
@@ -354,11 +359,7 @@ export class CareRequestsService {
         .select({ id: careRequests.id, reference: careRequests.reference, status: careRequests.status, caregiverId: careRequests.caregiverId })
         .from(careRequests)
         .where(
-          and(
-            eq(careRequests.patientId, patient.id),
-            inArray(careRequests.caregiverId, cgIds),
-            inArray(careRequests.status, [...OPEN_CARE_REQUEST_STATUSES]),
-          ),
+          and(eq(careRequests.patientId, patient.id), inArray(careRequests.caregiverId, cgIds), inArray(careRequests.status, [...OPEN_CARE_REQUEST_STATUSES])),
         ),
     ]);
     const savedSet = new Set(saved.map((s) => s.caregiverId));
@@ -464,10 +465,7 @@ export class CareRequestsService {
 
   /** Counts per status, plus "new and unassigned" for the sidebar badge. */
   async summary() {
-    const rows = await this.db
-      .select({ status: careRequests.status, n: count() })
-      .from(careRequests)
-      .groupBy(careRequests.status);
+    const rows = await this.db.select({ status: careRequests.status, n: count() }).from(careRequests).groupBy(careRequests.status);
     const byStatus = Object.fromEntries(careRequestStatusEnum.map((s) => [s, 0])) as Record<CareRequestStatus, number>;
     for (const r of rows) byStatus[r.status] = r.n;
     const [{ unmatched }] = await this.db
@@ -490,8 +488,12 @@ export class CareRequestsService {
     const cIds = [...new Set(cityIds.filter((v): v is number => Boolean(v)))];
     const dIds = [...new Set(districtIds.filter((v): v is number => Boolean(v)))];
     const [cityRows, districtRows] = await Promise.all([
-      cIds.length ? this.db.select({ id: cities.id, name: cities.nameEn }).from(cities).where(inArray(cities.id, cIds)) : Promise.resolve([] as { id: number; name: string }[]),
-      dIds.length ? this.db.select({ id: districts.id, name: districts.nameEn }).from(districts).where(inArray(districts.id, dIds)) : Promise.resolve([] as { id: number; name: string }[]),
+      cIds.length
+        ? this.db.select({ id: cities.id, name: cities.nameEn }).from(cities).where(inArray(cities.id, cIds))
+        : Promise.resolve([] as { id: number; name: string }[]),
+      dIds.length
+        ? this.db.select({ id: districts.id, name: districts.nameEn }).from(districts).where(inArray(districts.id, dIds))
+        : Promise.resolve([] as { id: number; name: string }[]),
     ]);
     return {
       cities: new Map<number, string>(cityRows.map((r) => [r.id, r.name])),
@@ -550,7 +552,10 @@ export class CareRequestsService {
           desiredStartDate: request.desiredStartDate,
           urgency: patient.careStart,
         }),
-        asked: request.detailsAsked && request.detailsAskedAt ? { gaps: request.detailsAsked.split(',') as IntakeGap[], at: request.detailsAskedAt.toISOString() } : null,
+        asked:
+          request.detailsAsked && request.detailsAskedAt
+            ? { gaps: request.detailsAsked.split(',') as IntakeGap[], at: request.detailsAskedAt.toISOString() }
+            : null,
         answeredAt: request.detailsAnsweredAt?.toISOString() ?? null,
       } satisfies RequestIntake,
       client: {
@@ -688,7 +693,10 @@ export class CareRequestsService {
       assignee = u;
     }
     await this.db.transaction(async (tx) => {
-      await tx.update(careRequests).set({ assignedToUserId: assignee?.id ?? null, updatedAt: new Date() }).where(eq(careRequests.id, id));
+      await tx
+        .update(careRequests)
+        .set({ assignedToUserId: assignee?.id ?? null, updatedAt: new Date() })
+        .where(eq(careRequests.id, id));
       await tx.insert(careRequestEvents).values({
         id: uuid(),
         requestId: id,
@@ -863,7 +871,7 @@ export class CareRequestsService {
     const channel = await this.notifier.notifyCaregiverNow(id, actor.userId);
     if (!channel) {
       throw new BadRequestException(
-        "The caregiver could not be notified - they have no email address and WhatsApp updates are off or failed. Please call them instead.",
+        'The caregiver could not be notified - they have no email address and WhatsApp updates are off or failed. Please call them instead.',
       );
     }
     return { ...(await this.findOne(id)), notifiedBy: channel };

@@ -41,7 +41,9 @@ export function PushRegistration({ api = defaultApi, getPushToken = defaultGetPu
   // The app icon's number follows the bell (unread notifications plus things to do).
   useEffect(() => {
     if (badge === null) return;
-    localNotifications()?.setBadgeCountAsync(badge).catch(() => undefined);
+    localNotifications()
+      ?.setBadgeCountAsync(badge)
+      .catch(() => undefined);
   }, [badge]);
 
   useEffect(() => {

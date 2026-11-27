@@ -214,6 +214,15 @@ const styles = StyleSheet.create({
   choice: { flex: 1, minHeight: 48, borderWidth: 1, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   reason: { gap: 8 },
   input: { minHeight: 48, borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, fontSize: 16 },
-  outcome: { alignSelf: 'flex-start', fontSize: 13, fontWeight: '600', borderWidth: 1, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 3, overflow: 'hidden' },
+  outcome: {
+    alignSelf: 'flex-start',
+    fontSize: 13,
+    fontWeight: '600',
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    overflow: 'hidden',
+  },
   reminders: { flexDirection: 'row', alignItems: 'center', gap: 12, borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 12 },
 });

@@ -98,11 +98,7 @@ export async function assertWhatsappNumberAvailable(
   const [byPatient] = await db
     .select({ id: patients.id })
     .from(patients)
-    .where(
-      exclude.patientId
-        ? and(inArray(patients.phone, variants), ne(patients.id, exclude.patientId))
-        : inArray(patients.phone, variants),
-    )
+    .where(exclude.patientId ? and(inArray(patients.phone, variants), ne(patients.id, exclude.patientId)) : inArray(patients.phone, variants))
     .limit(1);
   if (byPatient) throw new ConflictException('An account with this phone number already exists');
 }

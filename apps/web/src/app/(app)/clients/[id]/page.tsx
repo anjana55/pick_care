@@ -121,8 +121,7 @@ export default function ClientDetailPage() {
 
     updateMutation.mutate(payload, {
       onSuccess: () => setIsEditing(false),
-      onError: (err: unknown) =>
-        setServerError(err instanceof ApiError ? err.message : t('clients.validation.saveFailed')),
+      onError: (err: unknown) => setServerError(err instanceof ApiError ? err.message : t('clients.validation.saveFailed')),
     });
   }
 
@@ -149,8 +148,8 @@ export default function ClientDetailPage() {
     <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3 print:hidden">
         <Link href="/clients" className="inline-flex items-center gap-1 text-sm text-ink/60 hover:text-ink">
-        <ChevronLeft size={16} />
-        {t('clients.back')}
+          <ChevronLeft size={16} />
+          {t('clients.back')}
         </Link>
         <RecordPager kind="clients" id={id} />
       </div>
@@ -160,9 +159,7 @@ export default function ClientDetailPage() {
         <div>
           <h1 className="text-xl font-semibold text-ink">{client.fullName}</h1>
           <p className="text-sm text-ink/50">
-            {client.registrantType === 'GUARDIAN' && client.recipientName
-              ? `${t('clients.forRecipient')} ${client.recipientName} · `
-              : ''}
+            {client.registrantType === 'GUARDIAN' && client.recipientName ? `${t('clients.forRecipient')} ${client.recipientName} · ` : ''}
             {t('clients.detail.registered')} {new Date(client.createdAt).toLocaleDateString(locale)}
           </p>
         </div>
@@ -269,7 +266,12 @@ export default function ClientDetailPage() {
           <TabsContent value="signIn">
             <div className="space-y-4">
               <ClientSignInSummary client={client} />
-              <PasswordHelpCard path={`/patients/${client.id}/password`} refresh={['client', client.id]} email={client.email} hasPassword={Boolean(client.hasPassword)} />
+              <PasswordHelpCard
+                path={`/patients/${client.id}/password`}
+                refresh={['client', client.id]}
+                email={client.email}
+                hasPassword={Boolean(client.hasPassword)}
+              />
             </div>
           </TabsContent>
         )}
@@ -298,13 +300,7 @@ export default function ClientDetailPage() {
           tone="danger"
           confirmLabel={t('common.delete')}
           pending={deleteMutation.isPending}
-          error={
-            deleteMutation.error instanceof ApiError
-              ? deleteMutation.error.message
-              : deleteMutation.error
-                ? t('common.actionFailed')
-                : null
-          }
+          error={deleteMutation.error instanceof ApiError ? deleteMutation.error.message : deleteMutation.error ? t('common.actionFailed') : null}
           onCancel={() => setIsDeleteConfirm(false)}
           onConfirm={() => deleteMutation.mutate(client.id, { onSuccess: () => router.push('/clients') })}
         />

@@ -22,7 +22,12 @@ export async function closeShares(db: Database, shiftId: string, reason: Locatio
   await db
     .update(locationShares)
     .set({ endedAt: now, endReason: reason })
-    .where(inArray(locationShares.id, open.map((o) => o.id)));
+    .where(
+      inArray(
+        locationShares.id,
+        open.map((o) => o.id),
+      ),
+    );
   return open.length;
 }
 
@@ -58,7 +63,13 @@ export async function openShare(
     endsBy: input.endsBy,
     everyMinutes: input.everyMinutes ?? null,
   });
-  return { shareId: id, uploadToken: token, kind: input.kind, endsBy: input.endsBy.toISOString(), ...(input.everyMinutes ? { everyMinutes: input.everyMinutes } : {}) };
+  return {
+    shareId: id,
+    uploadToken: token,
+    kind: input.kind,
+    endsBy: input.endsBy.toISOString(),
+    ...(input.everyMinutes ? { everyMinutes: input.everyMinutes } : {}),
+  };
 }
 
 export const hashToken = (token: string) => createHash('sha256').update(token).digest('hex');
@@ -78,8 +89,19 @@ export async function presenceOf(db: Database, share: ShareRow, now = new Date()
       .where(eq(locationPoints.shareId, share.id))
       .orderBy(asc(locationPoints.at));
     const until = share.endedAt ? new Date(share.endedAt).getTime() : Math.min(now.getTime(), new Date(share.endsBy).getTime());
-    const slots = presenceSlots(new Date(share.startedAt).getTime(), until, every, points.map((p) => ({ at: new Date(p.at).getTime(), inside: p.inside })));
-    summary = { slots, inside: slots.filter((s) => s === 'IN').length, away: slots.filter((s) => s === 'AWAY').length, none: slots.filter((s) => s === 'NONE').length, mocked: points.filter((p) => p.mocked).length };
+    const slots = presenceSlots(
+      new Date(share.startedAt).getTime(),
+      until,
+      every,
+      points.map((p) => ({ at: new Date(p.at).getTime(), inside: p.inside })),
+    );
+    summary = {
+      slots,
+      inside: slots.filter((s) => s === 'IN').length,
+      away: slots.filter((s) => s === 'AWAY').length,
+      none: slots.filter((s) => s === 'NONE').length,
+      mocked: points.filter((p) => p.mocked).length,
+    };
   }
   return {
     shareId: share.id,
@@ -97,7 +119,10 @@ export async function presenceOf(db: Database, share: ShareRow, now = new Date()
 /** The newest ON_SHIFT share of each shift, open or closed. */
 export async function latestShiftShares(db: Database, shiftIds: string[]): Promise<Map<string, ShareRow>> {
   if (!shiftIds.length) return new Map();
-  const rows = await db.select().from(locationShares).where(and(inArray(locationShares.shiftId, shiftIds), eq(locationShares.kind, 'ON_SHIFT')));
+  const rows = await db
+    .select()
+    .from(locationShares)
+    .where(and(inArray(locationShares.shiftId, shiftIds), eq(locationShares.kind, 'ON_SHIFT')));
   const out = new Map<string, ShareRow>();
   // Oldest first, so the newest wins; started in the same second, the open one is the newer (it replaced the other).
   const order = (a: ShareRow, b: ShareRow) => +new Date(a.startedAt) - +new Date(b.startedAt) || (a.endedAt ? 0 : 1) - (b.endedAt ? 0 : 1);

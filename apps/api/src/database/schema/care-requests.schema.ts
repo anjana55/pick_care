@@ -113,8 +113,12 @@ export const careRequests = mysqlTable(
     assignedToUserId: varchar('assigned_to_user_id', { length: 36 }),
     closeReason: mysqlEnum('close_reason', careRequestCloseReasonEnum),
     closedAt: datetime('closed_at'),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
     // "patient:caregiver" while the request is open, NULL once it isn't (and
     // while no caregiver is attached - CONCAT with NULL is NULL, so any number
     // of unmatched requests can be open at once). The
@@ -159,7 +163,9 @@ export const careRequestEvents = mysqlTable(
     actorUserId: varchar('actor_user_id', { length: 36 }),
     // Millisecond precision: a status change and a note in the same second
     // must still read back in the order they happened.
-    createdAt: datetime('created_at', { fsp: 3 }).notNull().default(sql`CURRENT_TIMESTAMP(3)`),
+    createdAt: datetime('created_at', { fsp: 3 })
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP(3)`),
   },
   (table) => ({
     requestIdx: index('care_request_events_request_idx').on(table.requestId, table.createdAt),
@@ -175,7 +181,9 @@ export const savedCaregivers = mysqlTable(
   {
     patientId: varchar('patient_id', { length: 36 }).notNull(),
     caregiverId: varchar('caregiver_id', { length: 36 }).notNull(),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     pk: primaryKey({ name: 'saved_caregivers_pk', columns: [table.patientId, table.caregiverId] }),

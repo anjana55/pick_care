@@ -153,8 +153,8 @@ export class SocialAuthSettingsService {
     const newSecret = dto.clientSecret?.trim() || null;
     const nextSecret = dto.clearClientSecret ? null : (newSecret ?? current.clientSecret);
     const nextEnabled = dto.enabled ?? current.enabled;
-    const nextTenant = provider === 'MICROSOFT' ? (dto.tenant?.trim() || current.tenant) : null;
-    const nextVersion = provider === 'FACEBOOK' ? (dto.apiVersion?.trim() || current.apiVersion) : null;
+    const nextTenant = provider === 'MICROSOFT' ? dto.tenant?.trim() || current.tenant : null;
+    const nextVersion = provider === 'FACEBOOK' ? dto.apiVersion?.trim() || current.apiVersion : null;
 
     // A secret belongs to one application. Keeping the old one against a new
     // client ID would silently pair two unrelated credentials, and the only
@@ -174,9 +174,7 @@ export class SocialAuthSettingsService {
       }
       const redirect = this.redirectUri(provider);
       if (this.config.get<string>('NODE_ENV') === 'production' && !/^https:\/\//i.test(redirect)) {
-        throw new BadRequestException(
-          `The callback URL (${redirect}) must use https in production - set PUBLIC_WEB_URL or SOCIAL_AUTH_CALLBACK_BASE_URL`,
-        );
+        throw new BadRequestException(`The callback URL (${redirect}) must use https in production - set PUBLIC_WEB_URL or SOCIAL_AUTH_CALLBACK_BASE_URL`);
       }
     }
 

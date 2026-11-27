@@ -10,22 +10,31 @@ import { IsBoolean, IsOptional, IsString, MaxLength } from 'class-validator';
  */
 export class UpdateAdsSettingsDto {
   @ApiPropertyOptional({ description: 'Show Google ads on the public site. Needs a publisher ID.' })
-  @IsOptional() @IsBoolean()
+  @IsOptional()
+  @IsBoolean()
   enabled?: boolean;
 
   @ApiPropertyOptional({ example: 'ca-pub-0123456789012345' })
-  @IsOptional() @IsString() @MaxLength(2000)
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
   publisherId?: string;
 
   @ApiPropertyOptional({ example: '1234567890', description: 'Ad unit on the landing page. Empty = none.' })
-  @IsOptional() @IsString() @MaxLength(40)
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
   slotHome?: string;
 
   @ApiPropertyOptional({ example: '1234567890', description: 'Ad unit below the search results. Empty = none.' })
-  @IsOptional() @IsString() @MaxLength(40)
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
   slotSearch?: string;
 
   @ApiPropertyOptional({ example: '1234567890', description: 'Ad unit on public caregiver profiles. Empty = none.' })
-  @IsOptional() @IsString() @MaxLength(40)
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
   slotProfile?: string;
 }

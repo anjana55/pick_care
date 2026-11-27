@@ -61,7 +61,10 @@ export class AppSettingsService {
   private async getRow(): Promise<Row> {
     const [existing] = await this.db.select().from(appSettings).where(eq(appSettings.id, SETTINGS_ID)).limit(1);
     if (existing) return existing;
-    await this.db.insert(appSettings).values({ id: SETTINGS_ID }).onDuplicateKeyUpdate({ set: { id: SETTINGS_ID } });
+    await this.db
+      .insert(appSettings)
+      .values({ id: SETTINGS_ID })
+      .onDuplicateKeyUpdate({ set: { id: SETTINGS_ID } });
     const [created] = await this.db.select().from(appSettings).where(eq(appSettings.id, SETTINGS_ID)).limit(1);
     return created;
   }
@@ -114,7 +117,9 @@ export class AppSettingsService {
       }
       if (next.storeUrl && !isStoreUrl(platform, next.storeUrl)) {
         throw new BadRequestException(
-          platform === 'ios' ? 'iOS: the store link must be an https://apps.apple.com/... address' : 'Android: the store link must be an https://play.google.com/... address',
+          platform === 'ios'
+            ? 'iOS: the store link must be an https://apps.apple.com/... address'
+            : 'Android: the store link must be an https://play.google.com/... address',
         );
       }
       // A minimum without a store link would stop people with nowhere to go.

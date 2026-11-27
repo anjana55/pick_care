@@ -98,7 +98,11 @@ describe('FinderPage', () => {
   });
 
   it('puts the search, not a back link, at the top of the landing page', () => {
-    renderPage(<FinderPage variant="landing"><p>Landing sections</p></FinderPage>);
+    renderPage(
+      <FinderPage variant="landing">
+        <p>Landing sections</p>
+      </FinderPage>,
+    );
     expect(screen.getByRole('heading', { level: 1, name: 'Find the right caregiver' })).toBeInTheDocument();
     expect(screen.getByText('Landing sections')).toBeInTheDocument();
   });

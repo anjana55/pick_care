@@ -15,7 +15,8 @@ export function usePricing(enabled = true) {
 export function useUpdatePricing() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (v: { careType: CareType; values: Partial<Omit<CareTypePricing, 'careType'>> }) => api.patch<CareTypePricing[]>(`/settings/pricing/${v.careType}`, v.values),
+    mutationFn: (v: { careType: CareType; values: Partial<Omit<CareTypePricing, 'careType'>> }) =>
+      api.patch<CareTypePricing[]>(`/settings/pricing/${v.careType}`, v.values),
     onSuccess: (data) => {
       queryClient.setQueryData(PRICING, data);
       // Every rate card shows the band and the client's price.
@@ -25,7 +26,11 @@ export function useUpdatePricing() {
 }
 
 export function useCaregiverRates(caregiverId: string | undefined) {
-  return useQuery({ queryKey: card(caregiverId ?? ''), queryFn: () => api.get<CaregiverRateCard>(`/caregivers/${caregiverId}/rates`), enabled: Boolean(caregiverId) });
+  return useQuery({
+    queryKey: card(caregiverId ?? ''),
+    queryFn: () => api.get<CaregiverRateCard>(`/caregivers/${caregiverId}/rates`),
+    enabled: Boolean(caregiverId),
+  });
 }
 
 export function useSaveCaregiverRates(caregiverId: string) {

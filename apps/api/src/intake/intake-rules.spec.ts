@@ -8,7 +8,12 @@ describe('requestGaps', () => {
   });
 
   it('names each missing piece, in a fixed order', () => {
-    expect(requestGaps({ ...full, careType: null, districtId: null, schedule: null, desiredStartDate: null })).toEqual(['CARE_TYPE', 'AREA', 'SCHEDULE', 'START_DATE']);
+    expect(requestGaps({ ...full, careType: null, districtId: null, schedule: null, desiredStartDate: null })).toEqual([
+      'CARE_TYPE',
+      'AREA',
+      'SCHEDULE',
+      'START_DATE',
+    ]);
     expect(requestGaps({ ...full, desiredStartDate: null })).toEqual(['START_DATE']);
   });
 

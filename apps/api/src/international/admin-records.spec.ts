@@ -41,7 +41,9 @@ const none = [{ n: 0 }];
 describe('AdminRecordsService', () => {
   it('refuses to delete an enquiry that has candidates, and says what to do instead', async () => {
     const { db, ops } = fakeDb([[{ reference: 'IE-AAAAAA' }], [{ n: 2 }], none, none, none, none]);
-    await expect(service(db).deleteEnquiry('e1')).rejects.toThrow(new ConflictException('This enquiry has candidates, vacancies, offers, placements or invoices, so it cannot be deleted. Close it instead.'));
+    await expect(service(db).deleteEnquiry('e1')).rejects.toThrow(
+      new ConflictException('This enquiry has candidates, vacancies, offers, placements or invoices, so it cannot be deleted. Close it instead.'),
+    );
     expect(ops).toEqual([]);
   });
 

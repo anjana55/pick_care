@@ -7,11 +7,7 @@ import { AuthService } from './auth.service';
 import { WhatsappSettingsService, type ResolvedWhatsappSettings } from '../whatsapp/whatsapp-settings.service';
 import { WhatsappOtpService } from '../whatsapp/whatsapp-otp.service';
 import { WhatsappProviderService } from '../whatsapp/whatsapp-provider.service';
-import {
-  generateRegistrationNumber,
-  assertUniqueContactFields,
-  selfRegisteredCaregiverValues,
-} from '../caregivers/caregiver-creation.util';
+import { generateRegistrationNumber, assertUniqueContactFields, selfRegisteredCaregiverValues } from '../caregivers/caregiver-creation.util';
 import { resolveLocationRefs } from '../common/utils/location.util';
 import { assertWhatsappNumberAvailable, purgeUnverifiedPhoneAccount } from './phone-accounts.util';
 import { normalizePhone } from '../common/utils/phone.util';
@@ -101,7 +97,14 @@ export class WhatsappAuthService {
         const caregiverId = uuid();
         const registrationNumber = await generateRegistrationNumber(txDb);
         await tx.insert(caregivers).values(
-          selfRegisteredCaregiverValues({ id: caregiverId, publicId: await generateUniquePublicId(txDb), userId, registrationNumber, fields: caregiverFields, location }),
+          selfRegisteredCaregiverValues({
+            id: caregiverId,
+            publicId: await generateUniquePublicId(txDb),
+            userId,
+            registrationNumber,
+            fields: caregiverFields,
+            location,
+          }),
         );
         return { userId, caregiverId, registrationNumber };
       }),
@@ -233,8 +236,7 @@ export class WhatsappAuthService {
    * new sign-ups never strands someone halfway through one.
    */
   private assertAvailable(s: ResolvedWhatsappSettings, purpose: WhatsappOtpPurpose, role?: UserRole, newSignup = false) {
-    const purposeOn =
-      purpose === 'REGISTER' ? (newSignup ? s.registrationEnabled : true) : purpose === 'LOGIN' ? s.loginEnabled : s.recoveryEnabled;
+    const purposeOn = purpose === 'REGISTER' ? (newSignup ? s.registrationEnabled : true) : purpose === 'LOGIN' ? s.loginEnabled : s.recoveryEnabled;
     const roleOn = role === undefined ? true : this.roleEnabled(s, role);
     if (!s.enabled || !purposeOn || !roleOn) {
       throw new ForbiddenException('WhatsApp sign-in is not available right now');

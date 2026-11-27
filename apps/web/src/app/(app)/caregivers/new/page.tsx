@@ -13,16 +13,7 @@ import { AvailabilityStep } from '@/components/caregivers/wizard-step-availabili
 import { DocumentsStep } from '@/components/caregivers/wizard-step-documents';
 import { ReviewStep } from '@/components/caregivers/wizard-step-review';
 
-const STEP_KEYS = [
-  'personal',
-  'qualifications',
-  'experience',
-  'skills',
-  'languages',
-  'availability',
-  'documents',
-  'review',
-] as const;
+const STEP_KEYS = ['personal', 'qualifications', 'experience', 'skills', 'languages', 'availability', 'documents', 'review'] as const;
 
 export default function NewCaregiverPage() {
   const { t } = useTranslation();
@@ -52,9 +43,7 @@ export default function NewCaregiverPage() {
                 }}
               />
             )}
-            {stepIndex > 0 && !caregiverId && (
-              <p className="text-sm text-danger">Something went wrong — please restart the registration.</p>
-            )}
+            {stepIndex > 0 && !caregiverId && <p className="text-sm text-danger">Something went wrong — please restart the registration.</p>}
             {stepIndex === 1 && caregiverId && <QualificationsStep caregiverId={caregiverId} onNext={next} onBack={back} />}
             {stepIndex === 2 && caregiverId && <ExperienceStep caregiverId={caregiverId} onNext={next} onBack={back} />}
             {stepIndex === 3 && caregiverId && <SkillsStep caregiverId={caregiverId} onNext={next} onBack={back} />}

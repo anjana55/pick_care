@@ -103,7 +103,8 @@ export function scoreMatch(request: MatchRequest, c: MatchCandidate): RankedMatc
   }
 
   const fits = scheduleFits(request.schedule, c);
-  if (fits === true) add(W.scheduleFit, request.schedule === 'DAY' ? 'Works day shifts' : request.schedule === 'NIGHT' ? 'Works night shifts' : 'Does live-in care');
+  if (fits === true)
+    add(W.scheduleFit, request.schedule === 'DAY' ? 'Works day shifts' : request.schedule === 'NIGHT' ? 'Works night shifts' : 'Does live-in care');
 
   if (c.ownRate) add(W.ownRate, `Own rate LKR ${c.ownRate.amount.toLocaleString('en-LK')} ${UNITS[c.ownRate.rateType] ?? ''}`.trim());
 
@@ -115,7 +116,10 @@ export function scoreMatch(request: MatchRequest, c: MatchCandidate): RankedMatc
 
   if (c.runningBookings > 0) add(W.runningBooking, c.runningBookings === 1 ? 'Has a booking running then' : `Has ${c.runningBookings} bookings running then`);
   if (c.recentUnanswered > 0) {
-    add(Math.max(W.unansweredOfferCap, W.unansweredOffer * c.recentUnanswered), `Turned down or missed ${c.recentUnanswered} recent offer${c.recentUnanswered === 1 ? '' : 's'}`);
+    add(
+      Math.max(W.unansweredOfferCap, W.unansweredOffer * c.recentUnanswered),
+      `Turned down or missed ${c.recentUnanswered} recent offer${c.recentUnanswered === 1 ? '' : 's'}`,
+    );
   }
   if (c.recentAccepted > 0) add(Math.min(W.acceptedOfferCap, W.acceptedOffer * c.recentAccepted), 'Has accepted recent offers');
 
@@ -124,9 +128,7 @@ export function scoreMatch(request: MatchRequest, c: MatchCandidate): RankedMatc
 
 /** Best first. Ties go to the registration number, so the order never depends on how the database returned the rows. */
 export function rankMatches(request: MatchRequest, candidates: MatchCandidate[]): RankedMatch[] {
-  return candidates
-    .map((c) => scoreMatch(request, c))
-    .sort((a, b) => b.score - a.score || a.registrationNumber.localeCompare(b.registrationNumber));
+  return candidates.map((c) => scoreMatch(request, c)).sort((a, b) => b.score - a.score || a.registrationNumber.localeCompare(b.registrationNumber));
 }
 
 /** How long a caregiver gets to answer, by how soon the care is needed. */
@@ -151,7 +153,11 @@ const label = (i: number) => `C${i + 1}`;
  * "C2"... with the same facts the rules used. No names, numbers, ids,
  * addresses or health details - there is nothing here to identify anyone.
  */
-export function buildRankPrompt(request: MatchRequest & { cityName: string | null; districtName: string | null }, shortlist: MatchCandidate[], ranked: RankedMatch[]) {
+export function buildRankPrompt(
+  request: MatchRequest & { cityName: string | null; districtName: string | null },
+  shortlist: MatchCandidate[],
+  ranked: RankedMatch[],
+) {
   const byId = new Map(shortlist.map((c) => [c.caregiverId, c]));
   const rows = ranked.slice(0, MODEL_SHORTLIST).map((r, i) => {
     const c = byId.get(r.caregiverId)!;

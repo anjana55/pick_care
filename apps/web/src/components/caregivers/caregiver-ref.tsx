@@ -63,7 +63,8 @@ export function CaregiverRef({
   return (
     <span className={`inline-flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-ink/60 ${className}`}>
       <span title={t('caregivers.publicRef.hint')}>
-        {showLabel && `${t('caregivers.publicRef.label')}: `}<span className="font-mono font-medium text-ink">{ref}</span>
+        {showLabel && `${t('caregivers.publicRef.label')}: `}
+        <span className="font-mono font-medium text-ink">{ref}</span>
       </span>
       <button
         type="button"

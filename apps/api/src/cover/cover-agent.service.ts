@@ -105,10 +105,23 @@ export class CoverAgentService implements OnApplicationBootstrap {
     const offers = await this.db
       .select({ shiftId: requestOffers.shiftId, status: requestOffers.status, expiresAt: requestOffers.expiresAt })
       .from(requestOffers)
-      .where(and(inArray(requestOffers.shiftId, open.map((r) => r.shiftId)), eq(requestOffers.kind, 'COVER')));
+      .where(
+        and(
+          inArray(
+            requestOffers.shiftId,
+            open.map((r) => r.shiftId),
+          ),
+          eq(requestOffers.kind, 'COVER'),
+        ),
+      );
 
     for (const row of open) {
-      const step = coverStep(row, settings, offers.filter((o) => o.shiftId === row.shiftId), now);
+      const step = coverStep(
+        row,
+        settings,
+        offers.filter((o) => o.shiftId === row.shiftId),
+        now,
+      );
       if (step.step === 'none') continue;
       try {
         const ref = { caseType: 'BOOKING' as const, caseId: row.bookingId };
@@ -125,7 +138,13 @@ export class CoverAgentService implements OnApplicationBootstrap {
         const giveUp = async (reason: string, asked: number) => {
           if (await this.seen(FLAG, `${row.shiftId}|NO_COVER`)) return;
           run.considered++;
-          const d = await this.automation.decide({ action: FLAG, case: ref, reason, proposal: { ...base, kind: 'NO_COVER', minutes: asked }, dedupeKey: `${row.shiftId}|NO_COVER` });
+          const d = await this.automation.decide({
+            action: FLAG,
+            case: ref,
+            reason,
+            proposal: { ...base, kind: 'NO_COVER', minutes: asked },
+            dedupeKey: `${row.shiftId}|NO_COVER`,
+          });
           if (!d.decisionId) return;
           if (d.outcome === 'EXECUTE') {
             const result = await this.automation.execute(d.decisionId);
@@ -164,7 +183,7 @@ export class CoverAgentService implements OnApplicationBootstrap {
         const decision = await this.automation.decide({
           action: REPLACE,
           case: ref,
-          reason: `Offer the ${time} visit as cover to ${ranked.map((r) => r.registrationNumber).join(', ')}${standby ? ' (the booking\'s standby)' : ''}: ${row.cantMakeAt ? `${row.registration} said they cannot make it` : `${row.registration} is ${step.minutesLate} min late, was asked to check in, and has not`}${step.wave > 1 ? ` (round ${step.wave}: nobody asked so far took it)` : ''}`,
+          reason: `Offer the ${time} visit as cover to ${ranked.map((r) => r.registrationNumber).join(', ')}${standby ? " (the booking's standby)" : ''}: ${row.cantMakeAt ? `${row.registration} said they cannot make it` : `${row.registration} is ${step.minutesLate} min late, was asked to check in, and has not`}${step.wave > 1 ? ` (round ${step.wave}: nobody asked so far took it)` : ''}`,
           proposal,
           dedupeKey: key,
         });
@@ -186,7 +205,11 @@ export class CoverAgentService implements OnApplicationBootstrap {
 
   /** Whether this step was already logged, proposed or done - so a visit is not ranked again on every pass. */
   private async seen(action: typeof REPLACE | typeof FLAG, dedupeKey: string): Promise<boolean> {
-    const [row] = await this.db.select({ id: agentDecisions.id }).from(agentDecisions).where(and(eq(agentDecisions.action, action), eq(agentDecisions.dedupeKey, dedupeKey))).limit(1);
+    const [row] = await this.db
+      .select({ id: agentDecisions.id })
+      .from(agentDecisions)
+      .where(and(eq(agentDecisions.action, action), eq(agentDecisions.dedupeKey, dedupeKey)))
+      .limit(1);
     return Boolean(row);
   }
 
@@ -197,8 +220,13 @@ export class CoverAgentService implements OnApplicationBootstrap {
     const shift = await this.cover.shift(p.shiftId);
     if (shift.caregiverId !== p.caregiverId) throw new BadRequestException('This shift has a different caregiver now');
     const blocked = this.cover.blocked(shift);
-    if (blocked) throw new BadRequestException(blocked === 'CHECKED_IN' ? 'The caregiver has checked in since' : 'This shift can no longer be offered as cover');
-    const result = await this.cover.offerTo(shift, p.candidates.map((c) => c.caregiverId), { note: null, sentByUserId: actor.userId, strict: false });
+    if (blocked)
+      throw new BadRequestException(blocked === 'CHECKED_IN' ? 'The caregiver has checked in since' : 'This shift can no longer be offered as cover');
+    const result = await this.cover.offerTo(
+      shift,
+      p.candidates.map((c) => c.caregiverId),
+      { note: null, sentByUserId: actor.userId, strict: false },
+    );
     if (!result.sent.length) throw new BadRequestException('None of these caregivers can be offered the shift any more');
     const time = toColombo(p.startsAt).time;
     await this.automation.setHandoverNote(
@@ -221,7 +249,14 @@ export class CoverAgentService implements OnApplicationBootstrap {
     const open = await this.db
       .select()
       .from(agentDecisions)
-      .where(and(eq(agentDecisions.action, REPLACE), eq(agentDecisions.outcome, 'SHADOW'), isNull(agentDecisions.staffVerdict), eq(agentDecisions.caseType, 'BOOKING')))
+      .where(
+        and(
+          eq(agentDecisions.action, REPLACE),
+          eq(agentDecisions.outcome, 'SHADOW'),
+          isNull(agentDecisions.staffVerdict),
+          eq(agentDecisions.caseType, 'BOOKING'),
+        ),
+      )
       .limit(500);
     const mine = open.filter((d) => {
       const id = (d.proposal as CoverProposal | null)?.shiftId;
@@ -229,9 +264,20 @@ export class CoverAgentService implements OnApplicationBootstrap {
     });
     if (!mine.length) return 0;
     const shifts = await this.db
-      .select({ id: bookingShifts.id, caregiverId: bookingShifts.caregiverId, status: bookingShifts.status, endsAt: bookingShifts.endsAt, by: bookingShifts.updatedByUserId })
+      .select({
+        id: bookingShifts.id,
+        caregiverId: bookingShifts.caregiverId,
+        status: bookingShifts.status,
+        endsAt: bookingShifts.endsAt,
+        by: bookingShifts.updatedByUserId,
+      })
       .from(bookingShifts)
-      .where(inArray(bookingShifts.id, mine.map((d) => (d.proposal as CoverProposal).shiftId)));
+      .where(
+        inArray(
+          bookingShifts.id,
+          mine.map((d) => (d.proposal as CoverProposal).shiftId),
+        ),
+      );
     let scored = 0;
     for (const d of mine) {
       const p = d.proposal as CoverProposal;

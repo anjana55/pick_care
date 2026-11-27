@@ -110,10 +110,7 @@ export function I18nProvider({ children, defaultLocale = 'en', enabledLocales, v
     [locale, defaults],
   );
 
-  const value = useMemo(
-    () => ({ locale, setLocale, t, fontClass: FONT_CLASS[locale], availableLocales: offered }),
-    [locale, setLocale, t, offered],
-  );
+  const value = useMemo(() => ({ locale, setLocale, t, fontClass: FONT_CLASS[locale], availableLocales: offered }), [locale, setLocale, t, offered]);
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }

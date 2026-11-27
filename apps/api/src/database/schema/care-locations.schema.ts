@@ -34,8 +34,12 @@ export const careLocations = mysqlTable(
     /** For a FROM_CHECKIN suggestion: the shift it came from. */
     fromShiftId: varchar('from_shift_id', { length: 36 }),
     createdBy: varchar('created_by', { length: 36 }),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     patientIdx: index('care_locations_patient_idx').on(table.patientId, table.isDefault),

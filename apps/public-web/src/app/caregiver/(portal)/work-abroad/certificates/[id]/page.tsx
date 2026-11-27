@@ -47,14 +47,21 @@ export default function CertificatePage() {
           <ArrowLeft className="h-4 w-4" aria-hidden />
           {t('portal.workAbroad.certificate.back')}
         </Link>
-        <button type="button" onClick={() => window.print()} className="inline-flex items-center gap-2 rounded bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark">
+        <button
+          type="button"
+          onClick={() => window.print()}
+          className="inline-flex items-center gap-2 rounded bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark"
+        >
           <Printer className="h-4 w-4" aria-hidden />
           {t('portal.workAbroad.certificate.print')}
         </button>
         <p className="w-full text-xs text-ink/60">{t('portal.workAbroad.certificate.englishNote')}</p>
       </div>
 
-      <article lang="en" className="mx-auto aspect-[1.414/1] w-full max-w-3xl border-[10px] border-double border-brand/60 bg-white p-8 text-center shadow-sm sm:p-12 print:shadow-none">
+      <article
+        lang="en"
+        className="mx-auto aspect-[1.414/1] w-full max-w-3xl border-[10px] border-double border-brand/60 bg-white p-8 text-center shadow-sm sm:p-12 print:shadow-none"
+      >
         <div className="flex justify-center">
           <BrandMark />
         </div>
@@ -77,8 +84,7 @@ export default function CertificatePage() {
         </div>
         <p className="mt-8 border-t border-border pt-3 text-[11px] text-ink/50">
           Check this certificate at {checkUrl}
-          <br />
-          A programme run by {branding.companyName}. This certificate records completion; it is not an accredited qualification.
+          <br />A programme run by {branding.companyName}. This certificate records completion; it is not an accredited qualification.
         </p>
       </article>
     </div>

@@ -69,8 +69,22 @@ describe('push notifications', () => {
     it('writes each phone’s push in that phone’s app language, names the company and carries the screen to open', () => {
       const out = messagesFor([device(1, 'si'), device(2, 'en')], text, '/bookings/b-1', 'Pick Care');
       expect(out).toEqual([
-        { to: 'ExponentPushToken[t1]', title: 'Pick Care si', body: 'Booking BK-1 (si)', sound: 'default', channelId: 'default', data: { path: '/bookings/b-1' } },
-        { to: 'ExponentPushToken[t2]', title: 'Pick Care en', body: 'Booking BK-1 (en)', sound: 'default', channelId: 'default', data: { path: '/bookings/b-1' } },
+        {
+          to: 'ExponentPushToken[t1]',
+          title: 'Pick Care si',
+          body: 'Booking BK-1 (si)',
+          sound: 'default',
+          channelId: 'default',
+          data: { path: '/bookings/b-1' },
+        },
+        {
+          to: 'ExponentPushToken[t2]',
+          title: 'Pick Care en',
+          body: 'Booking BK-1 (en)',
+          sound: 'default',
+          channelId: 'default',
+          data: { path: '/bookings/b-1' },
+        },
       ]);
     });
 
@@ -147,7 +161,15 @@ describe('push notifications', () => {
       down.push.http = jest.fn(async () => new Response('busy', { status: 503 }));
       await expect(down.push.send(['u-1'], text, '/home', 'test')).resolves.toBe(0);
 
-      const broken = new PushService({ select: () => { throw new Error('db down'); } } as never, config(), branding as never);
+      const broken = new PushService(
+        {
+          select: () => {
+            throw new Error('db down');
+          },
+        } as never,
+        config(),
+        branding as never,
+      );
       expect(() => broken.notify(['u-1'], text, '/home', 'test')).not.toThrow();
       await expect(broken.send(['u-1'], text, '/home', 'test')).resolves.toBe(0);
     });
@@ -164,10 +186,10 @@ describe('push notifications', () => {
   describe('delivery receipts', () => {
     it('reads them once they are due, and revokes the phones that are gone', async () => {
       const { push, updates } = service([[device(1), device(2)]]);
-      const { http, calls } = expo(
-        (to) => ({ status: 'ok', id: to.endsWith('[t1]') ? 'r1' : 'r2' }),
-        { r1: { status: 'error', details: { error: 'DeviceNotRegistered' } }, r2: { status: 'ok' } },
-      );
+      const { http, calls } = expo((to) => ({ status: 'ok', id: to.endsWith('[t1]') ? 'r1' : 'r2' }), {
+        r1: { status: 'error', details: { error: 'DeviceNotRegistered' } },
+        r2: { status: 'ok' },
+      });
       push.http = http;
       await push.send(['u-1'], text, '/home', 'test');
       const sentAt = Date.now();
@@ -187,7 +209,9 @@ describe('push notifications', () => {
     it('registers a new phone for the person, in the app’s language', async () => {
       const { push, inserts } = service([[]]);
       const { id } = await push.register('u-1', { expoPushToken: 'ExponentPushToken[a]', platform: 'android', appVersion: '1.0.0', locale: 'si' });
-      expect(inserts).toEqual([expect.objectContaining({ id, userId: 'u-1', expoPushToken: 'ExponentPushToken[a]', platform: 'android', locale: 'si', revokedAt: null })]);
+      expect(inserts).toEqual([
+        expect.objectContaining({ id, userId: 'u-1', expoPushToken: 'ExponentPushToken[a]', platform: 'android', locale: 'si', revokedAt: null }),
+      ]);
     });
 
     it('moves a phone to whoever signs in on it now, and brings a revoked one back', async () => {

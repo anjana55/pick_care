@@ -25,8 +25,8 @@ export async function preparePublicPhoto(file: { mimetype: string; size: number;
   if (file.size > MAX_PHOTO_UPLOAD_BYTES) throw new BadRequestException('The photo must be 8 MB or smaller.');
 
   let image: Sharp;
-  let width = 0;
-  let height = 0;
+  let width: number;
+  let height: number;
   try {
     image = sharp(file.buffer, { failOn: 'error', limitInputPixels: 50_000_000 });
     const meta = await image.metadata();

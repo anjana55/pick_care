@@ -71,7 +71,12 @@ export class PatientCareLocationsController {
 
   @Patch(':id')
   @Audit({ action: 'UPDATE_CARE_LOCATION', entityType: 'CareLocation' })
-  update(@Param('patientId') patientId: string, @Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateCareLocationDto, @CurrentUser() user: AuthenticatedUser): Promise<CareLocation> {
+  update(
+    @Param('patientId') patientId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateCareLocationDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<CareLocation> {
     return this.places.update(patientId, id, dto, { kind: 'STAFF', userId: user.userId });
   }
 

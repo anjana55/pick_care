@@ -64,7 +64,7 @@ describe('occurrence windows and reminders (for a caregiver app)', () => {
   const iso = (d: string, t: string) => colomboToUtc(d, t).toISOString();
   const window = (o: { dueAt: Date; dueBy: Date; remindAt: Date | null }) => [o.dueAt.toISOString(), o.dueBy.toISOString(), o.remindAt?.toISOString() ?? null];
 
-  it('gives a set-time item an hour on time by default, or the activity\'s own allowance, never past the shift', () => {
+  it("gives a set-time item an hour on time by default, or the activity's own allowance, never past the shift", () => {
     const [nine, fourThirty] = careOccurrences([act({ id: 'm', timing: 'AT_TIMES', times: ['09:00', '16:30'], reminderMinutesBefore: 15 })], day);
     expect(window(nine)).toEqual([iso('2026-11-02', '09:00'), iso('2026-11-02', '10:00'), iso('2026-11-02', '08:45')]);
     expect(window(fourThirty)).toEqual([iso('2026-11-02', '16:30'), iso('2026-11-02', '17:00'), iso('2026-11-02', '16:15')]);
@@ -127,7 +127,14 @@ describe('editing a care plan from a date', () => {
   const from = '2026-11-10';
 
   it('leaves unchanged activities alone and only re-orders them', () => {
-    const edit = planCarePlanEdit([row('a', 'Bath', { sortOrder: 0 }), row('b', 'Lunch', { sortOrder: 1 })], [{ id: 'b', ...fields('Lunch') }, { id: 'a', ...fields('Bath') }], from);
+    const edit = planCarePlanEdit(
+      [row('a', 'Bath', { sortOrder: 0 }), row('b', 'Lunch', { sortOrder: 1 })],
+      [
+        { id: 'b', ...fields('Lunch') },
+        { id: 'a', ...fields('Bath') },
+      ],
+      from,
+    );
     expect(edit.close).toEqual([]);
     expect(edit.insert).toEqual([]);
     expect(edit.update.map((u) => [u.id, u.sortOrder])).toEqual([

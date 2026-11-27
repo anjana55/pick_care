@@ -15,7 +15,14 @@ export function CaregiversIllustration({ width = 340 }: { width?: number }) {
   const height = (width * 320) / 360;
   const navy = colors.deep;
   return (
-    <Svg width={width} height={height} viewBox="0 0 360 320" accessibilityRole="image" accessibilityLabel={t('welcome.pictureLabel')} testID="caregivers-illustration">
+    <Svg
+      width={width}
+      height={height}
+      viewBox="0 0 360 320"
+      accessibilityRole="image"
+      accessibilityLabel={t('welcome.pictureLabel')}
+      testID="caregivers-illustration"
+    >
       {/* Backdrop: a light circle, small plus signs and a heart. */}
       <Circle cx={180} cy={230} r={150} fill="#FFFFFF" fillOpacity={0.72} />
       <Path d="M44 92 h16 M52 84 v16" stroke="#FFFFFF" strokeWidth={5} strokeLinecap="round" />

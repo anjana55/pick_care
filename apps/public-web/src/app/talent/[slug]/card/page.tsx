@@ -84,7 +84,9 @@ export default function TalentCardPage() {
             </p>
             <p className="mt-2 flex flex-wrap gap-2 text-xs font-semibold">
               {talent.verified && <span className="rounded-full bg-accent px-2.5 py-0.5 text-white">{t('results.verified')}</span>}
-              {talent.hasVerifiedQualification && <span className="rounded-full bg-brand-light px-2.5 py-0.5 text-brand-dark">{t('results.verifiedQualification')}</span>}
+              {talent.hasVerifiedQualification && (
+                <span className="rounded-full bg-brand-light px-2.5 py-0.5 text-brand-dark">{t('results.verifiedQualification')}</span>
+              )}
             </p>
           </div>
         </div>

@@ -74,7 +74,8 @@ export function useSendRequest() {
 export function useAddRequestDetails() {
   const refresh = useRefresh();
   return useMutation({
-    mutationFn: ({ id, body }: { id: string; body: ClientRequestDetailsInput }) => api.patch<ClientCareRequest>(`/me/care-requests/${encodeURIComponent(id)}/details`, body),
+    mutationFn: ({ id, body }: { id: string; body: ClientRequestDetailsInput }) =>
+      api.patch<ClientCareRequest>(`/me/care-requests/${encodeURIComponent(id)}/details`, body),
     onSettled: refresh,
   });
 }

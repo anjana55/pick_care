@@ -34,7 +34,18 @@ const pushed = (push: { notify: jest.Mock }) => {
 describe('notifiers send push in addition to their message', () => {
   it('a client hears about an invoice by email and on the app, in the app’s language', async () => {
     const { n, email, push } = notifier([
-      [{ number: 'INV-7', total: '12500.00', dueDate: '2026-11-15', language: 'en', billToEmail: null, patientUserId: 'u-client', patientPhone: null, preferred: 'EMAIL' }],
+      [
+        {
+          number: 'INV-7',
+          total: '12500.00',
+          dueDate: '2026-11-15',
+          language: 'en',
+          billToEmail: null,
+          patientUserId: 'u-client',
+          patientPhone: null,
+          preferred: 'EMAIL',
+        },
+      ],
       [{ email: 'amaya@example.lk', phone: null }],
     ]);
     expect(await n.invoiceIssued('inv-1')).toBe(true);
@@ -50,7 +61,18 @@ describe('notifiers send push in addition to their message', () => {
 
   it('a caregiver hears about a payout on the app even when no other channel can reach them', async () => {
     const { n, email, push } = notifier([
-      [{ reference: 'PO-3', total: '40000.00', periodStart: '2026-10-01', periodEnd: '2026-10-31', paidOn: '2026-11-02', userId: 'u-cg', phone: null, preferred: null }],
+      [
+        {
+          reference: 'PO-3',
+          total: '40000.00',
+          periodStart: '2026-10-01',
+          periodEnd: '2026-10-31',
+          paidOn: '2026-11-02',
+          userId: 'u-cg',
+          phone: null,
+          preferred: null,
+        },
+      ],
       [{ email: null, phone: null }],
     ]);
     expect(await n.payoutPaid('po-1')).toBe(false); // no email or WhatsApp: the message isn't sent...

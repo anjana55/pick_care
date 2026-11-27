@@ -12,10 +12,7 @@ export class CaregiverScopeGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const meta = this.reflector.getAllAndOverride<CaregiverScopeMeta>(CAREGIVER_SCOPE_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const meta = this.reflector.getAllAndOverride<CaregiverScopeMeta>(CAREGIVER_SCOPE_KEY, [context.getHandler(), context.getClass()]);
 
     // No @CaregiverScope() on this route - not our concern, defer to
     // whatever @Roles()/RolesGuard already decided.

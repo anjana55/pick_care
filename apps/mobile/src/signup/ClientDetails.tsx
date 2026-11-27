@@ -160,13 +160,23 @@ export function ClientDetails({
 
   const summary = [
     !ask('recipientAge') || !ask('recipientGender')
-      ? [form.recipientAge && t('careIntent.summary.age', { age: form.recipientAge }), form.recipientGender && t(`patientIntake.options.gender.${form.recipientGender}`)].filter(Boolean).join(' · ')
+      ? [
+          form.recipientAge && t('careIntent.summary.age', { age: form.recipientAge }),
+          form.recipientGender && t(`patientIntake.options.gender.${form.recipientGender}`),
+        ]
+          .filter(Boolean)
+          .join(' · ')
       : null,
     !ask('cityId')
       ? [cities.data?.find((c) => c.id === form.cityId)?.name, districts.data?.find((d) => d.id === form.districtId)?.name].filter(Boolean).join(', ')
       : null,
     !ask('careSchedule') || !ask('careStart')
-      ? [form.careSchedule && t(`patientIntake.options.careSchedule.${form.careSchedule}`), form.careStart && t(`patientIntake.options.careStart.${form.careStart}`)].filter(Boolean).join(' · ')
+      ? [
+          form.careSchedule && t(`patientIntake.options.careSchedule.${form.careSchedule}`),
+          form.careStart && t(`patientIntake.options.careStart.${form.careStart}`),
+        ]
+          .filter(Boolean)
+          .join(' · ')
       : null,
     !ask('preferredCaregiverGender') && form.preferredCaregiverGender !== 'NO_PREFERENCE'
       ? t('careIntent.summary.caregiverGender', { gender: t(`patientIntake.options.caregiverGender.${form.preferredCaregiverGender}`) })
@@ -176,7 +186,14 @@ export function ClientDetails({
 
   return (
     <View style={{ gap: 18 }}>
-      <Field label={t('signup.fullName')} value={form.fullName} onChangeText={(v) => set('fullName', v)} autoComplete="name" textContentType="name" error={err('fullName')} />
+      <Field
+        label={t('signup.fullName')}
+        value={form.fullName}
+        onChangeText={(v) => set('fullName', v)}
+        autoComplete="name"
+        textContentType="name"
+        error={err('fullName')}
+      />
       {askPhone ? (
         <Field
           label={t('signup.phone')}
@@ -205,14 +222,23 @@ export function ClientDetails({
       <Chips
         label={t('patientIntake.sections.whoNeedsCare')}
         layout="tiles"
-        choices={REGISTRANT_TYPES.map((v) => ({ value: v, label: t(`patientIntake.options.registrantType.${v}`), icon: v === 'SELF' ? 'person-outline' : 'people-outline' }))}
+        choices={REGISTRANT_TYPES.map((v) => ({
+          value: v,
+          label: t(`patientIntake.options.registrantType.${v}`),
+          icon: v === 'SELF' ? 'person-outline' : 'people-outline',
+        }))}
         selected={form.registrantType ? [form.registrantType] : []}
         onToggle={(v) => set('registrantType', v)}
         error={err('registrantType')}
       />
       {guardian ? (
         <>
-          <Field label={t('patientIntake.fields.recipientName')} value={form.recipientName} onChangeText={(v) => set('recipientName', v)} error={err('recipientName')} />
+          <Field
+            label={t('patientIntake.fields.recipientName')}
+            value={form.recipientName}
+            onChangeText={(v) => set('recipientName', v)}
+            error={err('recipientName')}
+          />
           <Chips
             label={t('patientIntake.fields.relationship')}
             choices={options('relationship', RELATIONSHIPS)}
@@ -260,7 +286,13 @@ export function ClientDetails({
           />
         </>
       ) : null}
-      <Field label={t('patientIntake.fields.careAddress')} value={form.careAddress} onChangeText={(v) => set('careAddress', v)} multiline autoComplete="street-address" />
+      <Field
+        label={t('patientIntake.fields.careAddress')}
+        value={form.careAddress}
+        onChangeText={(v) => set('careAddress', v)}
+        multiline
+        autoComplete="street-address"
+      />
 
       {ask('careSchedule') ? (
         <Chips

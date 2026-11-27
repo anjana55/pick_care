@@ -17,10 +17,7 @@ export function SiteFooter() {
   return (
     <footer className="border-t border-border bg-white">
       <div className="mx-auto max-w-5xl px-4 py-8">
-        <nav
-          className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm"
-          aria-label={t('footer.navLabel')}
-        >
+        <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm" aria-label={t('footer.navLabel')}>
           <Link href="/find" className="text-ink/70 transition-colors hover:text-brand">
             {t('footer.finder')}
           </Link>

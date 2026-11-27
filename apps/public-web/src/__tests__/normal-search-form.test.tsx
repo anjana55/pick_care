@@ -10,7 +10,14 @@ jest.mock('@/lib/hooks/use-public-search', () => ({
   useMetaLanguages: () => ({ data: [] }),
   useLocationTree: () => ({
     data: [
-      { id: 1, name: 'Western Province', districts: [{ id: 1, name: 'Colombo' }, { id: 2, name: 'Gampaha' }] },
+      {
+        id: 1,
+        name: 'Western Province',
+        districts: [
+          { id: 1, name: 'Colombo' },
+          { id: 2, name: 'Gampaha' },
+        ],
+      },
     ],
   }),
   // Cities are fetched per district, so this returns them only for the
@@ -159,7 +166,7 @@ describe('NormalSearchForm', () => {
     expect(screen.getByText(/does not change results today/i)).toBeInTheDocument();
   });
 
-  it('offers the chosen district\'s cities, and only those', () => {
+  it("offers the chosen district's cities, and only those", () => {
     render(renderWithProviders(<NormalSearchForm onSubmit={jest.fn()} />));
 
     // Before a district is picked there is nothing to narrow to.
@@ -194,7 +201,11 @@ describe('NormalSearchForm', () => {
 
   describe('Use my location', () => {
     beforeEach(() => locate.mockReset());
-    const here = { latitude: 6.901, longitude: 79.859, city: { cityId: 118, districtId: 1, name: 'Colombo 15', districtName: 'Colombo', latitude: 6.9, longitude: 79.8, distanceKm: 0.3 } };
+    const here = {
+      latitude: 6.901,
+      longitude: 79.859,
+      city: { cityId: 118, districtId: 1, name: 'Colombo 15', districtName: 'Colombo', latitude: 6.9, longitude: 79.8, distanceKm: 0.3 },
+    };
 
     it("fills in the visitor's district and city and searches from their exact point", async () => {
       locate.mockResolvedValue(here);
@@ -205,7 +216,7 @@ describe('NormalSearchForm', () => {
       await waitFor(() => expect(screen.getByText('Using your location near Colombo 15')).toBeInTheDocument());
       expect(district()).toHaveValue('1');
       chooseCareType();
-    chooseStartDate();
+      chooseStartDate();
       fireEvent.click(submit());
 
       await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
@@ -224,7 +235,7 @@ describe('NormalSearchForm', () => {
       await waitFor(() => expect(district()).toHaveValue('1'));
       fireEvent.change(district(), { target: { value: '2' } });
       chooseCareType();
-    chooseStartDate();
+      chooseStartDate();
       fireEvent.click(submit());
 
       await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));

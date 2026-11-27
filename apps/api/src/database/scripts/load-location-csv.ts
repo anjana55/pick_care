@@ -200,7 +200,9 @@ export async function loadLocationCsvs(db: Database): Promise<{ provinces: numbe
     await db
       .insert(provinces)
       .values(provinceRows.slice(i, i + 500))
-      .onDuplicateKeyUpdate({ set: { nameEn: sql`values(${provinces.nameEn})`, nameSi: sql`values(${provinces.nameSi})`, nameTa: sql`values(${provinces.nameTa})` } });
+      .onDuplicateKeyUpdate({
+        set: { nameEn: sql`values(${provinces.nameEn})`, nameSi: sql`values(${provinces.nameSi})`, nameTa: sql`values(${provinces.nameTa})` },
+      });
   }
 
   const districtValues = districtRows.map(({ id, provinceId, nameEn, nameSi, nameTa }) => ({ id, provinceId, nameEn, nameSi, nameTa }));
@@ -208,11 +210,29 @@ export async function loadLocationCsvs(db: Database): Promise<{ provinces: numbe
     await db
       .insert(districts)
       .values(districtValues.slice(i, i + 500))
-      .onDuplicateKeyUpdate({ set: { provinceId: sql`values(${districts.provinceId})`, nameEn: sql`values(${districts.nameEn})`, nameSi: sql`values(${districts.nameSi})`, nameTa: sql`values(${districts.nameTa})` } });
+      .onDuplicateKeyUpdate({
+        set: {
+          provinceId: sql`values(${districts.provinceId})`,
+          nameEn: sql`values(${districts.nameEn})`,
+          nameSi: sql`values(${districts.nameSi})`,
+          nameTa: sql`values(${districts.nameTa})`,
+        },
+      });
   }
 
-  const cityValues = cityRows.map(({ id, districtId, nameEn, nameSi, nameTa, subNameEn, subNameSi, subNameTa, postcode, latitude, longitude }) =>
-    ({ id, districtId, nameEn, nameSi, nameTa, subNameEn, subNameSi, subNameTa, postcode, latitude, longitude }));
+  const cityValues = cityRows.map(({ id, districtId, nameEn, nameSi, nameTa, subNameEn, subNameSi, subNameTa, postcode, latitude, longitude }) => ({
+    id,
+    districtId,
+    nameEn,
+    nameSi,
+    nameTa,
+    subNameEn,
+    subNameSi,
+    subNameTa,
+    postcode,
+    latitude,
+    longitude,
+  }));
   for (let i = 0; i < cityValues.length; i += 500) {
     await db
       .insert(cities)

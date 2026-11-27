@@ -70,7 +70,17 @@ describe('EmailSettingsService', () => {
       SMTP_FROM: 'Pick Care <no-reply@example.com>',
     });
     const s = await service.getResolved();
-    expect(s).toMatchObject({ enabled: true, usable: true, host: 'smtp.example.com', port: 465, secure: true, username: 'mailer', password: 'p@ss word', fromName: 'Pick Care', fromAddress: 'no-reply@example.com' });
+    expect(s).toMatchObject({
+      enabled: true,
+      usable: true,
+      host: 'smtp.example.com',
+      port: 465,
+      secure: true,
+      username: 'mailer',
+      password: 'p@ss word',
+      fromName: 'Pick Care',
+      fromAddress: 'no-reply@example.com',
+    });
     // Stored encrypted, not in plain text.
     expect(stored().passwordEncrypted).not.toContain('p@ss');
     expect(decryptSecret(stored().passwordEncrypted as string, KEY)).toBe('p@ss word');

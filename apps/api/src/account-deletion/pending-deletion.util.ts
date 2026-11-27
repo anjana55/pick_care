@@ -3,16 +3,14 @@ import { and, eq } from 'drizzle-orm';
 import type { Database } from '../database/database.module';
 import { accountDeletionRequests } from '../database/schema';
 
-export const PENDING_DELETION_MESSAGE =
-  'This person asked to delete their account. To restore it, cancel the request in Account deletions.';
+export const PENDING_DELETION_MESSAGE = 'This person asked to delete their account. To restore it, cancel the request in Account deletions.';
 
 /** Staff deleting a record whose owner asked to be deleted, while something of theirs is still open. */
 export const PENDING_DELETION_OPEN_ITEMS_MESSAGE =
   'This person asked to delete their account, and something of theirs is still open. Settle it first - see Account deletions - or leave it: the account is erased once nothing is open.';
 
 /** Cancelling a request whose caregiver or client record staff have already deleted. */
-export const PENDING_DELETION_RECORD_DELETED_MESSAGE =
-  'This record has been deleted, so there is nothing to restore.';
+export const PENDING_DELETION_RECORD_DELETED_MESSAGE = 'This record has been deleted, so there is nothing to restore.';
 
 type Who = { caregiverId: string } | { patientId: string };
 
@@ -43,9 +41,6 @@ export async function assertNoPendingDeletion(db: Database, who: Who): Promise<v
 export async function closePendingDeletionAsErased(db: Database, who: Who, now = new Date()): Promise<boolean> {
   const [pending] = await db.select({ id: accountDeletionRequests.id }).from(accountDeletionRequests).where(whereOpen(who)).limit(1);
   if (!pending) return false;
-  await db
-    .update(accountDeletionRequests)
-    .set({ status: 'ERASED', erasedAt: now, updatedAt: now })
-    .where(eq(accountDeletionRequests.id, pending.id));
+  await db.update(accountDeletionRequests).set({ status: 'ERASED', erasedAt: now, updatedAt: now }).where(eq(accountDeletionRequests.id, pending.id));
   return true;
 }

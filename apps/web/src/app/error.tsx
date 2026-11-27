@@ -17,10 +17,7 @@ export default function AppError({ error, reset }: { error: Error; reset: () => 
       <div className="w-full max-w-sm text-center">
         <h1 className="mb-2 text-lg font-semibold text-ink">{t('errorBoundary.title')}</h1>
         <p className="mb-6 text-sm text-ink/60">{t('errorBoundary.body')}</p>
-        <button
-          onClick={reset}
-          className="rounded bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark"
-        >
+        <button onClick={reset} className="rounded bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark">
           {t('errorBoundary.retry')}
         </button>
       </div>

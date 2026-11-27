@@ -13,7 +13,20 @@ import {
   type PricingRateType,
 } from '@care-platform/shared';
 import { DRIZZLE, type Database } from '../database/database.module';
-import { CARE_TYPE_COLUMNS, availability, careRequests, caregiverLanguages, caregiverSkills, caregivers, cities, districts, languages, patients, requestOffers, skills } from '../database/schema';
+import {
+  CARE_TYPE_COLUMNS,
+  availability,
+  careRequests,
+  caregiverLanguages,
+  caregiverSkills,
+  caregivers,
+  cities,
+  districts,
+  languages,
+  patients,
+  requestOffers,
+  skills,
+} from '../database/schema';
 import { CaregiversService } from '../caregivers/caregivers.service';
 import { CandidatePoolService, type CandidateRow } from '../matching/candidate-pool.service';
 import { scoreMatch, type MatchCandidate, type MatchRequest } from '../matching/matching-rules';
@@ -106,7 +119,10 @@ export class OfferCandidatesService {
       ordered = [...kept].sort((a, b) => (names.get(a.f.caregiverId) ?? '').localeCompare(names.get(b.f.caregiverId) ?? '') || byReg(a.f, b.f));
     }
     const slice = ordered.slice((page - 1) * pageSize, page * pageSize);
-    const details = await this.details(slice.map((k) => k.f.caregiverId), lang);
+    const details = await this.details(
+      slice.map((k) => k.f.caregiverId),
+      lang,
+    );
 
     const items: OfferCandidate[] = slice.map(({ f, ranked }) => {
       const d = details.get(f.caregiverId)!;
@@ -174,10 +190,17 @@ export class OfferCandidatesService {
     const districtId = r.districtId === null ? null : Number(r.districtId);
     const cityId = r.cityId === null ? null : Number(r.cityId);
     const [[district], [city]] = await Promise.all([
-      districtId === null ? Promise.resolve([] as { name: string }[]) : this.db.select({ name: districts.nameEn }).from(districts).where(eq(districts.id, districtId)).limit(1),
+      districtId === null
+        ? Promise.resolve([] as { name: string }[])
+        : this.db.select({ name: districts.nameEn }).from(districts).where(eq(districts.id, districtId)).limit(1),
       cityId === null ? Promise.resolve([] as { name: string }[]) : this.db.select({ name: cities.nameEn }).from(cities).where(eq(cities.id, cityId)).limit(1),
     ]);
-    const asDay = (d: Date | string | null) => (!d ? null : typeof d === 'string' ? d.slice(0, 10) : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
+    const asDay = (d: Date | string | null) =>
+      !d
+        ? null
+        : typeof d === 'string'
+          ? d.slice(0, 10)
+          : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     const startDate = asDay(r.desiredStartDate) ?? (r.urgency === 'IMMEDIATELY' || r.urgency === 'WITHIN_WEEK' ? colomboToday(now) : null);
     const view: Omit<OfferCandidateRequestFacts, 'waitingOffers' | 'slotsLeft'> = {
       careType: (r.careType as CareType | null) ?? null,
@@ -211,7 +234,19 @@ export class OfferCandidatesService {
 
   /** Names, places, skills and languages for one page of results. */
   private async details(ids: string[], lang?: string) {
-    const out = new Map<string, { fullName: string; publicId: string; gender: string | null; phone: string | null; districtName: string | null; cityName: string | null; skills: string[]; languages: string[] }>();
+    const out = new Map<
+      string,
+      {
+        fullName: string;
+        publicId: string;
+        gender: string | null;
+        phone: string | null;
+        districtName: string | null;
+        cityName: string | null;
+        skills: string[];
+        languages: string[];
+      }
+    >();
     if (!ids.length) return out;
     const [rows, skillRows, languageRows] = await Promise.all([
       this.db

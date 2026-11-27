@@ -38,13 +38,13 @@ export default function InvoicesPage() {
   const { data: summary } = useInvoiceSummary(allowed);
   // Also left as the trail the record pages' previous / next follow (lib/record-trail).
   const listFilters: InvoiceFilters = {
-      status: tab === 'all' || tab === 'overdue' ? undefined : tab,
-      overdue: tab === 'overdue' || undefined,
-      search: search.trim() || undefined,
-      page,
-      pageSize: 20,
-    };
-  const { data, isLoading } = useInvoices(listFilters, allowed,);
+    status: tab === 'all' || tab === 'overdue' ? undefined : tab,
+    overdue: tab === 'overdue' || undefined,
+    search: search.trim() || undefined,
+    page,
+    pageSize: 20,
+  };
+  const { data, isLoading } = useInvoices(listFilters, allowed);
   useRecordTrail('invoices', invoiceListPath(listFilters), data);
 
   if (authLoading || !allowed) return <div className="flex min-h-[40vh] items-center justify-center text-sm text-ink/50">{t('common.loading')}</div>;
@@ -65,7 +65,11 @@ export default function InvoicesPage() {
       {summary && (
         <div className="mb-6 grid gap-3 sm:grid-cols-3">
           <Tile label={t('billing.invoices.outstanding')} value={formatLkr(summary.outstanding)} />
-          <Tile label={t('billing.invoices.overdueTotal', { count: summary.overdueCount })} value={formatLkr(summary.overdue)} tone={Number(summary.overdue) > 0 ? 'danger' : undefined} />
+          <Tile
+            label={t('billing.invoices.overdueTotal', { count: summary.overdueCount })}
+            value={formatLkr(summary.overdue)}
+            tone={Number(summary.overdue) > 0 ? 'danger' : undefined}
+          />
           <Tile label={t('billing.invoices.receivedThisMonth')} value={formatLkr(summary.receivedThisMonth)} />
         </div>
       )}
@@ -87,7 +91,14 @@ export default function InvoicesPage() {
           >
             {t(`billing.invoices.tabs.${key}`)}
             {count(key) !== null && (
-              <span className={cn('rounded-full px-1.5 text-xs tabular-nums', key === 'overdue' && count(key)! > 0 ? 'bg-danger-light text-danger' : 'bg-paper text-ink/60')}>{count(key)}</span>
+              <span
+                className={cn(
+                  'rounded-full px-1.5 text-xs tabular-nums',
+                  key === 'overdue' && count(key)! > 0 ? 'bg-danger-light text-danger' : 'bg-paper text-ink/60',
+                )}
+              >
+                {count(key)}
+              </span>
             )}
           </button>
         ))}
@@ -122,12 +133,16 @@ export default function InvoicesPage() {
           <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-ink/50">{t('common.loading')}</td>
+                <td colSpan={7} className="px-4 py-8 text-center text-ink/50">
+                  {t('common.loading')}
+                </td>
               </tr>
             )}
             {!isLoading && data?.items.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-ink/50">{t('billing.invoices.empty')}</td>
+                <td colSpan={7} className="px-4 py-8 text-center text-ink/50">
+                  {t('billing.invoices.empty')}
+                </td>
               </tr>
             )}
             {data?.items.map((inv) => (
@@ -142,7 +157,9 @@ export default function InvoicesPage() {
                   <div className="text-ink">{inv.clientName}</div>
                   {inv.billToName !== inv.clientName && <div className="text-xs text-ink/50">{inv.billToName}</div>}
                 </td>
-                <td className="px-4 py-3 text-ink/70">{inv.periodStart && inv.periodEnd ? `${fmtDate(inv.periodStart, locale)} – ${fmtDate(inv.periodEnd, locale)}` : '—'}</td>
+                <td className="px-4 py-3 text-ink/70">
+                  {inv.periodStart && inv.periodEnd ? `${fmtDate(inv.periodStart, locale)} – ${fmtDate(inv.periodEnd, locale)}` : '—'}
+                </td>
                 <td className={cn('px-4 py-3', inv.overdue ? 'font-medium text-danger' : 'text-ink/70')}>{inv.dueDate ? fmtDate(inv.dueDate, locale) : '—'}</td>
                 <td className="px-4 py-3 text-right tabular-nums text-ink">{formatLkr(inv.total)}</td>
                 <td className="px-4 py-3 text-right tabular-nums text-ink/70">{inv.status === 'ISSUED' ? formatLkr(inv.balance) : '—'}</td>

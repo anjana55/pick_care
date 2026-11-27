@@ -27,7 +27,12 @@ export function SharedProfilesTab() {
     <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <p className="max-w-2xl text-sm text-ink/60">{t('international.profiles.hint')}</p>
-        <Select className="sm:w-56" value={filter} onChange={(e) => setFilter(e.target.value as (typeof FILTERS)[number])} aria-label={t('international.profiles.filter')}>
+        <Select
+          className="sm:w-56"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value as (typeof FILTERS)[number])}
+          aria-label={t('international.profiles.filter')}
+        >
           {FILTERS.map((f) => (
             <option key={f} value={f}>
               {t(`international.profiles.filters.${f}`)}
@@ -36,7 +41,9 @@ export function SharedProfilesTab() {
         </Select>
       </div>
       {isLoading && <p className="py-8 text-center text-sm text-ink/50">{t('common.loading')}</p>}
-      {!isLoading && data.length === 0 && <p className="rounded-lg border border-dashed border-border bg-white py-10 text-center text-sm text-ink/50">{t('international.profiles.empty')}</p>}
+      {!isLoading && data.length === 0 && (
+        <p className="rounded-lg border border-dashed border-border bg-white py-10 text-center text-sm text-ink/50">{t('international.profiles.empty')}</p>
+      )}
       <div className="grid gap-4 lg:grid-cols-2">
         {data.map((item) => (
           <ReviewCard key={item.caregiverId} item={item} />
@@ -60,7 +67,10 @@ function ReviewCard({ item }: { item: SharedProfileReviewItem }) {
   const decide = (decision: 'APPROVE' | 'REJECT') => {
     setError(null);
     if (decision === 'REJECT' && !note.trim()) return setError(t('international.profiles.noteRequired'));
-    review.mutate({ caregiverId: item.caregiverId, decision, note: note.trim() || undefined }, { onError: (e) => setError(e instanceof Error ? e.message : String(e)) });
+    review.mutate(
+      { caregiverId: item.caregiverId, decision, note: note.trim() || undefined },
+      { onError: (e) => setError(e instanceof Error ? e.message : String(e)) },
+    );
   };
 
   return (
@@ -81,7 +91,11 @@ function ReviewCard({ item }: { item: SharedProfileReviewItem }) {
             <span
               className={cn(
                 'rounded px-2 py-0.5 text-xs font-medium',
-                item.status === 'APPROVED' ? 'bg-brand-light text-brand-dark' : item.status === 'REJECTED' ? 'bg-danger-light text-danger' : 'bg-accent-light text-accent',
+                item.status === 'APPROVED'
+                  ? 'bg-brand-light text-brand-dark'
+                  : item.status === 'REJECTED'
+                    ? 'bg-danger-light text-danger'
+                    : 'bg-accent-light text-accent',
               )}
             >
               {t(`international.profiles.status.${item.status}`)}
@@ -97,12 +111,18 @@ function ReviewCard({ item }: { item: SharedProfileReviewItem }) {
       </div>
 
       <p className="mt-3 text-xs text-ink/50">
-        {item.consentAcceptedAt ? t('international.profiles.consentOn', { date: new Date(item.consentAcceptedAt).toLocaleString() }) : t('international.profiles.noConsent')}
+        {item.consentAcceptedAt
+          ? t('international.profiles.consentOn', { date: new Date(item.consentAcceptedAt).toLocaleString() })
+          : t('international.profiles.noConsent')}
         {' · '}
         {t('international.profiles.updated', { date: new Date(item.updatedAt).toLocaleString() })}
       </p>
-      {looksLikeContact && <p className="mt-2 rounded bg-amber-100 px-3 py-2 text-xs font-medium text-amber-800">{t('international.profiles.contactWarning')}</p>}
-      {item.status === 'REJECTED' && item.reviewNote && <p className="mt-2 text-xs text-danger">{t('international.profiles.lastNote', { note: item.reviewNote })}</p>}
+      {looksLikeContact && (
+        <p className="mt-2 rounded bg-amber-100 px-3 py-2 text-xs font-medium text-amber-800">{t('international.profiles.contactWarning')}</p>
+      )}
+      {item.status === 'REJECTED' && item.reviewNote && (
+        <p className="mt-2 text-xs text-danger">{t('international.profiles.lastNote', { note: item.reviewNote })}</p>
+      )}
 
       {(item.status === 'PENDING_REVIEW' || item.status === 'APPROVED') && (
         <div className="mt-4 space-y-3 border-t border-border pt-4">
@@ -120,7 +140,12 @@ function ReviewCard({ item }: { item: SharedProfileReviewItem }) {
               {item.status === 'APPROVED' ? t('international.profiles.takeDown') : t('international.profiles.reject')}
             </Button>
             {item.status === 'APPROVED' && item.isShared && (
-              <a href={`/talent/${item.slug}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-sm text-brand-dark hover:underline">
+              <a
+                href={`/talent/${item.slug}`}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 text-sm text-brand-dark hover:underline"
+              >
                 <ExternalLink size={14} aria-hidden />
                 {t('international.profiles.viewLive')}
               </a>

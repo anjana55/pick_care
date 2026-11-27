@@ -76,10 +76,18 @@ export default function DeleteAccountPage() {
             <>
               <p className="text-sm text-ink/80">{t('deleteAccount.signInToDelete')}</p>
               <div className="mt-4 flex flex-wrap gap-3">
-                <Link href="/login" onClick={() => rememberReturnTo(PATH)} className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark">
+                <Link
+                  href="/login"
+                  onClick={() => rememberReturnTo(PATH)}
+                  className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark"
+                >
                   {t('deleteAccount.signInClient')}
                 </Link>
-                <Link href="/caregiver/login" onClick={() => rememberReturnTo(PATH)} className="rounded-md border border-border px-4 py-2 text-sm font-medium text-ink hover:border-brand">
+                <Link
+                  href="/caregiver/login"
+                  onClick={() => rememberReturnTo(PATH)}
+                  className="rounded-md border border-border px-4 py-2 text-sm font-medium text-ink hover:border-brand"
+                >
                   {t('deleteAccount.signInCaregiver')}
                 </Link>
               </div>

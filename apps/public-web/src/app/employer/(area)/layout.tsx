@@ -73,7 +73,11 @@ export default function EmployerAreaLayout({ children }: { children: React.React
         </div>
         <nav aria-label={t('employer.nav.label')} className="mx-auto flex max-w-5xl gap-1 overflow-x-auto px-4">
           {SECTIONS.map((section) => {
-            const active = section.href === '/employer' ? pathname === section.href : Boolean(pathname?.startsWith(section.href)) || (section.href === '/employer/placements' && Boolean(pathname?.startsWith('/employer/invoices')));
+            const active =
+              section.href === '/employer'
+                ? pathname === section.href
+                : Boolean(pathname?.startsWith(section.href)) ||
+                  (section.href === '/employer/placements' && Boolean(pathname?.startsWith('/employer/invoices')));
             return (
               <Link
                 key={section.href}

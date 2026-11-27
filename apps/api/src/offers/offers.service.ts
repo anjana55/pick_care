@@ -1,4 +1,13 @@
-import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, Logger, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+  OnApplicationBootstrap,
+} from '@nestjs/common';
 import { and, desc, eq, gt, inArray, isNull, lte, ne, sql } from 'drizzle-orm';
 import { randomUUID as uuid } from 'crypto';
 import { ConfigService } from '@nestjs/config';
@@ -13,7 +22,18 @@ import {
   type StaffCareOffer,
 } from '@care-platform/shared';
 import { DRIZZLE, type Database } from '../database/database.module';
-import { OPEN_CARE_REQUEST_STATUSES, bookingShifts, bookings, careRequests, caregivers, cities, districts, patients, requestOffers, users } from '../database/schema';
+import {
+  OPEN_CARE_REQUEST_STATUSES,
+  bookingShifts,
+  bookings,
+  careRequests,
+  caregivers,
+  cities,
+  districts,
+  patients,
+  requestOffers,
+  users,
+} from '../database/schema';
 import type { AuthenticatedUser } from '../common/decorators/current-user.decorator';
 import { CareRequestsService } from '../care-requests/care-requests.service';
 import { PricingService } from '../pricing/pricing.service';
@@ -59,7 +79,9 @@ const NEW_OFFER_UNTIL = {
 /** "12 Nov, 15:51" in Sri Lanka, wherever the server runs. */
 export function offerDeadline(at: Date): string {
   const p = Object.fromEntries(
-    new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Colombo', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(at).map((x) => [x.type, x.value]),
+    new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Colombo', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false })
+      .formatToParts(at)
+      .map((x) => [x.type, x.value]),
   );
   return `${p.day} ${p.month}, ${p.hour}:${p.minute}`;
 }
@@ -119,8 +141,14 @@ export class OffersService implements OnApplicationBootstrap {
   async toStaff(rows: OfferRow[], now = new Date()): Promise<StaffCareOffer[]> {
     if (!rows.length) return [];
     const [people, senders] = await Promise.all([
-      this.db.select({ id: caregivers.id, fullName: caregivers.fullName, registrationNumber: caregivers.registrationNumber }).from(caregivers).where(inArray(caregivers.id, [...new Set(rows.map((r) => r.caregiverId))])),
-      this.db.select({ id: users.id, fullName: users.fullName }).from(users).where(inArray(users.id, [...new Set(rows.map((r) => r.sentByUserId).filter((v): v is string => Boolean(v))), ''])),
+      this.db
+        .select({ id: caregivers.id, fullName: caregivers.fullName, registrationNumber: caregivers.registrationNumber })
+        .from(caregivers)
+        .where(inArray(caregivers.id, [...new Set(rows.map((r) => r.caregiverId))])),
+      this.db
+        .select({ id: users.id, fullName: users.fullName })
+        .from(users)
+        .where(inArray(users.id, [...new Set(rows.map((r) => r.sentByUserId).filter((v): v is string => Boolean(v))), ''])),
     ]);
     const cg = new Map(people.map((p) => [p.id, p]));
     const who = new Map(senders.map((s) => [s.id, s.fullName]));
@@ -182,7 +210,20 @@ export class OffersService implements OnApplicationBootstrap {
 
     const expiresAt = new Date(now.getTime() + (dto.expiresInMinutes ?? CARE_OFFER_MINUTES.default) * 60_000);
     try {
-      await this.issue({ kind: 'JOB', requestId, shiftId: null, caregiverId: dto.caregiverId, caregiverUserId: caregiver.userId, ...rates, note: dto.note ?? null, sentByUserId: actor.userId, expiresAt }, now);
+      await this.issue(
+        {
+          kind: 'JOB',
+          requestId,
+          shiftId: null,
+          caregiverId: dto.caregiverId,
+          caregiverUserId: caregiver.userId,
+          ...rates,
+          note: dto.note ?? null,
+          sentByUserId: actor.userId,
+          expiresAt,
+        },
+        now,
+      );
     } catch (err) {
       if (isDuplicateOffer(err)) throw new ConflictException('This caregiver already has an offer waiting for this request');
       throw err;
@@ -229,7 +270,12 @@ export class OffersService implements OnApplicationBootstrap {
    * asked to be phoned gets no message (staff call them; the bell still shows it).
    * A message that fails never fails the offer.
    */
-  private async messageNewOffer(offerId: string, caregiverId: string, expiresAt: Date, heading: typeof NEW_OFFER | typeof NEW_COVER = NEW_OFFER): Promise<void> {
+  private async messageNewOffer(
+    offerId: string,
+    caregiverId: string,
+    expiresAt: Date,
+    heading: typeof NEW_OFFER | typeof NEW_COVER = NEW_OFFER,
+  ): Promise<void> {
     try {
       const [who] = await this.db
         .select({ accountPhone: users.phone, email: users.email, primaryPhone: caregivers.primaryPhone, preferred: caregivers.preferredContactMethod })
@@ -252,7 +298,11 @@ export class OffersService implements OnApplicationBootstrap {
           who.email,
           {
             subject: `{brand} - ${heading.en.title}`,
-            blocks: (['en', 'si', 'ta'] as const).map((l) => ({ lang: l, heading: heading[l].title, paragraphs: [NEW_OFFER_UNTIL[l].replace('{until}', until)] })),
+            blocks: (['en', 'si', 'ta'] as const).map((l) => ({
+              lang: l,
+              heading: heading[l].title,
+              paragraphs: [NEW_OFFER_UNTIL[l].replace('{until}', until)],
+            })),
             cta: { label: '{brand}', url },
           },
           `offer ${offerId}`,
@@ -285,7 +335,11 @@ export class OffersService implements OnApplicationBootstrap {
     const expired = (result as { affectedRows: number }).affectedRows > 0;
     if (expired) {
       // The agent working on this job, if one is, offers it to the next caregiver.
-      const [row] = await this.db.select({ kind: requestOffers.kind, requestId: requestOffers.requestId, shiftId: requestOffers.shiftId }).from(requestOffers).where(eq(requestOffers.id, offerId)).limit(1);
+      const [row] = await this.db
+        .select({ kind: requestOffers.kind, requestId: requestOffers.requestId, shiftId: requestOffers.shiftId })
+        .from(requestOffers)
+        .where(eq(requestOffers.id, offerId))
+        .limit(1);
       if (row) await this.nudge(row);
     }
     return expired;
@@ -296,7 +350,11 @@ export class OffersService implements OnApplicationBootstrap {
    * the offer its caregiver accepted. Null when no offer was accepted.
    */
   async acceptedFor(requestId: string): Promise<StaffCareOffer | null> {
-    const [row] = await this.db.select().from(requestOffers).where(and(eq(requestOffers.requestId, requestId), eq(requestOffers.status, 'ACCEPTED'))).limit(1);
+    const [row] = await this.db
+      .select()
+      .from(requestOffers)
+      .where(and(eq(requestOffers.requestId, requestId), eq(requestOffers.status, 'ACCEPTED')))
+      .limit(1);
     return row ? (await this.toStaff([row]))[0] : null;
   }
 
@@ -352,7 +410,11 @@ export class OffersService implements OnApplicationBootstrap {
     ]);
     const rows = [
       ...jobRows.map((r) => ({ ...r, shift: null as CaregiverCareOffer['shift'] })),
-      ...coverRows.map(({ startsAt, endsAt, ...r }) => ({ ...r, desiredStartDate: null, shift: { startsAt: new Date(startsAt).toISOString(), endsAt: new Date(endsAt).toISOString() } })),
+      ...coverRows.map(({ startsAt, endsAt, ...r }) => ({
+        ...r,
+        desiredStartDate: null,
+        shift: { startsAt: new Date(startsAt).toISOString(), endsAt: new Date(endsAt).toISOString() },
+      })),
     ].sort((a, b) => b.offer.createdAt.getTime() - a.offer.createdAt.getTime());
     const districtIds = [...new Set(rows.map((r) => r.districtId).filter((v): v is number => v !== null))];
     const cityIds = [...new Set(rows.map((r) => r.cityId).filter((v): v is number => v !== null))];
@@ -382,7 +444,11 @@ export class OffersService implements OnApplicationBootstrap {
 
   private async ownOffer(user: AuthenticatedUser, offerId: string): Promise<OfferRow> {
     const caregiverId = this.caregiverIdOf(user);
-    const [row] = await this.db.select().from(requestOffers).where(and(eq(requestOffers.id, offerId), eq(requestOffers.caregiverId, caregiverId))).limit(1);
+    const [row] = await this.db
+      .select()
+      .from(requestOffers)
+      .where(and(eq(requestOffers.id, offerId), eq(requestOffers.caregiverId, caregiverId)))
+      .limit(1);
     // Someone else's offer answers exactly as one that does not exist.
     if (!row) throw new NotFoundException('Offer not found');
     return row;
@@ -406,23 +472,40 @@ export class OffersService implements OnApplicationBootstrap {
       const [request] = await tx.select({ status: careRequests.status }).from(careRequests).where(eq(careRequests.id, requestId)).for('update').limit(1);
       const [mine] = await tx.select().from(requestOffers).where(eq(requestOffers.id, offerId)).limit(1);
       if (mine.status === 'ACCEPTED') return; // pressed twice
-      const [taken] = await tx.select({ id: requestOffers.id }).from(requestOffers).where(and(eq(requestOffers.requestId, requestId), eq(requestOffers.status, 'ACCEPTED'))).limit(1);
+      const [taken] = await tx
+        .select({ id: requestOffers.id })
+        .from(requestOffers)
+        .where(and(eq(requestOffers.requestId, requestId), eq(requestOffers.status, 'ACCEPTED')))
+        .limit(1);
       if (taken || mine.status === 'WITHDRAWN') throw new ConflictException('This job is no longer open');
       if (mine.status === 'DECLINED') throw new BadRequestException('You have already declined this offer');
       if (mine.status === 'EXPIRED' || mine.expiresAt.getTime() <= now.getTime()) throw new BadRequestException('The time to answer this offer has passed');
       if (!request || !OPEN_CARE_REQUEST_STATUSES.includes(request.status)) throw new ConflictException('This job is no longer open');
 
       await tx.update(requestOffers).set({ status: 'ACCEPTED', respondedAt: now }).where(eq(requestOffers.id, offerId));
-      const others = await tx.select({ id: requestOffers.id }).from(requestOffers).where(and(eq(requestOffers.requestId, requestId), eq(requestOffers.status, 'OFFERED'), ne(requestOffers.id, offerId)));
+      const others = await tx
+        .select({ id: requestOffers.id })
+        .from(requestOffers)
+        .where(and(eq(requestOffers.requestId, requestId), eq(requestOffers.status, 'OFFERED'), ne(requestOffers.id, offerId)));
       if (others.length) {
-        await tx.update(requestOffers).set({ status: 'WITHDRAWN', respondedAt: now }).where(inArray(requestOffers.id, others.map((o) => o.id)));
+        await tx
+          .update(requestOffers)
+          .set({ status: 'WITHDRAWN', respondedAt: now })
+          .where(
+            inArray(
+              requestOffers.id,
+              others.map((o) => o.id),
+            ),
+          );
         withdrawn.push(...others.map((o) => o.id));
       }
     });
 
     await this.jobs.cancel(expiryKey(offerId));
     for (const id of withdrawn) await this.jobs.cancel(expiryKey(id));
-    await this.afterAccepted(offer, user).catch((e) => this.logger.error(`Offer ${offerId} accepted, but the request could not be updated: ${(e as Error).message}`));
+    await this.afterAccepted(offer, user).catch((e) =>
+      this.logger.error(`Offer ${offerId} accepted, but the request could not be updated: ${(e as Error).message}`),
+    );
     await this.tellNoLongerOpen(withdrawn);
     return this.forCaregiver(user, now);
   }
@@ -447,7 +530,11 @@ export class OffersService implements OnApplicationBootstrap {
         subject: `Offer accepted: ${request?.reference ?? 'a request'}`,
         paragraphs: [
           `${caregiver?.registrationNumber ?? 'A caregiver'} accepted the job offer the matching agent sent, and is now attached to the request.`,
-          drafts === 'EXECUTE' ? 'The booking agent is drafting the booking: check it and confirm.' : drafts === 'PROPOSE' ? 'The booking agent will propose a draft booking for you to approve.' : 'Open the request to make the booking; the agreed rates are filled in for you.',
+          drafts === 'EXECUTE'
+            ? 'The booking agent is drafting the booking: check it and confirm.'
+            : drafts === 'PROPOSE'
+              ? 'The booking agent will propose a draft booking for you to approve.'
+              : 'Open the request to make the booking; the agreed rates are filled in for you.',
         ],
         path: `/requests/${requestId}`,
         cta: 'Open the request',
@@ -465,7 +552,16 @@ export class OffersService implements OnApplicationBootstrap {
       [sender.email],
       {
         subject: `Offer accepted: ${request.reference}`,
-        blocks: [{ lang: 'en', heading: `A caregiver accepted your offer on ${request.reference}`, paragraphs: [`${caregiver.registrationNumber} is now attached to the request.`, 'Open the request to make the booking; the agreed rates are filled in for you.'] }],
+        blocks: [
+          {
+            lang: 'en',
+            heading: `A caregiver accepted your offer on ${request.reference}`,
+            paragraphs: [
+              `${caregiver.registrationNumber} is now attached to the request.`,
+              'Open the request to make the booking; the agreed rates are filled in for you.',
+            ],
+          },
+        ],
       },
       `offer accepted ${offer.id}`,
     );
@@ -491,7 +587,12 @@ export class OffersService implements OnApplicationBootstrap {
       .from(requestOffers)
       .innerJoin(caregivers, eq(caregivers.id, requestOffers.caregiverId))
       .where(inArray(requestOffers.id, offerIds));
-    this.notices.notify(rows.map((r) => r.userId), (lang) => OFFER_FILLED[lang], '/care-offers', 'offer no longer open');
+    this.notices.notify(
+      rows.map((r) => r.userId),
+      (lang) => OFFER_FILLED[lang],
+      '/care-offers',
+      'offer no longer open',
+    );
   }
 
   /** How many offers are waiting on this caregiver right now - for a number on their menu. */

@@ -73,8 +73,17 @@ export class BillingNotifier {
       const vars = { number: inv.number, amount: formatLkr(inv.total), date: inv.dueDate ?? '' };
       const text = invoiceClientNotice(notice, inv.language, vars);
       // Push to the app as well - in addition to the message below, never instead of it.
-      this.notices.notify([inv.patientUserId], (lang) => fromNotice(invoiceClientNotice(notice, lang, vars)), `/invoices/${id}`, `invoice ${notice.toLowerCase()} ${inv.number}`);
-      const channel = chooseClientChannel({ hasEmail: Boolean(mail), canWhatsapp: Boolean(phone) && this.whatsapp.canSendUpdates(wa), preferred: inv.preferred });
+      this.notices.notify(
+        [inv.patientUserId],
+        (lang) => fromNotice(invoiceClientNotice(notice, lang, vars)),
+        `/invoices/${id}`,
+        `invoice ${notice.toLowerCase()} ${inv.number}`,
+      );
+      const channel = chooseClientChannel({
+        hasEmail: Boolean(mail),
+        canWhatsapp: Boolean(phone) && this.whatsapp.canSendUpdates(wa),
+        preferred: inv.preferred,
+      });
       if (channel === 'WHATSAPP') {
         await this.whatsapp.sendUpdate(wa, phone!, inv.language, `${text.heading}. ${text.body}`);
         return true;
@@ -124,7 +133,11 @@ export class BillingNotifier {
       const msg = payoutPaidNotice({ ref: p.reference, amount: formatLkr(p.total), from: p.periodStart, to: p.periodEnd, date: p.paidOn ?? '' });
       const phone = account?.phone ?? normalizePhone(p.phone, cc);
       this.notices.notify([p.userId], (lang) => fromBlocks(msg.blocks, lang), '/payments', `payout paid ${p.reference}`);
-      const channel = chooseClientChannel({ hasEmail: Boolean(account?.email), canWhatsapp: Boolean(phone) && this.whatsapp.canSendUpdates(wa), preferred: p.preferred });
+      const channel = chooseClientChannel({
+        hasEmail: Boolean(account?.email),
+        canWhatsapp: Boolean(phone) && this.whatsapp.canSendUpdates(wa),
+        preferred: p.preferred,
+      });
       if (channel === 'EMAIL') {
         await this.email.sendNotificationEmail(
           account!.email!,

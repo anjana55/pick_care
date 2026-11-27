@@ -11,9 +11,24 @@ import { fmtDay, fmtTime } from '@/lib/colombo-time';
 import { Button } from '@/components/ui/button';
 import { Input, Label, Select, Textarea } from '@/components/ui/input';
 import { CaregiverPicker } from '@/components/requests/caregiver-picker';
-import { emptyShiftRates, shiftRatesOf, shiftRatesPayload, shiftRatesValid, ShiftRateFields, type ShiftRateValue } from '@/components/bookings/shift-rate-fields';
+import {
+  emptyShiftRates,
+  shiftRatesOf,
+  shiftRatesPayload,
+  shiftRatesValid,
+  ShiftRateFields,
+  type ShiftRateValue,
+} from '@/components/bookings/shift-rate-fields';
 import { cn } from '@/lib/utils';
-import type { AmendBookingInput, AmendShiftStatus, AmendmentDocumentImpact, AmendmentPreview, BookingDetail, BookingShift, IssueReportView } from '@/lib/api/types';
+import type {
+  AmendBookingInput,
+  AmendShiftStatus,
+  AmendmentDocumentImpact,
+  AmendmentPreview,
+  BookingDetail,
+  BookingShift,
+  IssueReportView,
+} from '@/lib/api/types';
 
 const MONEY = /^\d{1,8}(\.\d{1,2})?$/;
 const errorText = (err: unknown, fallback: string) => (err instanceof ApiError && err.message ? err.message : fallback);
@@ -116,7 +131,10 @@ export function CorrectBookingPanel({
   const booked: Person | null = booking.caregiver ? { id: booking.caregiver.id, fullName: booking.caregiver.fullName } : null;
   const candidates = booking.shifts.filter((s) => correctable(s, now) && !edits.some((e) => e.shiftId === s.id));
   const shiftById = useMemo(() => new Map(booking.shifts.map((s) => [s.id, s])), [booking.shifts]);
-  const locksFor = (caregiverId: string) => ({ client: booking.rateType === 'MONTHLY', pay: booking.payRateType === 'MONTHLY' && caregiverId === booking.caregiver?.id });
+  const locksFor = (caregiverId: string) => ({
+    client: booking.rateType === 'MONTHLY',
+    pay: booking.payRateType === 'MONTHLY' && caregiverId === booking.caregiver?.id,
+  });
 
   const pick = (id: string) => {
     const s = shiftById.get(id);
@@ -199,7 +217,11 @@ export function CorrectBookingPanel({
   const pickerRow = (person: Person, picking: boolean, set: (v: { caregiver?: Person; picking?: boolean }) => void) =>
     picking ? (
       <div className="sm:col-span-2">
-        <CaregiverPicker autoFocus onPick={(c) => set({ caregiver: { id: c.id, fullName: c.fullName }, picking: false })} onCancel={() => set({ picking: false })} />
+        <CaregiverPicker
+          autoFocus
+          onPick={(c) => set({ caregiver: { id: c.id, fullName: c.fullName }, picking: false })}
+          onCancel={() => set({ picking: false })}
+        />
       </div>
     ) : (
       <p className="text-sm text-ink/70 sm:col-span-2">
@@ -229,7 +251,14 @@ export function CorrectBookingPanel({
           <Label htmlFor="correctReason" required>
             {close ? t('bookings.correct.reasonClose') : t('bookings.correct.reason')}
           </Label>
-          <Textarea id="correctReason" rows={2} maxLength={500} placeholder={close ? t('bookings.correct.reasonClosePlaceholder') : t('bookings.correct.reasonPlaceholder')} value={reason} onChange={(e) => setReason(e.target.value)} />
+          <Textarea
+            id="correctReason"
+            rows={2}
+            maxLength={500}
+            placeholder={close ? t('bookings.correct.reasonClosePlaceholder') : t('bookings.correct.reasonPlaceholder')}
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+          />
         </div>
 
         {/* Shifts */}
@@ -241,22 +270,45 @@ export function CorrectBookingPanel({
               <fieldset key={e.shiftId} className="rounded border border-border p-3">
                 <legend className="flex items-center gap-2 px-1 text-sm font-medium text-ink">
                   {fmtDay(s.startsAt, locale)} · {fmtTime(s.startsAt, locale)}–{fmtTime(s.endsAt, locale)} · {t(`bookings.shiftStatus.${s.status}`)}
-                  <button type="button" onClick={() => setEdits((l) => l.filter((x) => x.shiftId !== e.shiftId))} className="rounded p-0.5 text-ink/40 hover:text-danger" aria-label={t('bookings.correct.remove')} title={t('bookings.correct.remove')}>
+                  <button
+                    type="button"
+                    onClick={() => setEdits((l) => l.filter((x) => x.shiftId !== e.shiftId))}
+                    className="rounded p-0.5 text-ink/40 hover:text-danger"
+                    aria-label={t('bookings.correct.remove')}
+                    title={t('bookings.correct.remove')}
+                  >
                     <X size={14} />
                   </button>
                 </legend>
                 <div className="grid gap-3 sm:grid-cols-[1fr_1fr_12rem]">
                   <div>
                     <Label htmlFor={`cs-${e.shiftId}`}>{t('bookings.new.startTime')}</Label>
-                    <Input id={`cs-${e.shiftId}`} type="datetime-local" step={900} value={e.start} onChange={(ev) => patchEdit(e.shiftId, { start: ev.target.value, status: '' })} />
+                    <Input
+                      id={`cs-${e.shiftId}`}
+                      type="datetime-local"
+                      step={900}
+                      value={e.start}
+                      onChange={(ev) => patchEdit(e.shiftId, { start: ev.target.value, status: '' })}
+                    />
                   </div>
                   <div>
                     <Label htmlFor={`ce-${e.shiftId}`}>{t('bookings.new.endTime')}</Label>
-                    <Input id={`ce-${e.shiftId}`} type="datetime-local" step={900} min={e.start} value={e.end} onChange={(ev) => patchEdit(e.shiftId, { end: ev.target.value })} />
+                    <Input
+                      id={`ce-${e.shiftId}`}
+                      type="datetime-local"
+                      step={900}
+                      min={e.start}
+                      value={e.end}
+                      onChange={(ev) => patchEdit(e.shiftId, { end: ev.target.value })}
+                    />
                   </div>
                   <div>
                     <Label htmlFor={`cst-${e.shiftId}`}>{t('bookings.correct.whatHappened')}</Label>
-                    <Select id={`cst-${e.shiftId}`} value={e.status} onChange={(ev) => patchEdit(e.shiftId, { status: ev.target.value as AmendShiftStatus | '' })}>
+                    <Select
+                      id={`cst-${e.shiftId}`}
+                      value={e.status}
+                      onChange={(ev) => patchEdit(e.shiftId, { status: ev.target.value as AmendShiftStatus | '' })}
+                    >
                       <option value="">{t('bookings.correct.statusKeep', { status: t(`bookings.shiftStatus.${s.status}`) })}</option>
                       {statusOptions(e.start)
                         .filter((st) => st !== s.status)
@@ -270,12 +322,23 @@ export function CorrectBookingPanel({
                   {pickerRow(e.caregiver, e.picking, (v) => patchEdit(e.shiftId, v))}
                 </div>
                 <label className="mt-3 flex items-center gap-2 text-sm text-ink/70">
-                  <input type="checkbox" checked={e.ownRate} onChange={(ev) => patchEdit(e.shiftId, { ownRate: ev.target.checked })} className="h-4 w-4 rounded border-border" />
+                  <input
+                    type="checkbox"
+                    checked={e.ownRate}
+                    onChange={(ev) => patchEdit(e.shiftId, { ownRate: ev.target.checked })}
+                    className="h-4 w-4 rounded border-border"
+                  />
                   {t('bookings.shiftRate.different')}
                 </label>
                 {e.ownRate && (
                   <div className="mt-2">
-                    <ShiftRateFields booking={booking} value={e.rates} onChange={(rates) => patchEdit(e.shiftId, { rates })} locks={locks} idPrefix={`correct-${e.shiftId}`} />
+                    <ShiftRateFields
+                      booking={booking}
+                      value={e.rates}
+                      onChange={(rates) => patchEdit(e.shiftId, { rates })}
+                      locks={locks}
+                      idPrefix={`correct-${e.shiftId}`}
+                    />
                   </div>
                 )}
               </fieldset>
@@ -286,7 +349,13 @@ export function CorrectBookingPanel({
             <fieldset key={a.key} className="rounded border border-dashed border-brand/50 p-3">
               <legend className="flex items-center gap-2 px-1 text-sm font-medium text-ink">
                 {t('bookings.correct.missingShift')}
-                <button type="button" onClick={() => setAdded((l) => l.filter((x) => x.key !== a.key))} className="rounded p-0.5 text-ink/40 hover:text-danger" aria-label={t('bookings.correct.remove')} title={t('bookings.correct.remove')}>
+                <button
+                  type="button"
+                  onClick={() => setAdded((l) => l.filter((x) => x.key !== a.key))}
+                  className="rounded p-0.5 text-ink/40 hover:text-danger"
+                  aria-label={t('bookings.correct.remove')}
+                  title={t('bookings.correct.remove')}
+                >
                   <X size={14} />
                 </button>
               </legend>
@@ -297,17 +366,35 @@ export function CorrectBookingPanel({
                 </div>
                 <div>
                   <Label htmlFor={`ae-${a.key}`}>{t('bookings.new.endTime')}</Label>
-                  <Input id={`ae-${a.key}`} type="datetime-local" step={900} min={a.start} value={a.end} onChange={(ev) => patchAdded(a.key, { end: ev.target.value })} />
+                  <Input
+                    id={`ae-${a.key}`}
+                    type="datetime-local"
+                    step={900}
+                    min={a.start}
+                    value={a.end}
+                    onChange={(ev) => patchAdded(a.key, { end: ev.target.value })}
+                  />
                 </div>
                 {pickerRow(a.caregiver, a.picking, (v) => patchAdded(a.key, v))}
               </div>
               <label className="mt-3 flex items-center gap-2 text-sm text-ink/70">
-                <input type="checkbox" checked={a.ownRate} onChange={(ev) => patchAdded(a.key, { ownRate: ev.target.checked })} className="h-4 w-4 rounded border-border" />
+                <input
+                  type="checkbox"
+                  checked={a.ownRate}
+                  onChange={(ev) => patchAdded(a.key, { ownRate: ev.target.checked })}
+                  className="h-4 w-4 rounded border-border"
+                />
                 {t('bookings.shiftRate.different')}
               </label>
               {a.ownRate && (
                 <div className="mt-2">
-                  <ShiftRateFields booking={booking} value={a.rates} onChange={(rates) => patchAdded(a.key, { rates })} locks={locksFor(a.caregiver.id)} idPrefix={`add-${a.key}`} />
+                  <ShiftRateFields
+                    booking={booking}
+                    value={a.rates}
+                    onChange={(rates) => patchAdded(a.key, { rates })}
+                    locks={locksFor(a.caregiver.id)}
+                    idPrefix={`add-${a.key}`}
+                  />
                 </div>
               )}
               <p className="mt-2 text-xs text-ink/50">{t('bookings.correct.missingHint')}</p>
@@ -316,7 +403,12 @@ export function CorrectBookingPanel({
 
           <div className="flex flex-wrap items-center gap-2">
             {candidates.length > 0 && (
-              <Select className="w-auto min-w-64" value="" onChange={(e) => e.target.value && pick(e.target.value)} aria-label={t('bookings.correct.pickShift')}>
+              <Select
+                className="w-auto min-w-64"
+                value=""
+                onChange={(e) => e.target.value && pick(e.target.value)}
+                aria-label={t('bookings.correct.pickShift')}
+              >
                 <option value="">{t('bookings.correct.pickShift')}</option>
                 {candidates.map((s) => (
                   <option key={s.id} value={s.id}>
@@ -336,7 +428,15 @@ export function CorrectBookingPanel({
                   const base = last ? isoToColomboLocal(last.startsAt).slice(0, 10) : booking.startDate;
                   setAdded((l) => [
                     ...l,
-                    { key: Date.now(), start: `${base}T${booking.shiftStartTime}`, end: `${base}T${booking.shiftEndTime}`, caregiver: booked, picking: false, ownRate: false, rates: emptyShiftRates },
+                    {
+                      key: Date.now(),
+                      start: `${base}T${booking.shiftStartTime}`,
+                      end: `${base}T${booking.shiftEndTime}`,
+                      caregiver: booked,
+                      picking: false,
+                      ownRate: false,
+                      rates: emptyShiftRates,
+                    },
                   ]);
                 }}
               >
@@ -361,7 +461,13 @@ export function CorrectBookingPanel({
                     <Label htmlFor="correctRate">
                       {t('bookings.detail.clientRate')} ({t(`bookings.rateUnit.${booking.rateType}`)})
                     </Label>
-                    <Input id="correctRate" inputMode="decimal" value={rateAmount} onChange={(e) => setRateAmount(e.target.value)} aria-invalid={!MONEY.test(rateAmount.trim())} />
+                    <Input
+                      id="correctRate"
+                      inputMode="decimal"
+                      value={rateAmount}
+                      onChange={(e) => setRateAmount(e.target.value)}
+                      aria-invalid={!MONEY.test(rateAmount.trim())}
+                    />
                   </div>
                 )}
                 {booking.payRateType && (
@@ -369,7 +475,13 @@ export function CorrectBookingPanel({
                     <Label htmlFor="correctPayRate">
                       {t('bookings.detail.payRate')} ({t(`bookings.rateUnit.${booking.payRateType}`)})
                     </Label>
-                    <Input id="correctPayRate" inputMode="decimal" value={payRateAmount} onChange={(e) => setPayRateAmount(e.target.value)} aria-invalid={!MONEY.test(payRateAmount.trim())} />
+                    <Input
+                      id="correctPayRate"
+                      inputMode="decimal"
+                      value={payRateAmount}
+                      onChange={(e) => setPayRateAmount(e.target.value)}
+                      aria-invalid={!MONEY.test(payRateAmount.trim())}
+                    />
                   </div>
                 )}
                 <p className="text-xs text-ink/50 sm:col-span-2">{t('bookings.correct.rateHint')}</p>
@@ -394,7 +506,8 @@ export function CorrectBookingPanel({
                     />
                     <span>
                       <span className="font-medium">{t(`bookings.issues.role.${r.reporterRole}`)}</span>
-                      {r.shiftStartsAt && <span className="text-ink/50"> · {fmtDay(r.shiftStartsAt, locale)}</span>} · {t(`bookings.issues.category.${r.category}`)}: {r.message}
+                      {r.shiftStartsAt && <span className="text-ink/50"> · {fmtDay(r.shiftStartsAt, locale)}</span>} ·{' '}
+                      {t(`bookings.issues.category.${r.category}`)}: {r.message}
                     </span>
                   </label>
                 </li>
@@ -403,7 +516,14 @@ export function CorrectBookingPanel({
             {linked.length > 0 && (
               <div className="mt-2">
                 <Label htmlFor="correctReply">{t('bookings.correct.reply')}</Label>
-                <Textarea id="correctReply" rows={2} maxLength={500} placeholder={t('bookings.correct.replyPlaceholder')} value={reply} onChange={(e) => setReply(e.target.value)} />
+                <Textarea
+                  id="correctReply"
+                  rows={2}
+                  maxLength={500}
+                  placeholder={t('bookings.correct.replyPlaceholder')}
+                  value={reply}
+                  onChange={(e) => setReply(e.target.value)}
+                />
               </div>
             )}
           </fieldset>
@@ -454,15 +574,19 @@ function PreviewView({
       <div>
         <h3 className="mb-1 text-sm font-semibold text-ink">{t('bookings.correct.changesTitle')}</h3>
         {preview.close && (
-          <p className="mb-1 text-sm font-medium text-ink">{t(`bookings.correct.closing.${preview.close.status}`, { count: preview.close.upcomingCancelled })}</p>
+          <p className="mb-1 text-sm font-medium text-ink">
+            {t(`bookings.correct.closing.${preview.close.status}`, { count: preview.close.upcomingCancelled })}
+          </p>
         )}
         <ul className="space-y-0.5 text-sm text-ink/80">
-          {preview.changes.filter((c) => !(preview.close && !c.shiftId && !c.date && c.changes[0]?.startsWith('booking '))).map((c, i) => (
-            <li key={c.shiftId ?? `b${i}`}>
-              {c.date ? <span className="font-medium">{fmtDay(`${c.date}T06:30:00.000Z`, locale)}: </span> : null}
-              {c.changes.join('; ')}
-            </li>
-          ))}
+          {preview.changes
+            .filter((c) => !(preview.close && !c.shiftId && !c.date && c.changes[0]?.startsWith('booking ')))
+            .map((c, i) => (
+              <li key={c.shiftId ?? `b${i}`}>
+                {c.date ? <span className="font-medium">{fmtDay(`${c.date}T06:30:00.000Z`, locale)}: </span> : null}
+                {c.changes.join('; ')}
+              </li>
+            ))}
         </ul>
       </div>
 
@@ -519,10 +643,22 @@ function PreviewView({
   );
 }
 
-function DocumentImpact({ doc, choice, onChoose }: { doc: AmendmentDocumentImpact; choice?: 'REPLACE' | 'CARRY'; onChoose: (id: string, c: 'REPLACE' | 'CARRY') => void }) {
+function DocumentImpact({
+  doc,
+  choice,
+  onChoose,
+}: {
+  doc: AmendmentDocumentImpact;
+  choice?: 'REPLACE' | 'CARRY';
+  onChoose: (id: string, c: 'REPLACE' | 'CARRY') => void;
+}) {
   const { t, locale } = useTranslation();
   const title =
-    doc.kind === 'INVOICE' ? (doc.label ? t('bookings.correct.invoice', { label: doc.label }) : t('bookings.correct.draftInvoice')) : t('bookings.correct.payout', { label: doc.label ?? '' });
+    doc.kind === 'INVOICE'
+      ? doc.label
+        ? t('bookings.correct.invoice', { label: doc.label })
+        : t('bookings.correct.draftInvoice')
+      : t('bookings.correct.payout', { label: doc.label ?? '' });
   const href = doc.kind === 'INVOICE' ? `/invoices/${doc.id}` : `/payouts/${doc.id}`;
   const status = doc.kind === 'INVOICE' ? t(`billing.invoiceStatus.${doc.status}`) : t(`billing.payoutStatus.${doc.status}`);
   const diff = Number(doc.difference);

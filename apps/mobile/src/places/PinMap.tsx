@@ -85,7 +85,8 @@ export function PinMap({
           const m = JSON.parse(e.nativeEvent.data) as { type: string; latitude?: number; longitude?: number; zoom?: number };
           if (m.type === 'ready') setReady(true);
           if (m.type === 'failed') setFailed(true);
-          if (m.type === 'moved' && m.latitude !== undefined && m.longitude !== undefined) onMove?.({ latitude: m.latitude, longitude: m.longitude }, (m.zoom ?? 0) >= 15);
+          if (m.type === 'moved' && m.latitude !== undefined && m.longitude !== undefined)
+            onMove?.({ latitude: m.latitude, longitude: m.longitude }, (m.zoom ?? 0) >= 15);
         }}
         onShouldStartLoadWithRequest={(req) => req.url.startsWith('about:') || req.url.startsWith('https://tiles.openfreemap.org')}
         scrollEnabled={false}

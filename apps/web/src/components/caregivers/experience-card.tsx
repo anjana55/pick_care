@@ -130,15 +130,21 @@ export function ExperienceCard({ caregiverId, canEdit }: { caregiverId: string; 
       </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
-          <Label htmlFor="exp-employer" required>{t('caregivers.me.experience.employerOrClient')}</Label>
+          <Label htmlFor="exp-employer" required>
+            {t('caregivers.me.experience.employerOrClient')}
+          </Label>
           <Input id="exp-employer" value={form.employerOrClient} onChange={(e) => set('employerOrClient', e.target.value)} maxLength={255} required />
         </div>
         <div>
-          <Label htmlFor="exp-role" required>{t('caregivers.me.experience.role')}</Label>
+          <Label htmlFor="exp-role" required>
+            {t('caregivers.me.experience.role')}
+          </Label>
           <Input id="exp-role" value={form.role} onChange={(e) => set('role', e.target.value)} maxLength={255} required />
         </div>
         <div>
-          <Label htmlFor="exp-country" required>{t('caregivers.me.experience.country')}</Label>
+          <Label htmlFor="exp-country" required>
+            {t('caregivers.me.experience.country')}
+          </Label>
           <Input id="exp-country" value={form.country} onChange={(e) => set('country', e.target.value)} maxLength={100} required />
         </div>
         <div>
@@ -146,13 +152,17 @@ export function ExperienceCard({ caregiverId, canEdit }: { caregiverId: string; 
           <Input id="exp-location" value={form.location} onChange={(e) => set('location', e.target.value)} maxLength={255} />
         </div>
         <div>
-          <Label htmlFor="exp-start" required>{t('caregivers.me.experience.startDate')}</Label>
+          <Label htmlFor="exp-start" required>
+            {t('caregivers.me.experience.startDate')}
+          </Label>
           <Input id="exp-start" type="date" value={form.startDate} onChange={(e) => set('startDate', e.target.value)} required />
         </div>
         <div>
           <Label htmlFor="exp-end">{t('caregivers.me.experience.endDate')}</Label>
           <Input id="exp-end" type="date" value={form.endDate} min={form.startDate || undefined} onChange={(e) => set('endDate', e.target.value)} />
-          <p className={`mt-1 text-xs ${datesInvalid ? 'text-danger' : 'text-ink/50'}`}>{datesInvalid ? t('caregivers.experience.endBeforeStart') : t('caregivers.experience.endHint')}</p>
+          <p className={`mt-1 text-xs ${datesInvalid ? 'text-danger' : 'text-ink/50'}`}>
+            {datesInvalid ? t('caregivers.experience.endBeforeStart') : t('caregivers.experience.endHint')}
+          </p>
         </div>
         <div>
           <Label htmlFor="exp-care">{t('caregivers.me.experience.careType')}</Label>
@@ -169,7 +179,11 @@ export function ExperienceCard({ caregiverId, canEdit }: { caregiverId: string; 
         {editing !== 'new' && (
           <div>
             <Label htmlFor="exp-status">{t('caregivers.experience.verification')}</Label>
-            <Select id="exp-status" value={form.verificationStatus} onChange={(e) => set('verificationStatus', e.target.value as FormValues['verificationStatus'])}>
+            <Select
+              id="exp-status"
+              value={form.verificationStatus}
+              onChange={(e) => set('verificationStatus', e.target.value as FormValues['verificationStatus'])}
+            >
               {STATUSES.map((s) => (
                 <option key={s} value={s}>
                   {t(statusKey(s))}
@@ -220,7 +234,9 @@ export function ExperienceCard({ caregiverId, canEdit }: { caregiverId: string; 
 
         {isLoading && <p className="text-sm text-ink/50">{t('common.loading')}</p>}
         {isError && <p className="text-sm text-danger">{t('common.actionFailed')}</p>}
-        {!isLoading && !isError && sorted.length === 0 && editing !== 'new' && <p className="text-sm text-ink/40">{t('caregivers.me.experience.noExperienceYet')}</p>}
+        {!isLoading && !isError && sorted.length === 0 && editing !== 'new' && (
+          <p className="text-sm text-ink/40">{t('caregivers.me.experience.noExperienceYet')}</p>
+        )}
 
         <ul className="space-y-3">
           {sorted.map((e) =>
@@ -234,16 +250,25 @@ export function ExperienceCard({ caregiverId, canEdit }: { caregiverId: string; 
                       {e.role} · {e.employerOrClient}
                     </div>
                     <div className="mt-0.5 text-xs text-ink/60">
-                      {[e.location, e.country].filter(Boolean).join(', ')} · {day(e.startDate)} — {e.endDate ? day(e.endDate) : t('caregivers.me.experience.present')}
+                      {[e.location, e.country].filter(Boolean).join(', ')} · {day(e.startDate)} —{' '}
+                      {e.endDate ? day(e.endDate) : t('caregivers.me.experience.present')}
                       {' · '}
-                      {t('caregivers.experience.duration', { years: Math.floor(months(e.startDate, e.endDate) / 12), months: months(e.startDate, e.endDate) % 12 })}
+                      {t('caregivers.experience.duration', {
+                        years: Math.floor(months(e.startDate, e.endDate) / 12),
+                        months: months(e.startDate, e.endDate) % 12,
+                      })}
                     </div>
                   </div>
                   <div className="flex items-center gap-1">
                     <VerificationBadge status={e.verificationStatus} label={t(statusKey(e.verificationStatus))} />
                     {canEdit && editing === null && (
                       <>
-                        <IconButton icon={<Pencil size={15} />} aria-label={t('caregivers.experience.edit')} title={t('caregivers.experience.edit')} onClick={() => open(e)} />
+                        <IconButton
+                          icon={<Pencil size={15} />}
+                          aria-label={t('caregivers.experience.edit')}
+                          title={t('caregivers.experience.edit')}
+                          onClick={() => open(e)}
+                        />
                         <IconButton
                           icon={<Trash2 size={15} />}
                           aria-label={t('caregivers.experience.delete')}

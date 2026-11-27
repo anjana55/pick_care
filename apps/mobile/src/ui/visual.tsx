@@ -74,7 +74,14 @@ export function Avatar({ name, size = 56, onBrand = false }: { name: string | nu
     <View
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
-      style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: onBrand ? colors.surface : tint(base, 0.16), alignItems: 'center', justifyContent: 'center' }}
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+        backgroundColor: onBrand ? colors.surface : tint(base, 0.16),
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
     >
       <Text style={{ fontSize: Math.round(size * 0.38), fontWeight: '700', color: onBrand ? colors.brand : base }}>{initials}</Text>
     </View>
@@ -156,10 +163,23 @@ export function BrandMark({ size = 56, light = false }: { size?: number; light?:
       accessible
       accessibilityRole="image"
       accessibilityLabel={branding.companyName}
-      style={{ width: size, height: size, borderRadius: size * 0.28, alignItems: 'center', justifyContent: 'center', backgroundColor: light ? colors.surface : tint(colors.accent, 0.12) }}
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size * 0.28,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: light ? colors.surface : tint(colors.accent, 0.12),
+      }}
     >
       {url ? (
-        <Image testID="brand-art" source={{ uri: url }} style={{ width: size * 0.78, height: size * 0.78 }} resizeMode="contain" onError={() => setFailed(true)} />
+        <Image
+          testID="brand-art"
+          source={{ uri: url }}
+          style={{ width: size * 0.78, height: size * 0.78 }}
+          resizeMode="contain"
+          onError={() => setFailed(true)}
+        />
       ) : (
         <Ionicons name="heart" size={size * 0.55} color={colors.accent} />
       )}
@@ -193,7 +213,9 @@ export function BrandLogo({ reverse = false, height = 44, name }: { reverse?: bo
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
       <BrandMark size={Math.round(height * 1.15)} light={reverse} />
-      <Text style={{ fontSize: Math.round(height * 0.66), fontWeight: '700', color: reverse ? colors.brandText : colors.brand }}>{name ?? branding.companyName}</Text>
+      <Text style={{ fontSize: Math.round(height * 0.66), fontWeight: '700', color: reverse ? colors.brandText : colors.brand }}>
+        {name ?? branding.companyName}
+      </Text>
     </View>
   );
 }

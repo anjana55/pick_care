@@ -72,7 +72,11 @@ export function StandbyCard({ bookingId, editable }: { bookingId: string; editab
             </ul>
           </div>
         )}
-        {error && <p role="alert" className="text-sm text-danger">{error}</p>}
+        {error && (
+          <p role="alert" className="text-sm text-danger">
+            {error}
+          </p>
+        )}
       </CardContent>
     </Card>
   );

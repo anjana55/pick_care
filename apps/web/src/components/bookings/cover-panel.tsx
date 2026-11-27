@@ -62,11 +62,15 @@ export function CoverPanel({ shiftId, onClose }: { shiftId: string; onClose: () 
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h3 className="text-sm font-semibold text-ink">{t('visits.coverPanel.title')}</h3>
         <p className="text-xs text-ink/60">
-          {data.pay ? t('visits.coverPanel.pay', { amount: money(data.pay.amount), unit: t(`pricing.units.${data.pay.rateType}`) }) : t('visits.coverPanel.payOpen')}
+          {data.pay
+            ? t('visits.coverPanel.pay', { amount: money(data.pay.amount), unit: t(`pricing.units.${data.pay.rateType}`) })
+            : t('visits.coverPanel.payOpen')}
         </p>
       </div>
 
-      {accepted && <p className="rounded bg-brand-light px-3 py-2 text-sm text-brand-dark">{t('visits.coverPanel.accepted', { name: accepted.caregiver.fullName })}</p>}
+      {accepted && (
+        <p className="rounded bg-brand-light px-3 py-2 text-sm text-brand-dark">{t('visits.coverPanel.accepted', { name: accepted.caregiver.fullName })}</p>
+      )}
       {data.blocked && !accepted && <p className="text-sm text-ink/70">{t(`visits.coverPanel.blocked.${data.blocked}`)}</p>}
       {data.billedOn && !data.blocked && !accepted && <p className="text-xs text-ink/60">{t('visits.coverPanel.billed', { doc: data.billedOn })}</p>}
 
@@ -82,7 +86,11 @@ export function CoverPanel({ shiftId, onClose }: { shiftId: string; onClose: () 
                   </Link>
                   <span className="ml-2 text-xs text-ink/50">{o.caregiver.registrationNumber}</span>
                   <p className="text-xs text-ink/50">
-                    {o.status === 'OFFERED' ? t('careOffers.until', { when: fmtTime(o.expiresAt, locale) }) : o.respondedAt ? t('careOffers.answered', { when: fmtTime(o.respondedAt, locale) }) : fmtTime(o.expiresAt, locale)}
+                    {o.status === 'OFFERED'
+                      ? t('careOffers.until', { when: fmtTime(o.expiresAt, locale) })
+                      : o.respondedAt
+                        ? t('careOffers.answered', { when: fmtTime(o.respondedAt, locale) })
+                        : fmtTime(o.expiresAt, locale)}
                     {o.sentByName && ` · ${t('careOffers.by', { name: o.sentByName })}`}
                   </p>
                 </div>
@@ -91,7 +99,12 @@ export function CoverPanel({ shiftId, onClose }: { shiftId: string; onClose: () 
                   {o.declineReason && `: ${t(`careOffers.reasons.${o.declineReason}`)}`}
                 </span>
                 {o.status === 'OFFERED' && (
-                  <Button size="sm" variant="secondary" disabled={withdraw.isPending} onClick={() => (setError(null), withdraw.mutate(o.id, { onError: (e) => setError(message(e)) }))}>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    disabled={withdraw.isPending}
+                    onClick={() => (setError(null), withdraw.mutate(o.id, { onError: (e) => setError(message(e)) }))}
+                  >
                     {t('careOffers.withdraw')}
                   </Button>
                 )}
@@ -150,7 +163,10 @@ export function CoverPanel({ shiftId, onClose }: { shiftId: string; onClose: () 
           <Button
             size="sm"
             disabled={send.isPending || chosen.length === 0}
-            onClick={() => (setError(null), send.mutate({ caregiverIds: chosen.map((s) => s.caregiverId) }, { onSuccess: () => setPicked(new Set()), onError: (e) => setError(message(e)) }))}
+            onClick={() => (
+              setError(null),
+              send.mutate({ caregiverIds: chosen.map((s) => s.caregiverId) }, { onSuccess: () => setPicked(new Set()), onError: (e) => setError(message(e)) })
+            )}
           >
             {send.isPending ? t('common.loading') : t('visits.coverPanel.send', { n: chosen.length })}
           </Button>

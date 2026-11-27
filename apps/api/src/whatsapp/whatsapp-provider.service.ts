@@ -86,15 +86,17 @@ export class WhatsappProviderService {
   async sendUpdate(s: ResolvedWhatsappSettings, toE164: string, language: string, text: string): Promise<SendResult> {
     // Message texts name the company as {brand}; see common/branding/brand-text.ts.
     const named = this.branding ? withBrand(text, await this.branding.companyName()) : withBrand(text, DEFAULT_COMPANY_NAME);
-    const flat = named.replace(/[\r\n\t]+/g, ' ').replace(/ {2,}/g, ' ').trim().slice(0, 1000);
+    const flat = named
+      .replace(/[\r\n\t]+/g, ' ')
+      .replace(/ {2,}/g, ' ')
+      .trim()
+      .slice(0, 1000);
     if (s.provider === 'CONSOLE') {
       if (!this.isDevConsole(s)) throw new WhatsappDeliveryError('WhatsApp delivery is not configured');
       this.logger.log(`[WHATSAPP CONSOLE] Update for ${toE164} (${language}): ${flat}`);
       return { provider: 'CONSOLE' };
     }
-    return this.postTemplate(s, toE164, s.notificationTemplateName, language, [
-      { type: 'body', parameters: [{ type: 'text', text: flat }] },
-    ]);
+    return this.postTemplate(s, toE164, s.notificationTemplateName, language, [{ type: 'body', parameters: [{ type: 'text', text: flat }] }]);
   }
 
   private async sendViaCloudApi(s: ResolvedWhatsappSettings, toE164: string, code: string): Promise<SendResult> {

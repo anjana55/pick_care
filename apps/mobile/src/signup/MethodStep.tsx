@@ -1,7 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { isPhoneNumber, SIGNUP_PROVIDER_ORDER, type SignupOtpSent, type SignupSide, type SignupVerifyResult, type SocialProviderName, type Tokens } from '@care-platform/shared';
+import {
+  isPhoneNumber,
+  SIGNUP_PROVIDER_ORDER,
+  type SignupOtpSent,
+  type SignupSide,
+  type SignupVerifyResult,
+  type SocialProviderName,
+  type Tokens,
+} from '@care-platform/shared';
 import { ApiError } from '@/api';
 import { phoneSocialDeps, type SocialDeps } from '@/auth/social';
 import { useTranslation } from '@/i18n';
@@ -75,7 +83,14 @@ export function MethodStep({
 
       {withCallOffice([
         whatsappOn ? (
-          <Choice key="whatsapp" icon="logo-whatsapp" title={t('signup.whatsapp')} hint={t('signup.whatsappHint')} open={open === 'whatsapp'} onOpen={() => (setOpen('whatsapp'), setError(null))}>
+          <Choice
+            key="whatsapp"
+            icon="logo-whatsapp"
+            title={t('signup.whatsapp')}
+            hint={t('signup.whatsappHint')}
+            open={open === 'whatsapp'}
+            onOpen={() => (setOpen('whatsapp'), setError(null))}
+          >
             <WhatsappCode side={side} onIdentity={(identity) => onChosen({ method: 'WHATSAPP', identity })} onSignedIn={onSignedIn} />
           </Choice>
         ) : null,
@@ -93,7 +108,14 @@ export function MethodStep({
             ))}
           </View>
         ) : null,
-        <Choice key="email" icon="mail-outline" title={t('signup.email')} hint={t('signup.emailHint')} open={emailOpen} onOpen={() => (setOpen('email'), setError(null))}>
+        <Choice
+          key="email"
+          icon="mail-outline"
+          title={t('signup.email')}
+          hint={t('signup.emailHint')}
+          open={emailOpen}
+          onOpen={() => (setOpen('email'), setError(null))}
+        >
           <EmailPassword onDone={(email, password) => onChosen({ method: 'EMAIL', email, password })} />
         </Choice>,
       ])}
@@ -114,11 +136,32 @@ function withCallOffice(choices: (React.ReactElement | null)[]) {
   return shown;
 }
 
-function Choice({ icon, title, hint, open, onOpen, children }: { icon: IconName; title: string; hint: string; open: boolean; onOpen: () => void; children: React.ReactNode }) {
+function Choice({
+  icon,
+  title,
+  hint,
+  open,
+  onOpen,
+  children,
+}: {
+  icon: IconName;
+  title: string;
+  hint: string;
+  open: boolean;
+  onOpen: () => void;
+  children: React.ReactNode;
+}) {
   const colors = useColors();
   return (
     <Card style={{ padding: 0, borderWidth: open ? 2 : 1, borderColor: open ? colors.brand : colors.border }}>
-      <Pressable accessibilityRole="button" accessibilityLabel={title} accessibilityHint={hint} accessibilityState={{ expanded: open }} onPress={onOpen} style={styles.choiceHead}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={title}
+        accessibilityHint={hint}
+        accessibilityState={{ expanded: open }}
+        onPress={onOpen}
+        style={styles.choiceHead}
+      >
         <IconBadge name={icon} tone="brand" size={48} />
         <View style={{ flex: 1, gap: 2 }}>
           <Text style={{ fontSize: 18, fontWeight: '700', color: colors.ink }}>{title}</Text>
@@ -131,7 +174,15 @@ function Choice({ icon, title, hint, open, onOpen, children }: { icon: IconName;
   );
 }
 
-function WhatsappCode({ side, onIdentity, onSignedIn }: { side: SignupSide; onIdentity: (identity: ProvenNumber) => void; onSignedIn: (tokens: Tokens) => void }) {
+function WhatsappCode({
+  side,
+  onIdentity,
+  onSignedIn,
+}: {
+  side: SignupSide;
+  onIdentity: (identity: ProvenNumber) => void;
+  onSignedIn: (tokens: Tokens) => void;
+}) {
   const { t } = useTranslation();
   const colors = useColors();
   const [phone, setPhone] = useState('');
@@ -179,7 +230,15 @@ function WhatsappCode({ side, onIdentity, onSignedIn }: { side: SignupSide; onId
   if (!sent) {
     return (
       <View style={{ gap: 14 }}>
-        <Field label={t('signup.whatsappNumber')} hint={t('signup.whatsappNumberHint')} value={phone} onChangeText={setPhone} keyboardType="phone-pad" autoComplete="tel" textContentType="telephoneNumber" />
+        <Field
+          label={t('signup.whatsappNumber')}
+          hint={t('signup.whatsappNumberHint')}
+          value={phone}
+          onChangeText={setPhone}
+          keyboardType="phone-pad"
+          autoComplete="tel"
+          textContentType="telephoneNumber"
+        />
         <FormError message={error} />
         <Button label={t('signup.sendCode')} onPress={() => void send()} busy={busy} disabled={!isPhoneNumber(phone, 7)} />
       </View>
@@ -200,7 +259,12 @@ function WhatsappCode({ side, onIdentity, onSignedIn }: { side: SignupSide; onId
       />
       <FormError message={error} />
       <Button label={t('signup.verify')} onPress={() => void verify()} busy={busy} disabled={code.length < 4} />
-      <Button variant="link" label={wait > 0 ? t('signup.resendIn', { seconds: wait }) : t('signup.resend')} onPress={() => void send()} disabled={wait > 0 || busy} />
+      <Button
+        variant="link"
+        label={wait > 0 ? t('signup.resendIn', { seconds: wait }) : t('signup.resend')}
+        onPress={() => void send()}
+        disabled={wait > 0 || busy}
+      />
       <Button variant="link" label={t('signup.changeNumber')} onPress={() => (setSent(null), setCode(''), setError(null))} />
     </View>
   );
@@ -228,8 +292,23 @@ function EmailPassword({ onDone }: { onDone: (email: string, password: string) =
         textContentType="emailAddress"
         error={checked ? emailError : null}
       />
-      <PasswordField label={t('signup.passwordLabel')} hint={t('signup.passwordHint')} value={password} onChangeText={setPassword} autoComplete="new-password" textContentType="newPassword" error={checked ? passwordError : null} />
-      <PasswordField label={t('signup.confirmPassword')} value={confirm} onChangeText={setConfirm} autoComplete="new-password" textContentType="newPassword" error={checked ? confirmError : null} />
+      <PasswordField
+        label={t('signup.passwordLabel')}
+        hint={t('signup.passwordHint')}
+        value={password}
+        onChangeText={setPassword}
+        autoComplete="new-password"
+        textContentType="newPassword"
+        error={checked ? passwordError : null}
+      />
+      <PasswordField
+        label={t('signup.confirmPassword')}
+        value={confirm}
+        onChangeText={setConfirm}
+        autoComplete="new-password"
+        textContentType="newPassword"
+        error={checked ? confirmError : null}
+      />
       <Button
         label={t('signup.continue')}
         onPress={() => {

@@ -2,7 +2,8 @@ import { ConfigService } from '@nestjs/config';
 import { AddressSearchService, googlePrecision, nominatimPrecision } from './address-search.service';
 import type { GeoService } from './geo.service';
 
-const city = (id: number, en: string, si: string, ta: string, districtId: number, latitude: number, longitude: number) => [id, { id, districtId, nameEn: en, nameSi: si, nameTa: ta, latitude, longitude }] as const;
+const city = (id: number, en: string, si: string, ta: string, districtId: number, latitude: number, longitude: number) =>
+  [id, { id, districtId, nameEn: en, nameSi: si, nameTa: ta, latitude, longitude }] as const;
 const geo = {
   all: async () => ({
     cities: new Map([
@@ -41,7 +42,13 @@ describe('AddressSearchService', () => {
 
   it('puts the map search first, keeps only Sri Lankan matches, and adds towns it did not give', async () => {
     global.fetch = reply([
-      { lat: '6.8655', lon: '79.9001', display_name: '42, Temple Road, Nugegoda, Colombo District, Western Province, 10250, Sri Lanka', addresstype: 'house', address: { house_number: '42', road: 'Temple Road' } },
+      {
+        lat: '6.8655',
+        lon: '79.9001',
+        display_name: '42, Temple Road, Nugegoda, Colombo District, Western Province, 10250, Sri Lanka',
+        addresstype: 'house',
+        address: { house_number: '42', road: 'Temple Road' },
+      },
       { lat: '6.87', lon: '79.90', name: 'Temple Road', display_name: 'Temple Road, Nugegoda, Colombo District, Sri Lanka', addresstype: 'road' },
       { lat: '51.5', lon: '-0.1', display_name: 'Temple Road, London, UK', addresstype: 'road' },
     ]);
@@ -80,7 +87,14 @@ describe('AddressSearchService', () => {
     expect(s.provider).toBe('google');
     global.fetch = reply({
       status: 'OK',
-      results: [{ formatted_address: '42 Temple Rd, Nugegoda 10250, Sri Lanka', geometry: { location: { lat: 6.8655, lng: 79.9001 }, location_type: 'ROOFTOP' }, types: ['street_address'], address_components: [] }],
+      results: [
+        {
+          formatted_address: '42 Temple Rd, Nugegoda 10250, Sri Lanka',
+          geometry: { location: { lat: 6.8655, lng: 79.9001 }, location_type: 'ROOFTOP' },
+          types: ['street_address'],
+          address_components: [],
+        },
+      ],
     });
     const r = await s.search('42 Temple Road Nugegoda', 'en');
     expect(r.results[0]).toMatchObject({ label: '42 Temple Rd', detail: 'Nugegoda 10250', precision: 'ADDRESS', source: 'MAP' });

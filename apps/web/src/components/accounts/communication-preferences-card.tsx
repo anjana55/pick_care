@@ -80,7 +80,9 @@ export function CommunicationPreferencesCard({ subject, canEdit }: { subject: Pr
                 <Select
                   id="cp-method"
                   value={draft.preferredContactMethod ?? ''}
-                  onChange={(e) => setDraft((d) => ({ ...d, preferredContactMethod: (e.target.value || null) as UpdateCommunicationPreferences['preferredContactMethod'] }))}
+                  onChange={(e) =>
+                    setDraft((d) => ({ ...d, preferredContactMethod: (e.target.value || null) as UpdateCommunicationPreferences['preferredContactMethod'] }))
+                  }
                 >
                   <option value="">{t('commsPrefs.notSet')}</option>
                   {contactMethodValues.map((m) => (
@@ -98,7 +100,9 @@ export function CommunicationPreferencesCard({ subject, canEdit }: { subject: Pr
                   <Select
                     id="cp-time"
                     value={draft.preferredContactTime ?? ''}
-                    onChange={(e) => setDraft((d) => ({ ...d, preferredContactTime: (e.target.value || null) as UpdateCommunicationPreferences['preferredContactTime'] }))}
+                    onChange={(e) =>
+                      setDraft((d) => ({ ...d, preferredContactTime: (e.target.value || null) as UpdateCommunicationPreferences['preferredContactTime'] }))
+                    }
                   >
                     <option value="">{t('commsPrefs.notSet')}</option>
                     {contactTimeValues.map((v) => (
@@ -178,7 +182,19 @@ function Summary({
   );
 }
 
-function Toggle({ label, help, checked, disabled, onChange }: { label: string; help: string; checked: boolean; disabled?: boolean; onChange: (v: boolean) => void }) {
+function Toggle({
+  label,
+  help,
+  checked,
+  disabled,
+  onChange,
+}: {
+  label: string;
+  help: string;
+  checked: boolean;
+  disabled?: boolean;
+  onChange: (v: boolean) => void;
+}) {
   return (
     <label className="flex items-start justify-between gap-4">
       <span>

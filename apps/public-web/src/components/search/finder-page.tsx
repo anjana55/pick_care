@@ -13,22 +13,11 @@ import { ResultsList } from '@/components/results/results-list';
 import { LocationError, NearbyControls, NearbySummary, useNearbyMapLabels } from '@/components/results/nearby-panel';
 import { CaregiverMap } from '@/components/map/caregiver-map';
 import { FindForMeCard } from '@/components/care/find-for-me';
-import {
-  HowItWorksSection,
-  TrustSection,
-  MultilingualSection,
-  CallToActionSection,
-} from '@/components/sections/supporting-sections';
+import { HowItWorksSection, TrustSection, MultilingualSection, CallToActionSection } from '@/components/sections/supporting-sections';
 import { SiteHeader } from '@/components/layout/site-header';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { AdSlot } from '@/components/ads/adsense';
-import {
-  useCaregiverCoverage,
-  useCaregiverSearch,
-  useClientSearchOrigin,
-  useMetaSkills,
-  useSearchConfig,
-} from '@/lib/hooks/use-public-search';
+import { useCaregiverCoverage, useCaregiverSearch, useClientSearchOrigin, useMetaSkills, useSearchConfig } from '@/lib/hooks/use-public-search';
 import { useDeviceLocation, type DeviceLocation } from '@/lib/hooks/use-device-location';
 import { useMediaQuery } from '@/lib/hooks/use-media-query';
 import { useIsClient } from '@/lib/hooks/use-client-care';
@@ -213,10 +202,7 @@ export function FinderPage({ variant = 'find', children }: FinderPageProps = {})
   );
   const mapOrigin = data ? (data.origin ?? null) : previewOrigin;
   const mapPoints: MapCityPoint[] = useMemo(() => (data ? (data.mapPoints ?? []) : coverage), [data, coverage]);
-  const highlight = useMemo(
-    () => (highlighted ? { home: highlighted.homeLocation, serviceArea: highlighted.serviceArea } : null),
-    [highlighted],
-  );
+  const highlight = useMemo(() => (highlighted ? { home: highlighted.homeLocation, serviceArea: highlighted.serviceArea } : null), [highlighted]);
   const mapLabels = useNearbyMapLabels(mapOrigin);
   const coverageTotal = coverage.reduce((sum, p) => sum + p.count, 0);
 
@@ -284,12 +270,7 @@ export function FinderPage({ variant = 'find', children }: FinderPageProps = {})
                         initialRequest={aiQuery && request ? request : undefined}
                       />
                     ) : (
-                      <NormalSearchForm
-                        key={formKey}
-                        compact
-                        onSubmit={(next) => search(next)}
-                        initialValues={formKey > 0 && request ? request : undefined}
-                      />
+                      <NormalSearchForm key={formKey} compact onSubmit={(next) => search(next)} initialValues={formKey > 0 && request ? request : undefined} />
                     )}
                   </div>
                 </>
@@ -313,9 +294,7 @@ export function FinderPage({ variant = 'find', children }: FinderPageProps = {})
                 <div className="mt-6 space-y-4 border-t border-border pt-5">
                   <NearbySummary response={data} onRadiusChange={changeRadius} locationError={device.error} />
                   {data.items.length === 0 && <EmptyResultsState onClear={clearSearch} />}
-                  {data.items.length > 0 && (
-                    <ResultsList compact response={data} onPageChange={goToPage} shownOnMap={shownOnMap} onShowOnMap={showOnMap} />
-                  )}
+                  {data.items.length > 0 && <ResultsList compact response={data} onPageChange={goToPage} shownOnMap={shownOnMap} onShowOnMap={showOnMap} />}
                   {/* Nobody suitable on screen? Our team can look for them. */}
                   <FindForMeCard prominent={data.total < 3} />
                   {data.items.length > 0 && <AdSlot placement="search" className="px-0" />}

@@ -129,7 +129,9 @@ export class AnnouncementsService {
     const s = await this.settings.getResolved();
     if ((a.sendPush || a.sendWhatsapp) && inQuietHours(Number(toColombo(now).time.slice(0, 2)), s)) {
       const hours = `${String(s.quietStartHour).padStart(2, '0')}:00–${String(s.quietEndHour).padStart(2, '0')}:00`;
-      throw new BadRequestException(`It's quiet hours (${hours}), when nobody is sent a push or WhatsApp. Publish it to the bell only (untick both), or publish it later.`);
+      throw new BadRequestException(
+        `It's quiet hours (${hours}), when nobody is sent a push or WhatsApp. Publish it to the bell only (untick both), or publish it later.`,
+      );
     }
     // Claim it first, so two clicks can't publish it twice.
     const [claimed] = await this.db
@@ -163,7 +165,10 @@ export class AnnouncementsService {
       let sent = 0;
       for (let i = 0; i < userIds.length; i += 500) {
         const batch = userIds.slice(i, i + 500);
-        const people = await this.db.select({ id: users.id, phone: users.phone }).from(users).where(and(inArray(users.id, batch), isNotNull(users.phone), eq(users.reminderMessagesEnabled, true)));
+        const people = await this.db
+          .select({ id: users.id, phone: users.phone })
+          .from(users)
+          .where(and(inArray(users.id, batch), isNotNull(users.phone), eq(users.reminderMessagesEnabled, true)));
         const locales = await this.db
           .select({ userId: deviceTokens.userId, locale: deviceTokens.locale })
           .from(deviceTokens)

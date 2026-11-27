@@ -26,7 +26,12 @@ export default function CaregiverDashboardPage() {
   const submit = useSubmitRegistration();
 
   if (isLoading) return <p className="text-sm text-ink/60">{t('common.loading')}</p>;
-  if (isError || !caregiver) return <p role="alert" className="text-sm text-danger">{t('portal.loadError')}</p>;
+  if (isError || !caregiver)
+    return (
+      <p role="alert" className="text-sm text-danger">
+        {t('portal.loadError')}
+      </p>
+    );
 
   const steps = [
     { key: 'profile', done: caregiver.skills.length > 0 && caregiver.languages.length > 0, href: '/caregiver/profile' },
@@ -83,7 +88,11 @@ export default function CaregiverDashboardPage() {
         {caregiver.status === 'DRAFT' && (
           <div className="mt-4 border-t border-border pt-4">
             <p className="mb-3 text-sm text-ink/70">{complete ? t('portal.submit.ready') : t('portal.submit.notReady')}</p>
-            {error && <p role="alert" className="mb-3 text-sm text-danger">{error}</p>}
+            {error && (
+              <p role="alert" className="mb-3 text-sm text-danger">
+                {error}
+              </p>
+            )}
             <Button onClick={() => submit.mutate()} disabled={!complete || submit.isPending}>
               {submit.isPending ? t('common.loading') : t('portal.submit.button')}
             </Button>

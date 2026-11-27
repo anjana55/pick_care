@@ -135,7 +135,13 @@ export function VacancyForm({
           <Label htmlFor="vf-title" required>
             {t('employer.vacancies.form.title')}
           </Label>
-          <Input id="vf-title" value={f.title} maxLength={VACANCY_LIMITS.title} onChange={(e) => set('title', e.target.value)} placeholder={t('employer.vacancies.form.titlePlaceholder')} />
+          <Input
+            id="vf-title"
+            value={f.title}
+            maxLength={VACANCY_LIMITS.title}
+            onChange={(e) => set('title', e.target.value)}
+            placeholder={t('employer.vacancies.form.titlePlaceholder')}
+          />
         </div>
         <div>
           <Label htmlFor="vf-setting" required>
@@ -177,7 +183,13 @@ export function VacancyForm({
           <Label htmlFor="vf-description" required>
             {t('employer.vacancies.form.description')}
           </Label>
-          <Textarea id="vf-description" rows={5} value={f.description} maxLength={VACANCY_LIMITS.description} onChange={(e) => set('description', e.target.value)} />
+          <Textarea
+            id="vf-description"
+            rows={5}
+            value={f.description}
+            maxLength={VACANCY_LIMITS.description}
+            onChange={(e) => set('description', e.target.value)}
+          />
           <p className="mt-1 text-xs text-ink/50">{t('employer.vacancies.form.descriptionHint')}</p>
         </div>
       </fieldset>
@@ -200,7 +212,13 @@ export function VacancyForm({
         </div>
         <div className="sm:col-span-2">
           <Label htmlFor="vf-requirements">{t('employer.vacancies.form.requirements')}</Label>
-          <Textarea id="vf-requirements" rows={3} value={f.requirements} maxLength={VACANCY_LIMITS.requirements} onChange={(e) => set('requirements', e.target.value)} />
+          <Textarea
+            id="vf-requirements"
+            rows={3}
+            value={f.requirements}
+            maxLength={VACANCY_LIMITS.requirements}
+            onChange={(e) => set('requirements', e.target.value)}
+          />
         </div>
       </fieldset>
 
@@ -262,7 +280,13 @@ export function VacancyForm({
         </div>
         <div className="sm:col-span-4">
           <Label htmlFor="vf-start">{t('employer.vacancies.form.start')}</Label>
-          <Input id="vf-start" value={f.startTimeframe} maxLength={100} onChange={(e) => set('startTimeframe', e.target.value)} placeholder={t('employer.vacancies.form.startPlaceholder')} />
+          <Input
+            id="vf-start"
+            value={f.startTimeframe}
+            maxLength={100}
+            onChange={(e) => set('startTimeframe', e.target.value)}
+            placeholder={t('employer.vacancies.form.startPlaceholder')}
+          />
         </div>
       </fieldset>
 

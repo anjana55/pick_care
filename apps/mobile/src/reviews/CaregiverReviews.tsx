@@ -128,7 +128,11 @@ export function MyRatings() {
       <BadgeCounts counts={data.badgeCounts} title={t('reviews.caregiver.badges')} />
       <View style={{ gap: 8 }}>
         <Text style={[styles.label, { color: colors.muted }]}>{t('reviews.caregiver.reviews')}</Text>
-        {data.reviews.length ? data.reviews.map((r) => <ReviewItem key={r.id} review={r} />) : <Text style={{ color: colors.muted }}>{t('reviews.caregiver.noReviews')}</Text>}
+        {data.reviews.length ? (
+          data.reviews.map((r) => <ReviewItem key={r.id} review={r} />)
+        ) : (
+          <Text style={{ color: colors.muted }}>{t('reviews.caregiver.noReviews')}</Text>
+        )}
       </View>
     </View>
   );

@@ -117,7 +117,10 @@ describe('Job queue (e2e)', () => {
   it('puts back a job whose worker died, and leaves a job that is still running alone', async () => {
     const dead = (await queue.enqueue(`${T}.ok`, { shiftId: 's' }))!;
     const live = (await queue.enqueue(`${T}.ok`, { shiftId: 't' }))!;
-    await db.update(jobs).set({ status: 'RUNNING', attempts: 1, lockedBy: 'gone:1', lockedAt: new Date(Date.now() - STUCK_AFTER_MS - 60_000) }).where(eq(jobs.id, dead));
+    await db
+      .update(jobs)
+      .set({ status: 'RUNNING', attempts: 1, lockedBy: 'gone:1', lockedAt: new Date(Date.now() - STUCK_AFTER_MS - 60_000) })
+      .where(eq(jobs.id, dead));
     await db.update(jobs).set({ status: 'RUNNING', attempts: 1, lockedBy: 'busy:2', lockedAt: new Date() }).where(eq(jobs.id, live));
 
     expect(await runDue()).toBe(0);
@@ -129,7 +132,13 @@ describe('Job queue (e2e)', () => {
 
   it('leaves a job type nobody handles in the queue', async () => {
     const [before] = [await queue.summary()];
-    await db.insert(jobs).values({ id: '00000000-0000-4000-8000-00000000abcd', type: `${T}.unknown`, payload: {}, runAt: new Date(Date.now() - 5 * 60_000), createdAt: new Date() });
+    await db.insert(jobs).values({
+      id: '00000000-0000-4000-8000-00000000abcd',
+      type: `${T}.unknown`,
+      payload: {},
+      runAt: new Date(Date.now() - 5 * 60_000),
+      createdAt: new Date(),
+    });
     expect(await runDue()).toBe(0);
     const after = await queue.summary();
     expect(after.pending).toBe(before.pending + 1);

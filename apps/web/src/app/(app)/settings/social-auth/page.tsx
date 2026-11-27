@@ -67,9 +67,7 @@ function ProviderCard({ settings }: { settings: SocialProviderSettings }) {
         ...(draft.clearClientSecret ? { clearClientSecret: true } : {}),
       }),
     onSuccess: (next) => {
-      queryClient.setQueryData<SocialProviderSettings[]>(['social-auth-settings'], (list) =>
-        list?.map((p) => (p.provider === next.provider ? next : p)),
-      );
+      queryClient.setQueryData<SocialProviderSettings[]>(['social-auth-settings'], (list) => list?.map((p) => (p.provider === next.provider ? next : p)));
       // The public sign-in screens read availability from here.
       queryClient.invalidateQueries({ queryKey: ['social-providers'] });
       setDraft(toDraft(next));
@@ -188,13 +186,24 @@ function ProviderCard({ settings }: { settings: SocialProviderSettings }) {
           )}
         </div>
 
-        {error && <p role="alert" className="text-sm text-danger">{error}</p>}
+        {error && (
+          <p role="alert" className="text-sm text-danger">
+            {error}
+          </p>
+        )}
 
         <div className="flex flex-wrap items-center gap-3">
           <Button onClick={() => save.mutate()} disabled={save.isPending || !dirty}>
             {save.isPending ? t('common.loading') : t('common.save')}
           </Button>
-          <Button variant="secondary" onClick={() => { setCheck(null); test.mutate(); }} disabled={test.isPending || dirty || !settings.clientSecretSet}>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setCheck(null);
+              test.mutate();
+            }}
+            disabled={test.isPending || dirty || !settings.clientSecretSet}
+          >
             {test.isPending ? t('common.loading') : t('socialAdmin.test')}
           </Button>
           {saved && <span className="text-sm text-brand-dark">{t('socialAdmin.saved')}</span>}

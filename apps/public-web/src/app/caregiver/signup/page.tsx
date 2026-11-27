@@ -28,7 +28,11 @@ function makeSchema(t: (key: string) => string, askPhone: boolean) {
     .omit({ primaryPhone: true })
     .extend({
       phone: askPhone
-        ? z.string().trim().min(1, t('caregiverSignup.validation.phoneRequired')).refine((v) => isPhoneNumber(v), t('caregiverSignup.validation.phoneInvalid'))
+        ? z
+            .string()
+            .trim()
+            .min(1, t('caregiverSignup.validation.phoneRequired'))
+            .refine((v) => isPhoneNumber(v), t('caregiverSignup.validation.phoneInvalid'))
         : z.string().optional(),
       // Checked in the object rather than in a .refine() after it, so the
       // messages show with every other missing answer, not only once the rest is right.
@@ -165,7 +169,9 @@ export default function CaregiverSignupPage() {
 
         {askPhone && (
           <div className="mb-6">
-            <Label htmlFor="phone" required>{t('caregiverSignup.phone')}</Label>
+            <Label htmlFor="phone" required>
+              {t('caregiverSignup.phone')}
+            </Label>
             <Input id="phone" type="tel" inputMode="tel" placeholder="0771234567" {...register('phone')} />
             <p className="mt-1 text-xs text-ink/50">{t('caregiverSignup.phoneHint')}</p>
             <FieldError message={errors.phone?.message as string | undefined} />
@@ -188,7 +194,10 @@ export default function CaregiverSignupPage() {
           <label className="flex items-start gap-2 text-sm text-ink">
             <input type="checkbox" className="mt-0.5 h-4 w-4 rounded border-border text-brand focus:ring-brand" {...register('consentAccepted')} />
             <span>
-              <span aria-hidden="true" className="text-danger">*</span> {t('caregiverRegister.consentLabel')}
+              <span aria-hidden="true" className="text-danger">
+                *
+              </span>{' '}
+              {t('caregiverRegister.consentLabel')}
             </span>
           </label>
           <FieldError message={errors.consentAccepted?.message as string | undefined} />

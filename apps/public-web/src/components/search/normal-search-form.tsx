@@ -53,15 +53,7 @@ function flattenFieldErrors(errors: unknown, prefix = ''): Record<string, unknow
   return flat;
 }
 
-function ChipToggle({
-  options,
-  selected,
-  onToggle,
-}: {
-  options: { id: string; label: string }[];
-  selected: string[];
-  onToggle: (id: string) => void;
-}) {
+function ChipToggle({ options, selected, onToggle }: { options: { id: string; label: string }[]; selected: string[]; onToggle: (id: string) => void }) {
   return (
     <div className="flex flex-wrap gap-2">
       {options.map((opt) => {
@@ -128,17 +120,8 @@ export function NormalSearchForm({ onSubmit, initialValues, submitLabel, compact
   // Options carry ids as values and names as labels. `localeCompare(locale)`
   // is what makes the Sinhala and Tamil lists order naturally rather than by
   // code point; a plain `.sort()` puts them in an arbitrary-looking order.
-  const districts = useMemo(
-    () =>
-      tree
-        .flatMap((p) => p.districts)
-        .sort((a, b) => a.name.localeCompare(b.name, locale)),
-    [tree, locale],
-  );
-  const sortedCities = useMemo(
-    () => [...cities].sort((a, b) => a.name.localeCompare(b.name, locale)),
-    [cities, locale],
-  );
+  const districts = useMemo(() => tree.flatMap((p) => p.districts).sort((a, b) => a.name.localeCompare(b.name, locale)), [tree, locale]);
+  const sortedCities = useMemo(() => [...cities].sort((a, b) => a.name.localeCompare(b.name, locale)), [cities, locale]);
 
   // A restored search (see FinderPage) arrives before the location options
   // do, and a <select> cannot show a value it has no option for yet. Re-apply
@@ -225,17 +208,21 @@ export function NormalSearchForm({ onSubmit, initialValues, submitLabel, compact
   }
 
   return (
-    <form
-      onSubmit={handleSubmit((values) => onSubmit({ ...values, page: 1 }))}
-      className="space-y-6"
-      aria-label={t('normalSearch.submit')}
-    >
+    <form onSubmit={handleSubmit((values) => onSubmit({ ...values, page: 1 }))} className="space-y-6" aria-label={t('normalSearch.submit')}>
       {/* Type of care - first, because it decides who can be shown at all. */}
       <fieldset className="space-y-2" aria-describedby={careTypeError ? 'care-type-error' : undefined}>
         <legend className="text-sm font-semibold text-ink/80">
-          {t('normalSearch.careType')} <span aria-hidden="true" className="text-danger">*</span>
+          {t('normalSearch.careType')}{' '}
+          <span aria-hidden="true" className="text-danger">
+            *
+          </span>
         </legend>
-        <div role="radiogroup" aria-required="true" aria-invalid={careTypeError ? true : undefined} className={compact ? 'grid grid-cols-2 gap-2' : 'grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3'}>
+        <div
+          role="radiogroup"
+          aria-required="true"
+          aria-invalid={careTypeError ? true : undefined}
+          className={compact ? 'grid grid-cols-2 gap-2' : 'grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3'}
+        >
           {careTypeValues.map((type) => {
             const active = careType === type;
             return (
@@ -247,7 +234,11 @@ export function NormalSearchForm({ onSubmit, initialValues, submitLabel, compact
                 onClick={() => setValue('careType', type, { shouldValidate: true })}
                 className={cn(
                   'rounded-DEFAULT border px-3 py-2 text-left text-sm transition-colors',
-                  active ? 'border-brand bg-brand text-white' : careTypeError ? 'border-danger bg-white text-ink' : 'border-border bg-white text-ink hover:border-brand',
+                  active
+                    ? 'border-brand bg-brand text-white'
+                    : careTypeError
+                      ? 'border-danger bg-white text-ink'
+                      : 'border-border bg-white text-ink hover:border-brand',
                 )}
               >
                 {t(`careTypes.${type}`)}
@@ -267,26 +258,12 @@ export function NormalSearchForm({ onSubmit, initialValues, submitLabel, compact
         <legend className="text-sm font-semibold text-ink/80">{t('normalSearch.patientSection')}</legend>
         <div className={compact ? 'grid grid-cols-2 gap-3' : 'grid grid-cols-2 gap-3 sm:grid-cols-3'}>
           <div>
-            <Label htmlFor="patient-age" >
-              {t('normalSearch.age')}
-            </Label>
-            <Input
-              id="patient-age"
-              type="number"
-              min={0}
-              max={120}
-              {...register('patient.age', { valueAsNumber: true })}
-              />
+            <Label htmlFor="patient-age">{t('normalSearch.age')}</Label>
+            <Input id="patient-age" type="number" min={0} max={120} {...register('patient.age', { valueAsNumber: true })} />
           </div>
           <div>
-            <Label htmlFor="patient-gender" >
-              {t('normalSearch.gender')}
-            </Label>
-            <Select
-              id="patient-gender"
-              {...register('patient.gender')}
-              defaultValue=""
-            >
+            <Label htmlFor="patient-gender">{t('normalSearch.gender')}</Label>
+            <Select id="patient-gender" {...register('patient.gender')} defaultValue="">
               <option value="">—</option>
               <option value="MALE">{t('normalSearch.genderMale')}</option>
               <option value="FEMALE">{t('normalSearch.genderFemale')}</option>
@@ -294,16 +271,14 @@ export function NormalSearchForm({ onSubmit, initialValues, submitLabel, compact
           </div>
         </div>
         <div>
-          <Label htmlFor="medical-conditions" >
-            {t('normalSearch.medicalConditions')}
-          </Label>
+          <Label htmlFor="medical-conditions">{t('normalSearch.medicalConditions')}</Label>
           <Input
             id="medical-conditions"
             value={conditionInput}
             onChange={(e) => setConditionInput(e.target.value)}
             onKeyDown={addCondition}
             placeholder={t('normalSearch.medicalConditionsPlaceholder')}
-            />
+          />
           {medicalConditions.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-2">
               {medicalConditions.map((c) => (
@@ -352,8 +327,11 @@ export function NormalSearchForm({ onSubmit, initialValues, submitLabel, compact
         )}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <Label htmlFor="district" >
-              {t('normalSearch.district')} <span aria-hidden="true" className="text-danger">*</span>
+            <Label htmlFor="district">
+              {t('normalSearch.district')}{' '}
+              <span aria-hidden="true" className="text-danger">
+                *
+              </span>
             </Label>
             <Select
               id="district"
@@ -390,9 +368,7 @@ export function NormalSearchForm({ onSubmit, initialValues, submitLabel, compact
             )}
           </div>
           <div>
-            <Label htmlFor="city" >
-              {t('normalSearch.city')}
-            </Label>
+            <Label htmlFor="city">{t('normalSearch.city')}</Label>
             <Select
               id="city"
               {...cityField}
@@ -438,28 +414,16 @@ export function NormalSearchForm({ onSubmit, initialValues, submitLabel, compact
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <Label htmlFor="preferred-gender" >
-              {t('normalSearch.preferredGender')}
-            </Label>
-            <Select
-              id="preferred-gender"
-              {...register('caregiverGenderPreference')}
-              defaultValue="ANY"
-            >
+            <Label htmlFor="preferred-gender">{t('normalSearch.preferredGender')}</Label>
+            <Select id="preferred-gender" {...register('caregiverGenderPreference')} defaultValue="ANY">
               <option value="ANY">{t('normalSearch.genderAny')}</option>
               <option value="FEMALE">{t('normalSearch.genderFemale')}</option>
               <option value="MALE">{t('normalSearch.genderMale')}</option>
             </Select>
           </div>
           <div>
-            <Label htmlFor="shift" >
-              {t('normalSearch.shift')}
-            </Label>
-            <Select
-              id="shift"
-              {...register('shift')}
-              defaultValue=""
-            >
+            <Label htmlFor="shift">{t('normalSearch.shift')}</Label>
+            <Select id="shift" {...register('shift')} defaultValue="">
               <option value="">—</option>
               <option value="DAY">{t('normalSearch.shiftDay')}</option>
               <option value="NIGHT">{t('normalSearch.shiftNight')}</option>
@@ -480,8 +444,11 @@ export function NormalSearchForm({ onSubmit, initialValues, submitLabel, compact
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <Label htmlFor="start-date" >
-              {t('normalSearch.startDate')} <span aria-hidden="true" className="text-danger">*</span>
+            <Label htmlFor="start-date">
+              {t('normalSearch.startDate')}{' '}
+              <span aria-hidden="true" className="text-danger">
+                *
+              </span>
             </Label>
             <input
               id="start-date"
@@ -490,10 +457,7 @@ export function NormalSearchForm({ onSubmit, initialValues, submitLabel, compact
               aria-required="true"
               aria-invalid={startDateError ? true : undefined}
               aria-describedby={startDateError ? 'start-date-hint start-date-error' : 'start-date-hint'}
-              className={cn(
-                'w-full rounded-DEFAULT border bg-white px-3 py-2 text-sm',
-                startDateError ? 'border-danger' : 'border-border',
-              )}
+              className={cn('w-full rounded-DEFAULT border bg-white px-3 py-2 text-sm', startDateError ? 'border-danger' : 'border-border')}
             />
             {startDateError && (
               <p id="start-date-error" role="alert" className="mt-1 text-xs text-danger">
@@ -505,16 +469,8 @@ export function NormalSearchForm({ onSubmit, initialValues, submitLabel, compact
             </p>
           </div>
           <div>
-            <Label htmlFor="min-experience" >
-              {t('normalSearch.minimumExperience')}
-            </Label>
-            <Input
-              id="min-experience"
-              type="number"
-              min={0}
-              max={50}
-              {...register('minimumExperienceYears', { valueAsNumber: true })}
-              />
+            <Label htmlFor="min-experience">{t('normalSearch.minimumExperience')}</Label>
+            <Input id="min-experience" type="number" min={0} max={50} {...register('minimumExperienceYears', { valueAsNumber: true })} />
           </div>
         </div>
       </fieldset>

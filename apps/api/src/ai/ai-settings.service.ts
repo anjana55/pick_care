@@ -52,7 +52,10 @@ export class AiSettingsService {
   private async getRow(): Promise<AiSettingsRow> {
     const [existing] = await this.db.select().from(aiSettings).where(eq(aiSettings.id, SETTINGS_ID)).limit(1);
     if (existing) return existing;
-    await this.db.insert(aiSettings).values({ id: SETTINGS_ID }).onDuplicateKeyUpdate({ set: { id: SETTINGS_ID } });
+    await this.db
+      .insert(aiSettings)
+      .values({ id: SETTINGS_ID })
+      .onDuplicateKeyUpdate({ set: { id: SETTINGS_ID } });
     const [created] = await this.db.select().from(aiSettings).where(eq(aiSettings.id, SETTINGS_ID)).limit(1);
     return created;
   }

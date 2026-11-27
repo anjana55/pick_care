@@ -50,10 +50,25 @@ const invoice = (over: Partial<ClientInvoice> = {}): ClientInvoice => ({
   periodStart: '2026-09-01',
   periodEnd: '2026-09-30',
   bookingReference: 'BK-7KX2PQ',
-  seller: { name: 'Pick Care (Pvt) Ltd', address: '12 Galle Road, Colombo 03', phone: '0112000000', email: 'billing@carelink.lk', registrationNumber: 'PV 12345', taxRegistrationNumber: null },
+  seller: {
+    name: 'Pick Care (Pvt) Ltd',
+    address: '12 Galle Road, Colombo 03',
+    phone: '0112000000',
+    email: 'billing@carelink.lk',
+    registrationNumber: 'PV 12345',
+    taxRegistrationNumber: null,
+  },
   billTo: { name: 'Amali Perera', address: 'Dehiwala', phone: '0771234567', email: 'amali@example.com' },
   lines: [
-    { description: 'Care shift 08:00–20:00 (BK-7KX2PQ)', serviceDate: '2026-09-01', quantity: '1.00', unit: 'DAY', unitPrice: '3500.00', discount: '0.00', amount: '3500.00' },
+    {
+      description: 'Care shift 08:00–20:00 (BK-7KX2PQ)',
+      serviceDate: '2026-09-01',
+      quantity: '1.00',
+      unit: 'DAY',
+      unitPrice: '3500.00',
+      discount: '0.00',
+      amount: '3500.00',
+    },
     { description: 'Late start', serviceDate: null, quantity: '1.00', unit: 'ITEM', unitPrice: '-500.00', discount: '0.00', amount: '-500.00' },
   ],
   subtotal: '3000.00',
@@ -118,7 +133,10 @@ describe('client invoices', () => {
 
   it('starts a PayHere checkout and posts the form the API signed', async () => {
     get.mockResolvedValue(invoice());
-    post.mockResolvedValue({ action: 'https://sandbox.payhere.lk/pay/checkout', fields: { merchant_id: '1211149', order_id: 'o-1', amount: '3000.00', hash: 'ABC' } });
+    post.mockResolvedValue({
+      action: 'https://sandbox.payhere.lk/pay/checkout',
+      fields: { merchant_id: '1211149', order_id: 'o-1', amount: '3000.00', hash: 'ABC' },
+    });
     const submit = jest.spyOn(HTMLFormElement.prototype, 'submit').mockImplementation(() => undefined);
     renderUi(<InvoicePage />);
     fireEvent.click(await screen.findByRole('button', { name: 'Pay now' }));
@@ -170,7 +188,15 @@ describe('caregiver payments', () => {
       periodStart: '2026-09-01',
       periodEnd: '2026-09-30',
       lines: [
-        { description: 'BK-7KX2PQ · 08:00–20:00', serviceDate: '2026-09-01', quantity: '1.00', unit: 'DAY', unitPrice: '2500.00', discount: '0.00', amount: '2500.00' },
+        {
+          description: 'BK-7KX2PQ · 08:00–20:00',
+          serviceDate: '2026-09-01',
+          quantity: '1.00',
+          unit: 'DAY',
+          unitPrice: '2500.00',
+          discount: '0.00',
+          amount: '2500.00',
+        },
         { description: 'Uniform', serviceDate: null, quantity: '1.00', unit: 'ITEM', unitPrice: '-300.00', discount: '0.00', amount: '-300.00' },
       ],
       total: '2200.00',

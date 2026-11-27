@@ -56,23 +56,22 @@ const versionOf = (row: Row, asset: BrandAsset): string | null => (row[COLUMNS[a
  * be crisp. Read from the decoded picture (an SVG's own size or viewBox).
  */
 export async function checkAssetShape(asset: BrandAsset, buffer: Buffer): Promise<void> {
-  let width = 0;
-  let height = 0;
-  let vector = false;
-  try {
-    const meta = await sharp(buffer, { limitInputPixels: 50_000_000 }).metadata();
-    width = meta.width ?? 0;
-    height = meta.height ?? 0;
-    vector = meta.format === 'svg';
-  } catch {
-    throw new BadRequestException('This picture could not be read. Export it again as PNG or SVG.');
-  }
+  const meta = await sharp(buffer, { limitInputPixels: 50_000_000 })
+    .metadata()
+    .catch(() => {
+      throw new BadRequestException('This picture could not be read. Export it again as PNG or SVG.');
+    });
+  const width = meta.width ?? 0;
+  const height = meta.height ?? 0;
+  const vector = meta.format === 'svg';
   if (!width || !height) throw new BadRequestException('This picture has no size. Export it again with a width and height.');
   if (SQUARE_BRAND_ASSETS.includes(asset) && Math.abs(width - height) / Math.max(width, height) > 0.05) {
     throw new BadRequestException(`This picture must be square (this one is ${width} × ${height}).`);
   }
   if (asset === 'appIcon' && !vector && Math.min(width, height) < APP_ICON_MIN_PX) {
-    throw new BadRequestException(`The app icon must be at least ${APP_ICON_MIN_PX} × ${APP_ICON_MIN_PX} pixels, or an SVG (this one is ${width} × ${height}).`);
+    throw new BadRequestException(
+      `The app icon must be at least ${APP_ICON_MIN_PX} × ${APP_ICON_MIN_PX} pixels, or an SVG (this one is ${width} × ${height}).`,
+    );
   }
 }
 
@@ -90,7 +89,7 @@ export function inspectLogo(buffer: Buffer): LogoMimeType {
   if (buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) return 'image/jpeg';
   if (buffer.subarray(0, 4).toString('latin1') === 'RIFF' && buffer.subarray(8, 12).toString('latin1') === 'WEBP') return 'image/webp';
 
-  const text = buffer.toString('utf8').replace(/^﻿/, '');
+  const text = buffer.toString('utf8').replace(/^\uFEFF/, '');
   const head = text.replace(/^\s*(<\?xml[^>]*\?>\s*)?(<!--[\s\S]*?-->\s*)*(<!DOCTYPE[^>[]*>\s*)?/i, '');
   if (/^<svg[\s>]/i.test(head)) {
     const unsafe =
@@ -116,7 +115,10 @@ export class BrandingSettingsService {
   private async getRow(): Promise<Row> {
     const [existing] = await this.db.select().from(brandingSettings).where(eq(brandingSettings.id, SETTINGS_ID)).limit(1);
     if (existing) return existing;
-    await this.db.insert(brandingSettings).values({ id: SETTINGS_ID }).onDuplicateKeyUpdate({ set: { id: SETTINGS_ID } });
+    await this.db
+      .insert(brandingSettings)
+      .values({ id: SETTINGS_ID })
+      .onDuplicateKeyUpdate({ set: { id: SETTINGS_ID } });
     const [created] = await this.db.select().from(brandingSettings).where(eq(brandingSettings.id, SETTINGS_ID)).limit(1);
     return created;
   }
@@ -131,7 +133,12 @@ export class BrandingSettingsService {
       primaryColor: row.primaryColor.toUpperCase(),
       accentColor: row.accentColor.toUpperCase(),
       logoVersion: versionOf(row, 'logo'),
-      assets: { logo: versionOf(row, 'logo'), logoReverse: versionOf(row, 'logoReverse'), symbol: versionOf(row, 'symbol'), appIcon: versionOf(row, 'appIcon') },
+      assets: {
+        logo: versionOf(row, 'logo'),
+        logoReverse: versionOf(row, 'logoReverse'),
+        symbol: versionOf(row, 'symbol'),
+        appIcon: versionOf(row, 'appIcon'),
+      },
       defaultLocale,
       enabledLocales: normalizeLocales(row.enabledLocales.split(','), defaultLocale),
       textScale: parseTextScale(row.textScale),
@@ -173,7 +180,10 @@ export class BrandingSettingsService {
     const primaryColor = (dto.primaryColor ?? current.primaryColor).toUpperCase();
     const accentColor = (dto.accentColor ?? current.accentColor).toUpperCase();
 
-    for (const [label, color] of [['primary', primaryColor], ['accent', accentColor]] as const) {
+    for (const [label, color] of [
+      ['primary', primaryColor],
+      ['accent', accentColor],
+    ] as const) {
       if (!meetsBrandContrast(color)) {
         throw new BadRequestException(
           `The ${label} colour ${color} is too light for white text (contrast ${contrastRatio(color, '#FFFFFF').toFixed(2)}:1, needs ${MIN_BRAND_CONTRAST}:1). Choose a darker shade.`,
@@ -193,7 +203,19 @@ export class BrandingSettingsService {
 
     await this.db
       .update(brandingSettings)
-      .set({ companyName, shortName, tagline, officePhone, primaryColor, accentColor, defaultLocale, enabledLocales: enabledLocales.join(','), textScale: formatTextScale(textScale), updatedBy, updatedAt: new Date() })
+      .set({
+        companyName,
+        shortName,
+        tagline,
+        officePhone,
+        primaryColor,
+        accentColor,
+        defaultLocale,
+        enabledLocales: enabledLocales.join(','),
+        textScale: formatTextScale(textScale),
+        updatedBy,
+        updatedAt: new Date(),
+      })
       .where(eq(brandingSettings.id, SETTINGS_ID));
 
     // The email sender name and the invoice business name start out as the

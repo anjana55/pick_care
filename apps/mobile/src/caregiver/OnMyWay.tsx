@@ -135,7 +135,13 @@ export function OnMyWay({ shift, deps = defaultDeps }: { shift: CaregiverShift; 
 
   return (
     <View style={{ gap: 6 }}>
-      <Button variant="secondary" icon="navigate-outline" label={omw.shareId ? t('onMyWay.again') : t('onMyWay.start')} busy={start.isPending} onPress={() => void tap()} />
+      <Button
+        variant="secondary"
+        icon="navigate-outline"
+        label={omw.shareId ? t('onMyWay.again') : t('onMyWay.start')}
+        busy={start.isPending}
+        onPress={() => void tap()}
+      />
       {omw.shareId ? <Text style={{ fontSize: 14, color: colors.muted }}>{t('onMyWay.notThisPhone')}</Text> : null}
       <FormError message={error} />
     </View>

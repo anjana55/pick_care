@@ -21,12 +21,7 @@ export class HealthInformationController {
   }
 
   @Put()
-  upsert(
-    @Param('caregiverId') caregiverId: string,
-    @Body() dto: UpsertHealthInformationDto,
-    @CurrentUser() user: AuthenticatedUser,
-    @Req() req: Request,
-  ) {
+  upsert(@Param('caregiverId') caregiverId: string, @Body() dto: UpsertHealthInformationDto, @CurrentUser() user: AuthenticatedUser, @Req() req: Request) {
     return this.healthInformationService.upsert(caregiverId, dto, user.userId, req.ip);
   }
 }

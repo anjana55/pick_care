@@ -53,8 +53,7 @@ describe('CaregiversService location writes', () => {
         leftJoin: () => chain,
         orderBy: () => chain,
         limit: () => Promise.resolve(rows),
-        then: (resolve: (v: unknown) => unknown, reject?: (e: unknown) => unknown) =>
-          Promise.resolve(rows).then(resolve, reject),
+        then: (resolve: (v: unknown) => unknown, reject?: (e: unknown) => unknown) => Promise.resolve(rows).then(resolve, reject),
       };
       return chain;
     };

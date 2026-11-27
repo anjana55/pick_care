@@ -218,7 +218,14 @@ export function OfferForm({
         </div>
         <div className="sm:col-span-3">
           <Label htmlFor="o-other">{t('overseas.terms.other')}</Label>
-          <Textarea id="o-other" value={d.otherTerms ?? ''} onChange={(e) => set('otherTerms', e.target.value)} maxLength={OFFER_LIMITS.otherTerms} rows={4} placeholder={t('employer.offers.form.otherPlaceholder')} />
+          <Textarea
+            id="o-other"
+            value={d.otherTerms ?? ''}
+            onChange={(e) => set('otherTerms', e.target.value)}
+            maxLength={OFFER_LIMITS.otherTerms}
+            rows={4}
+            placeholder={t('employer.offers.form.otherPlaceholder')}
+          />
         </div>
       </fieldset>
 
@@ -233,7 +240,15 @@ export function OfferForm({
           <Label htmlFor="o-sign" required>
             {t('employer.offers.form.signature')}
           </Label>
-          <Input id="o-sign" value={d.signatureName} onChange={(e) => set('signatureName', e.target.value)} maxLength={OFFER_LIMITS.signature} autoComplete="name" className="max-w-sm bg-white font-serif text-lg italic" required />
+          <Input
+            id="o-sign"
+            value={d.signatureName}
+            onChange={(e) => set('signatureName', e.target.value)}
+            maxLength={OFFER_LIMITS.signature}
+            autoComplete="name"
+            className="max-w-sm bg-white font-serif text-lg italic"
+            required
+          />
         </div>
       </fieldset>
 

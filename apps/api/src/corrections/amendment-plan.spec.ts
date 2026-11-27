@@ -53,7 +53,11 @@ function doc(kind: 'INVOICE' | 'PAYOUT', b: PlanBooking, shifts: PlanShift[], ov
         rateAmount: kind === 'INVOICE' ? b.rateAmount : b.payRateAmount,
       },
     ],
-    shifts: shifts.map((s) => ({ ...s, rateType: kind === 'INVOICE' ? s.rateType : s.payRateType, rateAmount: kind === 'INVOICE' ? s.rateAmount : s.payRateAmount })),
+    shifts: shifts.map((s) => ({
+      ...s,
+      rateType: kind === 'INVOICE' ? s.rateType : s.payRateType,
+      rateAmount: kind === 'INVOICE' ? s.rateAmount : s.payRateAmount,
+    })),
     billedShiftIds: new Set(),
     billedPeriods: [],
   });
@@ -141,7 +145,13 @@ describe('planAmendment', () => {
   it('names only the shifts whose money changed in a carried difference', () => {
     const plan = planAmendment({
       before: { booking: b, shifts: [s1, s2] },
-      after: { booking: b, shifts: [{ ...s1, status: 'MISSED' }, { ...s2, caregiverId: 'cgB' }] },
+      after: {
+        booking: b,
+        shifts: [
+          { ...s1, status: 'MISSED' },
+          { ...s2, caregiverId: 'cgB' },
+        ],
+      },
       touched: new Set(['s1', 's2']),
       documents: [doc('INVOICE', b, [s1, s2], { status: 'PAID', amountPaid: '8000.00' })],
       caregiverNames: names,
@@ -282,6 +292,10 @@ describe('describeChanges', () => {
       names,
     );
     expect(out[0]).toEqual({ shiftId: null, date: '', changes: ['client rate LKR 500.00 per hour → LKR 550.00 per hour'] });
-    expect(out[1]).toEqual({ shiftId: 's1', date: '2026-10-12', changes: ['times 08:00–16:00 → 08:00–19:00 (11 h)', 'worked by Caregiver B (was Caregiver A)'] });
+    expect(out[1]).toEqual({
+      shiftId: 's1',
+      date: '2026-10-12',
+      changes: ['times 08:00–16:00 → 08:00–19:00 (11 h)', 'worked by Caregiver B (was Caregiver A)'],
+    });
   });
 });

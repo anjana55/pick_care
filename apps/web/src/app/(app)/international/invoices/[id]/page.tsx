@@ -68,9 +68,7 @@ export default function PlacementInvoicePage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
-        <div className="space-y-6">
-          {inv.status === 'DRAFT' ? <DraftForm invoice={inv} /> : <Summary invoice={inv} />}
-        </div>
+        <div className="space-y-6">{inv.status === 'DRAFT' ? <DraftForm invoice={inv} /> : <Summary invoice={inv} />}</div>
         <div className="space-y-6">
           {inv.status === 'DRAFT' && <IssueCard invoice={inv} />}
           {(inv.status === 'ISSUED' || inv.status === 'PAID') && <PaymentCard invoice={inv} />}
@@ -215,7 +213,14 @@ function DraftForm({ invoice: inv }: { invoice: PlacementInvoice }) {
           </div>
           <div>
             <Label htmlFor="inv-notes">{t('international.invoices.notes')}</Label>
-            <Textarea id="inv-notes" rows={2} value={notes} maxLength={2000} onChange={(e) => setNotes(e.target.value)} placeholder={t('international.invoices.notesPlaceholder')} />
+            <Textarea
+              id="inv-notes"
+              rows={2}
+              value={notes}
+              maxLength={2000}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder={t('international.invoices.notesPlaceholder')}
+            />
           </div>
           {action.isError && <p className="text-sm text-danger">{action.error instanceof Error ? action.error.message : t('common.actionFailed')}</p>}
           <div className="flex items-center gap-3">
@@ -242,7 +247,9 @@ function IssueCard({ invoice: inv }: { invoice: PlacementInvoice }) {
         <CardTitle>{t('international.invoices.issueTitle')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        <p className="text-sm text-ink/70">{inv.billToEmail ? t('international.invoices.issueHint', { email: inv.billToEmail }) : t('international.invoices.issueNoEmail')}</p>
+        <p className="text-sm text-ink/70">
+          {inv.billToEmail ? t('international.invoices.issueHint', { email: inv.billToEmail }) : t('international.invoices.issueNoEmail')}
+        </p>
         <Button disabled={action.isPending} onClick={() => action.mutate({ kind: 'issue', id: inv.id })}>
           <Send size={14} aria-hidden />
           {t('international.invoices.issue')}
@@ -252,7 +259,16 @@ function IssueCard({ invoice: inv }: { invoice: PlacementInvoice }) {
           {confirm ? (
             <div className="flex items-center gap-2 text-sm">
               <span>{t('international.invoices.deleteConfirm')}</span>
-              <Button size="sm" variant="danger" disabled={remove.isPending} onClick={() => remove.mutate(inv.id, { onSuccess: () => router.push(inv.placementId ? `/international/placements/${inv.placementId}` : '/international?tab=invoices') })}>
+              <Button
+                size="sm"
+                variant="danger"
+                disabled={remove.isPending}
+                onClick={() =>
+                  remove.mutate(inv.id, {
+                    onSuccess: () => router.push(inv.placementId ? `/international/placements/${inv.placementId}` : '/international?tab=invoices'),
+                  })
+                }
+              >
                 {t('common.confirm')}
               </Button>
               <Button size="sm" variant="ghost" onClick={() => setConfirm(false)}>
@@ -320,7 +336,13 @@ function PaymentCard({ invoice: inv }: { invoice: PlacementInvoice }) {
           </div>
           <div>
             <Label htmlFor="pay-ref">{t('international.invoices.reference')}</Label>
-            <Input id="pay-ref" value={reference} maxLength={120} onChange={(e) => setReference(e.target.value)} placeholder={t('international.invoices.referencePlaceholder')} />
+            <Input
+              id="pay-ref"
+              value={reference}
+              maxLength={120}
+              onChange={(e) => setReference(e.target.value)}
+              placeholder={t('international.invoices.referencePlaceholder')}
+            />
           </div>
           {Number(inv.amountPaid) > 0 && (
             <label className="flex items-center gap-2 text-xs text-ink/70">
@@ -348,9 +370,20 @@ function VoidCard({ invoice: inv }: { invoice: PlacementInvoice }) {
         <CardTitle>{t('international.invoices.voidTitle')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        <Textarea rows={2} maxLength={500} value={reason} onChange={(e) => setReason(e.target.value)} placeholder={t('international.invoices.voidPlaceholder')} />
+        <Textarea
+          rows={2}
+          maxLength={500}
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          placeholder={t('international.invoices.voidPlaceholder')}
+        />
         {action.isError && <p className="text-xs text-danger">{action.error instanceof Error ? action.error.message : t('common.actionFailed')}</p>}
-        <Button size="sm" variant="secondary" disabled={action.isPending || reason.trim().length < 3} onClick={() => action.mutate({ kind: 'void', id: inv.id, reason: reason.trim() })}>
+        <Button
+          size="sm"
+          variant="secondary"
+          disabled={action.isPending || reason.trim().length < 3}
+          onClick={() => action.mutate({ kind: 'void', id: inv.id, reason: reason.trim() })}
+        >
           {t('international.invoices.void')}
         </Button>
       </CardContent>

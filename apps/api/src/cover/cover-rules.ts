@@ -54,7 +54,8 @@ export function coverStep(
   if (states.includes('ACCEPTED') || states.includes('OFFERED')) return { step: 'none' };
 
   const minutesLeft = Math.floor((ms(visit.endsAt) - t) / 60_000);
-  if (offers.length >= COVER_MAX_OFFERS || (offers.length > 0 && minutesLeft < COVER_MIN_REMAINING_MINUTES)) return { step: 'giveUp', asked: offers.length, minutesLate };
+  if (offers.length >= COVER_MAX_OFFERS || (offers.length > 0 && minutesLeft < COVER_MIN_REMAINING_MINUTES))
+    return { step: 'giveUp', asked: offers.length, minutesLate };
   if (minutesLeft < COVER_MIN_REMAINING_MINUTES) return { step: 'none' };
   return { step: 'offer', wave: Math.floor(offers.length / COVER_WAVE) + 1, minutesLate, minutesLeft };
 }
@@ -67,7 +68,13 @@ export function shiftSchedule(startsAt: Date | string, endsAt: Date | string): S
 }
 
 /** One shift as the matching rules see a request: what is needed, where and when - nothing about who the client is. */
-export function coverRequest(shift: { startsAt: Date | string; endsAt: Date | string; careType: string | null; districtId: number; cityId: number | null }): MatchRequest {
+export function coverRequest(shift: {
+  startsAt: Date | string;
+  endsAt: Date | string;
+  careType: string | null;
+  districtId: number;
+  cityId: number | null;
+}): MatchRequest {
   return {
     careType: shift.careType ?? '',
     districtId: shift.districtId,

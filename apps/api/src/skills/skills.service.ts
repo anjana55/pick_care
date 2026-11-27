@@ -36,9 +36,7 @@ export class SkillsService {
   /** Every skill, named in `lang`, sorted the way a reader of that language would look for it. */
   async list(lang?: string): Promise<SkillView[]> {
     const rows = await this.findAll();
-    return rows
-      .map((r) => this.view(r, lang))
-      .sort((a, b) => a.name.localeCompare(b.name, lang ?? 'en'));
+    return rows.map((r) => this.view(r, lang)).sort((a, b) => a.name.localeCompare(b.name, lang ?? 'en'));
   }
 
   async create(input: CreateSkillDto, lang?: string): Promise<SkillView> {
@@ -66,7 +64,11 @@ export class SkillsService {
     if (input.name !== undefined) {
       const name = input.name.trim();
       if (!name) throw new BadRequestException('Skill name is required');
-      const [clash] = await this.db.select({ id: skills.id }).from(skills).where(and(eq(skills.name, name), ne(skills.id, id))).limit(1);
+      const [clash] = await this.db
+        .select({ id: skills.id })
+        .from(skills)
+        .where(and(eq(skills.name, name), ne(skills.id, id)))
+        .limit(1);
       if (clash) throw new ConflictException('Skill already exists');
       set.name = name;
     }

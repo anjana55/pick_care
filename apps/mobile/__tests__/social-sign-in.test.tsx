@@ -72,17 +72,41 @@ describe('signing in with a provider', () => {
 
   it('treats a closed browser or "declined" as nothing happening', async () => {
     serveApi({ [LOGIN_URL]: () => ({ status: 200, body: { url: 'https://accounts.google.com/o?x' } }) });
-    expect(await signInWithProvider('GOOGLE', 'client', phone(() => ({ type: 'cancel' })))).toEqual({ canceled: true });
-    expect(await signInWithProvider('GOOGLE', 'client', phone((u) => backToApp(u, { error: 'declined' })))).toEqual({ canceled: true });
+    expect(
+      await signInWithProvider(
+        'GOOGLE',
+        'client',
+        phone(() => ({ type: 'cancel' })),
+      ),
+    ).toEqual({ canceled: true });
+    expect(
+      await signInWithProvider(
+        'GOOGLE',
+        'client',
+        phone((u) => backToApp(u, { error: 'declined' })),
+      ),
+    ).toEqual({ canceled: true });
   });
 
   it("passes on the API's reason, and spends no code it didn't start", async () => {
     const calls = serveApi({ [LOGIN_URL]: () => ({ status: 200, body: { url: 'https://accounts.google.com/o?nonce=x' } }) });
-    expect(await signInWithProvider('GOOGLE', 'caregiver', phone((u) => backToApp(u, { error: 'not_registered' })))).toEqual({ error: 'not_registered' });
+    expect(
+      await signInWithProvider(
+        'GOOGLE',
+        'caregiver',
+        phone((u) => backToApp(u, { error: 'not_registered' })),
+      ),
+    ).toEqual({ error: 'not_registered' });
 
     // A result for another attempt (its nonce isn't this one's).
     const stranger = { type: 'success', url: 'pickcare://auth/callback?flow=login&nonce=someone-else&code=c0de' };
-    expect(await signInWithProvider('GOOGLE', 'caregiver', phone(() => stranger))).toEqual({ error: 'state_mismatch' });
+    expect(
+      await signInWithProvider(
+        'GOOGLE',
+        'caregiver',
+        phone(() => stranger),
+      ),
+    ).toEqual({ error: 'state_mismatch' });
     expect(calls.some((c) => c.route === 'POST /auth/social/exchange')).toBe(false);
   });
 
@@ -91,7 +115,13 @@ describe('signing in with a provider', () => {
       [LOGIN_URL]: (_b, q) => ({ status: 200, body: { url: `https://accounts.google.com/o?${new URLSearchParams(q)}` } }),
       'POST /auth/social/exchange': () => ({ status: 401, body: { message: 'This sign-in link has expired. Please try again.' } }),
     });
-    expect(await signInWithProvider('GOOGLE', 'client', phone((u) => backToApp(u, { code: 'c0de' })))).toEqual({ error: 'exchange_failed' });
+    expect(
+      await signInWithProvider(
+        'GOOGLE',
+        'client',
+        phone((u) => backToApp(u, { code: 'c0de' })),
+      ),
+    ).toEqual({ error: 'exchange_failed' });
   });
 
   it('writes base64url the way the API reads it', () => {
@@ -118,7 +148,11 @@ describe('the sign-in screen', () => {
     });
     mockDeps.current = phone((u) => backToApp(u, { code: 'c0de' }));
     mockRouter.params = { role: 'client' };
-    await render(<AppProviders><SignIn /></AppProviders>);
+    await render(
+      <AppProviders>
+        <SignIn />
+      </AppProviders>,
+    );
 
     await fireEvent.press(await screen.findByRole('button', { name: en.signIn.social.continue.GOOGLE }));
     expect(screen.getByRole('button', { name: en.signIn.social.continue.FACEBOOK })).toBeTruthy();
@@ -135,7 +169,11 @@ describe('the sign-in screen', () => {
     });
     mockDeps.current = phone((u) => backToApp(u, { error: 'wrong_portal' }));
     mockRouter.params = { role: 'client' };
-    await render(<AppProviders><SignIn /></AppProviders>);
+    await render(
+      <AppProviders>
+        <SignIn />
+      </AppProviders>,
+    );
 
     await fireEvent.press(await screen.findByRole('button', { name: en.signIn.social.continue.GOOGLE }));
     expect(await screen.findByText(en.signIn.social.errors.wrongPortalClient)).toBeTruthy();
@@ -151,13 +189,21 @@ describe('the sign-in screen', () => {
     });
     mockRouter.params = { role: 'caregiver' };
     mockDeps.current = null;
-    const first = await render(<AppProviders><SignIn /></AppProviders>);
+    const first = await render(
+      <AppProviders>
+        <SignIn />
+      </AppProviders>,
+    );
     await screen.findByLabelText(en.signIn.email);
     expect(screen.queryByText(en.signIn.social.orEmail)).toBeNull();
     await first.unmount();
 
     mockDeps.current = phone(() => ({ type: 'cancel' }));
-    await render(<AppProviders><SignIn /></AppProviders>);
+    await render(
+      <AppProviders>
+        <SignIn />
+      </AppProviders>,
+    );
     await screen.findByLabelText(en.signIn.email);
     await waitFor(() => expect(screen.queryByText(en.signIn.social.orEmail)).toBeNull());
   });
@@ -165,6 +211,10 @@ describe('the sign-in screen', () => {
 
 it('the return address steps back to the waiting sign-in screen', async () => {
   (mockRouter as unknown as { canGoBack: jest.Mock }).canGoBack = jest.fn(() => true);
-  await render(<AppProviders><AuthCallback /></AppProviders>);
+  await render(
+    <AppProviders>
+      <AuthCallback />
+    </AppProviders>,
+  );
   await waitFor(() => expect(mockRouter.back).toHaveBeenCalled());
 });

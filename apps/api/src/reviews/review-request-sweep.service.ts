@@ -116,20 +116,33 @@ export class ReviewRequestSweepService implements OnApplicationBootstrap, OnModu
   }
 
   private async page(
-    recent: { bookingId: string; patientId: string; reference: string; language: (typeof bookings.$inferSelect)["language"] }[],
+    recent: { bookingId: string; patientId: string; reference: string; language: (typeof bookings.$inferSelect)['language'] }[],
     now: Date,
     since: Date,
     windowDays: number,
   ): Promise<number> {
     if (!recent.length) return 0;
 
-    const asked = await this.db.select().from(reviewRequests).where(inArray(reviewRequests.bookingId, recent.map((b) => b.bookingId)));
+    const asked = await this.db
+      .select()
+      .from(reviewRequests)
+      .where(
+        inArray(
+          reviewRequests.bookingId,
+          recent.map((b) => b.bookingId),
+        ),
+      );
     let sent = 0;
     const byPatient = new Map<string, typeof recent>();
     for (const b of recent) byPatient.set(b.patientId, [...(byPatient.get(b.patientId) ?? []), b]);
 
     for (const [patientId, list] of byPatient) {
-      const entries = await this.store.entriesForClient(patientId, list.map((b) => b.bookingId), now, windowDays);
+      const entries = await this.store.entriesForClient(
+        patientId,
+        list.map((b) => b.bookingId),
+        now,
+        windowDays,
+      );
       for (const b of list) {
         for (const e of entries.get(b.bookingId) ?? []) {
           if (e.review || e.lastWorkedAt.getTime() < since.getTime()) continue;
@@ -140,7 +153,13 @@ export class ReviewRequestSweepService implements OnApplicationBootstrap, OnModu
           else if (ask && !mine.some((a) => a.stage === 'REMINDER') && dueForReminder(ask.sentAt, e, now)) stage = 'REMINDER';
           if (!stage) continue;
           if (!(await this.claim(b.bookingId, e.caregiverId, stage, now))) continue;
-          const ok = await this.notifier.askClient(stage, { patientId, bookingId: b.bookingId, reference: b.reference, language: b.language, caregiverPublicId: e.caregiverPublicId });
+          const ok = await this.notifier.askClient(stage, {
+            patientId,
+            bookingId: b.bookingId,
+            reference: b.reference,
+            language: b.language,
+            caregiverPublicId: e.caregiverPublicId,
+          });
           if (ok) sent++;
         }
       }

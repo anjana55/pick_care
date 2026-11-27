@@ -24,7 +24,10 @@ export class NotificationSettingsService {
   private async getRow(): Promise<Row> {
     const [existing] = await this.db.select().from(notificationSettings).where(eq(notificationSettings.id, SETTINGS_ID)).limit(1);
     if (existing) return existing;
-    await this.db.insert(notificationSettings).values({ id: SETTINGS_ID }).onDuplicateKeyUpdate({ set: { id: SETTINGS_ID } });
+    await this.db
+      .insert(notificationSettings)
+      .values({ id: SETTINGS_ID })
+      .onDuplicateKeyUpdate({ set: { id: SETTINGS_ID } });
     const [created] = await this.db.select().from(notificationSettings).where(eq(notificationSettings.id, SETTINGS_ID)).limit(1);
     return created;
   }
@@ -52,7 +55,8 @@ export class NotificationSettingsService {
     if (dto.remindersEnabled !== undefined) next.remindersEnabled = dto.remindersEnabled;
     if (dto.quietStartHour !== undefined) next.quietStartHour = within(dto.quietStartHour, NOTIFICATION_SETTINGS_LIMITS.hour, 'The quiet hours start');
     if (dto.quietEndHour !== undefined) next.quietEndHour = within(dto.quietEndHour, NOTIFICATION_SETTINGS_LIMITS.hour, 'The quiet hours end');
-    if (dto.dailyReminderCap !== undefined) next.dailyReminderCap = within(dto.dailyReminderCap, NOTIFICATION_SETTINGS_LIMITS.dailyReminderCap, 'Reminders a day');
+    if (dto.dailyReminderCap !== undefined)
+      next.dailyReminderCap = within(dto.dailyReminderCap, NOTIFICATION_SETTINGS_LIMITS.dailyReminderCap, 'Reminders a day');
     if (dto.retentionDays !== undefined) next.retentionDays = within(dto.retentionDays, NOTIFICATION_SETTINGS_LIMITS.retentionDays, 'Days kept');
     await this.getRow();
     await this.db.update(notificationSettings).set(next).where(eq(notificationSettings.id, SETTINGS_ID));

@@ -290,7 +290,19 @@ export class StaffInternationalController {
 
   @Get('enquiries/summary')
   async summary(): Promise<OverseasStaffSummary> {
-    const [enquiries, pendingProfiles, pendingEmployers, interviewRequests, pendingVacancies, newApplications, overdueCheckins, overdueInvoices, pendingOffers, welfare, pendingAssessments] = await Promise.all([
+    const [
+      enquiries,
+      pendingProfiles,
+      pendingEmployers,
+      interviewRequests,
+      pendingVacancies,
+      newApplications,
+      overdueCheckins,
+      overdueInvoices,
+      pendingOffers,
+      welfare,
+      pendingAssessments,
+    ] = await Promise.all([
       this.enquiries.summary(),
       this.sharedProfiles.pendingCount(),
       this.employers.pendingCount(),
