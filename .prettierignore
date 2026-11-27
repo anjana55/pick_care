@@ -17,3 +17,6 @@ apps/api/src/database/migrations
 # Reviewer's spreadsheet and the location seed data
 i18n-review
 *.csv
+
+# Written by Next.js itself on every build
+**/next-env.d.ts
