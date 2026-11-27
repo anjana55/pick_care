@@ -4,7 +4,6 @@ import type { CommunicationPreferences, UpdateCommunicationPreferences } from '@
 import { DRIZZLE, type Database } from '../database/database.module';
 import { caregivers, deviceTokens, patients, users } from '../database/schema';
 import { AuditService } from '../audit/audit.service';
-import { AUTO_NOTIFY_NEEDS_WRITTEN_CHANNEL } from '../caregivers/caregivers.service';
 
 export type Subject = { kind: 'CAREGIVER'; caregiverId: string } | { kind: 'CLIENT'; patientId: string };
 

@@ -5,7 +5,6 @@ import {
   HttpStatus,
   Inject,
   Injectable,
-  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -135,7 +134,6 @@ export class SocialLinkError extends HttpException {
  */
 @Injectable()
 export class SocialAuthService {
-  private readonly logger = new Logger(SocialAuthService.name);
 
   constructor(
     @Inject(DRIZZLE) private readonly db: Database,
@@ -770,10 +768,6 @@ export class SocialAuthService {
    */
   redirectUri(provider: string) {
     return socialRedirectUri(this.config, parseSocialProvider(provider));
-  }
-
-  private publicWebUrl() {
-    return this.config.get<string>('PUBLIC_WEB_URL') ?? 'http://localhost:3002';
   }
 
   private verifyPendingToken(token: string): { sub: string; side: SocialSide } {

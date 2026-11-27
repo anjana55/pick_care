@@ -30,21 +30,6 @@ export function addDays(date: string, n: number): string {
 export const START_WINDOW_DAYS = 180;
 
 /** The next two weeks as one-tap start dates - for places with no room for a calendar. */
-const START_DAYS = 14;
-
-/** The start-date choices from `today`, labelled in the app's language. */
-export function startDateChoices(today: string, locale: string) {
-  return Array.from({ length: START_DAYS }, (_, i) => {
-    const date = addDays(today, i);
-    const label = new Date(`${date}T00:00:00Z`).toLocaleDateString(locale === 'en' ? 'en-GB' : locale, {
-      weekday: 'short',
-      day: 'numeric',
-      month: 'short',
-      timeZone: 'UTC',
-    });
-    return { value: date, label };
-  });
-}
 
 /**
  * Normal Search, as on the website: the type of care, the district and the

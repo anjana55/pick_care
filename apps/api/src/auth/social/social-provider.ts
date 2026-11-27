@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { socialProviderEnum, type SocialProvider } from '../../database/schema';
 import { parseSocialProvider, SocialAuthSettingsService, type ResolvedProviderConfig } from './social-settings.service';
 
@@ -79,9 +79,11 @@ async function postJson(url: string, body: Record<string, string>, headers: Reco
   const text = await res.text();
   const json = text ? safeParse(text) : {};
   if (!res.ok) {
-    const detail = json?.error_description ?? json?.error?.message ?? json?.error ?? res.statusText;
-    // The raw provider payload can contain the client secret in an
-    // error_description, so it is logged but never returned to the caller.
+    // Only the provider's error code is logged: its error_description can
+    // echo the client secret, so neither that nor the raw payload is logged
+    // or returned to the caller.
+    const code = typeof json?.error === 'string' ? json.error : (json?.error?.code ?? res.statusText);
+    new Logger('SocialProvider').warn(`Token request to ${new URL(url).host} failed (${res.status}): ${code}`);
     throw new BadRequestException(`The sign-in provider rejected this request (${res.status})`);
   }
   return json;

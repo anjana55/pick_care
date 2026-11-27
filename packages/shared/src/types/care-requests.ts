@@ -13,8 +13,6 @@ import type { IntakeGap, RequestSchedule } from './intake';
  */
 export type CareRequestStatus = 'NEW' | 'IN_PROGRESS' | 'INTRODUCED' | 'CLOSED' | 'CANCELLED';
 
-export const CARE_REQUEST_STATUSES: readonly CareRequestStatus[] = ['NEW', 'IN_PROGRESS', 'INTRODUCED', 'CLOSED', 'CANCELLED'];
-
 /** Statuses the client may still cancel from. */
 export const CLIENT_CANCELLABLE_STATUSES: readonly CareRequestStatus[] = ['NEW', 'IN_PROGRESS'];
 

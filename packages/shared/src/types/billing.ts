@@ -35,9 +35,6 @@ export type PayoutStatus = 'DRAFT' | 'APPROVED' | 'PAID' | 'VOID';
 
 export const INVOICE_STATUSES: InvoiceStatus[] = ['DRAFT', 'ISSUED', 'PAID', 'VOID'];
 export const PAYOUT_STATUSES: PayoutStatus[] = ['DRAFT', 'APPROVED', 'PAID', 'VOID'];
-export const PAYMENT_METHODS: PaymentMethod[] = ['CASH', 'BANK_TRANSFER', 'CHEQUE', 'CARD', 'PAYHERE', 'OTHER'];
-/** Methods staff can record by hand; PAYHERE payments only ever arrive from PayHere itself. */
-export const MANUAL_PAYMENT_METHODS: PaymentMethod[] = ['CASH', 'BANK_TRANSFER', 'CHEQUE', 'CARD', 'OTHER'];
 export const PAYMENT_TYPES: PaymentType[] = ['CASH', 'BANK', 'ONLINE'];
 /**
  * The details that may be recorded under each type. Cash has none. PAYHERE is
@@ -77,8 +74,6 @@ export const MAX_BILLING_LINES = 500;
 // --- cents ------------------------------------------------------------------
 
 const DECIMAL = /^-?\d{1,10}(\.\d{1,2})?$/;
-
-export const isMoney = (v: string) => DECIMAL.test(v.trim());
 
 /** "1234.5" -> 123450. Throws on anything that is not a plain decimal with at most two places. */
 export function toCents(v: string | number): number {

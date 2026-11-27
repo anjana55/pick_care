@@ -136,7 +136,7 @@ export class SearchRequestDto {
    * constraint - never populated by a client, never read.
    */
   @RequireSearchCriteria()
-  private readonly _searchCriteria?: never;
+  readonly _searchCriteria?: never;
 
   @ApiPropertyOptional({ type: PatientInfoDto })
   @IsOptional()

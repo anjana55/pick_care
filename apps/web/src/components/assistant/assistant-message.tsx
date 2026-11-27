@@ -25,7 +25,6 @@ export function MessageView({
   onDecide?: (actionId: string, approve: boolean) => void;
   deciding?: string;
 }) {
-  const { t } = useTranslation();
   if (message.role === 'user') {
     return (
       <div className="flex justify-end">

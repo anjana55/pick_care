@@ -1,8 +1,6 @@
 import { z } from 'zod';
 import type { ClientGender, ContactMethod } from '../api/types';
 
-export type ClientProfileValues = z.infer<ReturnType<typeof makeClientProfileSchema>>;
-
 /**
  * What form.reset() writes for a location id the record does not have: ''.
  *

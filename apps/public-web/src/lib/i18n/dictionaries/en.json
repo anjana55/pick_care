@@ -6,7 +6,6 @@
     "orEmail": "or sign in with your email"
   },
   "nav": {
-    "brand": "{brand}",
     "signIn": "Sign in",
     "signUp": "Sign up",
     "backHome": "Back to home",
@@ -139,7 +138,6 @@
     "availability": "Availability",
     "qualifications": "Qualifications",
     "contactCta": "Sign up to contact this caregiver",
-    "saveCta": "Sign up to save this caregiver",
     "notFound": "This caregiver profile isn't available.",
     "availabilityDay": "Day duty",
     "availabilityNight": "Night duty",
@@ -330,7 +328,6 @@
     "password": "Password",
     "submit": "Sign in",
     "noAccount": "Don't have an account?",
-    "signUp": "Sign up",
     "error": "Invalid email or password.",
     "unverifiedHint": "If you haven't verified your email yet, check your inbox for the verification link.",
     "staffPrompt": "Office staff?",
@@ -375,23 +372,11 @@
     },
     "register": {
       "title": "Sign up with WhatsApp",
-      "subtitle": "No email address needed - verify your WhatsApp number instead.",
       "number": "WhatsApp number",
-      "numberHint": "We'll send a verification code to this number.",
       "submit": "Create account",
       "error": "Could not register. Please try again.",
       "link": "Sign up with WhatsApp",
-      "noEmail": "No email address?",
-      "useEmail": "Sign up with email instead",
-      "verifyTitle": "Verify your WhatsApp number",
-      "verifyBody": "Your account has been created. Enter the code we sent to finish signing up.",
-      "notSent": "We could not send the code just now. Use \"Send a new code\" below.",
-      "validation": {
-        "numberRequired": "Please enter your WhatsApp number",
-        "numberInvalid": "Please enter a valid WhatsApp number"
-      },
-      "primaryPhoneHint": "Primary phone is optional - your WhatsApp number is used if you leave it blank.",
-      "regNumber": "Registration number:"
+      "verifyTitle": "Verify your WhatsApp number"
     },
     "otp": {
       "sentTo": "Enter the code sent to",
@@ -1355,7 +1340,6 @@
       "cancelYes": "Yes, cancel it",
       "cancelNo": "Keep it",
       "unavailable": "This caregiver is no longer listed.",
-      "viewProfile": "View profile",
       "status": {
         "NEW": "Sent",
         "IN_PROGRESS": "Our team is on it",
@@ -1650,7 +1634,6 @@
     },
     "kmAway": "{km} km away",
     "travelsHere": "Works in {place}, {km} km away",
-    "districtCentre": "District centre",
     "showOnMap": "Show on map",
     "hideFromMap": "Hide from map",
     "pointOne": "1 caregiver in {place}, {km} km away",

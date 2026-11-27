@@ -37,8 +37,6 @@ function load(): { print: Print; sharing: Sharing; fs: FileSystem } | null {
   }
 }
 
-export const canMakeInvoicePdf = () => load() !== null;
-
 /** "INV-0007.pdf": the invoice number, safe as a file name on every phone. */
 export function pdfFileName(inv: Pick<ClientInvoice, 'number' | 'id'>): string {
   const base = (inv.number || inv.id).replace(/[^\w.-]+/g, '-').replace(/^-+|-+$/g, '');

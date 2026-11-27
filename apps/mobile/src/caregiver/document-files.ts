@@ -38,8 +38,6 @@ function fileSystem(): FileSystem | null {
   }
 }
 
-export const canUsePhotos = () => imagePicker() !== null;
-
 /** The size of a local file, when the picker didn't say. */
 function sizeOf(uri: string): number {
   try {

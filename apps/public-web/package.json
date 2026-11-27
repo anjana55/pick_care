@@ -8,8 +8,8 @@
     "prebuild": "node ../../packages/shared/scripts/copy-maplibre-worker.mjs",
     "build": "next build",
     "start": "next start -p 3002",
-    "lint": "next lint",
-    "test": "jest"
+    "test": "jest",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@care-platform/shared": "*",

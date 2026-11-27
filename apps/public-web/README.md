@@ -1,70 +1,40 @@
-# CareLink Finder (`apps/public-web`)
+# Public site (`apps/public-web`)
 
-Public, anonymous-first caregiver search — the frontend for the `public-search`
-API module in `apps/api`.
+The Next.js site families, caregivers and overseas employers use. Served at `/`
+in production, `http://localhost:3002` in development.
 
-## Running locally
+| Area | Routes |
+|---|---|
+| Landing and search | `/`, `/find`, `/caregivers/[publicId]` (Normal and AI search, map, profiles) |
+| Registration and sign-in | `/register`, `/login`, `/caregiver/signup`, `/caregiver/login`, `/caregiver/claim`, WhatsApp and provider callbacks, password reset |
+| Client account | `/account/*` - requests, bookings, ratings, invoices, saved caregivers, places, notifications, talk to a person |
+| Caregiver portal | `/caregiver/(portal)/*` - dashboard, profile, documents, shifts, care offers, payments, ratings, notifications, work abroad |
+| Overseas | `/international`, `/work-abroad/*`, `/employer/*`, `/talent/[slug]` |
+| Other | `/agreements/*`, `/verify/[code]`, `/reference`, `/delete-account` |
 
-```bash
-# from the repo root, once
-npm install
-
-# apply pending migrations (see "Database migration" below), then:
-npm run dev:api          # apps/api on :3001
-npm run dev:public-web   # this app on :3002
-```
-
-Copy `.env.example` to `.env.local` and point `NEXT_PUBLIC_API_URL` at your API.
-
-## Database migration
-
-This phase adds `caregivers.public_id`, a `patients` table, and a
-`PATIENT_GUARDIAN` user role. Because `public_id` must end up `NOT NULL` on a
-table that may already have rows, the migration is split in two, with a
-backfill in between:
+## Run and check
 
 ```bash
-npm run db:migrate --workspace=@care-platform/api       # applies up to 0003 (public_id nullable)
-npx tsx apps/api/src/database/scripts/backfill-public-ids.ts
-# then apply 0004 (adds the NOT NULL constraint) the same way
+# from the repo root
+npm run dev:api
+npm run dev:public-web
 ```
 
-On a fresh database with no existing caregivers this is a no-op — skip
-straight to running all migrations.
+Copy `.env.example` to `.env.local`; `NEXT_PUBLIC_API_URL` points at the API.
 
-## What's implemented in this phase
+```bash
+npm test             # Jest + Testing Library (src/__tests__)
+npm run typecheck
+npm run build
+```
 
-- `POST /public/search` — deterministic, ranked normal search (hard filters:
-  `status=ACTIVE`, mandatory skills, location; ranking-only: optional skills,
-  languages, budget, gender preference, experience, medical-condition text
-  match)
-- `GET /public/caregivers/:publicId` — public profile preview
-- `GET /public/meta/{skills,languages,locations,search-config}`
-- The one-page finder UI: hero, Normal Search (structured form) and AI Search
-  (natural-language box) tabs, ranked result cards with factual "why this
-  matches" reasons, profile preview, a registration-gate modal for
-  contact/save actions, loading/empty/error states, and English/Sinhala/Tamil
-  i18n switchable without a reload.
+## Where things are
 
-## Contacting and saving caregivers
+- `src/app` - pages (App Router). `src/components` - UI by area.
+- `src/lib/api` - the API client and auth context; `src/lib/hooks` - TanStack Query hooks.
+- `src/lib/schemas` - Zod form schemas (`personal-info.ts`, `patient-intake.ts`).
+- `src/lib/i18n/dictionaries/{en,si,ta}.json` - all strings; `dictionary-parity.test.ts`
+  fails if the three languages' keys differ.
 
-Signed-in clients can contact a caregiver (a staff-mediated request - see
-`IMPLEMENTATION_REPORT.md` §17) and save caregivers; their requests and shortlist
-live under `/account/requests` and `/account/saved`. Signed-out visitors meet the
-sign-up gate and are returned to the profile they came from afterwards.
-
-## Known limitations / what's intentionally not real yet
-
-- **AI Search is a client-side mock.** `src/lib/ai/mock-extract.ts` does
-  simple keyword matching so the natural-language → extracted-requirements →
-  editable-panel → search flow is fully wired and testable, but there is no
-  model behind it. The tab stays **disabled** by default because
-  `GET /public/meta/search-config` reports `aiSearchEnabled: false` until the
-  real server-side extraction/ranking pipeline (Ollama-backed, per the agreed
-  architecture) is built. To try the AI tab locally, temporarily hardcode
-  `aiSearchEnabled: true` in `PublicSearchController.searchConfig()`.
-- **Sinhala/Tamil strings are a good-faith translation**, not reviewed by a
-  native speaker — worth a pass before this goes live.
-- **`minimumExperienceYears` filtering is approximate** (checks whether any
-  `experiences` row started early enough), not a true summed-years
-  calculation — noted in `PublicSearchService` as a phase-1 simplification.
+See [docs/architecture.md](../../docs/architecture.md) and
+[docs/features.md](../../docs/features.md) for how sign-in, search and AI work.

@@ -123,10 +123,6 @@ export function isAutomationAction(key: unknown): key is AutomationActionKey {
   return typeof key === 'string' && Object.prototype.hasOwnProperty.call(AUTOMATION_ACTIONS, key);
 }
 
-export function automationAction(key: AutomationActionKey): AutomationActionDef {
-  return AUTOMATION_ACTIONS[key];
-}
-
 // --- cases and who drives them -----------------------------------------------------
 
 /** The records an agent can be working on. */
@@ -168,8 +164,6 @@ export interface HandoverNote {
   /** What the agent was about to do, and why. */
   next: string;
 }
-
-export const MAX_HANDOVER_LINE = 500;
 
 // --- the gate ------------------------------------------------------------------
 

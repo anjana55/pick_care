@@ -15,6 +15,3 @@ export function addMonths(isoDate: string, months: number): string {
   target.setUTCDate(Math.min(d, lastDay));
   return target.toISOString().slice(0, 10);
 }
-
-/** A DATE column as YYYY-MM-DD, whether the driver gave a string or a Date. */
-export const dateOnly = (v: string | Date | null | undefined): string | null => (v == null ? null : typeof v === 'string' ? v.slice(0, 10) : v.toISOString().slice(0, 10));

@@ -23,7 +23,6 @@ const IDENTITY = ['fullName', 'dateOfBirth', 'gender', 'nic', 'passportNumber'] 
 const IDENTITY_EDITABLE = new Set(['DRAFT', 'REGISTERED', 'DOCUMENTS_PENDING']);
 
 const text = (v: string | null | undefined) => v ?? '';
-const num = (v: string | number | null | undefined) => (v === null || v === undefined || v === '' ? ('' as unknown as number) : Number(v));
 
 export function PersonalDetailsForm({ caregiver }: { caregiver: OwnCaregiver }) {
   const { t, locale } = useTranslation();

@@ -12,7 +12,6 @@ import type {
   Skill,
   Language,
   LocationCity,
-  LocationDistrict,
   LocationProvince,
   PagedCities,
   Qualification,
@@ -117,11 +116,6 @@ export function useCitiesPage(params: { districtId?: number; q?: string; page: n
     queryKey: ['admin', 'locations', 'cities', params],
     queryFn: () => api.get<PagedCities>('/admin/locations/cities', { ...params, pageSize: 50 }),
   });
-}
-
-export function useLocationDistricts(): LocationDistrict[] {
-  const { data = [] } = useLocationTree();
-  return data.flatMap((p) => p.districts);
 }
 
 export function useInvalidateCaregiver(id: string | undefined) {

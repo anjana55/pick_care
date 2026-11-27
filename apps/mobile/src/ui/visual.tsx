@@ -47,22 +47,6 @@ export function Card({ children, style }: { children: ReactNode; style?: StylePr
   return <View style={[styles.card, { backgroundColor: colors.surface, borderColor: tint(colors.ink, 0.06) }, style]}>{children}</View>;
 }
 
-/** A screen's title, with an icon and a line under it. */
-export function ScreenTitle({ title, subtitle, icon }: { title: string; subtitle?: string; icon?: IconName }) {
-  const colors = useColors();
-  return (
-    <View style={styles.titleRow}>
-      {icon ? <IconBadge name={icon} size={48} /> : null}
-      <View style={{ flex: 1, gap: 4 }}>
-        <Text accessibilityRole="header" style={[styles.title, { color: colors.ink }]}>
-          {title}
-        </Text>
-        {subtitle ? <Text style={{ fontSize: 15, lineHeight: 22, color: colors.muted }}>{subtitle}</Text> : null}
-      </View>
-    </View>
-  );
-}
-
 /** When a list has nothing in it: a large icon, what it means, and what to do. */
 export function EmptyState({ icon, title, body, children }: { icon: IconName; title?: string; body: string; children?: ReactNode }) {
   const colors = useColors();

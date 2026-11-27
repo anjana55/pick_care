@@ -90,6 +90,20 @@ function brandArtwork(key: string) {
   };
 }
 
+/**
+ * The iPhone permission messages in Sinhala and Tamil. locales/*.json hold
+ * them with `{brand}` where the app's name goes, so every brand gets its own
+ * name in the system prompt (the English ones are built inline below).
+ */
+function permissionLocales(brandName: string): Record<string, Record<string, string>> {
+  const out: Record<string, Record<string, string>> = {};
+  for (const lang of ['si', 'ta']) {
+    const strings = JSON.parse(readFileSync(join(__dirname, 'locales', `${lang}.json`), 'utf8')) as Record<string, string>;
+    out[lang] = Object.fromEntries(Object.entries(strings).map(([k, v]) => [k, v.split('{brand}').join(brandName)]));
+  }
+  return out;
+}
+
 const BRANDS: Record<string, Brand> = {
   carelink: {
     name: 'CareLink',
@@ -177,7 +191,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       ['expo-local-authentication', { faceIDPermission: `${brand.name} uses Face ID, only if you turn it on, to unlock the app.` }],
     ],
     // The iPhone permission message in Sinhala and Tamil (locales/*.json; English is above).
-    locales: { si: './locales/si.json', ta: './locales/ta.json' },
+    locales: permissionLocales(brand.name),
     extra: {
       brand: key,
       brandName: brand.name,

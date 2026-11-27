@@ -1,32 +1,24 @@
 import { BadRequestException, Inject, Injectable, Logger, OnApplicationBootstrap, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { and, eq, exists, gte, inArray, isNotNull, isNull, lte, ne, or, sql } from 'drizzle-orm';
+import { and, eq, gte, inArray, isNull, ne, sql } from 'drizzle-orm';
 import {
   CARE_OFFER_MINUTES,
   MAX_OPEN_CARE_OFFERS,
-  PUBLIC_CAREGIVER_STATUSES,
-  addDays,
   colomboToday,
   effectiveCareOfferStatus,
-  rateProblem,
   type AgentRunResult,
   type CareType,
 } from '@care-platform/shared';
 import { DRIZZLE, type Database } from '../database/database.module';
 import {
-  CARE_TYPE_COLUMNS,
   OPEN_CARE_REQUEST_STATUSES,
   agentDecisions,
-  availability,
   bookings,
   careRequests,
-  careTypePricing,
-  caregiverRates,
   caregivers,
   cities,
   districts,
   patients,
-  preferredLocations,
   requestOffers,
 } from '../database/schema';
 import { AutomationService, type ActionExecutor } from '../automation/automation.service';
@@ -59,12 +51,6 @@ export const MATCH_WAVE = 3;
 export const MATCH_MAX_OFFERS = 9;
 /** Requests older than this are not picked up: by then a person is dealing with them. */
 const LOOKBACK_DAYS = 30;
-/** The most caregivers scored for one request. */
-const POOL_LIMIT = 300;
-const VERIFIED = new Set(['VERIFIED', 'ACTIVE']);
-/** A DATE column as YYYY-MM-DD, read with the same clock the driver built it with. */
-const dayOf = (d: Date | string | null): string | null =>
-  !d ? null : d instanceof Date ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` : String(d).slice(0, 10);
 
 /** What the agent logs when it ranks: ids, registration numbers and reasons - nobody's name. */
 export interface RankProposal extends Record<string, unknown> {

@@ -9,7 +9,7 @@ import { RatesSection } from '@/components/portal/rates-section';
 import { ProfilePhotoSection } from '@/components/portal/profile-photo-section';
 import { RecordSection, type FieldSpec } from '@/components/portal/record-section';
 import { useExperiences, useOwnCaregiver, useQualifications } from '@/lib/hooks/use-caregiver-portal';
-import { QUALIFICATION_TYPES, type Experience, type Qualification } from '@/lib/api/portal-types';
+import { QUALIFICATION_TYPES } from '@/lib/api/portal-types';
 
 const QUALIFICATION_FIELDS: FieldSpec[] = [
   { name: 'name', type: 'text', required: true },

@@ -30,7 +30,7 @@ const TONE = {
  * what the midnight rule filled in, and staff corrections (with a reason).
  */
 export function BookingCareLog({ bookingId }: { bookingId: string }) {
-  const { t, locale } = useTranslation();
+  const { t } = useTranslation();
   const today = colomboToday();
   const [range, setRange] = useState({
     from: addDays(today, -13),

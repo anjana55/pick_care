@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
-import { asc, eq, sql } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 import { cell, readCsvRecords, requireColumns } from '../csv';
 import type { Database } from '../database.module';
 import { cities, districts, provinces } from '../schema';
@@ -234,23 +234,6 @@ export async function loadLocationCsvs(db: Database): Promise<{ provinces: numbe
   }
 
   return { provinces: provinceRows.length, districts: districtRows.length, cities: cityRows.length };
-}
-
-/** Sorted id lists, for the seed fixtures that need to resolve a name. */
-export async function locationIdsByName(db: Database) {
-  const rows = await db
-    .select({ id: cities.id, nameEn: cities.nameEn, districtName: districts.nameEn })
-    .from(cities)
-    .innerJoin(districts, eq(cities.districtId, districts.id))
-    .orderBy(asc(cities.id));
-
-  const byName = new Map<string, number[]>();
-  for (const row of rows) {
-    // A name can repeat across districts, so the map holds every id under it
-    // rather than pretending one of them is "the" match.
-    byName.set(row.nameEn, [...(byName.get(row.nameEn) ?? []), row.id]);
-  }
-  return byName;
 }
 
 // Runnable directly: `npm run db:load-locations`. Standalone rather than only

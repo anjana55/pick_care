@@ -43,7 +43,3 @@ export const contactTimeValues = ['ANYTIME', 'MORNING', 'AFTERNOON', 'EVENING'] 
 export type ContactTime = (typeof contactTimeValues)[number];
 
 export type UpdateCommunicationPreferences = Partial<Pick<CommunicationPreferences, 'preferredContactMethod' | 'preferredContactTime' | 'pushEnabled' | 'reminderMessagesEnabled'>>;
-
-/** Defaults for an account with no choices saved: everything on. */
-export const DEFAULT_PUSH_ENABLED = true;
-export const DEFAULT_REMINDER_MESSAGES_ENABLED = true;

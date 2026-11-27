@@ -11,7 +11,6 @@ import {
   etaFrom,
   insideSriLanka,
   isFarFromHome,
-  presenceSlots,
   type PresenceReply,
   type StaffPresenceDetail,
   toColombo,
@@ -29,7 +28,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { JobsService } from '../jobs/jobs.service';
 import { CareLocationsService } from '../care-locations/care-locations.service';
 import { CheckInService } from './check-in.service';
-import { closeShares, hashToken, latestShiftShares, openShare, presenceOf, type ShareRow } from './location-shares.db';
+import { hashToken, latestShiftShares, openShare, presenceOf, type ShareRow } from './location-shares.db';
 
 export const LOCATION_SWEEP_JOB = 'location-shares.sweep';
 const SWEEP_MS = 2 * 60_000;

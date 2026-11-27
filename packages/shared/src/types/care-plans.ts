@@ -39,7 +39,6 @@ export const CARE_SLOT_WINDOWS: Record<CareSlot, { start: string; end: string }>
 };
 
 export const careRecordStatusValues = ['DONE', 'NOT_DONE', 'VOID'] as const;
-export type CareRecordStatus = (typeof careRecordStatusValues)[number];
 /** Who recorded the outcome: the client, the midnight sweep, or staff correcting it. */
 export const careRecordSourceValues = ['CLIENT', 'AUTO', 'STAFF'] as const;
 export type CareRecordSource = (typeof careRecordSourceValues)[number];
@@ -453,10 +452,4 @@ export interface CareLogResponse {
   to: string;
   shifts: CareChecklistShift[];
   totals: { due: number; done: number; notDone: number; auto: number; open: number; criticalNotConfirmed: number };
-}
-
-/** Counts behind the staff dashboard's care items (last 7 days). */
-export interface CareAttention {
-  criticalNotDone: number;
-  criticalUnconfirmed: number;
 }

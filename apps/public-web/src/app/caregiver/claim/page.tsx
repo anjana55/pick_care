@@ -9,7 +9,7 @@ import { Input, Label } from '@/components/ui/input';
 import { CaregiverRegisterShell } from '@/components/caregivers/caregiver-register-layout';
 import { ProviderChoices } from '@/components/caregivers/provider-choices';
 import { isRegistrationNumber, normaliseRegistrationNumber } from '@/lib/registration-number';
-import type { ClaimStartResult, ClaimVerifyResult, SocialProviderName } from '@care-platform/shared';
+import type { ClaimStartResult, ClaimVerifyResult } from '@care-platform/shared';
 
 /**
  * "Finish setting up your account", for a caregiver who filled in the
@@ -26,7 +26,6 @@ import type { ClaimStartResult, ClaimVerifyResult, SocialProviderName } from '@c
  * a code is on its way".
  */
 
-type Provider = SocialProviderName;
 // What the claim endpoints return (packages/shared/src/types/auth.ts).
 type StartResponse = ClaimStartResult;
 type VerifyResponse = ClaimVerifyResult;

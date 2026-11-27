@@ -1,5 +1,4 @@
 import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { eq } from 'drizzle-orm';
 import { randomUUID as uuid } from 'crypto';
 import { DRIZZLE, type Database } from '../database/database.module';
@@ -42,7 +41,6 @@ export class WhatsappAuthService {
 
   constructor(
     @Inject(DRIZZLE) private readonly db: Database,
-    private readonly config: ConfigService,
     private readonly authService: AuthService,
     private readonly settings: WhatsappSettingsService,
     private readonly otp: WhatsappOtpService,

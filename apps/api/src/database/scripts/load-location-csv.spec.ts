@@ -84,7 +84,7 @@ describe('loadLocationCsvs orphan sweep', () => {
     const { db, queries } = recordingDb();
     await loadLocationCsvs(db);
 
-    const { districts, provinces, cities } = parseLocationCsvs();
+    const { districts, provinces } = parseLocationCsvs();
 
     // The regression: this one used the province ids.
     expect(deleteStatement(queries, 'districts').params).toEqual(districts.map((d) => d.id));

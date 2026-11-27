@@ -9,7 +9,6 @@
     "auditLog": "Audit log",
     "logout": "Log out",
     "users": "Users",
-    "whatsappSettings": "WhatsApp sign-in",
     "backToPublic": "Back to {brand}",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
@@ -18,12 +17,8 @@
     "bookings": "Bookings",
     "invoices": "Invoices",
     "payouts": "Payouts",
-    "assistant": "Assistant",
-    "international": "Overseas",
     "dataTransfer": "Import & export",
     "training": "Training",
-    "carePlans": "Care plans",
-    "accountDeletions": "Account deletions",
     "reviews": "Reviews",
     "announcements": "Announcements",
     "recruitment": "Recruitment",
@@ -856,23 +851,8 @@
   "verifyEmail": {
     "verifying": "Verifying your email...",
     "successTitle": "Email verified",
-    "successBody": "You are all set - taking you to your profile.",
     "errorTitle": "Verification failed",
-    "errorBody": "This link is invalid or has expired.",
-    "resendLabel": "Enter your email to request a new link",
-    "resendButton": "Send new link",
-    "resendSent": "If an account with this email exists and is not yet verified, a new link has been sent.",
     "backToLogin": "Back to sign in"
-  },
-  "myProfile": {
-    "title": "My registration",
-    "submitButton": "Submit registration",
-    "draftNotice": "Complete the steps below, then submit your registration for review.",
-    "afterSubmitNotice": "Your registration is being reviewed. You can still update your details and documents below.",
-    "submitted": "Registration submitted for review.",
-    "skills": "Skills",
-    "languages": "Languages",
-    "documentsOnFile": "Documents on file"
   },
   "personalInfo": {
     "fields": {
@@ -975,9 +955,6 @@
     "otherNotes": "Other notes",
     "edit": "Edit health information",
     "save": "Save health information",
-    "cancel": "Cancel",
-    "yes": "Yes",
-    "no": "No",
     "placeholder": {
       "surgicalHistory": "Enter surgical history",
       "mentalHealth": "Enter mental health notes",
@@ -2798,7 +2775,6 @@
       },
       "noSignUps": "Nobody has signed up yet.",
       "caregiver": "Caregiver",
-      "signedUp": "Signed up",
       "statusLabel": "Status",
       "completedOn": "Completed {date}",
       "enrolment": {
@@ -3773,7 +3749,7 @@
   },
   "mobileAppAdmin": {
     "title": "Mobile app",
-    "subtitle": "Which versions of the CareLink app may still be used, and where people update it. The app checks this every time it opens.",
+    "subtitle": "Which versions of the {brand} app may still be used, and where people update it. The app checks this every time it opens.",
     "statusOff": "No version checks are set: every version of the app can be used.",
     "statusOn": "Version checks are on.",
     "ios": "iPhone (iOS)",
