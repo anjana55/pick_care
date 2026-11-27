@@ -17,7 +17,7 @@ import { CaregiverRegisterHeader, CaregiverRegisterShell } from '@/components/ca
 import { makePersonalInfoSchema, requiredFieldsOf } from '@/lib/schemas/personal-info';
 import { useLocationTree } from '@/lib/hooks/use-public-search';
 import { ChosenSignInSummary, HOME_OF, SignInMethodStep } from '@/components/signup/sign-in-method-step';
-import { AgreementCheckbox, CallOfficeCard } from '@/components/signup/agreement';
+import { AgreementCheckbox } from '@/components/signup/agreement';
 import { forgetIdentity, takeRememberedIdentity, type ChosenSignIn } from '@/lib/signup';
 
 /** `primaryPhone` is omitted because this page asks for `phone` once (or not at all, after WhatsApp). */
@@ -141,7 +141,6 @@ export default function CaregiverSignupPage() {
       <CaregiverRegisterShell narrow>
         <CaregiverRegisterHeader title={t('signup.join.title')} subtitle={t('signup.join.subtitle')} />
         <div className="space-y-5">
-          <CallOfficeCard />
           <div className="rounded-lg border border-border bg-white p-6">
             <p className="mb-2 text-xs font-medium uppercase tracking-wide text-ink/50">{t('signup.stepOf', { step: 1, total: 2 })}</p>
             {serverError && (

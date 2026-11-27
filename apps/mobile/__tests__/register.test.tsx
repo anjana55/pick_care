@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react-nativ
 import { agreementVersion } from '@care-platform/shared';
 import en from '../src/i18n/en.json';
 import Register from '../app/(auth)/register';
+import { MethodStep } from '../src/signup/MethodStep';
 import { AppProviders, serveApi } from '../test-utils/app';
 import { mockRouter } from '../test-utils/router';
 import { pickDate } from '../test-utils/calendar';
@@ -215,20 +216,52 @@ describe('registering a caregiver in the app', () => {
   });
 });
 
-describe('calling the office instead (caregivers)', () => {
-  it('is on the first registration step, and dials the office', async () => {
+describe('calling the office instead (clients and caregivers)', () => {
+  const OFFICE = { 'GET /branding': () => ({ status: 200, body: { companyName: 'CareLink', officePhone: '011 234 5678' } }) };
+  const cta = en.signup.callOffice.cta.replace('{phone}', '011 234 5678');
+
+  /** The choices in step 1, top to bottom, by one button each. */
+  const order = (names: string[]) => {
+    const all = screen.getAllByRole('button');
+    return names.map((name) => all.indexOf(screen.getByRole('button', { name })));
+  };
+
+  it.each(['client', 'caregiver'] as const)('is on the first registration step for a %s, and dials the office', async (side) => {
     const { Linking } = require('react-native');
-    commonRoutes('caregiver', { 'GET /branding': () => ({ status: 200, body: { companyName: 'CareLink', officePhone: '011 234 5678' } }) });
+    commonRoutes(side, OFFICE);
     const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
-    mockRouter.params = { role: 'caregiver' };
+    mockRouter.params = { role: side };
     await show(<Register />);
-    await fireEvent.press(await screen.findByRole('button', { name: en.signup.callOffice.cta.replace('{phone}', '011 234 5678') }));
+    await fireEvent.press(await screen.findByRole('button', { name: cta }));
     expect(open).toHaveBeenCalledWith('tel:0112345678');
   });
 
-  it('is left out when there is no office number', async () => {
-    commonRoutes('caregiver', { 'GET /branding': () => ({ status: 200, body: { companyName: 'CareLink', officePhone: null } }) });
-    mockRouter.params = { role: 'caregiver' };
+  it.each(['client', 'caregiver'] as const)('is the 3rd choice for a %s: after WhatsApp and the providers, before email', async (side) => {
+    commonRoutes(side, { ...OFFICE, 'GET /auth/signup/methods': () => ({ status: 200, body: { ...METHODS, providers: { GOOGLE: true, MICROSOFT: false, FACEBOOK: true } } }) });
+    // Stand-ins for the phone's sign-in browser, so the provider buttons show.
+    const deps = { randomBytes: () => new Uint8Array(16), sha256Base64: async () => 'x', openAuthSession: async () => ({ type: 'cancel' as const }), redirectUrl: 'carelink://auth/callback' };
+    await show(<MethodStep side={side} onChosen={jest.fn()} onSignedIn={jest.fn()} deps={deps} />);
+    await screen.findByRole('button', { name: cta });
+    const [whatsapp, google, facebook, call, email] = order([en.signup.whatsapp, en.signup.providers.GOOGLE, en.signup.providers.FACEBOOK, cta, en.signup.email]);
+    expect(whatsapp).toBeLessThan(google);
+    expect(google).toBeLessThan(facebook);
+    expect(facebook).toBeLessThan(call);
+    expect(call).toBeLessThan(email);
+  });
+
+  it('stays 3rd, after email, when only WhatsApp and email are on', async () => {
+    commonRoutes('client', OFFICE);
+    mockRouter.params = { role: 'client' };
+    await show(<Register />);
+    await screen.findByRole('button', { name: cta });
+    const [whatsapp, email, call] = order([en.signup.whatsapp, en.signup.email, cta]);
+    expect(whatsapp).toBeLessThan(email);
+    expect(email).toBeLessThan(call);
+  });
+
+  it.each(['client', 'caregiver'] as const)('is left out for a %s when there is no office number', async (side) => {
+    commonRoutes(side, { 'GET /branding': () => ({ status: 200, body: { companyName: 'CareLink', officePhone: null } }) });
+    mockRouter.params = { role: side };
     await show(<Register />);
     await screen.findByRole('button', { name: en.signup.whatsapp });
     expect(screen.queryByText(en.signup.callOffice.title)).toBeNull();

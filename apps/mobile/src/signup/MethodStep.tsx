@@ -9,6 +9,7 @@ import { useColors } from '@/theme';
 import { Button, Field, FormError, PasswordField } from '@/ui/controls';
 import { Text } from '@/ui/Text';
 import { Card, IconBadge, type IconName } from '@/ui/visual';
+import { CallOfficeCard } from './Agreement';
 import { requestSignupCode, signupWithProvider, useSignupMethods, verifySignupCode, type ChosenSignIn } from './api';
 
 type Open = 'whatsapp' | 'email' | null;
@@ -17,7 +18,9 @@ type ProvenNumber = Extract<SignupVerifyResult, { signedIn: false }>;
 /**
  * Registering, step 1: how this person will sign in. WhatsApp (a code, here
  * and now), Google / Microsoft / Facebook (the provider's screen in the
- * phone's sign-in browser), or an email address and password. Whatever is
+ * phone's sign-in browser), or an email address and password - and, always
+ * the 3rd choice for clients and caregivers alike, calling the office to be
+ * registered by staff (left out when the office has no number). Whatever is
  * chosen is not asked again in step 2. Someone whose WhatsApp number or
  * provider account turns out to be registered already is simply signed in
  * (`onSignedIn`).
@@ -70,30 +73,45 @@ export function MethodStep({
         <Text style={[styles.subtitle, { color: colors.muted }]}>{t('signup.chooseSubtitle')}</Text>
       </View>
 
-      {whatsappOn ? (
-        <Choice icon="logo-whatsapp" title={t('signup.whatsapp')} hint={t('signup.whatsappHint')} open={open === 'whatsapp'} onOpen={() => (setOpen('whatsapp'), setError(null))}>
-          <WhatsappCode side={side} onIdentity={(identity) => onChosen({ method: 'WHATSAPP', identity })} onSignedIn={onSignedIn} />
-        </Choice>
-      ) : null}
-
-      {providers.map((provider) => (
-        <Button
-          key={provider}
-          variant="secondary"
-          label={t(`signup.providers.${provider}`)}
-          busy={pending === provider}
-          disabled={pending !== null}
-          onPress={() => void startProvider(provider)}
-        />
-      ))}
-
-      <Choice icon="mail-outline" title={t('signup.email')} hint={t('signup.emailHint')} open={emailOpen} onOpen={() => (setOpen('email'), setError(null))}>
-        <EmailPassword onDone={(email, password) => onChosen({ method: 'EMAIL', email, password })} />
-      </Choice>
+      {withCallOffice([
+        whatsappOn ? (
+          <Choice key="whatsapp" icon="logo-whatsapp" title={t('signup.whatsapp')} hint={t('signup.whatsappHint')} open={open === 'whatsapp'} onOpen={() => (setOpen('whatsapp'), setError(null))}>
+            <WhatsappCode side={side} onIdentity={(identity) => onChosen({ method: 'WHATSAPP', identity })} onSignedIn={onSignedIn} />
+          </Choice>
+        ) : null,
+        providers.length ? (
+          <View key="providers" style={{ gap: 14 }}>
+            {providers.map((provider) => (
+              <Button
+                key={provider}
+                variant="secondary"
+                label={t(`signup.providers.${provider}`)}
+                busy={pending === provider}
+                disabled={pending !== null}
+                onPress={() => void startProvider(provider)}
+              />
+            ))}
+          </View>
+        ) : null,
+        <Choice key="email" icon="mail-outline" title={t('signup.email')} hint={t('signup.emailHint')} open={emailOpen} onOpen={() => (setOpen('email'), setError(null))}>
+          <EmailPassword onDone={(email, password) => onChosen({ method: 'EMAIL', email, password })} />
+        </Choice>,
+      ])}
 
       <FormError message={error} />
     </View>
   );
+}
+
+/**
+ * The choices in order with "Call the office to register" 3rd: after
+ * WhatsApp and the Google / Microsoft / Facebook buttons (one choice
+ * together), before email - or as near 3rd as the choices switched on allow.
+ */
+function withCallOffice(choices: (React.ReactElement | null)[]) {
+  const shown = choices.filter((c): c is React.ReactElement => c !== null);
+  shown.splice(Math.min(2, shown.length), 0, <CallOfficeCard key="call-office" />);
+  return shown;
 }
 
 function Choice({ icon, title, hint, open, onOpen, children }: { icon: IconName; title: string; hint: string; open: boolean; onOpen: () => void; children: React.ReactNode }) {
