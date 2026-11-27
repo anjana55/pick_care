@@ -18,7 +18,7 @@ type T = (key: string, vars?: Record<string, string | number>) => string;
  *
  * expo-print and expo-sharing are only in builds made after they were added:
  * each is checked before it is loaded, and an older build gets `unsupported`
- * so the screen can send the person to the website's invoice instead.
+ * so the screen can ask the person to update the app.
  */
 
 /** Where the made PDF is kept while the share sheet has it. Emptied before each one. */

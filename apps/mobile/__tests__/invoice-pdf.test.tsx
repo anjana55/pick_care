@@ -106,6 +106,7 @@ const open = async (body = invoice()) => {
 };
 
 beforeEach(() => {
+  jest.restoreAllMocks();
   mockRouter.reset();
   mockNative.missing.clear();
   mockPhone.printed = [];
@@ -136,13 +137,22 @@ describe('downloading an invoice as a PDF', () => {
     expect(mockPhone.shared).toHaveLength(0);
   });
 
-  it('opens the website’s invoice (which saves as PDF) on a build made before PDFs were added', async () => {
+  it('asks to update the app on a build made before PDFs were added, and never opens the website', async () => {
     mockNative.missing.add('ExpoPrint');
     const site = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
     await fireEvent.press(await open());
-    await waitFor(() => expect(site).toHaveBeenCalledWith(`https://find.caregivers.lk/account/invoices/${INV}`));
+    expect(await screen.findByText(en.invoices.pdf.unsupported)).toBeTruthy();
+    expect(site).not.toHaveBeenCalled();
     expect(mockPhone.printed).toHaveLength(0);
-    expect(screen.queryByText(en.invoices.pdf.error)).toBeNull();
+  });
+
+  it('asks to update the app when this build can’t open the share sheet', async () => {
+    const sharing = require('expo-sharing') as { isAvailableAsync: jest.Mock };
+    sharing.isAvailableAsync.mockResolvedValueOnce(false);
+    const site = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
+    await fireEvent.press(await open());
+    expect(await screen.findByText(en.invoices.pdf.unsupported)).toBeTruthy();
+    expect(site).not.toHaveBeenCalled();
   });
 });
 
