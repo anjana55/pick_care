@@ -1,0 +1,326 @@
+{
+  "ui": {
+    "title": "Help",
+    "openTopic": "Help: {title}",
+    "close": "Close help",
+    "back": "Back",
+    "language": "Language",
+    "search": "Search the help",
+    "results": "Search results",
+    "noResults": "No help topic matches those words. Try fewer or different words.",
+    "thisPage": "Help for this page",
+    "steps": "How to do it",
+    "step": "Step {n}",
+    "tips": "Good to know",
+    "related": "Related topics"
+  },
+  "areas": {
+    "start": "Getting started",
+    "care": "Requests and bookings",
+    "people": "Caregivers and clients",
+    "money": "Money",
+    "automation": "Agents and the assistant",
+    "admin": "Administration"
+  },
+  "topics": {
+    "daily-dashboard": {
+      "title": "Start your day from the dashboard",
+      "summary": "See what is waiting on the team and how the business is doing, and go straight to each piece of work.",
+      "steps": {
+        "1": "Open [[ui:nav.dashboard]]. The [[ui:dashboard.attention.title]] card lists everything waiting on someone: new requests, unconfirmed bookings, invoices overdue, documents to review and more.",
+        "2": "Click a line in [[ui:dashboard.attention.title]] to open that list already filtered. Deal with the items, then come back - the count goes down as work is done.",
+        "3": "Choose the [[ui:dashboard.range.label]] at the top to see the figures for a week, a month or another period. [[ui:dashboard.refresh]] reloads them.",
+        "4": "Read [[ui:dashboard.dials.title]] and the charts below for the bigger picture: how many requests became bookings, how much was collected, and where to recruit caregivers."
+      },
+      "tips": {
+        "1": "When the card says [[ui:dashboard.attention.allClear]], nothing is waiting on the team.",
+        "2": "The red and orange lines are the most urgent: start with those."
+      }
+    },
+    "handle-request": {
+      "title": "Handle a care request",
+      "summary": "Take a client's request from New to a caregiver introduced, and then to a booking.",
+      "steps": {
+        "1": "Open [[ui:nav.requests]]. [[ui:requests.tabs.open]] shows the requests still being worked on; [[ui:requests.tabs.unmatched]] shows the ones without a caregiver. Click a request to open it.",
+        "2": "Under [[ui:requests.detail.handledBy]], click [[ui:requests.detail.assignToMe]] so the team knows you are looking after it. Read the client's message and care needs, and call the client if anything is unclear.",
+        "3": "If no caregiver is attached yet, click [[ui:suggestions.find]] under [[ui:suggestions.title]] and [[ui:suggestions.attach]] the one who fits best. Call the caregiver to check they can take the work.",
+        "4": "Under [[ui:requests.detail.actions]], click [[ui:requests.detail.move.PICK_UP]] when you start working on it. The client is told the team is on it.",
+        "5": "When the client and the caregiver have spoken, click [[ui:requests.detail.move.INTRODUCED]]. If the request will not go ahead, click [[ui:requests.detail.move.CLOSED]] and choose the reason.",
+        "6": "Once both sides agree, click [[ui:bookings.fromRequest.create]] to book the caregiver's shifts. The booking keeps a link to this request."
+      },
+      "tips": {
+        "1": "Every move sends the client a notice, in the language shown on the request. Notices never include names or phone numbers - share those on the phone.",
+        "2": "Write what was agreed with [[ui:requests.detail.addNote]]. Notes are for staff only.",
+        "3": "If the client has not given all the details needed, the request says what is still missing. Ask for it on the call."
+      }
+    },
+    "phone-request": {
+      "title": "Take a request over the phone",
+      "summary": "Record a care request for someone who calls the office, whether or not they already have an account.",
+      "steps": {
+        "1": "Open [[ui:nav.requests]] and click [[ui:requests.newPhoneRequest]]. Under [[ui:requests.new.callerTitle]], choose [[ui:requests.new.existingClient]] and search for them, or [[ui:requests.new.newCaller]] and fill in their details.",
+        "2": "If the caller asked for a particular caregiver, find them under [[ui:requests.new.caregiverTitle]]. Otherwise leave it on [[ui:requests.new.matchLater]].",
+        "3": "Choose the [[ui:requests.detail.careType]] and write what the caller asked for, in their words: what help, when, and anything to watch out for.",
+        "4": "Set [[ui:requests.new.language]] to the caller's language. Their confirmation and every update go out in it.",
+        "5": "Click [[ui:requests.new.submit]]. The request appears in [[ui:nav.requests]] marked [[ui:requests.source.PHONE]], ready to handle like any other."
+      },
+      "tips": {
+        "1": "Ask a new caller if we may keep their details, and tick the agreement box only if they say yes.",
+        "2": "A new caller can sign in later with a WhatsApp code sent to the mobile number you record."
+      }
+    },
+    "people-waiting": {
+      "title": "Call back people who asked to talk to someone",
+      "summary": "Clients and caregivers can always ask for a person from the app or the website. Their messages wait here.",
+      "steps": {
+        "1": "Open [[ui:nav.peopleWaiting]]. Each card shows who is asking, what it is about, how they want to be contacted and when they asked.",
+        "2": "Contact the person the way they asked. Write what you agreed in [[ui:peopleWaiting.note]].",
+        "3": "Click [[ui:peopleWaiting.handle]]. The card leaves the list and shows who handled it."
+      },
+      "tips": {
+        "1": "A person asking to talk is never left to an agent: if an agent was working on their case, it stops there and the case waits for staff."
+      },
+      "labels": {
+        "asked": "Asked 10 minutes ago"
+      }
+    },
+    "create-booking": {
+      "title": "Book a caregiver's shifts",
+      "summary": "Create a booking: who, which days and times, and the agreed rates. It starts as a draft so nothing is sent until you confirm.",
+      "steps": {
+        "1": "Open [[ui:nav.bookings]] and start a new booking, or click [[ui:bookings.fromRequest.create]] on a request (the client and caregiver are filled in for you). Under [[ui:bookings.new.whoTitle]], choose the client and the caregiver.",
+        "2": "Under [[ui:bookings.new.patternTitle]], tick the [[ui:bookings.new.days]], set when each shift [[ui:bookings.new.startTime]] and [[ui:bookings.new.endTime]], and the [[ui:bookings.new.startDate]] and [[ui:bookings.new.endDate]]. The page tells you how many shifts that makes.",
+        "3": "Under [[ui:bookings.new.rateTitle]], enter what the client is charged and what the caregiver is paid.",
+        "4": "Choose [[ui:bookings.billingTiming.label]]: in advance or after the work, as agreed with the client.",
+        "5": "Click [[ui:bookings.new.submit]]. You land on the booking, still a draft.",
+        "6": "Check the shifts, then click [[ui:bookings.detail.confirm]] on the booking. Only then are the client and the caregiver told."
+      },
+      "tips": {
+        "1": "All times are Sri Lanka time. A shift that ends before it starts (for example 8 pm to 8 am) runs overnight.",
+        "2": "A long booking can start short and be extended later with [[ui:bookings.detail.extend]]."
+      }
+    },
+    "manage-booking": {
+      "title": "Confirm and manage a booking",
+      "summary": "Confirm a draft, take the first payment if needed, change shifts, find cover, extend or cancel.",
+      "steps": {
+        "1": "On a draft booking, check the shifts and rates, then click [[ui:bookings.detail.confirm]]. Every shift is scheduled and the client and caregiver are told.",
+        "2": "If the client pays before care starts, click [[ui:bookings.payFirst.send]]. The booking is confirmed when that invoice is paid. Use [[ui:bookings.payFirst.override]] only with a reason, for example a bank transfer that is on its way.",
+        "3": "Under [[ui:bookings.detail.roster]], use [[ui:bookings.detail.editTimes]] to move a shift, [[ui:bookings.detail.cover]] to send someone else for one shift, or [[ui:bookings.detail.addShift]] for an extra one.",
+        "4": "To carry on past the last day, click [[ui:bookings.detail.extend]] and choose the [[ui:bookings.detail.newEndDate]].",
+        "5": "To stop the booking, click [[ui:bookings.detail.cancel]] and give the reason. Future shifts are cancelled and both sides are told.",
+        "6": "Record calls and agreements in the history at the bottom with [[ui:requests.detail.addNote]]."
+      },
+      "tips": {
+        "1": "If an invoice goes unpaid past its due date, visits pause and nobody is sent. The booking shows a banner; [[ui:bookings.paused.resume]] restarts them with a reason.",
+        "2": "Shifts that are already on an invoice or a pay statement are locked. Use [[ui:bookings.correct.button]] to change them.",
+        "3": "When all the care is done, click [[ui:bookings.detail.complete]]."
+      }
+    },
+    "todays-visits": {
+      "title": "Follow today's visits",
+      "summary": "See who is at a client's home now, who is late, and step in when a caregiver cannot come.",
+      "steps": {
+        "1": "Open [[ui:nav.bookings]], then [[ui:visits.title]]. Visits that started with nobody checked in are listed first, under [[ui:visits.lateHeading]].",
+        "2": "Each visit shows the [[ui:visits.code]]. The client gives it to the caregiver at the door, and the caregiver enters it in the app to check in.",
+        "3": "If a caregiver phones instead of checking in, click [[ui:visits.recordIn]] (and later [[ui:visits.recordOut]]) and write a short note.",
+        "4": "If a caregiver says they can't make it, or nobody turns up, click [[ui:visits.coverPanel.find]], choose who could cover, and offer the shift. The first to accept is sent."
+      },
+      "tips": {
+        "1": "If the page says check-in is switched off, an admin can turn it on in [[ui:nav.settings]].",
+        "2": "A visit marked paused belongs to a booking with an unpaid invoice: nobody is sent until it is paid or resumed."
+      },
+      "labels": {
+        "arrivalCode": "Arrival code 4821"
+      }
+    },
+    "care-plan": {
+      "title": "Set up a care plan",
+      "summary": "List the activities the caregiver does on each shift. The caregiver sees them on their phone, and the client ticks them off.",
+      "steps": {
+        "1": "On a booking, find [[ui:carePlans.plan.title]]. Under [[ui:carePlans.plan.startFrom]], pick one of the [[ui:carePlans.plan.templates]], [[ui:carePlans.plan.blank]], or copy the plan from another booking of the same client.",
+        "2": "Under [[ui:carePlans.editor.activities]], add each task with [[ui:carePlans.editor.add]]: what to do, when in the shift, and on which days. Add instructions for anything that needs explaining.",
+        "3": "Tick [[ui:carePlans.editor.critical]] for tasks that must not be missed, such as medicines. Critical tasks marked not done show on the dashboard.",
+        "4": "When you change a running plan, choose [[ui:carePlans.plan.effectiveFrom]]. Earlier days keep the plan as it was.",
+        "5": "To reuse a good plan, click [[ui:carePlans.plan.saveAsTemplate]]. Templates are kept under [[ui:carePlans.templates.title]]."
+      },
+      "tips": {
+        "1": "Write activities in each language the caregiver and client read. A language left blank shows the text of another.",
+        "2": "Clients can mark each day's activities until midnight; anything left unmarked is counted as done."
+      },
+      "labels": {
+        "tablets": "Morning tablets",
+        "walk": "Short walk"
+      }
+    },
+    "correct-booking": {
+      "title": "Correct work that already happened",
+      "summary": "Fix a shift that ran differently, a missing shift or a wrong rate - even when it is already invoiced or paid.",
+      "steps": {
+        "1": "On the booking, click [[ui:bookings.correct.button]] and say [[ui:bookings.correct.reason]], for example what the timesheet shows.",
+        "2": "Use [[ui:bookings.correct.pickShift]] to change a shift's times, who worked it or what happened. Use [[ui:bookings.correct.addMissing]] for a shift that is not on the roster.",
+        "3": "Click [[ui:bookings.correct.preview]]. Nothing changes yet.",
+        "4": "Read [[ui:bookings.correct.documentsTitle]]: it shows what will happen to each invoice and pay statement - updated, replaced by a corrected copy, or the difference carried to the next one.",
+        "5": "If it is right, click [[ui:bookings.correct.apply]]. Everything is changed together and recorded in the booking's history."
+      },
+      "tips": {
+        "1": "If you change the correction after previewing, preview it again before applying.",
+        "2": "A difference carried forward appears on the client's next invoice or the caregiver's next pay statement."
+      }
+    },
+    "register-caregiver": {
+      "title": "Register a caregiver for someone",
+      "summary": "Enter a caregiver's details for them, for example when they call or visit the office.",
+      "steps": {
+        "1": "Open [[ui:nav.caregivers]] and start a new registration. The steps are shown across the top: [[ui:caregivers.wizard.steps.personal]], [[ui:caregivers.wizard.steps.qualifications]], [[ui:caregivers.wizard.steps.skills]], [[ui:caregivers.wizard.steps.documents]] and the rest.",
+        "2": "Fill in each step and click [[ui:caregivers.wizard.next]]. You can go back to a step with [[ui:caregivers.wizard.back]].",
+        "3": "At [[ui:caregivers.wizard.steps.documents]], choose the [[ui:caregivers.me.documents.documentType]] and upload the caregiver's ID and certificates.",
+        "4": "Check everything at [[ui:caregivers.wizard.steps.review]] and click [[ui:caregivers.wizard.finish]].",
+        "5": "The caregiver can then finish setting up their own sign-in with their registration number."
+      },
+      "tips": {
+        "1": "Caregivers who register themselves on the website or the app arrive here too, as drafts or registered.",
+        "2": "Nobody is shown to clients until they have been verified and made active."
+      },
+      "labels": {
+        "fullName": "Full name",
+        "phone": "Phone"
+      }
+    },
+    "verify-caregiver": {
+      "title": "Verify a caregiver",
+      "summary": "Check a caregiver's documents and references, then make them active so clients can find them.",
+      "steps": {
+        "1": "Open the caregiver from [[ui:nav.caregivers]] (or from the dashboard). The [[ui:caregivers.verificationFile.title]] sums up what is complete and what is still missing.",
+        "2": "Open [[ui:caregivers.profile.tabs.documents]] and look at each document.",
+        "3": "Click [[ui:caregivers.edit.verify]] on each document that is genuine and readable, or [[ui:caregivers.edit.markRejected]] if it is not. The caregiver is asked for a new one.",
+        "4": "Check the [[ui:caregivers.profile.tabs.references]]: what each referee answered is shown in the verification file.",
+        "5": "Record each check you made under [[ui:caregivers.profile.tabs.verification]] with [[ui:caregivers.edit.addVerification]].",
+        "6": "When everything is in order, use [[ui:lifecycle.changeStatus]] to move the caregiver to [[ui:caregivers.status.VERIFIED]], then [[ui:caregivers.status.ACTIVE]]. Active caregivers appear in search and can be booked."
+      },
+      "tips": {
+        "1": "The order is [[ui:caregivers.status.DRAFT]], [[ui:caregivers.status.REGISTERED]], [[ui:caregivers.status.DOCUMENTS_PENDING]], [[ui:caregivers.status.UNDER_VERIFICATION]], [[ui:caregivers.status.VERIFIED]], [[ui:caregivers.status.ACTIVE]]. Every change is recorded in the audit log.",
+        "2": "Only an admin can bring a [[ui:caregivers.status.REJECTED]] caregiver back to [[ui:caregivers.status.DRAFT]]."
+      }
+    },
+    "manage-clients": {
+      "title": "Look after client records",
+      "summary": "Find a client, add one who called, review new sign-ups and start a request for them.",
+      "steps": {
+        "1": "Open [[ui:nav.clients]] and search by name, phone or email. Use [[ui:filters.button]] to narrow the list.",
+        "2": "Click [[ui:clients.add]] to add someone who contacted the office. Ask if we may keep their details first.",
+        "3": "Open a client to see their details, requests and bookings. New sign-ups start as pending review: check their details, then use [[ui:lifecycle.changeStatus]] to make them active.",
+        "4": "Click [[ui:requests.newRequestForClient]] on a client's record to start a care request for them."
+      },
+      "tips": {
+        "1": "Status and sign-in are separate: an inactive or suspended client can still sign in but can't send new requests. Only admins can turn sign-in off.",
+        "2": "Opening a client's record is recorded in the audit log."
+      }
+    },
+    "moderate-reviews": {
+      "title": "Approve caregiver reviews",
+      "summary": "Clients rate caregivers after care. Written reviews wait here until staff publish them.",
+      "steps": {
+        "1": "Open [[ui:nav.reviews]]. [[ui:reviews.tabs.pending]] shows written reviews not yet published; [[ui:reviews.tabs.low]] shows poor ratings to follow up.",
+        "2": "Read the [[ui:reviews.writtenReview]] and any private notes to the office.",
+        "3": "Click [[ui:reviews.approve]] to publish it on the caregiver's profile, or [[ui:reviews.reject]] with a reason the client is told.",
+        "4": "Use [[ui:reviews.hide]] only for a rating that should not count at all, for example one given by mistake."
+      },
+      "tips": {
+        "1": "Stars and badges count straight away; only the written text waits for approval."
+      }
+    },
+    "create-invoice": {
+      "title": "Invoice a client and record payment",
+      "summary": "Bill a client for the care given, send the invoice, and record what they pay.",
+      "steps": {
+        "1": "Open [[ui:nav.invoices]] and click [[ui:billing.invoices.new]]. Choose the client or booking under [[ui:billing.newInvoice.whoTitle]], the [[ui:billing.newInvoice.periodTitle]], then [[ui:billing.newInvoice.submit]].",
+        "2": "The draft lists the shifts in that period under [[ui:billing.invoice.lines]]. Remove a line, or use [[ui:billing.invoice.addShifts]] for any that are missing.",
+        "3": "Add an [[ui:billing.invoice.discount]] if one was agreed, with the reason, and [[ui:billing.invoice.save]].",
+        "4": "Check it with [[ui:billing.invoice.preview]], then click [[ui:billing.invoice.issue]]. The client can be told by email or WhatsApp, and can pay online if that is set up.",
+        "5": "When money arrives by cash or bank transfer, click [[ui:billing.payments.record]] under [[ui:billing.payments.title]]. Online payments are recorded on their own.",
+        "6": "If an issued invoice is wrong, use [[ui:billing.invoice.revise]] (a corrected copy) or [[ui:billing.invoice.void]] with a reason."
+      },
+      "tips": {
+        "1": "Nothing is sent to the client while an invoice is a draft.",
+        "2": "Overdue invoices show on the dashboard, and an unpaid one can pause the booking's visits.",
+        "3": "[[ui:billing.invoice.print]] gives a PDF to send or keep."
+      }
+    },
+    "pay-caregivers": {
+      "title": "Pay caregivers",
+      "summary": "Make pay statements for the shifts caregivers worked, approve them and record the payments.",
+      "steps": {
+        "1": "Open [[ui:nav.payouts]]. Under [[ui:billing.payouts.runTitle]], choose the period [[ui:billing.newInvoice.from]] and [[ui:billing.newInvoice.to]], then click [[ui:billing.payouts.run]]. A draft statement is made for each caregiver with unpaid shifts.",
+        "2": "Open each statement and check its lines. Use [[ui:billing.payout.addShifts]] for any that are missing.",
+        "3": "Click [[ui:billing.payout.approve]] when it is right. The caregiver sees it in their app as approved.",
+        "4": "After transferring the money, click [[ui:billing.payout.markPaid]] and enter the date and the transfer reference.",
+        "5": "Tick [[ui:billing.payout.notifyCaregiver]] to tell the caregiver it has been paid."
+      },
+      "tips": {
+        "1": "To pay just one person, use [[ui:billing.payouts.single]].",
+        "2": "A statement made by mistake can be deleted while it is a draft; its shifts can go on another statement."
+      },
+      "labels": {
+        "statement": "Statement"
+      }
+    },
+    "agent-proposals": {
+      "title": "Approve what the agents propose",
+      "summary": "Agents can do parts of the work - matching, booking, billing - and ask staff to approve each step.",
+      "steps": {
+        "1": "Open [[ui:automation.proposals.title]] from the dashboard's [[ui:dashboard.attention.title]] card. Each card says what the agent wants to do and why.",
+        "2": "Click [[ui:automation.case.approve]] to carry it out, or [[ui:automation.case.decline]] to stop it. [[ui:automation.proposals.open]] shows the request, booking or invoice it is about.",
+        "3": "On a record an agent is working on, click [[ui:automation.case.takeOver]] to handle it yourself. The agent stops on that case only.",
+        "4": "Admins choose how much each agent may do in [[ui:nav.settings]] → [[ui:settings.automation]]: [[ui:automation.modes.MANUAL.name]], [[ui:automation.modes.SHADOW.name]], [[ui:automation.modes.ASSIST.name]] or [[ui:automation.modes.AUTO.name]]."
+      },
+      "tips": {
+        "1": "In [[ui:automation.modes.ASSIST.name]] the agent never acts on its own: everything waits for approval here.",
+        "2": "A declined step is not proposed again."
+      }
+    },
+    "staff-assistant": {
+      "title": "Ask the assistant",
+      "summary": "Ask questions about requests and bookings in your own words, and let the assistant prepare changes for you to approve.",
+      "steps": {
+        "1": "Open [[ui:assistant.title]] and click [[ui:assistant.new]].",
+        "2": "Type what you need, for example \"Which requests from Kandy have no caregiver?\" or \"Add a note to booking BK-0042\", then [[ui:assistant.send]].",
+        "3": "Look-ups are answered at once. A change is shown as a proposal: click [[ui:assistant.approve]] to carry it out as you, or [[ui:assistant.reject]].",
+        "4": "Your conversations stay listed so you can come back to them. They are private to you."
+      },
+      "tips": {
+        "1": "The assistant can be wrong: check each change before approving it.",
+        "2": "If the assistant is switched off, an admin can turn it on in [[ui:nav.settings]] → [[ui:settings.ai]]."
+      }
+    },
+    "manage-users": {
+      "title": "Give staff their accounts",
+      "summary": "Add office staff, verifiers and admins, reset passwords and close accounts.",
+      "steps": {
+        "1": "Open [[ui:nav.settings]] → [[ui:users.title]] and click [[ui:users.addNew]]. Enter the person's name and email, a first password and their role.",
+        "2": "Choose the role carefully: [[ui:users.role.STAFF]] runs requests, bookings and money; [[ui:users.role.VERIFIER]] checks caregivers; [[ui:users.role.ADMIN]] can also change every setting.",
+        "3": "If someone forgets their password, use [[ui:users.actions.resetPassword]] and give them the new one.",
+        "4": "When someone leaves, click [[ui:users.actions.deactivate]]. They are signed out and their history is kept."
+      },
+      "tips": {
+        "1": "Staff accounts sign in only at the staff sign-in page; caregivers and clients have their own.",
+        "2": "Prefer deactivating over deleting, so the audit log still shows who did what."
+      }
+    },
+    "set-up-branding": {
+      "title": "Set the company name, logo and colours",
+      "summary": "Make the website, the app, emails and invoices carry your brand.",
+      "steps": {
+        "1": "Open [[ui:nav.settings]] → [[ui:settings.branding]]. Under [[ui:brandingAdmin.companyTitle]], enter the [[ui:brandingAdmin.companyName]], a [[ui:brandingAdmin.shortName]] and the [[ui:brandingAdmin.officePhone]] shown on \"call the office\" buttons.",
+        "2": "Under [[ui:brandingAdmin.artworkTitle]], click [[ui:brandingAdmin.upload]] for the logo and each other piece of artwork. Use a PNG, JPEG, WebP or SVG of up to 1 MB.",
+        "3": "Choose the [[ui:brandingAdmin.primaryColor]] and [[ui:brandingAdmin.accentColor]]. A colour too light for white text is refused; [[ui:brandingAdmin.makeAccessible]] picks a readable shade.",
+        "4": "Under [[ui:brandingAdmin.languagesTitle]], choose which languages are offered, the [[ui:brandingAdmin.defaultLanguage]], and the [[ui:brandingAdmin.textSize]] for each language.",
+        "5": "Click [[ui:common.save]]. The change shows everywhere at once, without a new release."
+      },
+      "tips": {
+        "1": "The preview at the bottom shows how the website will look before you save.",
+        "2": "The mobile app's icon and store name are part of each app build, so changing those needs a new app release."
+      }
+    }
+  }
+}

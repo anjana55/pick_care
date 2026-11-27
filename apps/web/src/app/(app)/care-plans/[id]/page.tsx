@@ -13,6 +13,7 @@ import { ActivityEditor, draftProblems, fromDraft, toDraft, type DraftActivity }
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input, Label, Textarea } from '@/components/ui/input';
+import { HelpHint } from '@/components/help/help-button';
 
 /** Create (`/care-plans/new`) or edit one care plan template. */
 export default function CarePlanTemplatePage() {
@@ -83,7 +84,10 @@ export default function CarePlanTemplatePage() {
       </Link>
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold text-ink">{isNew ? t('carePlans.templates.new') : data!.name}</h1>
+          <div className="flex items-center gap-1.5">
+            <h1 className="text-xl font-semibold text-ink">{isNew ? t('carePlans.templates.new') : data!.name}</h1>
+            <HelpHint topic="care-plan" />
+          </div>
           <p className="mt-1 text-sm text-ink/60">{t('carePlans.templates.editHint')}</p>
         </div>
         {!isNew && user?.role === 'ADMIN' && (

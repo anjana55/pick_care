@@ -29,6 +29,7 @@ import type {
   BookingShift,
   IssueReportView,
 } from '@/lib/api/types';
+import { HelpHint } from '@/components/help/help-button';
 
 const MONEY = /^\d{1,8}(\.\d{1,2})?$/;
 const errorText = (err: unknown, fallback: string) => (err instanceof ApiError && err.message ? err.message : fallback);
@@ -236,9 +237,12 @@ export function CorrectBookingPanel({
     <section className="mb-6 rounded-lg border border-accent/40 bg-white p-4 shadow-sm" aria-labelledby="correct-title">
       <div className="mb-3 flex items-start justify-between gap-3">
         <div>
-          <h2 id="correct-title" className="text-base font-semibold text-ink">
-            {close ? t(`bookings.correct.closeTitle.${close}`) : t('bookings.correct.title')}
-          </h2>
+          <div className="flex items-center gap-1.5">
+            <h2 id="correct-title" className="text-base font-semibold text-ink">
+              {close ? t(`bookings.correct.closeTitle.${close}`) : t('bookings.correct.title')}
+            </h2>
+            <HelpHint topic="correct-booking" />
+          </div>
           <p className="mt-1 max-w-3xl text-sm text-ink/60">{close ? t('bookings.correct.closeIntro') : t('bookings.correct.intro')}</p>
         </div>
         <button type="button" onClick={onClose} className="rounded p-1 text-ink/50 hover:bg-paper hover:text-ink" aria-label={t('common.cancel')}>

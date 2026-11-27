@@ -10,6 +10,7 @@ import { fmtDateTime } from '@/lib/colombo-time';
 import { Button } from '@/components/ui/button';
 import { Input, Label } from '@/components/ui/input';
 import { PhoneLink } from '@/components/clients/contact-links';
+import { HelpHint } from '@/components/help/help-button';
 
 /**
  * People waiting: clients and caregivers who asked to talk to a person. The
@@ -23,7 +24,10 @@ export default function PeopleWaitingPage() {
 
   return (
     <div className="mx-auto max-w-4xl">
-      <h1 className="text-xl font-semibold text-ink">{t('peopleWaiting.title')}</h1>
+      <div className="flex items-center gap-1.5">
+        <h1 className="text-xl font-semibold text-ink">{t('peopleWaiting.title')}</h1>
+        <HelpHint topic="people-waiting" />
+      </div>
       <p className="mt-1 text-sm text-ink/60">{t('peopleWaiting.subtitle')}</p>
       <div className="mt-4 flex gap-2" role="tablist">
         {(['OPEN', 'HANDLED'] as const).map((k) => (

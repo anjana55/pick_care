@@ -15,6 +15,7 @@ import { BookingStatusBadge } from '@/components/bookings/booking-badges';
 import { cn } from '@/lib/utils';
 import type { BookingStatus } from '@/lib/api/types';
 import { useInitialParam } from '@/lib/use-initial-param';
+import { HelpHint } from '@/components/help/help-button';
 
 /**
  * 'issues': bookings a client or caregiver has reported a problem on that staff have not answered.
@@ -56,7 +57,10 @@ export default function BookingsPage() {
   return (
     <div>
       <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold text-ink">{t('bookings.title')}</h1>
+        <div className="flex items-center gap-1.5">
+          <h1 className="text-xl font-semibold text-ink">{t('bookings.title')}</h1>
+          <HelpHint topic="create-booking" />
+        </div>
         <div className="flex flex-wrap items-center gap-2">
           {/* The template library has no menu item of its own: it is opened from the bookings it is applied to. */}
           <Link

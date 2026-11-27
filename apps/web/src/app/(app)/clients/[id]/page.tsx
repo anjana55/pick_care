@@ -31,6 +31,7 @@ import { RelatedInvoices } from '@/components/billing/related-invoices';
 import { makeClientProfileSchema, UNSET_ID } from '@/lib/schemas/client-profile';
 import { usePendingAccountDeletion } from '@/lib/hooks/use-account-deletions';
 import { PendingDeletionBanner } from '@/components/accounts/pending-deletion-banner';
+import { HelpHint } from '@/components/help/help-button';
 
 /**
  * A client's page, laid out like a caregiver's: name and status in the header
@@ -157,7 +158,10 @@ export default function ClientDetailPage() {
       {pendingDeletion && <PendingDeletionBanner request={pendingDeletion} />}
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-ink">{client.fullName}</h1>
+          <div className="flex items-center gap-1.5">
+            <h1 className="text-xl font-semibold text-ink">{client.fullName}</h1>
+            <HelpHint topic="manage-clients" />
+          </div>
           <p className="text-sm text-ink/50">
             {client.registrantType === 'GUARDIAN' && client.recipientName ? `${t('clients.forRecipient')} ${client.recipientName} · ` : ''}
             {t('clients.detail.registered')} {new Date(client.createdAt).toLocaleDateString(locale)}

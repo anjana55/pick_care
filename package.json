@@ -10,7 +10,7 @@
     "build:shared": "npm run build -w @care-platform/shared",
     "build": "npm run build:shared && npm run build -w @care-platform/api -w @care-platform/web -w @care-platform/public-web",
     "typecheck": "npm run build:shared && npm run typecheck --workspaces --if-present",
-    "test": "npm run build:shared && npm test -w @care-platform/api -w @care-platform/public-web -w @care-platform/mobile",
+    "test": "npm run build:shared && npm test -w @care-platform/api -w @care-platform/web -w @care-platform/public-web -w @care-platform/mobile",
     "lint": "eslint . --max-warnings=0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

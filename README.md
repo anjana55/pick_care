@@ -71,6 +71,7 @@ CI (`.github/workflows/ci.yml`) runs `typecheck` and `test` on every pull reques
 - [docs/architecture.md](docs/architecture.md) — how the system fits together: apps, API modules, data, auth, i18n, branding, background jobs.
 - [docs/development.md](docs/development.md) — setting up, environment variables, tests, migrations, translations and coding conventions.
 - [docs/features.md](docs/features.md) — reference for sign-in, registration, search, AI and security rules.
+- [docs/help.md](docs/help.md) — the built-in, multi-language help in the staff and mobile apps, and how to add topics.
 - [DEPLOYMENT.md](DEPLOYMENT.md) — putting it on a server: `setup.sh`, HTTPS, backups, updates, troubleshooting.
 - [apps/mobile/README.md](apps/mobile/README.md) and [apps/mobile/BUILDING.md](apps/mobile/BUILDING.md) — the mobile app and store builds.
 - [i18n-review/README.md](i18n-review/README.md) — reviewing Sinhala and Tamil wording.

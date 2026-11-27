@@ -7,6 +7,7 @@ import { useDashboardStats } from '@/lib/hooks/use-caregivers';
 import { useAuth } from '@/lib/api/auth-context';
 import { BusinessDashboard } from '@/components/dashboard/business-dashboard';
 import { HBarList } from '@/components/dashboard/charts';
+import { HelpHint } from '@/components/help/help-button';
 
 /**
  * ADMIN and STAFF get the business dashboard (money, demand, operations,
@@ -28,7 +29,10 @@ function VerifierDashboard() {
   return (
     <div className="viz mx-auto max-w-5xl space-y-5">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-ink">{t('dashboard.title')}</h1>
+        <div className="flex items-center gap-1.5">
+          <h1 className="text-2xl font-bold tracking-tight text-ink">{t('dashboard.title')}</h1>
+          <HelpHint topic="verify-caregiver" />
+        </div>
         <p className="mt-1 text-sm text-ink/60">{t('dashboard.verifierSubtitle')}</p>
       </div>
 

@@ -12,6 +12,7 @@ import { LanguagesStep } from '@/components/caregivers/wizard-step-languages';
 import { AvailabilityStep } from '@/components/caregivers/wizard-step-availability';
 import { DocumentsStep } from '@/components/caregivers/wizard-step-documents';
 import { ReviewStep } from '@/components/caregivers/wizard-step-review';
+import { HelpHint } from '@/components/help/help-button';
 
 const STEP_KEYS = ['personal', 'qualifications', 'experience', 'skills', 'languages', 'availability', 'documents', 'review'] as const;
 
@@ -26,7 +27,10 @@ export default function NewCaregiverPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-xl font-semibold text-ink">{t('caregivers.wizard.title')}</h1>
+      <div className="flex items-center gap-1.5 mb-6">
+        <h1 className="text-xl font-semibold text-ink">{t('caregivers.wizard.title')}</h1>
+        <HelpHint topic="register-caregiver" />
+      </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[220px_1fr]">
         <div className="hidden lg:block">

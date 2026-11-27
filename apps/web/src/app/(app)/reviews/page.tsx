@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { ListPagination } from '@/components/ui/list-pagination';
 import { StaffReviewCard } from '@/components/reviews/review-card';
 import { cn } from '@/lib/utils';
+import { HelpHint } from '@/components/help/help-button';
 
 /**
  * Reviews (ADMIN + STAFF): written reviews waiting for approval, low ratings
@@ -47,7 +48,10 @@ export default function ReviewsPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-semibold text-ink">{t('reviews.title')}</h1>
+        <div className="flex items-center gap-1.5">
+          <h1 className="text-xl font-semibold text-ink">{t('reviews.title')}</h1>
+          <HelpHint topic="moderate-reviews" />
+        </div>
         <p className="mt-1 max-w-3xl text-sm text-ink/60">{t('reviews.subtitle')}</p>
       </div>
 

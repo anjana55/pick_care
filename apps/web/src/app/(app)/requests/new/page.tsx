@@ -19,6 +19,7 @@ import { CaregiverPicker, type PickedCaregiver } from '@/components/requests/car
 import { cn } from '@/lib/utils';
 import type { Client } from '@/lib/api/types';
 import { careTypeValues, type CareType } from '@care-platform/shared';
+import { HelpHint } from '@/components/help/help-button';
 
 const LANGUAGES = ['en', 'si', 'ta'] as const;
 
@@ -92,7 +93,10 @@ function NewPhoneRequestPage() {
         <ChevronLeft size={16} />
         {t('requests.back')}
       </Link>
-      <h1 className="text-xl font-semibold text-ink">{t('requests.new.title')}</h1>
+      <div className="flex items-center gap-1.5">
+        <h1 className="text-xl font-semibold text-ink">{t('requests.new.title')}</h1>
+        <HelpHint topic="phone-request" />
+      </div>
       <p className="mb-6 mt-1 text-sm text-ink/60">{t('requests.new.subtitle')}</p>
 
       <div className="space-y-4">

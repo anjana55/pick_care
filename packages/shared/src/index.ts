@@ -58,3 +58,4 @@ export * from './types/agreements';
 export * from './types/intake-from-search';
 export * from './types/communication-preferences';
 export * from './types/address-search';
+export * from './types/help';

@@ -10,6 +10,8 @@ import { useColors } from '@/theme';
 import { Text } from './Text';
 import { HeroBand, type IconName } from './visual';
 import { Bell } from '@/notifications/Bell';
+import { helpPhrase } from '@care-platform/shared';
+import { useHelpSources, useOpenHelp } from '@/help/useHelp';
 
 /** Where Home goes: a signed-in person's own area, else the welcome screen. */
 export function useHome(): string {
@@ -30,6 +32,7 @@ export function PageHeader({
   subtitle,
   isHome = false,
   onBack,
+  help,
   children,
 }: {
   title?: string;
@@ -37,13 +40,22 @@ export function PageHeader({
   isHome?: boolean;
   /** Instead of going back a screen: closing a sheet, a step of a form. */
   onBack?: () => void;
+  /**
+   * The ? that opens the help. By default it opens the topics for this
+   * screen and is left out where there are none; a topic id opens that
+   * topic; `false` leaves it out (the help screen itself).
+   */
+  help?: string | false;
   children?: ReactNode;
 }) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const colors = useColors();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const home = useHome();
+  const openHelp = useOpenHelp(typeof help === 'string' ? help : undefined);
+  const helpSources = useHelpSources();
+  const helpButton = help !== false && openHelp ? <HelpButton label={helpPhrase(helpSources, locale, 'ui.open')} onPress={openHelp} /> : null;
 
   // Opened from a link or a notification there may be nothing to go back to: then Back goes home.
   const back = onBack ?? (() => (router.canGoBack?.() ? router.back() : router.replace(home as never)));
@@ -56,15 +68,36 @@ export function PageHeader({
         <NavButton icon="home" label={t('nav.home')} current={isHome} onPress={() => (isHome ? undefined : router.replace(home as never))} />
       </View>
       {title ? (
-        <View style={{ gap: 4 }}>
-          <Text accessibilityRole="header" style={[styles.title, { color: colors.brandText }]}>
-            {title}
-          </Text>
-          {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+        <View style={styles.titleRow}>
+          <View style={{ flex: 1, gap: 4 }}>
+            <Text accessibilityRole="header" style={[styles.title, { color: colors.brandText }]}>
+              {title}
+            </Text>
+            {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+          </View>
+          {helpButton}
         </View>
+      ) : helpButton ? (
+        <View style={{ alignItems: 'flex-end', marginTop: -6 }}>{helpButton}</View>
       ) : null}
       {children}
     </HeroBand>
+  );
+}
+
+/** The round ? beside a screen's title. Named "Help" for screen readers, in the app's language. */
+function HelpButton({ label, onPress }: { label: string; onPress: () => void }) {
+  const colors = useColors();
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={onPress}
+      hitSlop={8}
+      style={({ pressed }) => [styles.helpButton, { backgroundColor: colors.surface, opacity: pressed ? 0.85 : 1 }]}
+    >
+      <Ionicons name="help" size={28} color={colors.deep} />
+    </Pressable>
   );
 }
 
@@ -91,5 +124,7 @@ const styles = StyleSheet.create({
   navButton: { minHeight: 50, borderRadius: 25, paddingLeft: 12, paddingRight: 18, flexDirection: 'row', alignItems: 'center', gap: 6 },
   navLabel: { fontSize: 18, fontWeight: '700' },
   title: { fontSize: 28, lineHeight: 36, fontWeight: '800' },
+  titleRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
+  helpButton: { width: 50, height: 50, borderRadius: 25, alignItems: 'center', justifyContent: 'center' },
   subtitle: { fontSize: 17, lineHeight: 24, color: '#FFFFFF' },
 });

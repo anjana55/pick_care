@@ -11,6 +11,7 @@ import { useWaitingCounts } from '@/notifications/tab-counts';
 import { Avatar, Card, Divider, MenuRow, Pill } from '@/ui/visual';
 import { useCareOfferCount, useOwnCaregiver, useRateCard } from '@/caregiver/api';
 import { locationTestAvailable } from '@/location/test-mode';
+import { HelpMenuRow } from '@/help/HelpLinks';
 
 /**
  * The caregiver's account: who they are, their profile and documents, the
@@ -78,6 +79,8 @@ export default function Me() {
           <MenuRow icon="notifications-outline" label={t('commsPrefs.title')} onPress={() => router.push('/communication-preferences')} />
           <Divider />
           <MenuRow icon="call-outline" label={t('talk.title')} onPress={() => router.push('/talk')} />
+          <Divider />
+          <HelpMenuRow />
         </Card>
 
         <View style={styles.section}>

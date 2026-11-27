@@ -6,6 +6,7 @@ import { LanguageToggle } from '@/components/layout/language-toggle';
 import { AccountMenu } from '@/components/layout/account-menu';
 import { QuickSearch } from '@/components/layout/quick-search';
 import { StaffBell } from '@/components/layout/staff-bell';
+import { HelpTopbarButton } from '@/components/help/help-button';
 
 export function Topbar({ onMenu }: { onMenu: () => void }) {
   const { t } = useTranslation();
@@ -30,6 +31,7 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
       <div className="flex shrink-0 items-center gap-4">
         <QuickSearch />
         <LanguageToggle />
+        <HelpTopbarButton />
         <StaffBell />
         <AccountMenu />
       </div>

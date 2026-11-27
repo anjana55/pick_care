@@ -10,6 +10,7 @@ import { useCarePlanTemplates, useDuplicateCarePlanTemplate } from '@/lib/hooks/
 import { fmtDateTime } from '@/lib/colombo-time';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { HelpHint } from '@/components/help/help-button';
 
 const TABS = ['ACTIVE', 'ARCHIVED'] as const;
 
@@ -38,7 +39,10 @@ export default function CarePlanTemplatesPage() {
         {t('nav.bookings')}
       </Link>
       <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold text-ink">{t('carePlans.templates.title')}</h1>
+        <div className="flex items-center gap-1.5">
+          <h1 className="text-xl font-semibold text-ink">{t('carePlans.templates.title')}</h1>
+          <HelpHint topic="care-plan" />
+        </div>
         <Link href="/care-plans/new" className="inline-flex h-9 items-center gap-2 rounded bg-brand px-4 text-sm font-medium text-white hover:bg-brand-dark">
           <Plus size={16} aria-hidden />
           {t('carePlans.templates.new')}

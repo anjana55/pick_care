@@ -30,6 +30,7 @@ import { PayoutStatusBadge } from '@/components/billing/billing-badges';
 import { LineEditor, TotalsBlock, liveTotals, rowProblem, rowsFrom, toInput, type EditableRow } from '@/components/billing/line-editor';
 import type { PayoutDetail } from '@/lib/api/types';
 import { CaseAutomationPanel } from '@/components/automation/case-automation-panel';
+import { HelpHint } from '@/components/help/help-button';
 
 const errorText = (err: unknown, fallback: string) => (err instanceof ApiError && err.message ? err.message : fallback);
 
@@ -71,10 +72,13 @@ export default function PayoutPage() {
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="hidden text-xs uppercase tracking-wide text-ink/50 print:block">{t('billing.payout.printTitle')}</p>
-          <h1 className="flex items-center gap-3 text-xl font-semibold tabular-nums text-ink">
-            {payout.reference}
-            <PayoutStatusBadge status={payout.status} label={t(`billing.payoutStatus.${payout.status}`)} />
-          </h1>
+          <div className="flex items-center gap-1.5">
+            <h1 className="flex items-center gap-3 text-xl font-semibold tabular-nums text-ink">
+              {payout.reference}
+              <PayoutStatusBadge status={payout.status} label={t(`billing.payoutStatus.${payout.status}`)} />
+            </h1>
+            <HelpHint topic="pay-caregivers" />
+          </div>
           <p className="mt-1 flex flex-wrap gap-x-3 text-sm text-ink/60">
             {payout.caregiver && (
               <Link href={`/caregivers/${payout.caregiver.id}`} className="inline-flex items-center gap-1 hover:text-ink hover:underline">

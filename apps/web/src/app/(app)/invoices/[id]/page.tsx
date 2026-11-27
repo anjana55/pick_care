@@ -36,6 +36,7 @@ import { LineEditor, TotalsBlock, liveTotals, rowProblem, rowsFrom, toInput, typ
 import { cn } from '@/lib/utils';
 import type { DiscountType, InvoiceDetail } from '@/lib/api/types';
 import { CaseAutomationPanel } from '@/components/automation/case-automation-panel';
+import { HelpHint } from '@/components/help/help-button';
 
 const errorText = (err: unknown, fallback: string) => (err instanceof ApiError && err.message ? err.message : fallback);
 
@@ -83,11 +84,14 @@ export default function InvoicePage() {
         <CaseAutomationPanel caseType="INVOICE" caseId={id} />
         <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h1 className="flex flex-wrap items-center gap-3 text-xl font-semibold tabular-nums text-ink">
-              {invoice.number ?? t('billing.invoice.draftTitle')}
-              <InvoiceStatusBadge status={invoice.status} label={t(`billing.invoiceStatus.${invoice.status}`)} />
-              {invoice.overdue && <OverdueBadge label={t('billing.overdue')} />}
-            </h1>
+            <div className="flex items-center gap-1.5">
+              <h1 className="flex flex-wrap items-center gap-3 text-xl font-semibold tabular-nums text-ink">
+                {invoice.number ?? t('billing.invoice.draftTitle')}
+                <InvoiceStatusBadge status={invoice.status} label={t(`billing.invoiceStatus.${invoice.status}`)} />
+                {invoice.overdue && <OverdueBadge label={t('billing.overdue')} />}
+              </h1>
+              <HelpHint topic="create-invoice" />
+            </div>
             <p className="mt-1 flex flex-wrap gap-x-3 text-sm text-ink/60">
               {invoice.client && (
                 <Link href={`/clients/${invoice.client.id}`} className="inline-flex items-center gap-1 hover:text-ink hover:underline">

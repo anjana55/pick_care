@@ -1,0 +1,258 @@
+{
+  "ui": {
+    "title": "Help",
+    "open": "Help",
+    "openTopic": "Help: {title}",
+    "language": "Language",
+    "search": "Search the help",
+    "noResults": "No help topic matches those words. Try fewer or different words.",
+    "thisScreen": "Help for this screen",
+    "allTopics": "All help topics",
+    "steps": "How to do it",
+    "step": "Step {n}",
+    "tips": "Good to know",
+    "related": "Related topics",
+    "backToList": "All help topics",
+    "picture": "A picture of the screen. The numbers match the steps below."
+  },
+  "areas": {
+    "start": "Getting started",
+    "care": "Getting care",
+    "work": "Working as a caregiver",
+    "money": "Payments",
+    "account": "Your account"
+  },
+  "topics": {
+    "get-started": {
+      "title": "Create your account or sign in",
+      "summary": "Join as someone looking for care or as a caregiver, in a few short steps.",
+      "steps": {
+        "1": "On the first screen tap [[ui:welcome.getStarted]], then [[ui:start.needCare]] or [[ui:start.caregiver]]. If you already have an account, tap the sign-in button instead.",
+        "2": "Choose how you will sign in: [[ui:signup.whatsapp]] (no password to remember) or [[ui:signup.email]].",
+        "3": "With WhatsApp, enter your number and tap [[ui:signup.sendCode]]. Type the code you receive on WhatsApp and tap [[ui:signup.verify]].",
+        "4": "Fill in the short form about you (and the care you need), read and accept the agreement, then tap [[ui:signup.submit]].",
+        "5": "Rather not fill in a form? Tap [[ui:signup.callOffice.title]] to call our office, and we will register you on the phone."
+      },
+      "tips": {
+        "1": "Next time, sign in the same way you chose here. With WhatsApp, a new code is sent each time.",
+        "2": "You can change the app's language at any time from the first screen or from [[ui:nav.myAccount]]."
+      }
+    },
+    "find-caregiver": {
+      "title": "Find a caregiver",
+      "summary": "Search for caregivers near you, look at their profiles and ask to be put in touch.",
+      "steps": {
+        "1": "Tap [[ui:nav.find]]. Use [[ui:searchMode.normal]] to choose from lists, or [[ui:searchMode.ai]] to describe what you need in your own words.",
+        "2": "Choose the [[ui:normalSearch.careType]], the [[ui:normalSearch.district]] and the [[ui:normalSearch.city]], then tap [[ui:normalSearch.submit]].",
+        "3": "Tap a caregiver to see their profile: experience, skills, languages, ratings and when they can work. [[ui:results.verified]] means our team has checked their identity and documents.",
+        "4": "Tap [[ui:care.contactCta]] to ask our team to put you in touch. We call you both and arrange the care.",
+        "5": "Tap [[ui:care.save]] to keep a caregiver on your list for later."
+      },
+      "tips": {
+        "1": "For your safety, caregivers' names and numbers are shared by our team on the phone, not in the app.",
+        "2": "No one suitable? Tap [[ui:care.findForMe.cta]] and our team will look for you."
+      }
+    },
+    "ask-for-care": {
+      "title": "Ask us to find care",
+      "summary": "Send a request and follow it while our team arranges a caregiver.",
+      "steps": {
+        "1": "Tap [[ui:account.requests.newRequest]] (or [[ui:care.contactCta]] on a caregiver's profile). Choose the type of care, where it is needed and when it should start, and send it.",
+        "2": "Open [[ui:account.requests.title]] from [[ui:nav.myAccount]] to see each request and what our team is doing about it. You also get a message whenever it moves on.",
+        "3": "If you have a question, tap [[ui:talk.title]]. Someone from our team will contact you.",
+        "4": "If you no longer need the care, tap [[ui:account.requests.cancel]] on the request."
+      },
+      "tips": {
+        "1": "Our team calls you and the caregiver before anything is booked. Nothing is charged until care is arranged with you.",
+        "2": "Once a caregiver is agreed, the booking appears under [[ui:account.nav.bookings]]."
+      },
+      "labels": {
+        "reference": "Reference CR-0123",
+        "status": "In progress"
+      }
+    },
+    "follow-visits": {
+      "title": "Follow your visits",
+      "summary": "See when your caregiver is coming, follow them on the way, and confirm they have arrived.",
+      "steps": {
+        "1": "Tap [[ui:account.nav.bookings]]. Each booking shows its upcoming [[ui:account.bookings.shifts]], who is coming, and when they arrived and left.",
+        "2": "Before a visit, the [[ui:checkIn.client.title]] appears. When the caregiver arrives, tell them this code: they enter it in their phone to show they are with you.",
+        "3": "When the caregiver taps [[ui:onMyWay.start]], you see them on a map and about how many minutes away they are.",
+        "4": "If another caregiver covers a shift, it says so next to that shift.",
+        "5": "If something is not right with a visit, tap [[ui:issues.report]] and tell us what happened."
+      },
+      "tips": {
+        "1": "Only give the arrival code to the caregiver at your door - never on the phone.",
+        "2": "To see how far away the caregiver is, put a pin on the home under [[ui:places.title]] in [[ui:nav.myAccount]]."
+      },
+      "labels": {
+        "code": "4821",
+        "onTheWay": "Your caregiver is on the way",
+        "minutesAway": "About 12 min away",
+        "arrived": "Arrived 8:02 · left 4:05"
+      }
+    },
+    "tick-off-care": {
+      "title": "Tick off today's care",
+      "summary": "Each day, mark what the caregiver did from the care plan, so the office knows the care was given.",
+      "steps": {
+        "1": "On [[ui:account.nav.bookings]], find [[ui:carePlan.todayTitle]]. It lists the activities on the care plan for today. [[ui:carePlan.important]] ones matter most, like medicines.",
+        "2": "Tap [[ui:carePlan.done]] for each one the caregiver did.",
+        "3": "Tap [[ui:carePlan.notDone]] if something was not done, and say what happened. The office sees it.",
+        "4": "Use [[ui:carePlan.previousDay]] to go back to yesterday until midnight."
+      },
+      "tips": {
+        "1": "Anything you leave unmarked at midnight counts as done.",
+        "2": "Turn on [[ui:carePlan.reminders]] if you would like a reminder in the evening."
+      },
+      "labels": {
+        "tablets": "Morning tablets"
+      }
+    },
+    "rate-caregiver": {
+      "title": "Rate your caregiver",
+      "summary": "After care, give stars and say what went well. It helps other families and the caregiver.",
+      "steps": {
+        "1": "On [[ui:account.nav.bookings]], tap [[ui:reviews.rateNow]] or [[ui:reviews.rateCaregiver]] next to the caregiver.",
+        "2": "Choose from one to five stars, and tap the badges that fit.",
+        "3": "If you like, write a review for other families. Our team checks it before it appears on the profile. You can also leave a note that only our office sees. Then tap [[ui:reviews.form.submit]].",
+        "4": "You can change your rating with [[ui:reviews.edit]] until the date shown."
+      },
+      "tips": {
+        "1": "Stars and badges count straight away. The written words appear once our team has approved them.",
+        "2": "If a caregiver covered only some shifts, you can rate them separately."
+      },
+      "labels": {
+        "badgeOne": "Kind",
+        "badgeTwo": "On time",
+        "writeReview": "A few words for other families"
+      }
+    },
+    "pay-invoice": {
+      "title": "See and pay invoices",
+      "summary": "Open your invoices, pay online, and keep a copy.",
+      "steps": {
+        "1": "Open [[ui:invoices.title]] from [[ui:nav.myAccount]]. Each invoice shows the total, what is left to pay and the due date. [[ui:invoices.overdue]] ones are past their date.",
+        "2": "Open an invoice and tap [[ui:invoices.pay.button]] to pay by card or mobile wallet through PayHere.",
+        "3": "Come back to the app when the payment is finished. The invoice shows it as paid.",
+        "4": "Tap [[ui:invoices.pdf.download]] to keep or share a copy."
+      },
+      "tips": {
+        "1": "If an invoice is not paid by its date, visits may pause until it is. Paying restarts them.",
+        "2": "Paid by bank transfer or cash instead? Our team records it, and the invoice updates."
+      }
+    },
+    "caregiver-documents": {
+      "title": "Get verified: your documents",
+      "summary": "Upload your ID and certificates so our team can verify you and offer you work.",
+      "steps": {
+        "1": "Open [[ui:portal.documents.title]] from [[ui:nav.home]] or [[ui:nav.myAccount]]. [[ui:portal.documents.needed]] shows which documents are still missing.",
+        "2": "Tap [[ui:portal.documents.add]] and choose the [[ui:portal.documents.type]].",
+        "3": "Tap [[ui:portal.documents.takePhoto]] to photograph it, or [[ui:portal.documents.choosePhoto]] for one you already have. Make sure every word is easy to read.",
+        "4": "Add the expiry date if it has one, then tap [[ui:portal.documents.upload]].",
+        "5": "Check [[ui:portal.profile.title]] too: your personal details, qualifications and experience help families choose you."
+      },
+      "tips": {
+        "1": "If a document is not accepted, the app says so. Upload a clearer or corrected copy.",
+        "2": "We remind you before a document runs out, so you can upload the new one in time."
+      },
+      "labels": {
+        "nic": "National ID card",
+        "certificate": "Caregiver certificate"
+      }
+    },
+    "job-offers": {
+      "title": "Answer job offers",
+      "summary": "When a family needs someone like you, our team sends you an offer. Accept it or say no.",
+      "steps": {
+        "1": "When an offer arrives you get a message. Open [[ui:portal.offers.title]]: each offer shows the area, the start, the kind of care and what you are paid.",
+        "2": "Tap [[ui:portal.offers.accept]] if you can take it. Our team then confirms the booking with the family.",
+        "3": "Tap [[ui:portal.offers.decline]] if you can't, and choose why. The offer goes to someone else.",
+        "4": "Answer before the time shown - after that the offer may go to another caregiver."
+      },
+      "tips": {
+        "1": "You get the family's name and address once the booking is confirmed.",
+        "2": "A cover offer is for one shift only: [[ui:portal.offers.cover.accept]] adds it to your shifts."
+      }
+    },
+    "work-a-shift": {
+      "title": "Work a shift",
+      "summary": "Go to the visit, check in with the arrival code, follow the care plan, and check out.",
+      "steps": {
+        "1": "On the day, open [[ui:portal.nav.shifts]]. When you leave, tap [[ui:onMyWay.start]] so the family can see you are coming. It stops when you check in.",
+        "2": "At the door, ask the family for their arrival code. Type it in [[ui:checkIn.caregiver.codeLabel]] and tap [[ui:checkIn.caregiver.checkIn]].",
+        "3": "Tap [[ui:carePlan.showPlan]] to see what to do on this shift. [[ui:carePlan.important]] tasks, like medicines, must not be missed.",
+        "4": "When you leave, tap [[ui:checkIn.caregiver.checkOut]].",
+        "5": "If you can't come, tap [[ui:portal.shifts.cantMake.button]] as early as you can, so the office can send someone else.",
+        "6": "If something went wrong on a shift, tap [[ui:issues.reportShort]] and tell our team."
+      },
+      "tips": {
+        "1": "While you are checked in, the app checks your location now and then. Only the office sees it, and it stops when you check out.",
+        "2": "Too many wrong codes lock the check-in. Then phone the office and they will check you in.",
+        "3": "If a shift says [[ui:portal.shifts.paused]], do not go."
+      }
+    },
+    "set-rates": {
+      "title": "Set your rates",
+      "summary": "Choose what you charge for each kind of care, within the range the office allows.",
+      "steps": {
+        "1": "Open [[ui:portal.rates.title]] from [[ui:nav.myAccount]]. For each kind of care, enter [[ui:portal.rates.rate]] within the range shown.",
+        "2": "Under each rate you see what families will see, with the office's fee included.",
+        "3": "Tap [[ui:portal.rates.save]]."
+      },
+      "tips": {
+        "1": "For other kinds of care, the office agrees the rate with you for each job."
+      },
+      "labels": {
+        "careType": "Home care, day shift",
+        "band": "Between LKR 2,500 and 4,000 a day",
+        "clientSees": "Families see LKR 3,450 a day"
+      }
+    },
+    "caregiver-payments": {
+      "title": "See your payments",
+      "summary": "Follow what you are paid for the shifts you worked.",
+      "steps": {
+        "1": "Tap [[ui:portal.nav.payments]]. Each statement shows what it is for and the amount. Approved means the payment will be sent soon.",
+        "2": "Once paid, it shows the date and the transfer reference, so you can find it in your bank account.",
+        "3": "Your ratings from families are under [[ui:reviews.caregiver.title]] in [[ui:nav.myAccount]]."
+      },
+      "tips": {
+        "1": "Payments appear here once our team has approved them.",
+        "2": "If an amount looks wrong, tap [[ui:talk.title]] and tell us which shift."
+      },
+      "labels": {
+        "amount": "LKR 42,000",
+        "paid": "Paid 30 Nov"
+      }
+    },
+    "talk-to-person": {
+      "title": "Talk to a person",
+      "summary": "Whatever you need, someone from our team will contact you.",
+      "steps": {
+        "1": "Tap [[ui:talk.title]] (in [[ui:nav.myAccount]]) and write [[ui:talk.message]].",
+        "2": "If it is about a request, a booking or a shift, choose it under [[ui:talk.about]].",
+        "3": "Choose [[ui:talk.contact]]: a call, WhatsApp or email.",
+        "4": "Tap [[ui:talk.send]]. Our team contacts you soon."
+      },
+      "tips": {
+        "1": "Your earlier messages and our answers are listed under [[ui:talk.mine]]."
+      }
+    },
+    "account-settings": {
+      "title": "Look after your account",
+      "summary": "Set where care happens, how we contact you, your language, and how you sign in.",
+      "steps": {
+        "1": "Open [[ui:nav.myAccount]]. Under [[ui:places.title]], put a pin on the home where care happens, so caregivers find it and you see when they are close.",
+        "2": "Under [[ui:commsPrefs.title]], choose how we contact you and when.",
+        "3": "Change the app's [[ui:common.language]] at any time.",
+        "4": "Tap [[ui:nav.signOut]] to sign out on this phone.",
+        "5": "To close your account, tap [[ui:deleteAccount.title]]. It is closed at once and your personal details are erased 14 days later. Changed your mind? Contact our team within those 14 days."
+      },
+      "tips": {
+        "1": "You can also unlock the app with your fingerprint or face, if your phone supports it.",
+        "2": "Notices about your requests, visits and invoices are under the bell at the top of each screen."
+      }
+    }
+  }
+}

@@ -67,6 +67,7 @@ import { PendingDeletionBanner } from '@/components/accounts/pending-deletion-ba
 import { CaseAutomationPanel } from '@/components/automation/case-automation-panel';
 import { CaregiverRatesCard } from '@/components/caregivers/rates-card';
 import { CaregiverPhoto } from '@/components/caregivers/caregiver-photo';
+import { HelpHint } from '@/components/help/help-button';
 
 function Field({ label, value }: { label: string; value: string | number | null | undefined }) {
   return (
@@ -316,7 +317,10 @@ export default function CaregiverProfilePage() {
         <div className="flex flex-wrap items-start gap-4">
           <CaregiverPhoto caregiverId={id} name={caregiver.fullName} canEdit={isAdminOrStaff && !pendingDeletion} />
           <div>
-            <h1 className="text-xl font-semibold text-ink">{caregiver.fullName}</h1>
+            <div className="flex items-center gap-1.5">
+              <h1 className="text-xl font-semibold text-ink">{caregiver.fullName}</h1>
+              <HelpHint topic="verify-caregiver" />
+            </div>
             <p className="text-sm text-ink/50">{caregiver.registrationNumber}</p>
             <CaregiverRef publicId={caregiver.publicId} status={caregiver.status} detailed className="mt-1" />
           </div>

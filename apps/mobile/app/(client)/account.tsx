@@ -10,6 +10,7 @@ import { useWaitingCounts } from '@/notifications/tab-counts';
 import { Text } from '@/ui/Text';
 import { Avatar, Card, Divider, IconBadge, MenuRow } from '@/ui/visual';
 import { locationTestAvailable } from '@/location/test-mode';
+import { HelpMenuRow } from '@/help/HelpLinks';
 
 /**
  * A client's account. Signed out: sign in or sign up (searching doesn't need
@@ -74,6 +75,8 @@ export default function Account() {
             <MenuRow icon="notifications-outline" label={t('commsPrefs.title')} onPress={() => router.push('/communication-preferences')} />
             <Divider />
             <MenuRow icon="call-outline" label={t('talk.title')} onPress={() => router.push('/talk')} />
+            <Divider />
+            <HelpMenuRow />
           </Card>
         ) : null}
 

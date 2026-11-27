@@ -15,6 +15,7 @@ import { RequestStatusBadge } from '@/components/requests/request-status-badge';
 import { cn } from '@/lib/utils';
 import type { CareRequestStatus } from '@/lib/api/types';
 import { useInitialParam } from '@/lib/use-initial-param';
+import { HelpHint } from '@/components/help/help-button';
 
 /** The queue's tabs: open work first, then each finished state, then everything. */
 const TABS: { key: string; filter: Pick<CareRequestFilters, 'scope' | 'status' | 'unmatched'> }[] = [
@@ -88,7 +89,10 @@ export default function RequestsPage() {
   return (
     <div>
       <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold text-ink">{t('requests.title')}</h1>
+        <div className="flex items-center gap-1.5">
+          <h1 className="text-xl font-semibold text-ink">{t('requests.title')}</h1>
+          <HelpHint topic="handle-request" />
+        </div>
         <Link href="/requests/new" className="inline-flex h-9 items-center gap-2 rounded bg-brand px-4 text-sm font-medium text-white hover:bg-brand-dark">
           <PhoneCall size={16} aria-hidden />
           {t('requests.newPhoneRequest')}

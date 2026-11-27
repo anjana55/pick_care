@@ -11,6 +11,10 @@ not need the app running.
 | Staff portal (`/staff`) | `apps/web/src/lib/i18n/` | 3,730 | yes |
 | Mobile app | `apps/mobile/src/i18n/` | 1,220 | no - most of its strings are reused from the public site |
 
+The in-app help has its own words in `apps/web/src/help/` and
+`apps/mobile/src/help/` (`en.json`, `si.json`, `ta.json`). They are not in
+`translations.csv` yet and need a native speaker's review too.
+
 `en.json` is the reference: `si.json` and `ta.json` must have exactly the same key
 structure, no more and no less (`apps/public-web/src/__tests__/dictionary-parity.test.ts`
 enforces it for the public site).

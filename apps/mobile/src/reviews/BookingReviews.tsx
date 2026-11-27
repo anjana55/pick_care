@@ -10,6 +10,7 @@ import { Card } from '@/ui/visual';
 import { shortId } from '@/search/ResultCard';
 import { usePendingReviews } from './api';
 import { STAR, Stars } from './Stars';
+import { HelpHint } from '@/help/HelpLinks';
 
 /** The rate screen for one caregiver on one booking. */
 export const rateRoute = (r: Pick<ReviewableCaregiver, 'bookingId' | 'caregiverPublicId'>) =>
@@ -57,9 +58,10 @@ export function PendingReviewsBanner() {
     <Card style={{ gap: 10, borderWidth: 2, borderColor: STAR }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
         <Ionicons name="star" size={22} color={STAR} />
-        <Text accessibilityRole="header" style={{ fontSize: 18, fontWeight: '700', color: colors.ink }}>
+        <Text accessibilityRole="header" style={{ flex: 1, fontSize: 18, fontWeight: '700', color: colors.ink }}>
           {t('reviews.bannerTitle')}
         </Text>
+        <HelpHint topic="rate-caregiver" />
       </View>
       <Text style={{ fontSize: 16, color: colors.ink }}>{data.length === 1 ? t('reviews.bannerOne') : t('reviews.bannerMany', { count: data.length })}</Text>
       <Button label={t('reviews.rateNow')} onPress={() => router.push(rateRoute(data[0]))} />

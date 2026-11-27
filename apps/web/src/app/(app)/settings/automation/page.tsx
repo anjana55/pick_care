@@ -35,6 +35,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Input, Label, Select } from '@/components/ui/input';
 import { EndpointsCard } from '@/components/automation/endpoints-card';
+import { HelpHint } from '@/components/help/help-button';
 
 type Confirm = { kind: 'master'; on: boolean } | { kind: 'auto'; fn: AutomationFunctionStatus } | { kind: 'reset'; fn: AutomationFunctionStatus };
 
@@ -273,7 +274,10 @@ export default function AutomationSettingsPage() {
 
   return (
     <div className="max-w-4xl">
-      <h2 className="mb-1 text-lg font-semibold text-ink">{t('automation.title')}</h2>
+      <div className="flex items-center gap-1.5 mb-1">
+        <h2 className="text-lg font-semibold text-ink">{t('automation.title')}</h2>
+        <HelpHint topic="agent-proposals" />
+      </div>
       <p className="mb-4 text-sm text-ink/60">{t('automation.subtitle')}</p>
 
       {locked && (
