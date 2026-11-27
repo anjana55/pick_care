@@ -437,7 +437,7 @@ for n in "${NOTES[@]}"; do warn "$n"; done
 # package-lock.json". Check it here, before anything is built, with the same
 # Node the images build with (the server itself may have no Node at all).
 if [ "${#LOCAL_BUILD[@]}" -gt 0 ]; then
-  if ! git show "$TARGET:package-lock.json" | docker run --rm -i node:20-alpine node -e '
+  if ! git show "$TARGET:package-lock.json" | docker run --rm -i node:24-alpine node -e '
     let s = ""; process.stdin.on("data", (d) => (s += d)).on("end", () => {
       try { const l = JSON.parse(s); if (!l.lockfileVersion || !l.packages) throw new Error("no packages"); }
       catch (e) { console.error(e.message); process.exit(1); }

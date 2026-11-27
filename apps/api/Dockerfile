@@ -6,7 +6,7 @@
 #
 #   docker build -f apps/api/Dockerfile -t care-platform-api .
 
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS builder
 WORKDIR /repo
 
 # Only the two workspaces this image actually needs (api + the shared
@@ -45,7 +45,7 @@ RUN npm prune --omit=dev
 RUN mkdir -p apps/api/node_modules
 
 # ---- runtime image ----
-FROM node:20-alpine AS runner
+FROM node:24-alpine AS runner
 RUN apk add --no-cache dumb-init \
   && addgroup -S app && adduser -S app -G app
 WORKDIR /app
