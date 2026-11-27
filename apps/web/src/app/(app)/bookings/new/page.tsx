@@ -94,7 +94,6 @@ function NewBookingPage() {
     setLanguage(request.language);
     const sched = request.client.careSchedule;
     if (sched === 'DAY' || sched === 'NIGHT' || sched === 'LIVE_IN_24H') pickType(sched === 'LIVE_IN_24H' ? 'LIVE_IN' : sched);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [request]);
 
   function pickType(type: ScheduleType) {

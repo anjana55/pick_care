@@ -22,6 +22,8 @@ export default function NotFound() {
             >
               {t('notFound.home')}
             </Link>
+            {/* The public site, outside this app's /staff base path, so not a <Link>. */}
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
             <a href="/" className="text-sm font-medium text-brand-dark hover:underline">
               {t('notFound.public')}
             </a>

@@ -21,7 +21,6 @@ import {
  * PatientIntakeValues, so the component is generic over that and addresses
  * fields by name; the schema in lib/schemas/patient-intake.ts is what actually
  * types and validates them (same approach as PersonalInfoFields). */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 /** The form's four parts. Sign-up can fold away the ones a search already answered. */
 export type IntakeSectionKey = 'whoNeedsCare' | 'contact' | 'location' | 'care';

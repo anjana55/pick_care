@@ -18,7 +18,7 @@ const E164 = /^\+[1-9]\d{7,14}$/;
 export function normalizePhone(input: string | null | undefined, defaultCountryCode: string): string | null {
   if (!input) return null;
   const cc = defaultCountryCode.replace(/\D/g, '');
-  let raw = input.trim().replace(/[\s\-().]/g, '');
+  const raw = input.trim().replace(/[\s\-().]/g, '');
   if (!/^\+?\d+$/.test(raw.replace(/^00/, '+'))) return null;
 
   let candidate: string;

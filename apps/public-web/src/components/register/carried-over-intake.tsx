@@ -11,7 +11,6 @@ import { CareNeedSummary, useLocationLabel } from '@/components/care/care-need-s
 
 /* Generic over the two sign-up forms, which both extend PatientIntakeValues
  * (same approach as PatientIntakeFields). */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 /**
  * Brings what the visitor already told us into a client sign-up form:

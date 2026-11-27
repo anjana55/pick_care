@@ -11,6 +11,9 @@
     "build": "npm run build:shared && npm run build -w @care-platform/api -w @care-platform/web -w @care-platform/public-web",
     "typecheck": "npm run build:shared && npm run typecheck --workspaces --if-present",
     "test": "npm run build:shared && npm test -w @care-platform/api -w @care-platform/public-web -w @care-platform/mobile",
+    "lint": "eslint . --max-warnings=0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "dev:api": "npm run build:shared && npm run start:dev -w @care-platform/api",
     "dev:web": "npm run build:shared && npm run dev -w @care-platform/web",
     "dev:public-web": "npm run build:shared && npm run dev -w @care-platform/public-web",
@@ -27,5 +30,15 @@
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "multer": "^2.5.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@next/eslint-plugin-next": "^16.4.6",
+    "eslint": "^10.15.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.14.0",
+    "prettier": "^3.10.1",
+    "typescript-eslint": "^8.74.0"
   }
 }

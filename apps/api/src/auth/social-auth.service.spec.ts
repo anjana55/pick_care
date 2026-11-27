@@ -61,7 +61,6 @@ function stubDb(answers: DbAnswers) {
 function makeService(
   dbAnswers: DbAnswers,
   profile: { accountId: string; email: string },
-  overrides: Partial<{ startSession: unknown }> = {},
 ) {
   const { db, chain } = stubDb(dbAnswers);
   const jwt = new JwtService({ secret: SECRET });

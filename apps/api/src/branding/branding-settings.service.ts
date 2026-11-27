@@ -56,17 +56,14 @@ const versionOf = (row: Row, asset: BrandAsset): string | null => (row[COLUMNS[a
  * be crisp. Read from the decoded picture (an SVG's own size or viewBox).
  */
 export async function checkAssetShape(asset: BrandAsset, buffer: Buffer): Promise<void> {
-  let width = 0;
-  let height = 0;
-  let vector = false;
-  try {
-    const meta = await sharp(buffer, { limitInputPixels: 50_000_000 }).metadata();
-    width = meta.width ?? 0;
-    height = meta.height ?? 0;
-    vector = meta.format === 'svg';
-  } catch {
-    throw new BadRequestException('This picture could not be read. Export it again as PNG or SVG.');
-  }
+  const meta = await sharp(buffer, { limitInputPixels: 50_000_000 })
+    .metadata()
+    .catch(() => {
+      throw new BadRequestException('This picture could not be read. Export it again as PNG or SVG.');
+    });
+  const width = meta.width ?? 0;
+  const height = meta.height ?? 0;
+  const vector = meta.format === 'svg';
   if (!width || !height) throw new BadRequestException('This picture has no size. Export it again with a width and height.');
   if (SQUARE_BRAND_ASSETS.includes(asset) && Math.abs(width - height) / Math.max(width, height) > 0.05) {
     throw new BadRequestException(`This picture must be square (this one is ${width} × ${height}).`);
@@ -90,7 +87,7 @@ export function inspectLogo(buffer: Buffer): LogoMimeType {
   if (buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) return 'image/jpeg';
   if (buffer.subarray(0, 4).toString('latin1') === 'RIFF' && buffer.subarray(8, 12).toString('latin1') === 'WEBP') return 'image/webp';
 
-  const text = buffer.toString('utf8').replace(/^﻿/, '');
+  const text = buffer.toString('utf8').replace(/^\uFEFF/, '');
   const head = text.replace(/^\s*(<\?xml[^>]*\?>\s*)?(<!--[\s\S]*?-->\s*)*(<!DOCTYPE[^>[]*>\s*)?/i, '');
   if (/^<svg[\s>]/i.test(head)) {
     const unsafe =

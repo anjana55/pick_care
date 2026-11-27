@@ -375,8 +375,8 @@ describe('Automation rail (e2e)', () => {
     });
 
     it('assigns a main and a backup model to an agent, and will not delete one in use', async () => {
-      let o = (await ep.create(cloud).expect(201)).body as AutomationOverview;
-      o = (await ep.create(local).expect(201)).body;
+      await ep.create(cloud).expect(201);
+      let o = (await ep.create(local).expect(201)).body as AutomationOverview;
       const [cloudId, localId] = [idOf(o, 'Cloud'), idOf(o, 'Office server')];
 
       await ep.assign('BILLING', { endpointId: uuid() }).expect(400);
@@ -400,8 +400,8 @@ describe('Automation rail (e2e)', () => {
       // No model chosen at all: nothing is sent.
       await expect(ask('PUBLIC')).rejects.toBeInstanceOf(AiNotClearedError);
 
-      let o = (await ep.create(cloud).expect(201)).body as AutomationOverview; // cleared for PUBLIC
-      o = (await ep.create(local).expect(201)).body; // cleared for SENSITIVE
+      await ep.create(cloud).expect(201); // cleared for PUBLIC
+      const o = (await ep.create(local).expect(201)).body as AutomationOverview; // cleared for SENSITIVE
       const [cloudId, localId] = [idOf(o, 'Cloud'), idOf(o, 'Office server')];
       await ep.assign('ONBOARDING', { endpointId: cloudId }).expect(200);
 
@@ -425,8 +425,8 @@ describe('Automation rail (e2e)', () => {
     });
 
     it('falls back to the backup model, and trips the agent when its models keep failing', async () => {
-      let o = (await ep.create({ ...cloud, clearedFor: 'PERSONAL' }).expect(201)).body as AutomationOverview;
-      o = (await ep.create(local).expect(201)).body;
+      await ep.create({ ...cloud, clearedFor: 'PERSONAL' }).expect(201);
+      const o = (await ep.create(local).expect(201)).body as AutomationOverview;
       await ep.assign('MATCHING', { endpointId: idOf(o, 'Cloud'), fallbackEndpointId: idOf(o, 'Office server') }).expect(200);
       await admin.mode('MATCHING', 'AUTO').expect(200);
       const ask = () => models.chat({ function: 'MATCHING', dataClass: 'PERSONAL', messages: [{ role: 'user', content: 'x' }] });

@@ -137,7 +137,7 @@ export function removeFromDeviceShortlist(ids: string[]) {
 let cachedRaw: string | null | undefined;
 let cachedList: string[] = [];
 function shortlistSnapshot(): string[] {
-  let raw: string | null = null;
+  let raw: string | null;
   try {
     raw = window.localStorage.getItem(SHORTLIST_KEY);
   } catch {

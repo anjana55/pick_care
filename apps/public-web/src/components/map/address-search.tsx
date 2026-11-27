@@ -79,10 +79,16 @@ export function AddressSearch({ search, onPick, labels }: { search: (q: string) 
 
   const onKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!open || !results?.length) return;
-    if (e.key === 'ArrowDown') (e.preventDefault(), setActive((a) => (a + 1) % results.length));
-    else if (e.key === 'ArrowUp') (e.preventDefault(), setActive((a) => (a - 1 + results.length) % results.length));
-    else if (e.key === 'Enter') (e.preventDefault(), choose(results[active]));
-    else if (e.key === 'Escape') setOpen(false);
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActive((a) => (a + 1) % results.length);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActive((a) => (a - 1 + results.length) % results.length);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      choose(results[active]);
+    } else if (e.key === 'Escape') setOpen(false);
   };
 
   const listId = `${id}-results`;

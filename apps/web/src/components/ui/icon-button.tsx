@@ -6,10 +6,9 @@ import { cn } from '@/lib/utils';
 
 interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   icon: ReactNode;
-  iconSize?: number;
 }
 
-export function IconButton({ icon, iconSize = 16, className, ...props }: IconButtonProps) {
+export function IconButton({ icon, className, ...props }: IconButtonProps) {
   return (
     <Button
       type="button"
