@@ -5,7 +5,7 @@
 #
 #   docker build -f apps/public-web/Dockerfile -t care-platform-public-web .
 
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS builder
 WORKDIR /repo
 
 COPY package.json package-lock.json ./
@@ -36,7 +36,7 @@ RUN NODE_OPTIONS="${NODE_BUILD_HEAP_MB:+--max-old-space-size=$NODE_BUILD_HEAP_MB
 # actually imports into .next/standalone, instead of shipping the full
 # node_modules tree - .next/static and any public/ assets are emitted
 # separately and have to be copied in alongside it by hand.
-FROM node:20-alpine AS runner
+FROM node:24-alpine AS runner
 RUN addgroup -S app && adduser -S app -G app
 WORKDIR /app
 ENV NODE_ENV=production

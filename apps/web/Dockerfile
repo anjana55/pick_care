@@ -6,7 +6,7 @@
 #
 #   docker build -f apps/web/Dockerfile -t care-platform-web .
 
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS builder
 WORKDIR /repo
 
 COPY package.json package-lock.json ./
@@ -31,7 +31,7 @@ ARG NODE_BUILD_HEAP_MB=
 RUN NODE_OPTIONS="${NODE_BUILD_HEAP_MB:+--max-old-space-size=$NODE_BUILD_HEAP_MB}" npm run build -w @care-platform/web
 
 # ---- runtime image ----
-FROM node:20-alpine AS runner
+FROM node:24-alpine AS runner
 RUN addgroup -S app && adduser -S app -G app
 WORKDIR /app
 ENV NODE_ENV=production
