@@ -2,15 +2,17 @@ import { Inject, Injectable, Logger, OnApplicationBootstrap, OnModuleDestroy, Op
 import { ConfigService } from '@nestjs/config';
 import { randomUUID as uuid } from 'crypto';
 import { and, eq, inArray, isNotNull, isNull, lt, lte, ne } from 'drizzle-orm';
-import {
-  EXPIRY_FINAL_WARNING_DAYS,
-  EXPIRY_WARNING_DAYS,
-  expiryState,
-  type CaregiverExpiringDocument,
-  type StaffExpiringDocument,
-} from '@care-platform/shared';
+import { EXPIRY_FINAL_WARNING_DAYS, EXPIRY_WARNING_DAYS, expiryState, type CaregiverExpiringDocument, type StaffExpiringDocument } from '@care-platform/shared';
 import { DRIZZLE, type Database } from '../database/database.module';
-import { caregiverDocuments, caregiverOverseasProfiles, caregivers, documentExpiryReminders, placementInvoices, users, type ExpiryReminderStage } from '../database/schema';
+import {
+  caregiverDocuments,
+  caregiverOverseasProfiles,
+  caregivers,
+  documentExpiryReminders,
+  placementInvoices,
+  users,
+  type ExpiryReminderStage,
+} from '../database/schema';
 import { InternationalNotifier } from './international-notifier.service';
 import { PlacementsService } from './placements.service';
 import { addDays, todayColombo } from './dates';
@@ -170,7 +172,12 @@ export class DocumentExpiryService implements OnApplicationBootstrap, OnModuleDe
           ),
         ),
       this.db
-        .select({ id: caregiverDocuments.id, caregiverId: caregiverDocuments.caregiverId, documentType: caregiverDocuments.documentType, expiresOn: caregiverDocuments.expiresOn })
+        .select({
+          id: caregiverDocuments.id,
+          caregiverId: caregiverDocuments.caregiverId,
+          documentType: caregiverDocuments.documentType,
+          expiresOn: caregiverDocuments.expiresOn,
+        })
         .from(caregiverDocuments)
         .where(
           and(
@@ -185,7 +192,9 @@ export class DocumentExpiryService implements OnApplicationBootstrap, OnModuleDe
     // Work abroad form: count the form's date only when no upload carries one.
     const passportUploads = new Set(docs.filter((d) => d.documentType === 'PASSPORT').map((d) => d.caregiverId));
     return [
-      ...passports.filter((p) => !passportUploads.has(p.caregiverId)).map((p) => ({ caregiverId: p.caregiverId, key: 'PASSPORT', documentType: 'PASSPORT', expiresOn: p.expiresOn! })),
+      ...passports
+        .filter((p) => !passportUploads.has(p.caregiverId))
+        .map((p) => ({ caregiverId: p.caregiverId, key: 'PASSPORT', documentType: 'PASSPORT', expiresOn: p.expiresOn! })),
       ...docs.map((d) => ({ caregiverId: d.caregiverId, key: d.id, documentType: d.documentType, expiresOn: d.expiresOn! })),
     ];
   }
@@ -221,9 +230,15 @@ export class DocumentExpiryService implements OnApplicationBootstrap, OnModuleDe
       .limit(1);
     if (!row || row.deletedAt) return;
     // The bell and the app as well as the email.
-    this.notices?.notify([row.userId], (lang) => documentExpiryNotice(stage === 'EXPIRED', d.documentType, d.expiresOn, lang), '/documents', `expiry ${stage} ${d.documentType}`, {
-      category: 'DOCUMENT',
-    });
+    this.notices?.notify(
+      [row.userId],
+      (lang) => documentExpiryNotice(stage === 'EXPIRED', d.documentType, d.expiresOn, lang),
+      '/documents',
+      `expiry ${stage} ${d.documentType}`,
+      {
+        category: 'DOCUMENT',
+      },
+    );
     const what = DOCUMENT_NAMES[d.documentType] ?? 'document';
     const first =
       stage === 'EXPIRED'
@@ -242,7 +257,13 @@ export class DocumentExpiryService implements OnApplicationBootstrap, OnModuleDe
 
   private overdueInvoices(today: string) {
     return this.db
-      .select({ number: placementInvoices.number, billToName: placementInvoices.billToName, dueDate: placementInvoices.dueDate, currency: placementInvoices.currency, amount: placementInvoices.amount })
+      .select({
+        number: placementInvoices.number,
+        billToName: placementInvoices.billToName,
+        dueDate: placementInvoices.dueDate,
+        currency: placementInvoices.currency,
+        amount: placementInvoices.amount,
+      })
       .from(placementInvoices)
       .where(and(eq(placementInvoices.status, 'ISSUED'), lt(placementInvoices.dueDate, today)))
       .limit(100);
@@ -259,12 +280,15 @@ export class DocumentExpiryService implements OnApplicationBootstrap, OnModuleDe
       lines.push(`Expiry reminders sent today (${sent.length}):`);
       for (const s of sent.slice(0, 30)) {
         const who = people.get(s.caregiverId);
-        lines.push(`- ${who?.fullName ?? 'A caregiver'} (${who?.registrationNumber ?? '?'}): ${DOCUMENT_NAMES[s.documentType] ?? 'document'} ${s.daysLeft < 0 ? 'expired' : 'expires'} ${s.expiresOn}`);
+        lines.push(
+          `- ${who?.fullName ?? 'A caregiver'} (${who?.registrationNumber ?? '?'}): ${DOCUMENT_NAMES[s.documentType] ?? 'document'} ${s.daysLeft < 0 ? 'expired' : 'expires'} ${s.expiresOn}`,
+        );
       }
     }
     if (checkins.length) {
       lines.push(`Welfare check-ins overdue (${checkins.length}):`);
-      for (const c of checkins.slice(0, 30)) lines.push(`- ${c.fullName} in ${c.country}: ${c.kind.replace('_', ' ').toLowerCase()} check-in was due ${c.dueOn}`);
+      for (const c of checkins.slice(0, 30))
+        lines.push(`- ${c.fullName} in ${c.country}: ${c.kind.replace('_', ' ').toLowerCase()} check-in was due ${c.dueOn}`);
     }
     if (invoices.length) {
       lines.push(`Placement invoices overdue (${invoices.length}):`);

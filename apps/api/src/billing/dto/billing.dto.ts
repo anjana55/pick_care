@@ -147,23 +147,32 @@ export class UpdateInvoiceDto {
   billToName?: string;
 
   @ApiPropertyOptional()
-  @IsOptional() @IsString() @MaxLength(500)
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
   billToAddress?: string;
 
   @ApiPropertyOptional()
-  @IsOptional() @IsString() @MaxLength(40)
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
   billToPhone?: string;
 
   @ApiPropertyOptional()
-  @IsOptional() @ValidateIf((_, v) => v !== '') @IsEmail({}, { message: 'Enter a valid email address' }) @MaxLength(255)
+  @IsOptional()
+  @ValidateIf((_, v) => v !== '')
+  @IsEmail({}, { message: 'Enter a valid email address' })
+  @MaxLength(255)
   billToEmail?: string;
 
   @ApiPropertyOptional()
-  @IsOptional() @Matches(DATE, { message: 'Enter the first day of the period' })
+  @IsOptional()
+  @Matches(DATE, { message: 'Enter the first day of the period' })
   periodStart?: string;
 
   @ApiPropertyOptional()
-  @IsOptional() @Matches(DATE, { message: 'Enter the last day of the period' })
+  @IsOptional()
+  @Matches(DATE, { message: 'Enter the last day of the period' })
   periodEnd?: string;
 
   @ApiPropertyOptional({ enum: discountTypeEnum, nullable: true })
@@ -177,33 +186,42 @@ export class UpdateInvoiceDto {
   discountValue?: string | null;
 
   @ApiPropertyOptional({ nullable: true, example: 'Loyalty discount' })
-  @IsOptional() @IsString() @MaxLength(200)
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
   discountReason?: string | null;
 
   @ApiPropertyOptional({ description: 'Charge tax at the rate in billing settings' })
-  @IsOptional() @IsBoolean()
+  @IsOptional()
+  @IsBoolean()
   applyTax?: boolean;
 
   @ApiPropertyOptional({ description: 'Printed on the invoice' })
-  @IsOptional() @IsString() @MaxLength(2000, { message: 'Notes must be 2000 characters or fewer' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000, { message: 'Notes must be 2000 characters or fewer' })
   notes?: string;
 
   @ApiPropertyOptional({ enum: careRequestLanguageEnum })
-  @IsOptional() @IsIn(careRequestLanguageEnum, { message: 'Choose the language for the invoice' })
+  @IsOptional()
+  @IsIn(careRequestLanguageEnum, { message: 'Choose the language for the invoice' })
   language?: CareRequestLanguage;
 }
 
 export class IssueInvoiceDto {
   @ApiPropertyOptional({ example: '2026-10-31', description: 'Defaults to today (Colombo)' })
-  @IsOptional() @Matches(DATE, { message: 'Enter the issue date' })
+  @IsOptional()
+  @Matches(DATE, { message: 'Enter the issue date' })
   issueDate?: string;
 
   @ApiPropertyOptional({ example: '2026-11-07', description: 'Defaults to the issue date plus the payment terms' })
-  @IsOptional() @Matches(DATE, { message: 'Enter the due date' })
+  @IsOptional()
+  @Matches(DATE, { message: 'Enter the due date' })
   dueDate?: string;
 
   @ApiPropertyOptional({ default: true, description: 'Tell the client by email or WhatsApp' })
-  @IsOptional() @IsBoolean()
+  @IsOptional()
+  @IsBoolean()
   notify?: boolean;
 }
 
@@ -217,7 +235,8 @@ export class ReasonDto {
 
 export class RecordPaymentDto {
   @ApiPropertyOptional({ enum: ['PAYMENT', 'REFUND'], default: 'PAYMENT' })
-  @IsOptional() @IsIn(['PAYMENT', 'REFUND'])
+  @IsOptional()
+  @IsIn(['PAYMENT', 'REFUND'])
   kind?: 'PAYMENT' | 'REFUND';
 
   @ApiProperty({ example: '15000.00' })
@@ -245,21 +264,29 @@ export class RecordPaymentDto {
   paidOn: string;
 
   @ApiPropertyOptional({ example: 'Slip 4471' })
-  @IsOptional() @Transform(trimToUndefined) @IsString() @MaxLength(120)
+  @IsOptional()
+  @Transform(trimToUndefined)
+  @IsString()
+  @MaxLength(120)
   reference?: string;
 
   @ApiPropertyOptional()
-  @IsOptional() @Transform(trimToUndefined) @IsString() @MaxLength(500)
+  @IsOptional()
+  @Transform(trimToUndefined)
+  @IsString()
+  @MaxLength(500)
   note?: string;
 
   @ApiPropertyOptional({ default: true, description: 'Tell the client when this settles the invoice' })
-  @IsOptional() @IsBoolean()
+  @IsOptional()
+  @IsBoolean()
   notify?: boolean;
 }
 
 export class InvoiceQueryDto {
   @ApiPropertyOptional({ enum: invoiceStatusEnum })
-  @IsOptional() @IsEnum(invoiceStatusEnum)
+  @IsOptional()
+  @IsEnum(invoiceStatusEnum)
   status?: (typeof invoiceStatusEnum)[number];
 
   @ApiPropertyOptional({ description: 'Only issued invoices past their due date' })
@@ -269,29 +296,43 @@ export class InvoiceQueryDto {
   overdue?: boolean;
 
   @ApiPropertyOptional()
-  @IsOptional() @IsString() @MaxLength(100)
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
   search?: string;
 
   @ApiPropertyOptional()
-  @IsOptional() @IsUUID()
+  @IsOptional()
+  @IsUUID()
   patientId?: string;
 
   @ApiPropertyOptional()
-  @IsOptional() @IsUUID()
+  @IsOptional()
+  @IsUUID()
   bookingId?: string;
 
   @ApiPropertyOptional({ default: 1 })
-  @IsOptional() @Type(() => Number) @IsInt() @Min(1)
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
   page: number = 1;
 
   @ApiPropertyOptional({ default: 20 })
-  @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(100)
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
   pageSize: number = 20;
 }
 
 export class PayhereCheckoutDto {
   @ApiPropertyOptional({ description: "For the PayHere receipt, when the client's account has no email" })
-  @IsOptional() @Transform(trimToUndefined) @IsEmail({}, { message: 'Enter a valid email address' }) @MaxLength(255)
+  @IsOptional()
+  @Transform(trimToUndefined)
+  @IsEmail({}, { message: 'Enter a valid email address' })
+  @MaxLength(255)
   email?: string;
 }
 
@@ -323,7 +364,9 @@ export class GeneratePayoutsDto {
 
 export class UpdatePayoutDto {
   @ApiPropertyOptional()
-  @IsOptional() @IsString() @MaxLength(2000, { message: 'Notes must be 2000 characters or fewer' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000, { message: 'Notes must be 2000 characters or fewer' })
   notes?: string;
 }
 
@@ -349,32 +392,47 @@ export class PayPayoutDto {
   bankAccountId?: string;
 
   @ApiPropertyOptional()
-  @IsOptional() @Transform(trimToUndefined) @IsString() @MaxLength(120)
+  @IsOptional()
+  @Transform(trimToUndefined)
+  @IsString()
+  @MaxLength(120)
   reference?: string;
 
   @ApiPropertyOptional({ default: true })
-  @IsOptional() @IsBoolean()
+  @IsOptional()
+  @IsBoolean()
   notify?: boolean;
 }
 
 export class PayoutQueryDto {
   @ApiPropertyOptional({ enum: payoutStatusEnum })
-  @IsOptional() @IsEnum(payoutStatusEnum)
+  @IsOptional()
+  @IsEnum(payoutStatusEnum)
   status?: (typeof payoutStatusEnum)[number];
 
   @ApiPropertyOptional()
-  @IsOptional() @IsUUID()
+  @IsOptional()
+  @IsUUID()
   caregiverId?: string;
 
   @ApiPropertyOptional()
-  @IsOptional() @IsString() @MaxLength(100)
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
   search?: string;
 
   @ApiPropertyOptional({ default: 1 })
-  @IsOptional() @Type(() => Number) @IsInt() @Min(1)
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
   page: number = 1;
 
   @ApiPropertyOptional({ default: 20 })
-  @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(100)
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
   pageSize: number = 20;
 }

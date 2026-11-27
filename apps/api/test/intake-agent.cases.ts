@@ -53,10 +53,22 @@ describe('Intake agent (e2e)', () => {
     const reg = await api()
       .post('/auth/register-patient')
       .send({
-        email: `intake-client-${run}-${++n}@example.com`, password: 'SelfRegPass123', fullName: 'Nimal Kumara Perera', phone: newPhone(), consentAccepted: true,
-        registrantType: 'GUARDIAN', recipientName: 'Sunil Fernando', recipientRelationship: 'PARENT', recipientAge: 78, recipientGender: 'MALE',
-        preferredContactMethod: 'WHATSAPP', districtId, cityId, careNeeds: 'Needs help with bathing and meals.',
-        careSchedule: over.careSchedule ?? 'NOT_SURE', careStart: over.careStart ?? 'WITHIN_WEEK',
+        email: `intake-client-${run}-${++n}@example.com`,
+        password: 'SelfRegPass123',
+        fullName: 'Nimal Kumara Perera',
+        phone: newPhone(),
+        consentAccepted: true,
+        registrantType: 'GUARDIAN',
+        recipientName: 'Sunil Fernando',
+        recipientRelationship: 'PARENT',
+        recipientAge: 78,
+        recipientGender: 'MALE',
+        preferredContactMethod: 'WHATSAPP',
+        districtId,
+        cityId,
+        careNeeds: 'Needs help with bathing and meals.',
+        careSchedule: over.careSchedule ?? 'NOT_SURE',
+        careStart: over.careStart ?? 'WITHIN_WEEK',
       })
       .expect(201);
     const [p] = await db.select().from(patients).where(eq(patients.id, reg.body.patientId));
@@ -68,8 +80,14 @@ describe('Intake agent (e2e)', () => {
 
   const mode = (m: string) => api().patch('/settings/automation/functions/INTAKE').set(bearer(adminToken)).send({ mode: m }).expect(200);
   const sweep = (r: Req, at = new Date()) => agent.sweep(at, [r.id]);
-  const decisions = (r: Req) => db.select().from(agentDecisions).where(and(eq(agentDecisions.caseId, r.id), eq(agentDecisions.action, ASK))).orderBy(agentDecisions.createdAt);
-  const mine = async (r: Req) => ((await api().get('/me/care-requests').set(bearer(r.token)).expect(200)).body as ClientCareRequest[]).find((x) => x.id === r.id)!;
+  const decisions = (r: Req) =>
+    db
+      .select()
+      .from(agentDecisions)
+      .where(and(eq(agentDecisions.caseId, r.id), eq(agentDecisions.action, ASK)))
+      .orderBy(agentDecisions.createdAt);
+  const mine = async (r: Req) =>
+    ((await api().get('/me/care-requests').set(bearer(r.token)).expect(200)).body as ClientCareRequest[]).find((x) => x.id === r.id)!;
   const staffView = async (r: Req) => (await api().get(`/care-requests/${r.id}`).set(bearer(staffToken)).expect(200)).body;
   const note = async (r: Req) => (await api().get(`/automation/cases/REQUEST/${r.id}`).set(bearer(staffToken)).expect(200)).body.handoverNote;
   const answer = (r: Req, body: object) => api().patch(`/me/care-requests/${r.id}/details`).set(bearer(r.token)).send(body);
@@ -77,7 +95,10 @@ describe('Intake agent (e2e)', () => {
   const inDays = (d: number) => addDays(colomboToday(), d);
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).overrideProvider(ThrottlerStorage).useValue(unlimitedThrottle).compile();
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+      .overrideProvider(ThrottlerStorage)
+      .useValue(unlimitedThrottle)
+      .compile();
     app = moduleRef.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
     await app.init();
@@ -118,13 +139,21 @@ describe('Intake agent (e2e)', () => {
     // A new request queues the agent.
     await app.get(JobsService).runDue(new Date(), [INTAKE_REQUEST_JOB]);
     const [d] = await decisions(r);
-    expect(d).toMatchObject({ outcome: 'EXECUTED', tier: 1, executionError: null, reason: 'Ask the client for the time of day, the start date: matching and the booking need them' });
+    expect(d).toMatchObject({
+      outcome: 'EXECUTED',
+      tier: 1,
+      executionError: null,
+      reason: 'Ask the client for the time of day, the start date: matching and the booking need them',
+    });
     const msg = told(r);
     expect(msg).toHaveLength(1);
     expect(msg[0][0]).toEqual([r.userId]);
     expect(msg[0][2]).toBe(`/requests/${r.id}`);
     const words = (msg[0][1] as (l: 'en') => { title: string; body: string })('en');
-    expect(words).toEqual({ title: 'A few details for your request', body: `To find your caregiver we need: the time of day, the start date. It takes a minute - open your request ${r.reference}.` });
+    expect(words).toEqual({
+      title: 'A few details for your request',
+      body: `To find your caregiver we need: the time of day, the start date. It takes a minute - open your request ${r.reference}.`,
+    });
     expect(JSON.stringify(words)).not.toMatch(/bathing|meals|Sunil/);
     expect((await mine(r)).detailsNeeded).toEqual(['SCHEDULE', 'START_DATE']);
     expect((await staffView(r)).intake).toMatchObject({ gaps: ['SCHEDULE', 'START_DATE'], asked: { gaps: ['SCHEDULE', 'START_DATE'] }, answeredAt: null });
@@ -137,7 +166,9 @@ describe('Intake agent (e2e)', () => {
     // What was asked for is required; the date must be sensible.
     expect((await answer(r, { schedule: 'NIGHT' }).expect(400)).body.message).toBe('Enter a valid start date');
     expect((await answer(r, { desiredStartDate: inDays(3) }).expect(400)).body.message).toBe('Choose when in the day care is needed');
-    expect((await answer(r, { schedule: 'NIGHT', desiredStartDate: inDays(-1) }).expect(400)).body.message).toBe('Enter a start date from today, within a year');
+    expect((await answer(r, { schedule: 'NIGHT', desiredStartDate: inDays(-1) }).expect(400)).body.message).toBe(
+      'Enter a start date from today, within a year',
+    );
     await answer(r, { schedule: 'NOT_SURE', desiredStartDate: inDays(3) }).expect(400);
     const done = (await answer(r, { schedule: 'NIGHT', desiredStartDate: inDays(3) }).expect(200)).body as ClientCareRequest;
     expect(done).toMatchObject({ schedule: 'NIGHT', desiredStartDate: inDays(3), detailsNeeded: [] });
@@ -179,7 +210,10 @@ describe('Intake agent (e2e)', () => {
     expect(alerts).toHaveBeenCalledTimes(1);
     expect(alerts.mock.calls[0][0]).toMatchObject({
       subject: `No answer on request ${r.reference}`,
-      paragraphs: ['The client was asked for the time of day, the start date two days ago, and reminded once, and has not answered - phone them.', expect.any(String)],
+      paragraphs: [
+        'The client was asked for the time of day, the start date two days ago, and reminded once, and has not answered - phone them.',
+        expect.any(String),
+      ],
       path: `/requests/${r.id}`,
     });
     expect(JSON.stringify(alerts.mock.calls[0][0])).not.toMatch(/bathing|meals|Sunil|Nimal/);
@@ -211,7 +245,10 @@ describe('Intake agent (e2e)', () => {
     expect(told(a)).toHaveLength(0);
     expect((await decisions(a))[0]).toMatchObject({ outcome: 'SHADOW', staffVerdict: null });
     // Staff phoned the first client and filled both in; the second request was closed without them.
-    await db.update(careRequests).set({ schedule: 'DAY', desiredStartDate: inDays(4) }).where(eq(careRequests.id, a.id));
+    await db
+      .update(careRequests)
+      .set({ schedule: 'DAY', desiredStartDate: inDays(4) })
+      .where(eq(careRequests.id, a.id));
     await api().patch(`/care-requests/${b.id}/status`).set(bearer(staffToken)).send({ status: 'CLOSED', closeReason: 'CLIENT_NOT_PROCEEDING' }).expect(200);
     await agent.scoreShadows([a.id, b.id]);
     expect((await decisions(a))[0]).toMatchObject({ staffVerdict: 'AGREED' });
@@ -224,7 +261,10 @@ describe('Intake agent (e2e)', () => {
     await sweep(exploring);
     expect(await decisions(exploring)).toHaveLength(0);
     const complete = await newRequest({ careSchedule: 'DAY' });
-    await db.update(careRequests).set({ desiredStartDate: inDays(6) }).where(eq(careRequests.id, complete.id));
+    await db
+      .update(careRequests)
+      .set({ desiredStartDate: inDays(6) })
+      .where(eq(careRequests.id, complete.id));
     await sweep(complete);
     expect(await decisions(complete)).toHaveLength(0);
     // Someone else's request answers as one that does not exist.

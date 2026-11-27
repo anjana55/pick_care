@@ -98,10 +98,21 @@ async function edgeColour(picture) {
 }
 
 // The home-screen icon: the app icon as uploaded (full-bleed), else the mark on white.
-const uploadedIcon = assets.appIcon ? await sharp(await png('app-icon', 1024)).resize(1024, 1024, { fit: 'cover' }).png().toBuffer() : null;
+const uploadedIcon = assets.appIcon
+  ? await sharp(await png('app-icon', 1024))
+      .resize(1024, 1024, { fit: 'cover' })
+      .png()
+      .toBuffer()
+  : null;
 const icon = uploadedIcon
-  ? await sharp(uploadedIcon).flatten({ background: await edgeColour(uploadedIcon) }).png().toBuffer()
-  : await sharp(await centred(mark, 1024, 0.66, white)).flatten({ background: white }).png().toBuffer();
+  ? await sharp(uploadedIcon)
+      .flatten({ background: await edgeColour(uploadedIcon) })
+      .png()
+      .toBuffer()
+  : await sharp(await centred(mark, 1024, 0.66, white))
+      .flatten({ background: white })
+      .png()
+      .toBuffer();
 await writeFile(join(out, 'icon.png'), icon);
 
 // Android crops the adaptive icon to a circle, squircle or square: the picture

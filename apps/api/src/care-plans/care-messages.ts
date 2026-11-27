@@ -13,9 +13,9 @@ const fill = (t: string, v: Record<string, string>) => t.replace(/\{(\w+)\}/g, (
 const REMINDER: Record<Lang, { subject: string; heading: string; body: string; cta: string }> = {
   en: {
     subject: '{count} care activities to review today',
-    heading: 'Please review today\'s care',
-    body: '{count} activities from today\'s care plan are not marked yet. Mark each one Done or Not done in your {brand} account before midnight - anything left unmarked is counted as done.',
-    cta: 'Review today\'s care',
+    heading: "Please review today's care",
+    body: "{count} activities from today's care plan are not marked yet. Mark each one Done or Not done in your {brand} account before midnight - anything left unmarked is counted as done.",
+    cta: "Review today's care",
   },
   si: {
     subject: 'අද සමාලෝචනය කිරීමට රැකවරණ ක්‍රියාකාරකම් {count}ක්',

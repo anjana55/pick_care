@@ -95,7 +95,9 @@ function Identity({ caregiver: c }: { caregiver: OwnCaregiver }) {
       <Row label={t('personalInfo.fields.gender')} value={t(`personalInfo.options.gender.${c.gender}`)} />
       {c.nic ? <Row label={t('personalInfo.fields.nic')} value={c.nic} /> : null}
       {c.passportNumber ? <Row label={t('personalInfo.fields.passportNumber')} value={c.passportNumber} /> : null}
-      <Text style={{ fontSize: 14, lineHeight: 20, color: colors.muted }}>{t(locked ? 'portal.profile.identityLocked' : 'portal.profile.identityOnWebsite')}</Text>
+      <Text style={{ fontSize: 14, lineHeight: 20, color: colors.muted }}>
+        {t(locked ? 'portal.profile.identityLocked' : 'portal.profile.identityOnWebsite')}
+      </Text>
       {locked ? null : <Button variant="link" label={t('portal.profile.openWebsite')} onPress={() => void Linking.openURL(websiteProfile())} />}
     </View>
   );
@@ -198,7 +200,9 @@ function ContactForm({ caregiver }: { caregiver: OwnCaregiver }) {
         selected={form.preferredContactMethod ? [form.preferredContactMethod] : []}
         onToggle={(m) => set('preferredContactMethod', m)}
       />
-      {form.preferredContactMethod === 'PHONE_CALL' ? <Text style={{ fontSize: 13, lineHeight: 18, color: colors.muted }}>{t('personalInfo.hints.phoneCall')}</Text> : null}
+      {form.preferredContactMethod === 'PHONE_CALL' ? (
+        <Text style={{ fontSize: 13, lineHeight: 18, color: colors.muted }}>{t('personalInfo.hints.phoneCall')}</Text>
+      ) : null}
 
       {update.error ? (
         <Text accessibilityRole="alert" style={{ color: colors.danger, fontSize: 15 }}>
@@ -265,7 +269,11 @@ function StatusBadge({ status }: { status: VerificationStatus }) {
   const { t } = useTranslation();
   const colors = useColors();
   const tone = status === 'REJECTED' ? colors.danger : status === 'VERIFIED' ? colors.brand : colors.ink;
-  return <Text style={[styles.badge, { color: tone, borderColor: status === 'PENDING' || status === 'IN_PROGRESS' ? colors.border : tone }]}>{t(`portal.verification.${status}`)}</Text>;
+  return (
+    <Text style={[styles.badge, { color: tone, borderColor: status === 'PENDING' || status === 'IN_PROGRESS' ? colors.border : tone }]}>
+      {t(`portal.verification.${status}`)}
+    </Text>
+  );
 }
 
 /** Qualifications and work history: shown here, added and changed on the website. */

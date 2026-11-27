@@ -54,7 +54,14 @@ const shift = (over: Partial<CareChecklistShift> = {}): CareChecklistShift => ({
   items: [item()],
   ...over,
 });
-const day = (over: Partial<ClientCareDay> = {}): ClientCareDay => ({ date: '2026-11-02', today: '2026-11-02', reminders: false, hasCarePlans: true, shifts: [shift()], ...over });
+const day = (over: Partial<ClientCareDay> = {}): ClientCareDay => ({
+  date: '2026-11-02',
+  today: '2026-11-02',
+  reminders: false,
+  hasCarePlans: true,
+  shifts: [shift()],
+  ...over,
+});
 
 function renderIt() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });

@@ -63,7 +63,12 @@ export default function PlacementPage() {
           </h1>
           <span className={cn('rounded px-2 py-0.5 text-xs font-medium', PLACEMENT_STYLES[p.status])}>{t(`international.placements.status.${p.status}`)}</span>
           <span className="ml-auto">
-            <DeleteRecordButton path={`/international/placements/${p.id}`} title={t('overseasAdmin.placement.deleteTitle')} body={t('overseasAdmin.placement.deleteBody')} onDeleted={() => router.push('/international?tab=placements')} />
+            <DeleteRecordButton
+              path={`/international/placements/${p.id}`}
+              title={t('overseasAdmin.placement.deleteTitle')}
+              body={t('overseasAdmin.placement.deleteBody')}
+              onDeleted={() => router.push('/international?tab=placements')}
+            />
           </span>
         </div>
         <p className="mt-1 text-sm text-ink/60">
@@ -170,7 +175,13 @@ function CheckinRow({ placement: p, checkin: c }: { placement: StaffPlacement; c
               </Select>
             </div>
           </div>
-          <Textarea rows={2} maxLength={1000} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t('international.placements.notePlaceholder')} />
+          <Textarea
+            rows={2}
+            maxLength={1000}
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder={t('international.placements.notePlaceholder')}
+          />
           {outcome === 'URGENT' && <p className="text-xs text-danger">{t('international.placements.urgentHint')}</p>}
           {record.isError && <p className="text-xs text-danger">{record.error instanceof Error ? record.error.message : t('common.actionFailed')}</p>}
           <div className="flex gap-2">
@@ -232,7 +243,10 @@ function InvoicesCard({ placement: p }: { placement: StaffPlacement }) {
                       placementId: p.id,
                       currency: p.feeCurrency as (typeof CURRENCY_CODES)[number],
                       amount: p.feeAmount!,
-                      description: t('international.placements.invoiceDescription', { name: p.fullName.split(' ')[0], job: p.jobTitle ?? t(`international.placements.caregiverRole`) }),
+                      description: t('international.placements.invoiceDescription', {
+                        name: p.fullName.split(' ')[0],
+                        job: p.jobTitle ?? t(`international.placements.caregiverRole`),
+                      }),
                     },
                   },
                   { onSuccess: (inv) => router.push(`/international/invoices/${inv.id}`) },

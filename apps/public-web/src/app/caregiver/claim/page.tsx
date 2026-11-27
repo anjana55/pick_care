@@ -169,9 +169,7 @@ export default function CaregiverClaimPage() {
 
         {step === 'code' && (
           <form onSubmit={onCode} noValidate>
-            <p className="mb-1 text-sm text-ink/60">
-              {started ? t('caregiverClaim.codeSentBody') : t('caregiverClaim.staffCodeBody')}
-            </p>
+            <p className="mb-1 text-sm text-ink/60">{started ? t('caregiverClaim.codeSentBody') : t('caregiverClaim.staffCodeBody')}</p>
             <p className="mb-5 text-xs text-ink/40">
               {t('caregiverClaim.forNumber')} {registrationNumber}
             </p>
@@ -183,13 +181,7 @@ export default function CaregiverClaimPage() {
             <Label htmlFor="claimCode" required>
               {t('caregiverClaim.codeLabel')}
             </Label>
-            <Input
-              id="claimCode"
-              autoComplete="one-time-code"
-              autoCapitalize="characters"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-            />
+            <Input id="claimCode" autoComplete="one-time-code" autoCapitalize="characters" value={code} onChange={(e) => setCode(e.target.value)} />
             {error && (
               <p role="alert" className="mt-3 text-sm text-danger">
                 {error}

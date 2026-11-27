@@ -1,16 +1,4 @@
-import {
-  mysqlTable,
-  varchar,
-  int,
-  decimal,
-  text,
-  date,
-  datetime,
-  mysqlEnum,
-  index,
-  uniqueIndex,
-  boolean,
-} from 'drizzle-orm/mysql-core';
+import { mysqlTable, varchar, int, decimal, text, date, datetime, mysqlEnum, index, uniqueIndex, boolean } from 'drizzle-orm/mysql-core';
 import { sql } from 'drizzle-orm';
 import { caregiverStatusValues, civilStatusValues, contactMethodValues, genderValues } from '@care-platform/shared';
 
@@ -123,8 +111,12 @@ export const caregivers = mysqlTable(
     // The last rejection, shown to the caregiver until they upload again.
     photoRejectedAt: datetime('photo_rejected_at'),
     photoRejectionReason: varchar('photo_rejection_reason', { length: 500 }),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
     deletedAt: datetime('deleted_at'),
     // Stored generated copies that are NULL once the row is soft-deleted. The
     // unique indexes sit on these rather than on the raw columns: MySQL allows
@@ -133,14 +125,10 @@ export const caregivers = mysqlTable(
     // values themselves stay on the row for history and audit. Never written by
     // the app (Drizzle leaves generated columns out of inserts and updates).
     liveNic: varchar('live_nic', { length: 20 }).generatedAlwaysAs(sql`IF(deleted_at IS NULL, nic, NULL)`, { mode: 'stored' }),
-    livePassportNumber: varchar('live_passport_number', { length: 20 }).generatedAlwaysAs(
-      sql`IF(deleted_at IS NULL, passport_number, NULL)`,
-      { mode: 'stored' },
-    ),
-    livePrimaryPhone: varchar('live_primary_phone', { length: 20 }).generatedAlwaysAs(
-      sql`IF(deleted_at IS NULL, primary_phone, NULL)`,
-      { mode: 'stored' },
-    ),
+    livePassportNumber: varchar('live_passport_number', { length: 20 }).generatedAlwaysAs(sql`IF(deleted_at IS NULL, passport_number, NULL)`, {
+      mode: 'stored',
+    }),
+    livePrimaryPhone: varchar('live_primary_phone', { length: 20 }).generatedAlwaysAs(sql`IF(deleted_at IS NULL, primary_phone, NULL)`, { mode: 'stored' }),
   },
   (table) => ({
     statusIdx: index('caregivers_status_idx').on(table.status),

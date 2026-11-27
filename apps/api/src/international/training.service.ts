@@ -134,7 +134,13 @@ export class TrainingService {
   async checkCertificate(code: string): Promise<PublicCertificateCheck> {
     const [c] = await this.db.select().from(trainingCertificates).where(eq(trainingCertificates.verifyCode, code.toUpperCase())).limit(1);
     if (!c) throw new NotFoundException('Certificate not found');
-    return { number: c.number, firstName: c.holderFirstName, programmeTitle: c.programmeTitle, issuedOn: c.issuedOn, status: c.revokedAt ? 'REVOKED' : 'VALID' };
+    return {
+      number: c.number,
+      firstName: c.holderFirstName,
+      programmeTitle: c.programmeTitle,
+      issuedOn: c.issuedOn,
+      status: c.revokedAt ? 'REVOKED' : 'VALID',
+    };
   }
 
   async revokeCertificate(id: string, reason: string): Promise<TrainingCertificate> {
@@ -196,7 +202,11 @@ export class TrainingService {
 
   /** "I'm interested": a new sign-up, or a withdrawn one picked up again. */
   async registerInterest(caregiverId: string, programmeId: string): Promise<CaregiverTrainingEnrolment[]> {
-    const [programme] = await this.db.select({ isActive: trainingProgrammes.isActive }).from(trainingProgrammes).where(eq(trainingProgrammes.id, programmeId)).limit(1);
+    const [programme] = await this.db
+      .select({ isActive: trainingProgrammes.isActive })
+      .from(trainingProgrammes)
+      .where(eq(trainingProgrammes.id, programmeId))
+      .limit(1);
     if (!programme) throw new NotFoundException('Programme not found');
     if (!programme.isActive) throw new BadRequestException('This programme is not taking sign-ups.');
 
@@ -274,7 +284,10 @@ export class TrainingService {
 
   async updateProgramme(id: string, dto: TrainingProgrammeDto): Promise<TrainingProgramme> {
     await this.programme(id);
-    await this.db.update(trainingProgrammes).set({ ...programmeValues(dto), updatedAt: new Date() }).where(eq(trainingProgrammes.id, id));
+    await this.db
+      .update(trainingProgrammes)
+      .set({ ...programmeValues(dto), updatedAt: new Date() })
+      .where(eq(trainingProgrammes.id, id));
     return this.programme(id);
   }
 

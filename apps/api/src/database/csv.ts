@@ -47,7 +47,10 @@ export function parseCsvLine(line: string): string[] {
  * internally consistent about this and are not ours to fix.
  */
 export function normalizeHeader(header: string): string {
-  return header.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+  return header
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '');
 }
 
 /**

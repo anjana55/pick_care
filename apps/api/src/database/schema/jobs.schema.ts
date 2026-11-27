@@ -28,7 +28,9 @@ export const jobs = mysqlTable(
     lockedAt: datetime('locked_at', { fsp: 3 }),
     lockedBy: varchar('locked_by', { length: 64 }),
     lastError: varchar('last_error', { length: 500 }),
-    createdAt: datetime('created_at', { fsp: 3 }).notNull().default(sql`CURRENT_TIMESTAMP(3)`),
+    createdAt: datetime('created_at', { fsp: 3 })
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP(3)`),
     finishedAt: datetime('finished_at', { fsp: 3 }),
   },
   (t) => ({

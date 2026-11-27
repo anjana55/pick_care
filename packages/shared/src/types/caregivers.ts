@@ -62,14 +62,7 @@ export type DocumentType = (typeof documentTypeValues)[number];
 export const shiftPreferenceValues = ['DAY', 'NIGHT', 'TWENTY_FOUR_HOUR_LIVE_IN', 'FLEXIBLE'] as const;
 export type ShiftPreference = (typeof shiftPreferenceValues)[number];
 
-export const qualificationTypeValues = [
-  'NVQ',
-  'NURSING_DIPLOMA',
-  'NURSING_DEGREE',
-  'CAREGIVER_CERTIFICATE',
-  'FIRST_AID',
-  'OTHER',
-] as const;
+export const qualificationTypeValues = ['NVQ', 'NURSING_DIPLOMA', 'NURSING_DEGREE', 'CAREGIVER_CERTIFICATE', 'FIRST_AID', 'OTHER'] as const;
 export type QualificationType = (typeof qualificationTypeValues)[number];
 
 /** GET /caregivers/:id/profile for the caregiver themselves. */

@@ -156,7 +156,10 @@ export function AiSearchPanel({
   const askingLocation = lastAssistant?.kind === 'ask-location';
   const started = entries.length > 0;
   const unavailable = extract.error instanceof ApiError && extract.error.status === 503;
-  const inputStyle = [styles.input, { borderColor: colors.border, backgroundColor: colors.surface, color: colors.ink, fontFamily: fontFamilyFor(locale, false) }];
+  const inputStyle = [
+    styles.input,
+    { borderColor: colors.border, backgroundColor: colors.surface, color: colors.ink, fontFamily: fontFamilyFor(locale, false) },
+  ];
 
   if (!started) {
     return (
@@ -190,7 +193,9 @@ export function AiSearchPanel({
               </Text>
             );
           }
-          const lines = entry.summary ? [...entry.summary.patient, ...entry.summary.location, ...entry.summary.care, ...entry.summary.preferences].filter(Boolean) : [];
+          const lines = entry.summary
+            ? [...entry.summary.patient, ...entry.summary.location, ...entry.summary.care, ...entry.summary.preferences].filter(Boolean)
+            : [];
           return (
             <View key={i} style={[styles.bubble, styles.theirs, { borderColor: colors.border, backgroundColor: colors.surface }]}>
               {isLast && lines.length ? (
@@ -209,11 +214,7 @@ export function AiSearchPanel({
                 <>
                   <Text style={{ color: colors.ink, fontSize: 15, lineHeight: 22 }}>{t('aiSearch.askCareType')}</Text>
                   {isLast ? (
-                    <Chips
-                      choices={careTypeValues.map((v) => ({ value: v, label: t(`careTypes.${v}`) }))}
-                      selected={[]}
-                      onToggle={pickCareType}
-                    />
+                    <Chips choices={careTypeValues.map((v) => ({ value: v, label: t(`careTypes.${v}`) }))} selected={[]} onToggle={pickCareType} />
                   ) : null}
                 </>
               ) : entry.kind === 'ask-location' ? (
@@ -259,7 +260,9 @@ export function AiSearchPanel({
           accessibilityLabel={askingLocation || askingCareType ? t('aiSearch.replyLabel') : t('aiSearch.moreDetailsLabel')}
           value={draft}
           onChangeText={setDraft}
-          placeholder={askingCareType ? t('aiSearch.careTypeReplyPlaceholder') : askingLocation ? t('aiSearch.replyPlaceholder') : t('aiSearch.moreDetailsPlaceholder')}
+          placeholder={
+            askingCareType ? t('aiSearch.careTypeReplyPlaceholder') : askingLocation ? t('aiSearch.replyPlaceholder') : t('aiSearch.moreDetailsPlaceholder')
+          }
           placeholderTextColor={colors.muted}
           maxLength={AI_REPLY_MAX}
           returnKeyType="send"

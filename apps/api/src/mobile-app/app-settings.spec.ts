@@ -115,9 +115,7 @@ describe('mobile app version control', () => {
     });
 
     it('drops whatever doesn’t parse in a config it receives', () => {
-      expect(
-        normalizeAppConfig({ ios: { minimumVersion: '1.0', latestVersion: 'soon', storeUrl: 'javascript:alert(1)' }, android: 'nope' }),
-      ).toEqual({
+      expect(normalizeAppConfig({ ios: { minimumVersion: '1.0', latestVersion: 'soon', storeUrl: 'javascript:alert(1)' }, android: 'nope' })).toEqual({
         ios: { minimumVersion: '1.0', latestVersion: null, storeUrl: null },
         android: { minimumVersion: null, latestVersion: null, storeUrl: null },
       });

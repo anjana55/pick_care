@@ -60,5 +60,4 @@ export interface StaffAccountDeletion {
   recordDeleted: boolean;
 }
 
-export const openItemCount = (items: AccountOpenItems | null): number =>
-  items ? Object.values(items).reduce((sum, n) => sum + n, 0) : 0;
+export const openItemCount = (items: AccountOpenItems | null): number => (items ? Object.values(items).reduce((sum, n) => sum + n, 0) : 0);

@@ -126,7 +126,9 @@ export function AppLockProvider({ children }: { children: ReactNode }) {
   );
 }
 
-const GateContext = createContext<{ locked: boolean; unlocked(): void; offer: boolean; closeOffer(): void; choose(choice: LockChoice): Promise<void> } | null>(null);
+const GateContext = createContext<{ locked: boolean; unlocked(): void; offer: boolean; closeOffer(): void; choose(choice: LockChoice): Promise<void> } | null>(
+  null,
+);
 
 export function useAppLock(): AppLockValue {
   const ctx = useContext(AppLockContext);

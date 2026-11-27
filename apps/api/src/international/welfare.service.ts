@@ -54,7 +54,12 @@ export class WelfareService {
   // --- the caregiver -----------------------------------------------------------------
 
   async forCaregiver(caregiverId: string): Promise<WelfareReport[]> {
-    const rows = await this.db.select().from(welfareReports).where(eq(welfareReports.caregiverId, caregiverId)).orderBy(desc(welfareReports.updatedAt)).limit(50);
+    const rows = await this.db
+      .select()
+      .from(welfareReports)
+      .where(eq(welfareReports.caregiverId, caregiverId))
+      .orderBy(desc(welfareReports.updatedAt))
+      .limit(50);
     return this.withMessages(rows);
   }
 
@@ -68,7 +73,8 @@ export class WelfareService {
       .from(welfareReports)
       .where(and(eq(welfareReports.caregiverId, caregiverId), sql`${welfareReports.createdAt} >= NOW() - INTERVAL 1 DAY`));
     // Never stop an SOS: a limit is for the everyday kind.
-    if (dto.severity !== 'SOS' && Number(n) >= MAX_REPORTS_PER_DAY) throw new BadRequestException('You have sent several reports today. Add to one of them instead, or call our office.');
+    if (dto.severity !== 'SOS' && Number(n) >= MAX_REPORTS_PER_DAY)
+      throw new BadRequestException('You have sent several reports today. Add to one of them instead, or call our office.');
     const id = uuid();
     await withUniqueRetry(() =>
       this.db.insert(welfareReports).values({ id, reference: shortReference('WR'), placementId, caregiverId, severity: dto.severity, category: dto.category }),
@@ -126,7 +132,12 @@ export class WelfareService {
     const now = new Date();
     const changes: Partial<ReportRow> = { status, updatedAt: now };
     if (status === 'ACKNOWLEDGED' && !report.acknowledgedAt) Object.assign(changes, { acknowledgedAt: now, acknowledgedByUserId: userId });
-    if (status === 'RESOLVED') Object.assign(changes, { resolvedAt: now, resolvedByUserId: userId, ...(report.acknowledgedAt ? {} : { acknowledgedAt: now, acknowledgedByUserId: userId }) });
+    if (status === 'RESOLVED')
+      Object.assign(changes, {
+        resolvedAt: now,
+        resolvedByUserId: userId,
+        ...(report.acknowledgedAt ? {} : { acknowledgedAt: now, acknowledgedByUserId: userId }),
+      });
     if (status !== 'RESOLVED') Object.assign(changes, { resolvedAt: null, resolvedByUserId: null });
     await this.db.update(welfareReports).set(changes).where(eq(welfareReports.id, id));
     return this.staffGet(id);
@@ -161,7 +172,12 @@ export class WelfareService {
     const messages = await this.db
       .select()
       .from(welfareReportMessages)
-      .where(inArray(welfareReportMessages.reportId, rows.map((r) => r.id)))
+      .where(
+        inArray(
+          welfareReportMessages.reportId,
+          rows.map((r) => r.id),
+        ),
+      )
       .orderBy(asc(welfareReportMessages.createdAt));
     return rows.map((r) => ({
       id: r.id,

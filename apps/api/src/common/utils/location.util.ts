@@ -23,35 +23,24 @@ import { cities, districts, provinces } from '../../database/schema';
  * Accepts a transaction handle as well as the top-level Database - both expose
  * the same query-builder surface for these read-only operations.
  */
-export async function resolveLocationRefs(
-  db: Database,
-  fields: { districtId?: number | null; cityId?: number | null },
-): Promise<ResolvedLocation | null> {
+export async function resolveLocationRefs(db: Database, fields: { districtId?: number | null; cityId?: number | null }): Promise<ResolvedLocation | null> {
   if (!fields.districtId && !fields.cityId) return null;
 
-  const [city] = fields.cityId
-    ? await db.select().from(cities).where(eq(cities.id, fields.cityId)).limit(1)
-    : [];
+  const [city] = fields.cityId ? await db.select().from(cities).where(eq(cities.id, fields.cityId)).limit(1) : [];
   if (fields.cityId && !city) {
     throw new BadRequestException(`Unknown city id: ${fields.cityId}`);
   }
   if (city && fields.districtId && city.districtId !== fields.districtId) {
-    throw new BadRequestException(
-      `City ${city.id} belongs to district ${city.districtId}, not district ${fields.districtId}`,
-    );
+    throw new BadRequestException(`City ${city.id} belongs to district ${city.districtId}, not district ${fields.districtId}`);
   }
 
   const districtId = fields.districtId ?? city?.districtId ?? null;
-  const [district] = districtId
-    ? await db.select().from(districts).where(eq(districts.id, districtId)).limit(1)
-    : [];
+  const [district] = districtId ? await db.select().from(districts).where(eq(districts.id, districtId)).limit(1) : [];
   if (districtId && !district) {
     throw new BadRequestException(`Unknown district id: ${districtId}`);
   }
 
-  const [province] = district
-    ? await db.select({ nameEn: provinces.nameEn }).from(provinces).where(eq(provinces.id, district.provinceId)).limit(1)
-    : [];
+  const [province] = district ? await db.select({ nameEn: provinces.nameEn }).from(provinces).where(eq(provinces.id, district.provinceId)).limit(1) : [];
 
   return {
     districtId,

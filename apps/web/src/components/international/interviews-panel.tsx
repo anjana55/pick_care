@@ -2,7 +2,14 @@
 
 import { useState } from 'react';
 import { CalendarClock, CalendarPlus, Video } from 'lucide-react';
-import { INTERVIEW_LIMITS, interviewModeValues, type EmployerInterview, type InterviewInput, type InterviewMode, type StaffCandidate } from '@care-platform/shared';
+import {
+  INTERVIEW_LIMITS,
+  interviewModeValues,
+  type EmployerInterview,
+  type InterviewInput,
+  type InterviewMode,
+  type StaffCandidate,
+} from '@care-platform/shared';
 import { useTranslation } from '@/lib/i18n/provider';
 import { useInterviewActions } from '@/lib/hooks/use-international';
 import { Button } from '@/components/ui/button';
@@ -35,7 +42,16 @@ export const INTERVIEW_ZONES = [
 /** The offset (ms) of `zone` from UTC at instant `ms`. */
 function zoneOffset(ms: number, zone: string): number {
   const parts = Object.fromEntries(
-    new Intl.DateTimeFormat('en-US', { timeZone: zone, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    new Intl.DateTimeFormat('en-US', {
+      timeZone: zone,
+      hourCycle: 'h23',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    })
       .formatToParts(new Date(ms))
       .map((p) => [p.type, p.value]),
   );
@@ -132,8 +148,15 @@ function InterviewRow({ enquiryId, interview: i }: { enquiryId: string; intervie
         <span className="text-xs text-ink/50">
           {t(`international.interviews.mode.${i.mode}`)} · {t('international.interviews.minutes', { n: i.durationMinutes })}
         </span>
-        <span className={cn('ml-auto rounded px-2 py-0.5 text-xs font-medium', STATUS_STYLES[i.status])}>{t(`international.interviews.status.${i.status}`)}</span>
-        <DeleteRecordButton compact path={`/international/interviews/${i.id}`} title={t('overseasAdmin.interview.deleteTitle', { n: i.round })} body={t('overseasAdmin.interview.deleteBody')} />
+        <span className={cn('ml-auto rounded px-2 py-0.5 text-xs font-medium', STATUS_STYLES[i.status])}>
+          {t(`international.interviews.status.${i.status}`)}
+        </span>
+        <DeleteRecordButton
+          compact
+          path={`/international/interviews/${i.id}`}
+          title={t('overseasAdmin.interview.deleteTitle', { n: i.round })}
+          body={t('overseasAdmin.interview.deleteBody')}
+        />
       </div>
       {i.meetingLink && (
         <a href={i.meetingLink} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 text-xs text-brand-dark hover:underline">
@@ -196,7 +219,17 @@ function InterviewRow({ enquiryId, interview: i }: { enquiryId: string; intervie
   );
 }
 
-function InterviewForm({ enquiryId, candidateId, existing, onDone }: { enquiryId: string; candidateId?: string; existing?: EmployerInterview; onDone: () => void }) {
+function InterviewForm({
+  enquiryId,
+  candidateId,
+  existing,
+  onDone,
+}: {
+  enquiryId: string;
+  candidateId?: string;
+  existing?: EmployerInterview;
+  onDone: () => void;
+}) {
   const { t, locale } = useTranslation();
   const { schedule, update } = useInterviewActions(enquiryId);
   const [zone, setZone] = useState<string>('Asia/Colombo');
@@ -230,13 +263,7 @@ function InterviewForm({ enquiryId, candidateId, existing, onDone }: { enquiryId
       <div className="grid gap-3 sm:grid-cols-3">
         <div>
           <Label htmlFor="iv-when">{t('international.interviews.when')}</Label>
-          <Input
-            id="iv-when"
-            type="datetime-local"
-            value={when}
-            onChange={(e) => setWhen(e.target.value)}
-            required
-          />
+          <Input id="iv-when" type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} required />
         </div>
         <div>
           <Label htmlFor="iv-zone">{t('international.interviews.zone')}</Label>
@@ -267,7 +294,9 @@ function InterviewForm({ enquiryId, candidateId, existing, onDone }: { enquiryId
           </Select>
         </div>
       </div>
-      {iso && zone !== 'Asia/Colombo' && <p className="text-xs text-ink/60">{t('international.interviews.inColombo', { when: fmtIn(iso, 'Asia/Colombo', locale) })}</p>}
+      {iso && zone !== 'Asia/Colombo' && (
+        <p className="text-xs text-ink/60">{t('international.interviews.inColombo', { when: fmtIn(iso, 'Asia/Colombo', locale) })}</p>
+      )}
       <div className="grid gap-3 sm:grid-cols-3">
         <div>
           <Label htmlFor="iv-mode">{t('international.interviews.how')}</Label>
@@ -282,7 +311,15 @@ function InterviewForm({ enquiryId, candidateId, existing, onDone }: { enquiryId
         {mode === 'VIDEO' && (
           <div className="sm:col-span-2">
             <Label htmlFor="iv-link">{t('international.interviews.link')}</Label>
-            <Input id="iv-link" type="url" value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://" maxLength={INTERVIEW_LIMITS.link} required />
+            <Input
+              id="iv-link"
+              type="url"
+              value={link}
+              onChange={(e) => setLink(e.target.value)}
+              placeholder="https://"
+              maxLength={INTERVIEW_LIMITS.link}
+              required
+            />
           </div>
         )}
         {mode === 'IN_PERSON' && (
@@ -294,7 +331,14 @@ function InterviewForm({ enquiryId, candidateId, existing, onDone }: { enquiryId
       </div>
       <div>
         <Label htmlFor="iv-ins">{t('international.interviews.instructions')}</Label>
-        <Textarea id="iv-ins" rows={2} value={instructions} onChange={(e) => setInstructions(e.target.value)} maxLength={INTERVIEW_LIMITS.instructions} placeholder={t('international.interviews.instructionsPlaceholder')} />
+        <Textarea
+          id="iv-ins"
+          rows={2}
+          value={instructions}
+          onChange={(e) => setInstructions(e.target.value)}
+          maxLength={INTERVIEW_LIMITS.instructions}
+          placeholder={t('international.interviews.instructionsPlaceholder')}
+        />
       </div>
       <p className="text-xs text-ink/50">{t('international.interviews.emailed')}</p>
       {mutation.isError && <p className="text-xs text-danger">{mutation.error instanceof Error ? mutation.error.message : t('common.actionFailed')}</p>}

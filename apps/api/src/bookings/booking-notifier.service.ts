@@ -59,7 +59,14 @@ export class BookingNotifier {
   async askClientToCheck(id: string): Promise<'WHATSAPP' | 'EMAIL' | 'NONE'> {
     try {
       const [b] = await this.db
-        .select({ reference: bookings.reference, language: bookings.language, startDate: bookings.startDate, patientUserId: patients.userId, patientPhone: patients.phone, preferred: patients.preferredContactMethod })
+        .select({
+          reference: bookings.reference,
+          language: bookings.language,
+          startDate: bookings.startDate,
+          patientUserId: patients.userId,
+          patientPhone: patients.phone,
+          preferred: patients.preferredContactMethod,
+        })
         .from(bookings)
         .innerJoin(patients, eq(bookings.patientId, patients.id))
         .where(eq(bookings.id, id))
@@ -69,11 +76,17 @@ export class BookingNotifier {
       const range = (await draftShiftRanges(this.db, [id])).get(id);
       const vars = { ref: b.reference, date: range?.startDate ?? String(b.startDate).slice(0, 10) };
       this.notices.notify([b.patientUserId], (lang) => fromNotice(bookingClientCheckNotice(lang, vars)), '/bookings', `booking check ${b.reference}`);
-      const [account] = b.patientUserId ? await this.db.select({ email: users.email, phone: users.phone }).from(users).where(eq(users.id, b.patientUserId)).limit(1) : [];
+      const [account] = b.patientUserId
+        ? await this.db.select({ email: users.email, phone: users.phone }).from(users).where(eq(users.id, b.patientUserId)).limit(1)
+        : [];
       const wa = await this.whatsappSettings.getResolved();
       const phone = account?.phone ?? normalizePhone(b.patientPhone, await this.whatsappSettings.getDefaultCountryCode());
       const text = bookingClientCheckNotice(b.language, vars);
-      const channel = chooseClientChannel({ hasEmail: Boolean(account?.email), canWhatsapp: Boolean(phone) && this.whatsapp.canSendUpdates(wa), preferred: b.preferred });
+      const channel = chooseClientChannel({
+        hasEmail: Boolean(account?.email),
+        canWhatsapp: Boolean(phone) && this.whatsapp.canSendUpdates(wa),
+        preferred: b.preferred,
+      });
       if (channel === 'WHATSAPP') {
         await this.whatsapp.sendUpdate(wa, phone!, b.language, `${text.heading}. ${text.body}`);
         return 'WHATSAPP';
@@ -81,7 +94,12 @@ export class BookingNotifier {
       if (channel === 'EMAIL') {
         await this.email.sendNotificationEmail(
           account!.email!,
-          { subject: text.subject, blocks: [{ lang: b.language, heading: text.heading, paragraphs: [text.body] }], cta: { label: CLIENT_CTA[b.language], url: this.publicUrl('/account/bookings') }, footer: CLIENT_FOOTER[b.language] },
+          {
+            subject: text.subject,
+            blocks: [{ lang: b.language, heading: text.heading, paragraphs: [text.body] }],
+            cta: { label: CLIENT_CTA[b.language], url: this.publicUrl('/account/bookings') },
+            footer: CLIENT_FOOTER[b.language],
+          },
           `booking check ${b.reference}`,
         );
         return 'EMAIL';
@@ -96,14 +114,26 @@ export class BookingNotifier {
   /** Tells the staff member who asked that the client has answered. Agents have no inbox; the case note covers them. */
   async clientAnswered(id: string, answer: 'ACCEPTED' | 'CHANGES_REQUESTED', note: string | null) {
     try {
-      const [b] = await this.db.select({ reference: bookings.reference, askedBy: bookings.clientAskedByUserId }).from(bookings).where(eq(bookings.id, id)).limit(1);
+      const [b] = await this.db
+        .select({ reference: bookings.reference, askedBy: bookings.clientAskedByUserId })
+        .from(bookings)
+        .where(eq(bookings.id, id))
+        .limit(1);
       if (!b?.askedBy) return;
       const [staff] = await this.db.select({ email: users.email, isActive: users.isActive }).from(users).where(eq(users.id, b.askedBy)).limit(1);
       if (!staff?.email || !staff.isActive) return;
       const heading = answer === 'ACCEPTED' ? `The client accepted booking ${b.reference}` : `The client asked for changes to booking ${b.reference}`;
       const body = answer === 'ACCEPTED' ? 'It is ready to confirm.' : `They wrote: "${note ?? ''}". Change the draft and ask them again.`;
       const base = (this.config.get<string>('CAREGIVER_WEB_URL') ?? 'http://localhost:3000/staff').replace(/\/+$/, '');
-      await this.email.sendNotificationEmail(staff.email, { subject: `{brand} - ${heading}`, blocks: [{ lang: 'en', heading, paragraphs: [body] }], cta: { label: 'Open the booking', url: `${base}/bookings/${id}` } }, `booking answered ${b.reference}`);
+      await this.email.sendNotificationEmail(
+        staff.email,
+        {
+          subject: `{brand} - ${heading}`,
+          blocks: [{ lang: 'en', heading, paragraphs: [body] }],
+          cta: { label: 'Open the booking', url: `${base}/bookings/${id}` },
+        },
+        `booking answered ${b.reference}`,
+      );
     } catch (err) {
       this.logger.error(`Booking answer notice failed: ${(err as Error).message}`);
     }
@@ -157,7 +187,12 @@ export class BookingNotifier {
       const canWa = (phone: string | null) => Boolean(phone) && this.whatsapp.canSendUpdates(wa);
 
       // Push to whoever also has the app - in addition to the message below, never instead of it.
-      this.notices.notify([b.patientUserId], (lang) => fromNotice(bookingClientNotice(notice, lang, vars)), `/bookings/${id}`, `booking ${notice.toLowerCase()} ${b.reference}`);
+      this.notices.notify(
+        [b.patientUserId],
+        (lang) => fromNotice(bookingClientNotice(notice, lang, vars)),
+        `/bookings/${id}`,
+        `booking ${notice.toLowerCase()} ${b.reference}`,
+      );
       this.notices.notify(
         cgs.map((c) => c.userId),
         (lang) => fromBlocks(bookingCaregiverNotice(notice, vars).blocks, lang),
@@ -171,7 +206,9 @@ export class BookingNotifier {
       const text = bookingClientNotice(notice, b.language, vars);
       const channel = chooseClientChannel({ hasEmail: Boolean(clientEmail), canWhatsapp: canWa(clientPhone), preferred: b.preferred });
       if (channel === 'WHATSAPP') {
-        await this.whatsapp.sendUpdate(wa, clientPhone!, b.language, `${text.heading}. ${text.body}`).catch((e) => this.logger.error(`WhatsApp booking notice failed: ${(e as Error).message}`));
+        await this.whatsapp
+          .sendUpdate(wa, clientPhone!, b.language, `${text.heading}. ${text.body}`)
+          .catch((e) => this.logger.error(`WhatsApp booking notice failed: ${(e as Error).message}`));
       } else if (channel === 'EMAIL') {
         await this.email.sendNotificationEmail(
           clientEmail!,
@@ -204,7 +241,9 @@ export class BookingNotifier {
             `caregiver booking ${notice.toLowerCase()} ${b.reference}`,
           );
         } else if (channel === 'WHATSAPP') {
-          await this.whatsapp.sendUpdate(wa, phone!, 'en', msg.whatsappText).catch((e) => this.logger.error(`WhatsApp booking notice failed: ${(e as Error).message}`));
+          await this.whatsapp
+            .sendUpdate(wa, phone!, 'en', msg.whatsappText)
+            .catch((e) => this.logger.error(`WhatsApp booking notice failed: ${(e as Error).message}`));
         } else {
           this.logger.warn(`Booking ${b.reference}: a caregiver has no email and WhatsApp updates are off, so "${notice}" was not sent.`);
         }

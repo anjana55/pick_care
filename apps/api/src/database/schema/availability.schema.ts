@@ -27,8 +27,12 @@ export const availability = mysqlTable('availability', {
   expectedMonthlyRate: decimal('expected_monthly_rate', { precision: 10, scale: 2 }),
   expectedLeaveDays: int('expected_leave_days'),
   preferredLeavePattern: varchar('preferred_leave_pattern', { length: 255 }),
-  createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+  createdAt: datetime('created_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: datetime('updated_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
 });
 
 /** Which availability column records each care type. */

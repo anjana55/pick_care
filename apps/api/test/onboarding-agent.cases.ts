@@ -52,8 +52,15 @@ describe('Onboarding agent (e2e)', () => {
     const reg = await api()
       .post('/auth/register-caregiver/unified')
       .send({
-        phone, consentAccepted: true, fullName: `Kamala Applicant ${phone}`, permanentAddress: '1 Lake Road, Kandy',
-        dateOfBirth: '1988-01-20', gender: 'FEMALE', civilStatus: 'MARRIED', emergencyContactName: 'EC', emergencyContactNumber: '0770001111',
+        phone,
+        consentAccepted: true,
+        fullName: `Kamala Applicant ${phone}`,
+        permanentAddress: '1 Lake Road, Kandy',
+        dateOfBirth: '1988-01-20',
+        gender: 'FEMALE',
+        civilStatus: 'MARRIED',
+        emergencyContactName: 'EC',
+        emergencyContactNumber: '0770001111',
         emergencyContactRelationship: 'Husband',
       })
       .expect(201);
@@ -65,7 +72,12 @@ describe('Onboarding agent (e2e)', () => {
       await api()
         .post(`/caregivers/${row.id}/references`)
         .set(bearer(staffToken))
-        .send({ name: `Referee${i} Silva`, relationship: 'Former employer', phone: newPhone(), ...(over.refereeEmail === false ? {} : { email: `referee-${run}-${n}-${i}@example.com` }) })
+        .send({
+          name: `Referee${i} Silva`,
+          relationship: 'Former employer',
+          phone: newPhone(),
+          ...(over.refereeEmail === false ? {} : { email: `referee-${run}-${n}-${i}@example.com` }),
+        })
         .expect(201);
     }
     return { id: row.id, userId: row.userId!, reg: row.registrationNumber, name: row.fullName, nic };
@@ -74,7 +86,12 @@ describe('Onboarding agent (e2e)', () => {
 
   const mode = (m: string) => api().patch('/settings/automation/functions/ONBOARDING').set(bearer(adminToken)).send({ mode: m }).expect(200);
   const sweep = (c: Cg, at = new Date()) => agent.sweep(at, [c.id]);
-  const decisions = (c: Cg, action: string) => db.select().from(agentDecisions).where(and(eq(agentDecisions.caseId, c.id), eq(agentDecisions.action, action))).orderBy(agentDecisions.createdAt);
+  const decisions = (c: Cg, action: string) =>
+    db
+      .select()
+      .from(agentDecisions)
+      .where(and(eq(agentDecisions.caseId, c.id), eq(agentDecisions.action, action)))
+      .orderBy(agentDecisions.createdAt);
   const file = async (c: Cg) => (await api().get(`/caregivers/${c.id}/onboarding-file`).set(bearer(staffToken)).expect(200)).body.file;
   const asked = (c: Cg) => notify.mock.calls.filter((x) => x[3] === `onboarding docs ${c.id}`);
   /** The referee emails for this caregiver, Referee0's first. */
@@ -90,13 +107,28 @@ describe('Onboarding agent (e2e)', () => {
     db.insert(caregiverDocuments).values(
       types.map((t) => {
         const id = uuid();
-        return { id, caregiverId: c.id, documentType: t as 'NIC', storageKey: `${c.id}/${id}/original-file.pdf`, originalFilename: `${t}.pdf`, mimeType: 'application/pdf', sizeBytes: 10, checksum: 'x'.repeat(64) };
+        return {
+          id,
+          caregiverId: c.id,
+          documentType: t as 'NIC',
+          storageKey: `${c.id}/${id}/original-file.pdf`,
+          originalFilename: `${t}.pdf`,
+          mimeType: 'application/pdf',
+          sizeBytes: 10,
+          checksum: 'x'.repeat(64),
+        };
       }),
     );
-  const answer = (token: string, body: object) => api().post('/public/references/answer').send({ token, ...body });
+  const answer = (token: string, body: object) =>
+    api()
+      .post('/public/references/answer')
+      .send({ token, ...body });
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).overrideProvider(ThrottlerStorage).useValue(unlimitedThrottle).compile();
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+      .overrideProvider(ThrottlerStorage)
+      .useValue(unlimitedThrottle)
+      .compile();
     app = moduleRef.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
     await app.init();
@@ -134,25 +166,38 @@ describe('Onboarding agent (e2e)', () => {
     await mode('AUTO');
     const c = await newApplicant();
     // Adding the references queued the agent for this caregiver (other runs may have left jobs queued, so run it here).
-    const queued = await db.select({ payload: jobs.payload }).from(jobs).where(and(eq(jobs.type, ONBOARDING_CAREGIVER_JOB), eq(jobs.status, 'PENDING')));
+    const queued = await db
+      .select({ payload: jobs.payload })
+      .from(jobs)
+      .where(and(eq(jobs.type, ONBOARDING_CAREGIVER_JOB), eq(jobs.status, 'PENDING')));
     expect(queued.some((j) => (j.payload as { caregiverId?: string }).caregiverId === c.id)).toBe(true);
     await sweep(c);
 
     const f = await file(c);
     expect(f.recommendation).toBe('NOT_READY');
-    expect(f.checks.map((x: { key: string; state: string }) => `${x.key}:${x.state}`)).toEqual(['IDENTITY:MISSING', 'POLICE:MISSING', 'GN:MISSING', 'PROFILE:OK', 'REFERENCES:WAITING']);
+    expect(f.checks.map((x: { key: string; state: string }) => `${x.key}:${x.state}`)).toEqual([
+      'IDENTITY:MISSING',
+      'POLICE:MISSING',
+      'GN:MISSING',
+      'PROFILE:OK',
+      'REFERENCES:WAITING',
+    ]);
     expect(f.documentsRequested.documents).toEqual(['identity', 'police', 'gn']);
 
     // The caregiver: which documents, and where to upload them.
     const [msg] = asked(c);
     expect(msg[0]).toEqual([c.userId]);
     expect(msg[2]).toBe('/documents');
-    expect((msg[1] as (l: 'en') => { body: string })('en').body).toBe('To finish checking your registration we need: your NIC or passport, a police clearance certificate, a Grama Niladhari certificate. Please upload them under Documents.');
+    expect((msg[1] as (l: 'en') => { body: string })('en').body).toBe(
+      'To finish checking your registration we need: your NIC or passport, a police clearance certificate, a Grama Niladhari certificate. Please upload them under Documents.',
+    );
 
     // Each referee: one email, a link, nothing about the caregiver but their name.
     const sent = links(c);
     expect(sent).toHaveLength(2);
-    expect(sent[0].blocks.map((b) => b.paragraphs[0])[0]).toBe(`${c.name} gave your name as a reference (Former employer) when applying to work as a caregiver with us. Could you answer three short questions?`);
+    expect(sent[0].blocks.map((b) => b.paragraphs[0])[0]).toBe(
+      `${c.name} gave your name as a reference (Former employer) when applying to work as a caregiver with us. Could you answer three short questions?`,
+    );
     expect(JSON.stringify(sent[0])).not.toMatch(/Lake Road|1988|0770001111/);
     expect(f.references.map((r: { channel: string; sentAt: string | null }) => r.channel)).toEqual(['EMAIL', 'EMAIL']);
     const [t1, t2] = sent.map((s) => tokenOf(s.cta.url));
@@ -166,8 +211,16 @@ describe('Onboarding agent (e2e)', () => {
     expect(links(c)).toHaveLength(2);
 
     // The referee's page.
-    expect((await api().post('/public/references/check').send({ token: t1 }).expect(200)).body).toEqual({ caregiverName: c.name, relationship: 'Former employer', refereeName: 'Referee0', answered: false });
-    await api().post('/public/references/check').send({ token: 'x'.repeat(43) }).expect(404);
+    expect((await api().post('/public/references/check').send({ token: t1 }).expect(200)).body).toEqual({
+      caregiverName: c.name,
+      relationship: 'Former employer',
+      refereeName: 'Referee0',
+      answered: false,
+    });
+    await api()
+      .post('/public/references/check')
+      .send({ token: 'x'.repeat(43) })
+      .expect(404);
     expect((await answer(t1, { knowsThem: true }).expect(400)).body.message).toBe('Answer each question');
     await answer(t1, { knowsThem: true, years: 'FOREVER', wouldTrust: 'YES' }).expect(400);
     await answer(t1, { knowsThem: true, years: 'OVER_3', wouldTrust: 'YES', comment: '  Looked after my father for four years.  ' }).expect(200);
@@ -175,13 +228,21 @@ describe('Onboarding agent (e2e)', () => {
     expect((await api().post('/public/references/check').send({ token: t1 }).expect(200)).body.answered).toBe(true);
     await answer(t2, { knowsThem: true, years: 'ONE_TO_THREE', wouldTrust: 'YES' }).expect(200);
     // Answering does not settle the reference: staff still do.
-    expect((await db.select().from(references).where(eq(references.caregiverId, c.id))).map((r) => r.verificationStatus)).toEqual(['IN_PROGRESS', 'IN_PROGRESS']);
+    expect((await db.select().from(references).where(eq(references.caregiverId, c.id))).map((r) => r.verificationStatus)).toEqual([
+      'IN_PROGRESS',
+      'IN_PROGRESS',
+    ]);
 
     await addDocs(c);
     await sweep(c);
     const ready = await file(c);
     expect(ready.recommendation).toBe('READY');
-    expect(ready.references.find((r: { name: string }) => r.name === 'Referee0 Silva').answer).toMatchObject({ knowsThem: true, years: 'OVER_3', wouldTrust: 'YES', comment: 'Looked after my father for four years.' });
+    expect(ready.references.find((r: { name: string }) => r.name === 'Referee0 Silva').answer).toMatchObject({
+      knowsThem: true,
+      years: 'OVER_3',
+      wouldTrust: 'YES',
+      comment: 'Looked after my father for four years.',
+    });
     expect(staffMail(`Ready to verify: ${c.reg}`)).toHaveLength(1);
     await sweep(c);
     expect(staffMail(`Ready to verify: ${c.reg}`)).toHaveLength(1);
@@ -211,10 +272,14 @@ describe('Onboarding agent (e2e)', () => {
     // Five days: the documents; seven: both referees.
     expect(await sweep(c, new Date(Date.now() + 6 * DAY))).toMatchObject({ leftToStaff: 1 });
     expect(staffMail(`Documents not received: ${c.reg}`)).toHaveLength(1);
-    expect((staffMail(`Documents not received: ${c.reg}`)[0][1] as { blocks: { paragraphs: string[] }[] }).blocks[0].paragraphs[0]).toContain('and reminded once,');
+    expect((staffMail(`Documents not received: ${c.reg}`)[0][1] as { blocks: { paragraphs: string[] }[] }).blocks[0].paragraphs[0]).toContain(
+      'and reminded once,',
+    );
     expect(await sweep(c, new Date(Date.now() + 8 * DAY))).toMatchObject({ leftToStaff: 2 });
     expect(await sweep(c, new Date(Date.now() + 9 * DAY))).toMatchObject({ leftToStaff: 0 });
-    expect((await api().get(`/automation/cases/CAREGIVER/${c.id}`).set(bearer(staffToken)).expect(200)).body.handoverNote).toMatchObject({ waiting: expect.stringMatching(/^Staff: no answer from Referee[01] and Referee[01] - phone each of them$/) });
+    expect((await api().get(`/automation/cases/CAREGIVER/${c.id}`).set(bearer(staffToken)).expect(200)).body.handoverNote).toMatchObject({
+      waiting: expect.stringMatching(/^Staff: no answer from Referee[01] and Referee[01] - phone each of them$/),
+    });
   });
 
   it('flags a referee who does not know the caregiver, and cannot reach one with no email', async () => {
@@ -273,30 +338,57 @@ describe('Onboarding agent (e2e)', () => {
     let chat: jest.SpyInstance;
     const READ = 'onboarding.read_document';
     async function useModel(clearedFor: string, provider = 'OPENAI_COMPATIBLE') {
-      const body = { name: `Onboarding model ${run}-${++n}`, provider, baseUrl: provider === 'OLLAMA' ? 'http://10.0.0.5:11434' : 'http://10.0.0.6/v1', model: 'vision-1', clearedFor, ...(provider === 'OLLAMA' ? {} : { apiKey: 'sk-test-not-real' }) };
+      const body = {
+        name: `Onboarding model ${run}-${++n}`,
+        provider,
+        baseUrl: provider === 'OLLAMA' ? 'http://10.0.0.5:11434' : 'http://10.0.0.6/v1',
+        model: 'vision-1',
+        clearedFor,
+        ...(provider === 'OLLAMA' ? {} : { apiKey: 'sk-test-not-real' }),
+      };
       const res = await api().post('/settings/automation/endpoints').set(bearer(adminToken)).send(body);
       if (res.status !== 201) throw new Error(JSON.stringify(res.body));
       const o = res.body as AutomationOverview;
       const id = o.endpoints.find((e) => e.name === body.name)!.id;
-      await api().patch('/settings/automation/functions/ONBOARDING/endpoints').set(bearer(adminToken)).send({ endpointId: id, fallbackEndpointId: null }).expect(200);
+      await api()
+        .patch('/settings/automation/functions/ONBOARDING/endpoints')
+        .set(bearer(adminToken))
+        .send({ endpointId: id, fallbackEndpointId: null })
+        .expect(200);
     }
     /** A real file in storage, as an upload would leave it. */
     async function upload(c: Cg, type: string, mimeType = 'image/png') {
       const id = uuid();
       const key = `${c.id}/${id}/original-file.${mimeType === 'application/pdf' ? 'pdf' : 'png'}`;
       await app.get<StorageService>(STORAGE_SERVICE).upload({ key, buffer: Buffer.from(`${type} scan`), mimeType });
-      await db.insert(caregiverDocuments).values({ id, caregiverId: c.id, documentType: type as 'NIC', storageKey: key, originalFilename: 'scan', mimeType, sizeBytes: 9, checksum: 'x'.repeat(64) });
+      await db.insert(caregiverDocuments).values({
+        id,
+        caregiverId: c.id,
+        documentType: type as 'NIC',
+        storageKey: key,
+        originalFilename: 'scan',
+        mimeType,
+        sizeBytes: 9,
+        checksum: 'x'.repeat(64),
+      });
       return id;
     }
     const reads = (c: Cg) => db.select().from(documentReadings).where(eq(documentReadings.caregiverId, c.id));
-    const answer = (o: object) => ({ content: JSON.stringify({ legible: true, documentType: null, fullName: null, idNumber: null, dateOfBirth: null, expiresOn: null, ...o }), toolCalls: [] });
+    const answer = (o: object) => ({
+      content: JSON.stringify({ legible: true, documentType: null, fullName: null, idNumber: null, dateOfBirth: null, expiresOn: null, ...o }),
+      toolCalls: [],
+    });
 
     beforeEach(() => {
       chat = jest.spyOn(app.get(AiProviderService), 'chat');
     });
     afterEach(async () => {
       chat.mockRestore();
-      await api().patch('/settings/automation/functions/ONBOARDING/endpoints').set(bearer(adminToken)).send({ endpointId: null, fallbackEndpointId: null }).expect(200);
+      await api()
+        .patch('/settings/automation/functions/ONBOARDING/endpoints')
+        .set(bearer(adminToken))
+        .send({ endpointId: null, fallbackEndpointId: null })
+        .expect(200);
     });
 
     it('never sends a document to a model not cleared for sensitive data', async () => {
@@ -357,7 +449,9 @@ describe('Onboarding agent (e2e)', () => {
       await sweep(c);
       expect((await file(c)).checks[0].state).toBe('UNCLEAR');
       const bodies = asked(c).map((m) => (m[1] as (l: 'en') => { body: string })('en').body);
-      expect(bodies.at(-1)).toBe('To finish checking your registration we need: a clearer copy of your NIC or passport, a police clearance certificate, a Grama Niladhari certificate. Please upload them under Documents.');
+      expect(bodies.at(-1)).toBe(
+        'To finish checking your registration we need: a clearer copy of your NIC or passport, a police clearance certificate, a Grama Niladhari certificate. Please upload them under Documents.',
+      );
     });
 
     it('tries a failed read again, an hour or more apart, three tries in all', async () => {
@@ -374,12 +468,19 @@ describe('Onboarding agent (e2e)', () => {
       expect(chat).toHaveBeenCalledTimes(1);
       // decide() stamps the real time, so the next try is judged against it: move the first one back.
       const back = async () => {
-        for (const d of await decisions(c, READ)) await db.update(agentDecisions).set({ createdAt: new Date(d.createdAt.getTime() - 2 * 3_600_000) }).where(eq(agentDecisions.id, d.id));
+        for (const d of await decisions(c, READ))
+          await db
+            .update(agentDecisions)
+            .set({ createdAt: new Date(d.createdAt.getTime() - 2 * 3_600_000) })
+            .where(eq(agentDecisions.id, d.id));
       };
       await back();
       await sweep(c);
       expect(chat).toHaveBeenCalledTimes(2);
-      expect((await decisions(c, READ)).map((d) => d.reason)).toEqual([`Read ${c.reg}'s nic and compare it with the profile`, `Try again (2 of 3): read ${c.reg}'s nic and compare it with the profile`]);
+      expect((await decisions(c, READ)).map((d) => d.reason)).toEqual([
+        `Read ${c.reg}'s nic and compare it with the profile`,
+        `Try again (2 of 3): read ${c.reg}'s nic and compare it with the profile`,
+      ]);
       // The third try works.
       chat.mockResolvedValue(answer({ documentType: 'NIC', fullName: c.name.toUpperCase(), idNumber: c.nic, dateOfBirth: '1988-01-20' }));
       await back();
@@ -395,14 +496,21 @@ describe('Onboarding agent (e2e)', () => {
       await upload(c2, 'NIC');
       chat.mockRejectedValue(new Error('The model timed out'));
       const back2 = async () => {
-        for (const d of await decisions(c2, READ)) await db.update(agentDecisions).set({ createdAt: new Date(d.createdAt.getTime() - 2 * 3_600_000) }).where(eq(agentDecisions.id, d.id));
+        for (const d of await decisions(c2, READ))
+          await db
+            .update(agentDecisions)
+            .set({ createdAt: new Date(d.createdAt.getTime() - 2 * 3_600_000) })
+            .where(eq(agentDecisions.id, d.id));
       };
       for (let i = 0; i < 4; i++) {
         await sweep(c2);
         await back2();
       }
       expect(await decisions(c2, READ)).toHaveLength(3);
-      expect((await api().get(`/automation/cases/CAREGIVER/${c2.id}`).set(bearer(staffToken)).expect(200)).body.handoverNote).toMatchObject({ done: `Could not read ${c2.reg}'s nic after 3 tries`, waiting: 'Staff: check the nic by eye' });
+      expect((await api().get(`/automation/cases/CAREGIVER/${c2.id}`).set(bearer(staffToken)).expect(200)).body.handoverNote).toMatchObject({
+        done: `Could not read ${c2.reg}'s nic after 3 tries`,
+        waiting: 'Staff: check the nic by eye',
+      });
     });
 
     it('leaves a PDF to staff when the model reads images only, and does nothing in Shadow', async () => {
@@ -412,9 +520,15 @@ describe('Onboarding agent (e2e)', () => {
       await upload(c, 'POLICE_CLEARANCE', 'application/pdf');
       await sweep(c);
       expect(chat).not.toHaveBeenCalled();
-      expect((await decisions(c, READ))[0]).toMatchObject({ outcome: 'EXECUTED', executionError: 'The model set up reads images only, not PDF files - staff to check this one' });
+      expect((await decisions(c, READ))[0]).toMatchObject({
+        outcome: 'EXECUTED',
+        executionError: 'The model set up reads images only, not PDF files - staff to check this one',
+      });
       // Another try would not change that.
-      await db.update(agentDecisions).set({ createdAt: new Date(Date.now() - 2 * 3_600_000) }).where(eq(agentDecisions.caseId, c.id));
+      await db
+        .update(agentDecisions)
+        .set({ createdAt: new Date(Date.now() - 2 * 3_600_000) })
+        .where(eq(agentDecisions.caseId, c.id));
       await sweep(c);
       expect(await decisions(c, READ)).toHaveLength(1);
 

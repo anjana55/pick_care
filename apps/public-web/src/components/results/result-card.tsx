@@ -47,8 +47,7 @@ export function ResultCard({
               {caregiver.verified && <VerifiedBadge />}
             </div>
             <h3 className="mt-0.5 text-base font-semibold text-ink">
-              {caregiver.gender === 'FEMALE' ? '♀' : caregiver.gender === 'MALE' ? '♂' : ''}{' '}
-              {t('results.approxAge', { age: caregiver.approxAge })} ·{' '}
+              {caregiver.gender === 'FEMALE' ? '♀' : caregiver.gender === 'MALE' ? '♂' : ''} {t('results.approxAge', { age: caregiver.approxAge })} ·{' '}
               {t('results.yearsExperience', { years: caregiver.yearsExperience })}
             </h3>
           </div>
@@ -59,9 +58,7 @@ export function ResultCard({
               {t('results.recommendedMatch')}
             </span>
           )}
-          {relation && (
-            <SaveButton publicId={caregiver.publicId} saved={relation.saved} caregiverLabel={caregiver.publicId.slice(0, 8)} variant="compact" />
-          )}
+          {relation && <SaveButton publicId={caregiver.publicId} saved={relation.saved} caregiverLabel={caregiver.publicId.slice(0, 8)} variant="compact" />}
           {!relation && deviceSave && <DeviceSaveButton publicId={caregiver.publicId} caregiverLabel={caregiver.publicId.slice(0, 8)} variant="compact" />}
         </div>
       </div>

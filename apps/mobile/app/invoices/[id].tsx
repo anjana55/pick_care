@@ -158,7 +158,9 @@ export default function InvoiceScreen() {
                 autoComplete="email"
               />
             ) : null}
-            <FormError message={start.isError ? (start.error instanceof ApiError && start.error.message ? start.error.message : t('invoices.pay.error')) : null} />
+            <FormError
+              message={start.isError ? (start.error instanceof ApiError && start.error.message ? start.error.message : t('invoices.pay.error')) : null}
+            />
             <Button
               label={start.isPending ? t('invoices.pay.redirecting') : t('invoices.pay.button')}
               busy={start.isPending}
@@ -233,7 +235,9 @@ function InvoiceView({ invoice: inv, locale }: { invoice: ClientInvoice; locale:
         {s.address ? <Text style={muted}>{s.address}</Text> : null}
         {s.phone || s.email ? <Text style={muted}>{[s.phone, s.email].filter(Boolean).join(' · ')}</Text> : null}
         {s.registrationNumber ? <Text style={muted}>{t('invoices.doc.regNo', { number: s.registrationNumber })}</Text> : null}
-        {taxed && s.taxRegistrationNumber ? <Text style={muted}>{t('invoices.doc.taxRegNo', { name: inv.taxName ?? '', number: s.taxRegistrationNumber })}</Text> : null}
+        {taxed && s.taxRegistrationNumber ? (
+          <Text style={muted}>{t('invoices.doc.taxRegNo', { name: inv.taxName ?? '', number: s.taxRegistrationNumber })}</Text>
+        ) : null}
       </View>
 
       <View style={[styles.section, { borderColor: colors.border }]}>
@@ -251,7 +255,9 @@ function InvoiceView({ invoice: inv, locale }: { invoice: ClientInvoice; locale:
               <Text style={{ fontSize: 15, fontWeight: '600', color: colors.ink }}>{money(l.amount)}</Text>
             </View>
             <Text style={muted}>
-              {[l.serviceDate ? formatDate(l.serviceDate, locale) : null, `${Number(l.quantity)} ${t(`invoices.unit.${l.unit}`)} × ${money(l.unitPrice)}`].filter(Boolean).join(' · ')}
+              {[l.serviceDate ? formatDate(l.serviceDate, locale) : null, `${Number(l.quantity)} ${t(`invoices.unit.${l.unit}`)} × ${money(l.unitPrice)}`]
+                .filter(Boolean)
+                .join(' · ')}
             </Text>
             {Number(l.discount) > 0 ? <Text style={muted}>{t('invoices.doc.lineDiscount', { amount: formatLkr(l.discount) })}</Text> : null}
           </View>
@@ -261,7 +267,10 @@ function InvoiceView({ invoice: inv, locale }: { invoice: ClientInvoice; locale:
       <View style={[styles.section, { borderColor: colors.border }]}>
         <Row label={t('invoices.doc.subtotal')} value={formatLkr(inv.subtotal)} />
         {Number(inv.discount) > 0 ? (
-          <Row label={inv.discountLabel ? `${t('invoices.doc.discount')} (${inv.discountLabel})` : t('invoices.doc.discount')} value={`−${formatLkr(inv.discount)}`} />
+          <Row
+            label={inv.discountLabel ? `${t('invoices.doc.discount')} (${inv.discountLabel})` : t('invoices.doc.discount')}
+            value={`−${formatLkr(inv.discount)}`}
+          />
         ) : null}
         {taxed ? <Row label={`${inv.taxName} ${Number(inv.taxRate)}%`} value={formatLkr(inv.tax)} /> : null}
         <Row label={t('invoices.doc.total')} value={formatLkr(inv.total)} strong />
@@ -269,7 +278,9 @@ function InvoiceView({ invoice: inv, locale }: { invoice: ClientInvoice; locale:
         {Number(inv.amountPaid) !== 0 ? <Row label={t('invoices.doc.balance')} value={formatLkr(inv.balance)} strong /> : null}
       </View>
 
-      {inv.status === 'PAID' ? <Text style={{ fontSize: 16, fontWeight: '700', color: colors.brand, textAlign: 'right' }}>{t('invoices.doc.paidInFull')}</Text> : null}
+      {inv.status === 'PAID' ? (
+        <Text style={{ fontSize: 16, fontWeight: '700', color: colors.brand, textAlign: 'right' }}>{t('invoices.doc.paidInFull')}</Text>
+      ) : null}
 
       {inv.payments.length ? (
         <View style={[styles.section, { borderColor: colors.border }]}>

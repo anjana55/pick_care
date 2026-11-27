@@ -35,15 +35,28 @@ export function ReadinessChecklist() {
         <h2 id="ready-title" className="text-lg font-semibold text-ink">
           {t('portal.workAbroad.checklist.title')}
         </h2>
-        <span className="text-sm font-semibold tabular-nums text-brand-dark">{t('portal.workAbroad.checklist.progress', { done: data.done, total: data.total })}</span>
+        <span className="text-sm font-semibold tabular-nums text-brand-dark">
+          {t('portal.workAbroad.checklist.progress', { done: data.done, total: data.total })}
+        </span>
       </div>
-      <div className="mt-3 h-2 overflow-hidden rounded-full bg-paper" role="progressbar" aria-valuemin={0} aria-valuemax={data.total} aria-valuenow={data.done} aria-label={t('portal.workAbroad.checklist.title')}>
+      <div
+        className="mt-3 h-2 overflow-hidden rounded-full bg-paper"
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={data.total}
+        aria-valuenow={data.done}
+        aria-label={t('portal.workAbroad.checklist.title')}
+      >
         <div className="h-full rounded-full bg-brand transition-all" style={{ width: `${pct}%` }} />
       </div>
       <ul className="mt-4 grid gap-2 sm:grid-cols-2">
         {data.items.map(({ key, done }) => (
           <li key={key} className="flex items-start gap-2.5 text-sm">
-            {done ? <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-brand" aria-hidden /> : <Circle className="mt-0.5 h-5 w-5 shrink-0 text-ink/25" aria-hidden />}
+            {done ? (
+              <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-brand" aria-hidden />
+            ) : (
+              <Circle className="mt-0.5 h-5 w-5 shrink-0 text-ink/25" aria-hidden />
+            )}
             <span>
               <span className={done ? 'text-ink' : 'font-medium text-ink'}>{t(`portal.workAbroad.checklist.items.${key}`)}</span>
               <span className="sr-only">: {done ? t('portal.workAbroad.checklist.done') : t('portal.workAbroad.checklist.todo')}</span>

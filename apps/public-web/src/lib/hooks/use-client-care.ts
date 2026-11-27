@@ -14,7 +14,8 @@ import type {
   PayhereCheckout,
   CareChecklistShift,
   CareRecordInput,
-  ClientCareDay, ClientRequestDetailsInput,
+  ClientCareDay,
+  ClientRequestDetailsInput,
   CareLocation,
   ClientLive,
   CareLocationInput,
@@ -271,7 +272,11 @@ export function useRemoveCareLocation() {
 }
 
 export function visitSoon(bookings: ClientBooking[] | undefined, now = Date.now()): boolean {
-  return Boolean(bookings?.some((b) => b.shifts.some((s) => s.status === 'SCHEDULED' && !s.visit?.checkedInAt && Date.parse(s.startsAt) - now < 2 * 3_600_000 && Date.parse(s.endsAt) > now)));
+  return Boolean(
+    bookings?.some((b) =>
+      b.shifts.some((s) => s.status === 'SCHEDULED' && !s.visit?.checkedInAt && Date.parse(s.startsAt) - now < 2 * 3_600_000 && Date.parse(s.endsAt) > now),
+    ),
+  );
 }
 
 /** The caregiver on their way to this booking's next visit (GPS tracking B); asked every 15 s while they are. */

@@ -18,7 +18,9 @@ export const skills = mysqlTable('skills', {
   categorySi: varchar('category_si', { length: 100 }),
   categoryTa: varchar('category_ta', { length: 100 }),
   description: text('description'),
-  createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+  createdAt: datetime('created_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const caregiverSkills = mysqlTable(
@@ -28,7 +30,9 @@ export const caregiverSkills = mysqlTable(
     skillId: varchar('skill_id', { length: 36 }).notNull(),
     proficiency: mysqlEnum('proficiency', proficiencyLevelEnum).notNull().default('BASIC'),
     yearsOfExperience: int('years_of_experience').default(0),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.caregiverId, table.skillId] }),

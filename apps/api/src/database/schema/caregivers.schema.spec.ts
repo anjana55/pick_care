@@ -20,17 +20,7 @@ describe('CAREGIVER_STATUS_TRANSITIONS', () => {
   it('defines a transition list for every status', () => {
     const statuses = Object.keys(CAREGIVER_STATUS_TRANSITIONS);
     expect(statuses).toEqual(
-      expect.arrayContaining([
-        'DRAFT',
-        'REGISTERED',
-        'DOCUMENTS_PENDING',
-        'UNDER_VERIFICATION',
-        'VERIFIED',
-        'ACTIVE',
-        'INACTIVE',
-        'SUSPENDED',
-        'REJECTED',
-      ]),
+      expect.arrayContaining(['DRAFT', 'REGISTERED', 'DOCUMENTS_PENDING', 'UNDER_VERIFICATION', 'VERIFIED', 'ACTIVE', 'INACTIVE', 'SUSPENDED', 'REJECTED']),
     );
   });
 });

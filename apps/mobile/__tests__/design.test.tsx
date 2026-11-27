@@ -149,13 +149,20 @@ describe('the client home', () => {
       shifts: [],
       ...over,
     }) as ClientBooking;
-  const shift = (id: string, startsAt: string, endsAt: string, status = 'SCHEDULED') => ({ id, startsAt, endsAt, status, isCover: false }) as ClientBooking['shifts'][number];
+  const shift = (id: string, startsAt: string, endsAt: string, status = 'SCHEDULED') =>
+    ({ id, startsAt, endsAt, status, isCover: false }) as ClientBooking['shifts'][number];
 
   it('finds the next visit: the earliest scheduled shift of a confirmed booking that has not ended', () => {
     const now = Date.parse('2026-11-02T06:00:00Z');
     const bookings = [
-      booking({ id: 'b-1', shifts: [shift('past', '2026-11-01T02:30:00Z', '2026-11-01T14:30:00Z'), shift('later', '2026-11-04T02:30:00Z', '2026-11-04T14:30:00Z')] }),
-      booking({ id: 'b-2', shifts: [shift('now', '2026-11-02T02:30:00Z', '2026-11-02T14:30:00Z', 'CANCELLED'), shift('soon', '2026-11-03T02:30:00Z', '2026-11-03T14:30:00Z')] }),
+      booking({
+        id: 'b-1',
+        shifts: [shift('past', '2026-11-01T02:30:00Z', '2026-11-01T14:30:00Z'), shift('later', '2026-11-04T02:30:00Z', '2026-11-04T14:30:00Z')],
+      }),
+      booking({
+        id: 'b-2',
+        shifts: [shift('now', '2026-11-02T02:30:00Z', '2026-11-02T14:30:00Z', 'CANCELLED'), shift('soon', '2026-11-03T02:30:00Z', '2026-11-03T14:30:00Z')],
+      }),
       booking({ id: 'b-3', status: 'DRAFT', shifts: [shift('draft', '2026-11-02T08:00:00Z', '2026-11-02T10:00:00Z')] }),
     ];
     expect(nextVisit(bookings, now)?.shift.id).toBe('soon');
@@ -262,7 +269,20 @@ describe('the client home', () => {
 
     answer({
       status: 200,
-      body: { unread: 0, badge: 1, todos: [{ key: 'inv', kind: 'PAY_INVOICE', path: '/invoices/i-1', urgent: false, dueOn: null, params: { number: 'INV-7', amount: 'LKR 12,500.00', overdue: 0 } }] },
+      body: {
+        unread: 0,
+        badge: 1,
+        todos: [
+          {
+            key: 'inv',
+            kind: 'PAY_INVOICE',
+            path: '/invoices/i-1',
+            urgent: false,
+            dueOn: null,
+            params: { number: 'INV-7', amount: 'LKR 12,500.00', overdue: 0 },
+          },
+        ],
+      },
     });
     expect(await screen.findByText(en.clientHome.nextForYou)).toBeTruthy();
     expect(screen.queryByTestId('band-waiting', { includeHiddenElements: true })).toBeNull();
@@ -273,7 +293,15 @@ describe('the client home', () => {
 
   it('puts the next thing to do on the band, numbers on the cards it concerns, and the whole list one tap away', async () => {
     await tokenStore.set(tokensFor('PATIENT_GUARDIAN'));
-    const todo = (over: Partial<TodoItem>): TodoItem => ({ key: 'k', kind: 'PAY_INVOICE', path: '/invoices/i-1', urgent: false, dueOn: null, params: {}, ...over });
+    const todo = (over: Partial<TodoItem>): TodoItem => ({
+      key: 'k',
+      kind: 'PAY_INVOICE',
+      path: '/invoices/i-1',
+      urgent: false,
+      dueOn: null,
+      params: {},
+      ...over,
+    });
     serveApi({
       'GET /me/bookings': () => ({ status: 200, body: [] }),
       'GET /me/notifications/summary': () => ({

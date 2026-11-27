@@ -35,8 +35,7 @@ export function UserFormModal({ editing, submitting, error, onSubmit, onClose }:
 
   // Shown as soon as the confirmation is filled in, so the admin sees the problem before pressing Save.
   const mismatch = !editing && confirmPassword.length > 0 && confirmPassword !== password;
-  const canSubmit =
-    fullName.trim().length > 0 && email.trim().length > 0 && (editing || (password.length >= 8 && confirmPassword === password));
+  const canSubmit = fullName.trim().length > 0 && email.trim().length > 0 && (editing || (password.length >= 8 && confirmPassword === password));
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
@@ -59,11 +58,7 @@ export function UserFormModal({ editing, submitting, error, onSubmit, onClose }:
               </div>
               <div>
                 <Label>{t('users.form.confirmPassword')}</Label>
-                <PasswordInput
-                  autoComplete="new-password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                />
+                <PasswordInput autoComplete="new-password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
                 <FieldError message={mismatch ? t('users.passwordMismatch') : undefined} />
               </div>
             </>
@@ -84,11 +79,7 @@ export function UserFormModal({ editing, submitting, error, onSubmit, onClose }:
           <Button variant="secondary" size="sm" onClick={onClose}>
             {t('common.cancel')}
           </Button>
-          <Button
-            size="sm"
-            disabled={!canSubmit || submitting}
-            onClick={() => onSubmit({ fullName, email, role, ...(editing ? {} : { password }) })}
-          >
+          <Button size="sm" disabled={!canSubmit || submitting} onClick={() => onSubmit({ fullName, email, role, ...(editing ? {} : { password }) })}>
             {t('common.save')}
           </Button>
         </div>

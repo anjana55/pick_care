@@ -66,7 +66,12 @@ export class StaffCommunicationPreferencesController {
   }
 
   @Patch('caregivers/:id/communication-preferences')
-  updateCaregiver(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateCommunicationPreferencesDto, @CurrentUser() user: AuthenticatedUser, @Req() req: Request) {
+  updateCaregiver(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateCommunicationPreferencesDto,
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: Request,
+  ) {
     return this.prefs.update({ kind: 'CAREGIVER', caregiverId: id }, dto, { userId: user.userId, self: false, ip: req.ip });
   }
 
@@ -76,7 +81,12 @@ export class StaffCommunicationPreferencesController {
   }
 
   @Patch('patients/:id/communication-preferences')
-  updateClient(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateCommunicationPreferencesDto, @CurrentUser() user: AuthenticatedUser, @Req() req: Request) {
+  updateClient(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateCommunicationPreferencesDto,
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: Request,
+  ) {
     return this.prefs.update({ kind: 'CLIENT', patientId: id }, dto, { userId: user.userId, self: false, ip: req.ip });
   }
 }

@@ -48,5 +48,7 @@ const CANDIDATE_STYLES: Record<CandidateStatus, string> = {
 
 export function CandidateStatusBadge({ status }: { status: CandidateStatus }) {
   const { t } = useTranslation();
-  return <span className={cn('inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold', CANDIDATE_STYLES[status])}>{t(`employer.candidate.${status}`)}</span>;
+  return (
+    <span className={cn('inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold', CANDIDATE_STYLES[status])}>{t(`employer.candidate.${status}`)}</span>
+  );
 }

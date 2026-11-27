@@ -73,7 +73,9 @@ function PlacementRow({ placement: p }: { placement: EmployerPlacement }) {
             ) : (
               <span className="font-semibold text-ink">{p.talent.firstName}</span>
             )}
-            <span className="rounded-full bg-brand-light px-2.5 py-0.5 text-xs font-semibold text-brand-dark">{t(`employer.placements.status.${p.status}`)}</span>
+            <span className="rounded-full bg-brand-light px-2.5 py-0.5 text-xs font-semibold text-brand-dark">
+              {t(`employer.placements.status.${p.status}`)}
+            </span>
           </div>
           <p className="text-sm text-ink/60">
             {[p.jobTitle, countries.name(p.country)].filter(Boolean).join(' · ')} · {p.enquiryReference}
@@ -114,12 +116,20 @@ function InvoiceList({ invoices }: { invoices: PlacementInvoiceSummary[] }) {
             <span
               className={cn(
                 'rounded-full px-2.5 py-0.5 text-xs font-semibold',
-                i.status === 'PAID' ? 'bg-brand-light text-brand-dark' : i.overdue ? 'bg-red-100 text-red-800' : i.status === 'VOID' ? 'bg-ink/10 text-ink/60' : 'bg-accent-light text-accent-dark',
+                i.status === 'PAID'
+                  ? 'bg-brand-light text-brand-dark'
+                  : i.overdue
+                    ? 'bg-red-100 text-red-800'
+                    : i.status === 'VOID'
+                      ? 'bg-ink/10 text-ink/60'
+                      : 'bg-accent-light text-accent-dark',
               )}
             >
               {i.overdue ? t('employer.invoices.overdue') : t(`employer.invoices.status.${i.status}`)}
             </span>
-            {i.dueDate && i.status === 'ISSUED' && <span className="text-xs text-ink/50">{t('employer.invoices.due', { date: fmtDate(i.dueDate, locale) })}</span>}
+            {i.dueDate && i.status === 'ISSUED' && (
+              <span className="text-xs text-ink/50">{t('employer.invoices.due', { date: fmtDate(i.dueDate, locale) })}</span>
+            )}
           </span>
         </li>
       ))}

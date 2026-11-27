@@ -56,7 +56,8 @@ export function usePublicReviews(publicId: string | null) {
   const { locale } = useTranslation();
   return useInfiniteQuery({
     queryKey: ['public-reviews', publicId, locale],
-    queryFn: ({ pageParam }) => api.request<PublicReviewsPage>(`/public/caregivers/${publicId}/reviews`, { params: { page: pageParam, locale }, anonymous: true }),
+    queryFn: ({ pageParam }) =>
+      api.request<PublicReviewsPage>(`/public/caregivers/${publicId}/reviews`, { params: { page: pageParam, locale }, anonymous: true }),
     initialPageParam: 1,
     getNextPageParam: (last) => (last.page * last.pageSize < last.total ? last.page + 1 : undefined),
     enabled: Boolean(publicId),

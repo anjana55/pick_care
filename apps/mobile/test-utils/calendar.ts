@@ -2,7 +2,6 @@ import { fireEvent, screen } from '@testing-library/react-native';
 import en from '../src/i18n/en.json';
 import { longDay } from '@/ui/Calendar';
 
-
 /**
  * Opens the date field labelled `field` and chooses `day` (YYYY-MM-DD) on its
  * calendar the way a person would: tap the month's name, the year, the month,

@@ -31,8 +31,18 @@ export class CarePlanTemplatesService {
     const acts = await this.db
       .select({ templateId: carePlanTemplateActivities.templateId, isCritical: carePlanTemplateActivities.isCritical })
       .from(carePlanTemplateActivities)
-      .where(inArray(carePlanTemplateActivities.templateId, rows.map((r) => r.id)));
-    return rows.map((r) => this.summary(r, acts.filter((a) => a.templateId === r.id)));
+      .where(
+        inArray(
+          carePlanTemplateActivities.templateId,
+          rows.map((r) => r.id),
+        ),
+      );
+    return rows.map((r) =>
+      this.summary(
+        r,
+        acts.filter((a) => a.templateId === r.id),
+      ),
+    );
   }
 
   private summary(r: Template, acts: { isCritical: boolean }[]): CarePlanTemplateSummary {
@@ -98,7 +108,12 @@ export class CarePlanTemplatesService {
   async duplicate(id: string, actor: AuthenticatedUser): Promise<CarePlanTemplateView> {
     const t = await this.get(id);
     return this.create(
-      { name: `${t.name} (copy)`.slice(0, 150), description: t.description, careTypes: t.careTypes, activities: t.activities.map(({ id: _id, sortOrder: _s, ...a }) => a) },
+      {
+        name: `${t.name} (copy)`.slice(0, 150),
+        description: t.description,
+        careTypes: t.careTypes,
+        activities: t.activities.map(({ id: _id, sortOrder: _s, ...a }) => a),
+      },
       actor,
     );
   }

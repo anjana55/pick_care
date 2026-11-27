@@ -22,7 +22,14 @@ import { StarPicker } from './Stars';
 const toggle = <T,>(list: T[], v: T) => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
 
 /** Big toggle chips that say whether they are chosen. */
-function Chips<T extends string>({ title, hint, options, chosen, onToggle, labelOf }: {
+function Chips<T extends string>({
+  title,
+  hint,
+  options,
+  chosen,
+  onToggle,
+  labelOf,
+}: {
   title: string;
   hint: string;
   options: readonly T[];
@@ -91,7 +98,11 @@ export function ReviewForm({
   const text = comment.trim();
   const starsProblem = !rating ? t('reviews.form.chooseStars') : null;
   const commentProblem =
-    text && text.length < MIN_REVIEW_COMMENT ? t('reviews.form.commentTooShort', { min: MIN_REVIEW_COMMENT }) : findContactDetails(text) ? t('reviews.form.contactDetails') : null;
+    text && text.length < MIN_REVIEW_COMMENT
+      ? t('reviews.form.commentTooShort', { min: MIN_REVIEW_COMMENT })
+      : findContactDetails(text)
+        ? t('reviews.form.contactDetails')
+        : null;
 
   const submit = () => {
     setTried(true);

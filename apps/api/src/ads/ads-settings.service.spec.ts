@@ -23,9 +23,7 @@ const DEFAULT_ROW = {
 };
 
 function make(initial: Record<string, unknown> | null = null) {
-  let row: Record<string, unknown> | null = initial
-    ? { id: 'default', ...DEFAULT_ROW, createdAt: new Date(), updatedAt: new Date(), ...initial }
-    : null;
+  let row: Record<string, unknown> | null = initial ? { id: 'default', ...DEFAULT_ROW, createdAt: new Date(), updatedAt: new Date(), ...initial } : null;
   const query = { where: () => ({ limit: async () => (row ? [{ ...row }] : []) }) };
   const db: any = {
     select: () => ({ from: () => query }),
@@ -101,7 +99,11 @@ describe('AdsSettingsService', () => {
   });
 
   it('answers "no ads" when the settings cannot be read', async () => {
-    const service = new AdsSettingsService({ select: () => { throw new Error('db down'); } } as any);
+    const service = new AdsSettingsService({
+      select: () => {
+        throw new Error('db down');
+      },
+    } as any);
     expect((await service.getPublic()).enabled).toBe(false);
   });
 });

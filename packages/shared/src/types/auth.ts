@@ -122,9 +122,7 @@ export function decodeJwtPayload(token: string): Record<string, unknown> | null 
     if (!part) return null;
     const base64 = part.replace(/-/g, '+').replace(/_/g, '/');
     const binary = atob(base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '='));
-    const json = decodeURIComponent(
-      Array.from(binary, (c) => `%${c.charCodeAt(0).toString(16).padStart(2, '0')}`).join(''),
-    );
+    const json = decodeURIComponent(Array.from(binary, (c) => `%${c.charCodeAt(0).toString(16).padStart(2, '0')}`).join(''));
     const payload: unknown = JSON.parse(json);
     return payload && typeof payload === 'object' ? (payload as Record<string, unknown>) : null;
   } catch {

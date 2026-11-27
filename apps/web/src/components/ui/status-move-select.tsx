@@ -65,13 +65,7 @@ export function StatusMoveSelect<S extends string>({
 
   return (
     <>
-      <Select
-        className={className}
-        value=""
-        disabled={pending}
-        aria-label={t('lifecycle.moveTo')}
-        onChange={(e) => pick(e.target.value)}
-      >
+      <Select className={className} value="" disabled={pending} aria-label={t('lifecycle.moveTo')} onChange={(e) => pick(e.target.value)}>
         <option value="">{t('lifecycle.moveTo')}</option>
         {statuses.map((s) => (
           <option key={s} value={s}>

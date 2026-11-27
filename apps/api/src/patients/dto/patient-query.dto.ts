@@ -1,13 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsIn, IsInt, IsOptional, IsString, Min } from 'class-validator';
 import { Type } from 'class-transformer';
-import {
-  careScheduleEnum,
-  careStartEnum,
-  clientStatusEnum,
-  contactMethodEnum,
-  registrantTypeEnum,
-} from '../../database/schema';
+import { careScheduleEnum, careStartEnum, clientStatusEnum, contactMethodEnum, registrantTypeEnum } from '../../database/schema';
 
 /**
  * Query params for the staff clients list. Trimmed from CaregiverQueryDto

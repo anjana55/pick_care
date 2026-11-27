@@ -114,7 +114,13 @@ describe('readiness', () => {
   });
 
   it('accepts English training or recorded fluency, and caregiving training or a verified qualification', () => {
-    const r = computeReadiness({ ...ready, englishTrainingCompleted: false, englishFluent: true, verifiedQualification: false, caregivingTrainingCompleted: true });
+    const r = computeReadiness({
+      ...ready,
+      englishTrainingCompleted: false,
+      englishFluent: true,
+      verifiedQualification: false,
+      caregivingTrainingCompleted: true,
+    });
     expect(r.items.filter((i) => ['english', 'caregiving'].includes(i.key)).every((i) => i.done)).toBe(true);
   });
 
@@ -135,7 +141,11 @@ describe('employer accounts', () => {
   function employers(results: unknown[]) {
     const fake = fakeDb(results);
     const n = notifier();
-    const service = new EmployersService(fake.db, { liveCards: jest.fn().mockResolvedValue(new Map()), liveCaregiverIdForSlug: jest.fn() } as never, n as never);
+    const service = new EmployersService(
+      fake.db,
+      { liveCards: jest.fn().mockResolvedValue(new Map()), liveCaregiverIdForSlug: jest.fn() } as never,
+      n as never,
+    );
     return { service, n, ...fake };
   }
 
@@ -201,7 +211,15 @@ describe('candidates', () => {
       assertVerified: opts.verified === false ? jest.fn().mockRejectedValue(new ForbiddenException()) : jest.fn().mockResolvedValue(EMPLOYER),
     };
     const placements = { openForCandidate: jest.fn().mockResolvedValue('pl-1') };
-    const service = new CandidatesService(fake.db, shared as never, employers as never, n as never, placements as never, { forCandidates: jest.fn().mockResolvedValue(new Map()) } as never, { briefForCandidates: jest.fn().mockResolvedValue(new Map()), latestForCandidates: jest.fn().mockResolvedValue(new Map()) } as never);
+    const service = new CandidatesService(
+      fake.db,
+      shared as never,
+      employers as never,
+      n as never,
+      placements as never,
+      { forCandidates: jest.fn().mockResolvedValue(new Map()) } as never,
+      { briefForCandidates: jest.fn().mockResolvedValue(new Map()), latestForCandidates: jest.fn().mockResolvedValue(new Map()) } as never,
+    );
     return { service, n, shared, placements, ...fake };
   }
 
@@ -214,7 +232,10 @@ describe('candidates', () => {
   it('records a staff proposal, moves the enquiry to Introduced and tells both sides', async () => {
     const { service, writes, n } = candidates([[ENQUIRY], [], [], [{ email: 'nadeesha@example.com' }]], { live: new Map([['cg-1', 'abcdefgh2345']]) });
     await service.propose('enq-1', { caregiverId: 'cg-1', messageToEmployer: 'Strong English' }).catch(() => undefined);
-    expect(writes[0]).toMatchObject({ op: 'insert', values: { caregiverId: 'cg-1', source: 'STAFF', status: 'PROPOSED', messageToEmployer: 'Strong English' } });
+    expect(writes[0]).toMatchObject({
+      op: 'insert',
+      values: { caregiverId: 'cg-1', source: 'STAFF', status: 'PROPOSED', messageToEmployer: 'Strong English' },
+    });
     expect(writes[1].values).toMatchObject({ status: 'INTRODUCED' });
     await new Promise((r) => setImmediate(r));
     expect(n.toAddress).toHaveBeenCalledWith('aiko@example.jp', expect.stringContaining('proposed'), expect.anything());
@@ -244,20 +265,20 @@ describe('candidates', () => {
   it('records an interview request on a live profile and alerts staff', async () => {
     const { service, writes, n } = candidates([[ENQUIRY], [], [{ email: null }], []], { slugTo: 'cg-1' });
     await service.requestInterview('emp-1', { enquiryId: 'enq-1', talentSlug: 'abcdefgh2345', message: 'Can she start in March?' }).catch(() => undefined);
-    expect(writes[0]).toMatchObject({ op: 'insert', values: { caregiverId: 'cg-1', source: 'EMPLOYER', status: 'INTERVIEW_REQUESTED', employerMessage: 'Can she start in March?' } });
+    expect(writes[0]).toMatchObject({
+      op: 'insert',
+      values: { caregiverId: 'cg-1', source: 'EMPLOYER', status: 'INTERVIEW_REQUESTED', employerMessage: 'Can she start in March?' },
+    });
     await new Promise((r) => setImmediate(r));
     expect(n.toStaff).toHaveBeenCalled();
   });
 
   it('lets the employer move a candidate only along the allowed steps', async () => {
-    const { service } = candidates(
-      [[{ id: 'c1', enquiryId: 'enq-1', caregiverId: 'cg-1', status: 'PLACED' }], [ENQUIRY]],
-      { live: new Map([['cg-1', 'x']]) },
-    );
+    const { service } = candidates([[{ id: 'c1', enquiryId: 'enq-1', caregiverId: 'cg-1', status: 'PLACED' }], [ENQUIRY]], { live: new Map([['cg-1', 'x']]) });
     await expect(service.employerAction('emp-1', 'c1', { action: 'DECLINE' })).rejects.toThrow('not possible');
   });
 
-  it("tells a caregiver only the country and kind of employer, never who", async () => {
+  it('tells a caregiver only the country and kind of employer, never who', async () => {
     const { service } = candidates([
       [{ c: { id: 'c1', status: 'PROPOSED', interviewAt: null, createdAt: new Date('2026-10-20') }, country: 'JP', organisationType: 'CARE_HOME' }],
     ]);

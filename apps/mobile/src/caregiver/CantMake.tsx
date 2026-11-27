@@ -31,7 +31,12 @@ export function CantMake({ shift }: { shift: CaregiverShift }) {
     return (
       <View testID="cant-make-status" style={{ gap: 4 }}>
         <Text style={{ fontSize: 14, color: colors.danger }}>{t('portal.shifts.cantMake.told')}</Text>
-        <Button variant="link" label={t('portal.shifts.cantMake.afterAll')} busy={save.isPending} onPress={() => save.mutate({ shiftId: shift.id, undo: true })} />
+        <Button
+          variant="link"
+          label={t('portal.shifts.cantMake.afterAll')}
+          busy={save.isPending}
+          onPress={() => save.mutate({ shiftId: shift.id, undo: true })}
+        />
       </View>
     );
   }
@@ -43,7 +48,21 @@ export function CantMake({ shift }: { shift: CaregiverShift }) {
       <Text style={{ fontSize: 14, color: colors.muted }}>{t('portal.shifts.cantMake.why')}</Text>
       <Field label={t('portal.shifts.cantMake.note')} value={note} onChangeText={setNote} maxLength={CANT_MAKE_NOTE_MAX} multiline />
       <FormError message={error} />
-      <Button label={t('portal.shifts.cantMake.send')} busy={save.isPending} onPress={() => save.mutate({ shiftId: shift.id, note: note.trim() || undefined }, { onSuccess: () => { setOpen(false); void endTripFor(shift.id); } })} />
+      <Button
+        label={t('portal.shifts.cantMake.send')}
+        busy={save.isPending}
+        onPress={() =>
+          save.mutate(
+            { shiftId: shift.id, note: note.trim() || undefined },
+            {
+              onSuccess: () => {
+                setOpen(false);
+                void endTripFor(shift.id);
+              },
+            },
+          )
+        }
+      />
       <Button variant="link" label={t('common.cancel')} onPress={() => setOpen(false)} />
     </View>
   );

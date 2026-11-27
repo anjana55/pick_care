@@ -134,10 +134,7 @@ export function NewClientFields({
   const caller = value;
 
   const { data: tree } = useLocationTree(locale);
-  const districts = useMemo(
-    () => (tree ?? []).flatMap((p) => p.districts).sort((a, b) => a.name.localeCompare(b.name, locale)),
-    [tree, locale],
-  );
+  const districts = useMemo(() => (tree ?? []).flatMap((p) => p.districts).sort((a, b) => a.name.localeCompare(b.name, locale)), [tree, locale]);
   const { data: cities = [] } = useCities(caller.districtId ? Number(caller.districtId) : null, locale);
 
   const set = <K extends keyof NewClientDraft>(key: K, v: NewClientDraft[K]) => onChange({ ...caller, [key]: v });
@@ -150,11 +147,15 @@ export function NewClientFields({
       <RequiredLegend label={t('common.requiredField')} />
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <Label htmlFor="fullName" required>{t(`${wording}.fullName`)}</Label>
+          <Label htmlFor="fullName" required>
+            {t(`${wording}.fullName`)}
+          </Label>
           <Input id="fullName" autoComplete="off" value={caller.fullName} onChange={(e) => set('fullName', e.target.value)} />
         </div>
         <div>
-          <Label htmlFor="phone" required>{t('requests.new.phone')}</Label>
+          <Label htmlFor="phone" required>
+            {t('requests.new.phone')}
+          </Label>
           <Input id="phone" type="tel" autoComplete="off" placeholder="0771234567" value={caller.phone} onChange={(e) => set('phone', e.target.value)} />
           <p className="mt-1 text-xs text-ink/50">{t('requests.new.phoneHint')}</p>
         </div>
@@ -182,7 +183,9 @@ export function NewClientFields({
           <Input id="alternatePhone" type="tel" autoComplete="off" value={caller.alternatePhone} onChange={(e) => set('alternatePhone', e.target.value)} />
         </div>
         <div>
-          <Label htmlFor="preferredContactMethod" required>{t('requests.detail.preferredContact')}</Label>
+          <Label htmlFor="preferredContactMethod" required>
+            {t('requests.detail.preferredContact')}
+          </Label>
           <Select id="preferredContactMethod" value={caller.preferredContactMethod} onChange={(e) => set('preferredContactMethod', e.target.value)}>
             {METHODS.filter((m) => m !== 'EMAIL' || hasEmail).map((m) => (
               <option key={m} value={m}>
@@ -217,11 +220,15 @@ export function NewClientFields({
           {caller.registrantType === 'GUARDIAN' && (
             <>
               <div>
-                <Label htmlFor="recipientName" required>{t('requests.new.recipientName')}</Label>
+                <Label htmlFor="recipientName" required>
+                  {t('requests.new.recipientName')}
+                </Label>
                 <Input id="recipientName" value={caller.recipientName} onChange={(e) => set('recipientName', e.target.value)} />
               </div>
               <div>
-                <Label htmlFor="recipientRelationship" required>{t('requests.new.relationship')}</Label>
+                <Label htmlFor="recipientRelationship" required>
+                  {t('requests.new.relationship')}
+                </Label>
                 <Select id="recipientRelationship" value={caller.recipientRelationship} onChange={(e) => set('recipientRelationship', e.target.value)}>
                   <option value="">—</option>
                   {RELATIONSHIPS.map((v) => (
@@ -234,11 +241,15 @@ export function NewClientFields({
             </>
           )}
           <div>
-            <Label htmlFor="recipientAge" required>{t('requests.new.age')}</Label>
+            <Label htmlFor="recipientAge" required>
+              {t('requests.new.age')}
+            </Label>
             <Input id="recipientAge" type="number" min={0} max={120} value={caller.recipientAge} onChange={(e) => set('recipientAge', e.target.value)} />
           </div>
           <div>
-            <Label htmlFor="recipientGender" required>{t('requests.new.gender')}</Label>
+            <Label htmlFor="recipientGender" required>
+              {t('requests.new.gender')}
+            </Label>
             <Select id="recipientGender" value={caller.recipientGender} onChange={(e) => set('recipientGender', e.target.value)}>
               <option value="">—</option>
               {GENDERS.map((v) => (
@@ -255,7 +266,9 @@ export function NewClientFields({
         <legend className="mb-2 text-sm font-semibold text-ink">{t('requests.new.careTitle')}</legend>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <Label htmlFor="districtId" required>{t('personalInfo.fields.district')}</Label>
+            <Label htmlFor="districtId" required>
+              {t('personalInfo.fields.district')}
+            </Label>
             <Select id="districtId" value={caller.districtId} onChange={(e) => onChange({ ...caller, districtId: e.target.value, cityId: '' })}>
               <option value="">—</option>
               {districts.map((d) => (
@@ -266,7 +279,9 @@ export function NewClientFields({
             </Select>
           </div>
           <div>
-            <Label htmlFor="cityId" required>{t('requests.new.city')}</Label>
+            <Label htmlFor="cityId" required>
+              {t('requests.new.city')}
+            </Label>
             <Select id="cityId" value={caller.cityId} disabled={!caller.districtId} onChange={(e) => set('cityId', e.target.value)}>
               <option value="">—</option>
               {[...cities]
@@ -287,7 +302,9 @@ export function NewClientFields({
             <Textarea id="careNeeds" rows={3} maxLength={1000} value={caller.careNeeds} onChange={(e) => set('careNeeds', e.target.value)} />
           </div>
           <div>
-            <Label htmlFor="careSchedule" required>{t('requests.detail.schedule')}</Label>
+            <Label htmlFor="careSchedule" required>
+              {t('requests.detail.schedule')}
+            </Label>
             <Select id="careSchedule" value={caller.careSchedule} onChange={(e) => set('careSchedule', e.target.value)}>
               <option value="">—</option>
               {SCHEDULES.map((v) => (
@@ -298,7 +315,9 @@ export function NewClientFields({
             </Select>
           </div>
           <div>
-            <Label htmlFor="careStart" required>{t('requests.new.start')}</Label>
+            <Label htmlFor="careStart" required>
+              {t('requests.new.start')}
+            </Label>
             <Select id="careStart" value={caller.careStart} onChange={(e) => set('careStart', e.target.value)}>
               <option value="">—</option>
               {STARTS.map((v) => (

@@ -69,7 +69,9 @@ export async function checkAssetShape(asset: BrandAsset, buffer: Buffer): Promis
     throw new BadRequestException(`This picture must be square (this one is ${width} × ${height}).`);
   }
   if (asset === 'appIcon' && !vector && Math.min(width, height) < APP_ICON_MIN_PX) {
-    throw new BadRequestException(`The app icon must be at least ${APP_ICON_MIN_PX} × ${APP_ICON_MIN_PX} pixels, or an SVG (this one is ${width} × ${height}).`);
+    throw new BadRequestException(
+      `The app icon must be at least ${APP_ICON_MIN_PX} × ${APP_ICON_MIN_PX} pixels, or an SVG (this one is ${width} × ${height}).`,
+    );
   }
 }
 
@@ -113,7 +115,10 @@ export class BrandingSettingsService {
   private async getRow(): Promise<Row> {
     const [existing] = await this.db.select().from(brandingSettings).where(eq(brandingSettings.id, SETTINGS_ID)).limit(1);
     if (existing) return existing;
-    await this.db.insert(brandingSettings).values({ id: SETTINGS_ID }).onDuplicateKeyUpdate({ set: { id: SETTINGS_ID } });
+    await this.db
+      .insert(brandingSettings)
+      .values({ id: SETTINGS_ID })
+      .onDuplicateKeyUpdate({ set: { id: SETTINGS_ID } });
     const [created] = await this.db.select().from(brandingSettings).where(eq(brandingSettings.id, SETTINGS_ID)).limit(1);
     return created;
   }
@@ -128,7 +133,12 @@ export class BrandingSettingsService {
       primaryColor: row.primaryColor.toUpperCase(),
       accentColor: row.accentColor.toUpperCase(),
       logoVersion: versionOf(row, 'logo'),
-      assets: { logo: versionOf(row, 'logo'), logoReverse: versionOf(row, 'logoReverse'), symbol: versionOf(row, 'symbol'), appIcon: versionOf(row, 'appIcon') },
+      assets: {
+        logo: versionOf(row, 'logo'),
+        logoReverse: versionOf(row, 'logoReverse'),
+        symbol: versionOf(row, 'symbol'),
+        appIcon: versionOf(row, 'appIcon'),
+      },
       defaultLocale,
       enabledLocales: normalizeLocales(row.enabledLocales.split(','), defaultLocale),
       textScale: parseTextScale(row.textScale),
@@ -170,7 +180,10 @@ export class BrandingSettingsService {
     const primaryColor = (dto.primaryColor ?? current.primaryColor).toUpperCase();
     const accentColor = (dto.accentColor ?? current.accentColor).toUpperCase();
 
-    for (const [label, color] of [['primary', primaryColor], ['accent', accentColor]] as const) {
+    for (const [label, color] of [
+      ['primary', primaryColor],
+      ['accent', accentColor],
+    ] as const) {
       if (!meetsBrandContrast(color)) {
         throw new BadRequestException(
           `The ${label} colour ${color} is too light for white text (contrast ${contrastRatio(color, '#FFFFFF').toFixed(2)}:1, needs ${MIN_BRAND_CONTRAST}:1). Choose a darker shade.`,
@@ -190,7 +203,19 @@ export class BrandingSettingsService {
 
     await this.db
       .update(brandingSettings)
-      .set({ companyName, shortName, tagline, officePhone, primaryColor, accentColor, defaultLocale, enabledLocales: enabledLocales.join(','), textScale: formatTextScale(textScale), updatedBy, updatedAt: new Date() })
+      .set({
+        companyName,
+        shortName,
+        tagline,
+        officePhone,
+        primaryColor,
+        accentColor,
+        defaultLocale,
+        enabledLocales: enabledLocales.join(','),
+        textScale: formatTextScale(textScale),
+        updatedBy,
+        updatedAt: new Date(),
+      })
       .where(eq(brandingSettings.id, SETTINGS_ID));
 
     // The email sender name and the invoice business name start out as the

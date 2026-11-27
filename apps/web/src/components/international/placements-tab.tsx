@@ -35,7 +35,12 @@ export function PlacementsTab() {
     <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <p className="max-w-2xl text-sm text-ink/60">{t('international.placements.hint')}</p>
-        <Select className="sm:w-56" value={filter} onChange={(e) => setFilter(e.target.value as typeof filter)} aria-label={t('international.placements.filter')}>
+        <Select
+          className="sm:w-56"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value as typeof filter)}
+          aria-label={t('international.placements.filter')}
+        >
           {(['active', ...placementStatusValues, 'all'] as const).map((f) => (
             <option key={f} value={f}>
               {t(`international.placements.filters.${f}`)}
@@ -44,7 +49,9 @@ export function PlacementsTab() {
         </Select>
       </div>
       {isLoading && <p className="py-8 text-center text-sm text-ink/50">{t('common.loading')}</p>}
-      {!isLoading && sorted.length === 0 && <p className="rounded-lg border border-dashed border-border bg-white py-10 text-center text-sm text-ink/50">{t('international.placements.empty')}</p>}
+      {!isLoading && sorted.length === 0 && (
+        <p className="rounded-lg border border-dashed border-border bg-white py-10 text-center text-sm text-ink/50">{t('international.placements.empty')}</p>
+      )}
       {sorted.length > 0 && (
         <div className="overflow-x-auto rounded-lg border border-border bg-white">
           <table className="w-full text-sm">
@@ -78,7 +85,9 @@ export function PlacementsTab() {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={cn('rounded px-2 py-0.5 text-xs font-medium', PLACEMENT_STYLES[p.status])}>{t(`international.placements.status.${p.status}`)}</span>
+                      <span className={cn('rounded px-2 py-0.5 text-xs font-medium', PLACEMENT_STYLES[p.status])}>
+                        {t(`international.placements.status.${p.status}`)}
+                      </span>
                     </td>
                     <td className="px-4 py-3">
                       {p.nextCheckin ? (

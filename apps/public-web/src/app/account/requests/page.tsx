@@ -99,11 +99,7 @@ function RequestRow({ request }: { request: ClientCareRequest }) {
     <li className="rounded-lg border border-border bg-white p-4 sm:p-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         {request.caregiverPublicId ? (
-          <CaregiverSummary
-            publicId={request.caregiverPublicId}
-            caregiver={request.caregiver}
-            unavailableText={t('account.requests.notOnline')}
-          />
+          <CaregiverSummary publicId={request.caregiverPublicId} caregiver={request.caregiver} unavailableText={t('account.requests.notOnline')} />
         ) : (
           <div>
             <p className="text-xs font-medium uppercase tracking-wide text-ink/40">{t('account.requests.noCaregiverLabel')}</p>
@@ -145,12 +141,7 @@ function RequestRow({ request }: { request: ClientCareRequest }) {
         <div className="mt-3 rounded-DEFAULT bg-paper p-3" role="group" aria-label={t('account.requests.cancel')}>
           <p className="text-sm text-ink/80">{t('account.requests.cancelConfirm')}</p>
           <div className="mt-3 flex gap-2">
-            <Button
-              variant="danger"
-              size="sm"
-              disabled={cancel.isPending}
-              onClick={() => cancel.mutate(request.id, { onSuccess: () => setConfirming(false) })}
-            >
+            <Button variant="danger" size="sm" disabled={cancel.isPending} onClick={() => cancel.mutate(request.id, { onSuccess: () => setConfirming(false) })}>
               {t('account.requests.cancelYes')}
             </Button>
             <Button variant="secondary" size="sm" onClick={() => setConfirming(false)}>

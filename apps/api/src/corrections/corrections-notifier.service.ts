@@ -93,7 +93,12 @@ export class CorrectionsNotifier {
     });
     const text = correctionClientNotice(n.language, n.reference, items);
     const who = await this.client(n.patientId);
-    this.notices.notify([who.userId], (lang) => fromParagraphs([{ lang, ...correctionClientNotice(lang, n.reference, items) }], lang), '/invoices', `correction ${n.reference}`);
+    this.notices.notify(
+      [who.userId],
+      (lang) => fromParagraphs([{ lang, ...correctionClientNotice(lang, n.reference, items) }], lang),
+      '/invoices',
+      `correction ${n.reference}`,
+    );
     await this.deliverToClient(who, n.language, text, '/account/invoices', `correction ${n.reference}`);
   }
 
@@ -127,7 +132,11 @@ export class CorrectionsNotifier {
               {
                 lang: 'en',
                 heading: `Issue reported on booking ${r.reference}`,
-                paragraphs: [`The ${r.reporterRole === 'CLIENT' ? 'client' : 'caregiver'} says: ${CATEGORY_EN[r.category]}.`, r.message, 'Open the booking to check it and correct it, or answer the report.'],
+                paragraphs: [
+                  `The ${r.reporterRole === 'CLIENT' ? 'client' : 'caregiver'} says: ${CATEGORY_EN[r.category]}.`,
+                  r.message,
+                  'Open the booking to check it and correct it, or answer the report.',
+                ],
               },
             ],
             cta: { label: 'Open booking', url: this.staffUrl(`/bookings/${r.bookingId}`) },
@@ -161,8 +170,19 @@ export class CorrectionsNotifier {
       const text = issueNotice(kind, r.language, r.reference, note, false);
       const block = text.blocks[0];
       const who = await this.client(r.patientId);
-      this.notices.notify([who.userId], (lang) => fromParagraphs(issueNotice(kind, lang, r.reference, note, false).blocks, lang), '/bookings', `issue ${kind.toLowerCase()} ${r.reference}`);
-      await this.deliverToClient(who, r.language, { subject: text.subject, heading: block.heading, paragraphs: block.paragraphs }, '/account/bookings', `issue ${kind.toLowerCase()} ${r.reference}`);
+      this.notices.notify(
+        [who.userId],
+        (lang) => fromParagraphs(issueNotice(kind, lang, r.reference, note, false).blocks, lang),
+        '/bookings',
+        `issue ${kind.toLowerCase()} ${r.reference}`,
+      );
+      await this.deliverToClient(
+        who,
+        r.language,
+        { subject: text.subject, heading: block.heading, paragraphs: block.paragraphs },
+        '/account/bookings',
+        `issue ${kind.toLowerCase()} ${r.reference}`,
+      );
     } else if (r.caregiverId) {
       const msg = issueNotice(kind, 'en', r.reference, note, true);
       const who = await this.caregiver(r.caregiverId);
@@ -203,19 +223,37 @@ export class CorrectionsNotifier {
       .where(eq(patients.id, patientId))
       .limit(1);
     const cc = await this.whatsappSettings.getDefaultCountryCode();
-    return { userId: p?.userId ?? null, email: p?.email ?? null, phone: p?.accountPhone ?? normalizePhone(p?.phone ?? null, cc), preferred: p?.preferred ?? null };
+    return {
+      userId: p?.userId ?? null,
+      email: p?.email ?? null,
+      phone: p?.accountPhone ?? normalizePhone(p?.phone ?? null, cc),
+      preferred: p?.preferred ?? null,
+    };
   }
 
   private async caregiver(caregiverId: string): Promise<Recipient> {
     const [c] = await this.db
       .select({ userId: caregivers.userId, phone: caregivers.primaryPhone, preferred: caregivers.preferredContactMethod })
-      .from(caregivers).where(eq(caregivers.id, caregiverId)).limit(1);
+      .from(caregivers)
+      .where(eq(caregivers.id, caregiverId))
+      .limit(1);
     const [account] = c?.userId ? await this.db.select({ email: users.email, phone: users.phone }).from(users).where(eq(users.id, c.userId)).limit(1) : [];
     const cc = await this.whatsappSettings.getDefaultCountryCode();
-    return { userId: c?.userId ?? null, email: account?.email ?? null, phone: account?.phone ?? normalizePhone(c?.phone ?? null, cc), preferred: c?.preferred ?? null };
+    return {
+      userId: c?.userId ?? null,
+      email: account?.email ?? null,
+      phone: account?.phone ?? normalizePhone(c?.phone ?? null, cc),
+      preferred: c?.preferred ?? null,
+    };
   }
 
-  private async deliverToClient(who: Recipient, lang: CareRequestLanguage, text: { subject: string; heading: string; paragraphs: string[] }, path: string, label: string) {
+  private async deliverToClient(
+    who: Recipient,
+    lang: CareRequestLanguage,
+    text: { subject: string; heading: string; paragraphs: string[] },
+    path: string,
+    label: string,
+  ) {
     const wa = await this.whatsappSettings.getResolved();
     const channel = chooseClientChannel({
       hasEmail: Boolean(who.email),
@@ -223,11 +261,17 @@ export class CorrectionsNotifier {
       preferred: who.preferred as Parameters<typeof chooseClientChannel>[0]['preferred'],
     });
     if (channel === 'WHATSAPP') {
-      await this.whatsapp.sendUpdate(wa, who.phone!, lang, `${text.heading}. ${text.paragraphs.join(' ')}`).catch((e) => this.logger.error(`WhatsApp ${label} failed: ${(e as Error).message}`));
+      await this.whatsapp
+        .sendUpdate(wa, who.phone!, lang, `${text.heading}. ${text.paragraphs.join(' ')}`)
+        .catch((e) => this.logger.error(`WhatsApp ${label} failed: ${(e as Error).message}`));
     } else if (channel === 'EMAIL') {
       await this.email.sendNotificationEmail(
         who.email!,
-        { subject: text.subject, blocks: [{ lang, heading: text.heading, paragraphs: text.paragraphs }], cta: { label: CORRECTION_CTA[lang], url: this.publicUrl(path) } },
+        {
+          subject: text.subject,
+          blocks: [{ lang, heading: text.heading, paragraphs: text.paragraphs }],
+          cta: { label: CORRECTION_CTA[lang], url: this.publicUrl(path) },
+        },
         label,
       );
     } else {
@@ -235,7 +279,12 @@ export class CorrectionsNotifier {
     }
   }
 
-  private async deliverToCaregiver(who: Recipient, msg: { subject: string; blocks: { lang: CareRequestLanguage; heading: string; paragraphs: string[] }[]; whatsappText: string }, path: string, label: string) {
+  private async deliverToCaregiver(
+    who: Recipient,
+    msg: { subject: string; blocks: { lang: CareRequestLanguage; heading: string; paragraphs: string[] }[]; whatsappText: string },
+    path: string,
+    label: string,
+  ) {
     const wa = await this.whatsappSettings.getResolved();
     const channel = chooseClientChannel({
       hasEmail: Boolean(who.email),
@@ -243,11 +292,17 @@ export class CorrectionsNotifier {
       preferred: who.preferred as Parameters<typeof chooseClientChannel>[0]['preferred'],
     });
     if (channel === 'EMAIL') {
-      await this.email.sendNotificationEmail(who.email!, { subject: msg.subject, blocks: msg.blocks, cta: { label: '{brand}', url: this.publicUrl(path) } }, label);
+      await this.email.sendNotificationEmail(
+        who.email!,
+        { subject: msg.subject, blocks: msg.blocks, cta: { label: '{brand}', url: this.publicUrl(path) } },
+        label,
+      );
       return;
     }
     if (channel === 'WHATSAPP') {
-      await this.whatsapp.sendUpdate(wa, who.phone!, 'en', msg.whatsappText).catch((e) => this.logger.error(`WhatsApp ${label} failed: ${(e as Error).message}`));
+      await this.whatsapp
+        .sendUpdate(wa, who.phone!, 'en', msg.whatsappText)
+        .catch((e) => this.logger.error(`WhatsApp ${label} failed: ${(e as Error).message}`));
       return;
     }
     this.logger.warn(`${label}: the caregiver has no email and WhatsApp updates are off, so the notice was not sent.`);

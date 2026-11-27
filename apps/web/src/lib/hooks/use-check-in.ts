@@ -78,5 +78,10 @@ export function useLiveVisits(enabled: boolean) {
 
 /** The checks during one visit, with their points, for the map behind the dot strip (GPS tracking C). Audited by the API. */
 export function useVisitPresence(shiftId: string, enabled: boolean) {
-  return useQuery({ queryKey: ['visits', 'presence', shiftId], queryFn: () => api.get<StaffPresenceDetail | null>(`/visits/${shiftId}/presence`), enabled, staleTime: 60_000 });
+  return useQuery({
+    queryKey: ['visits', 'presence', shiftId],
+    queryFn: () => api.get<StaffPresenceDetail | null>(`/visits/${shiftId}/presence`),
+    enabled,
+    staleTime: 60_000,
+  });
 }

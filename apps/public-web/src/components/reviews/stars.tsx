@@ -41,7 +41,10 @@ export function StarPicker({ value, onChange, invalid }: { value: number; onChan
               className="sr-only"
               aria-label={i === 1 ? t('reviews.starOne') : t('reviews.starMany', { count: i })}
             />
-            <Star aria-hidden className={`h-10 w-10 transition-colors ${i <= value ? 'fill-amber-400 text-amber-500' : 'fill-transparent text-ink/30 hover:text-amber-400'}`} />
+            <Star
+              aria-hidden
+              className={`h-10 w-10 transition-colors ${i <= value ? 'fill-amber-400 text-amber-500' : 'fill-transparent text-ink/30 hover:text-amber-400'}`}
+            />
           </label>
         ))}
       </div>

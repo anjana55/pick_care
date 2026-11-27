@@ -58,8 +58,15 @@ describe('Matching agent (e2e)', () => {
     const reg = await api()
       .post('/auth/register-caregiver/unified')
       .send({
-        phone, consentAccepted: true, fullName: `Matched Caregiver ${phone}`, permanentAddress: '1 Lake Road, Kandy',
-        dateOfBirth: '1988-01-20', gender: over.gender ?? 'FEMALE', civilStatus: 'MARRIED', emergencyContactName: 'EC', emergencyContactNumber: '0770001111',
+        phone,
+        consentAccepted: true,
+        fullName: `Matched Caregiver ${phone}`,
+        permanentAddress: '1 Lake Road, Kandy',
+        dateOfBirth: '1988-01-20',
+        gender: over.gender ?? 'FEMALE',
+        civilStatus: 'MARRIED',
+        emergencyContactName: 'EC',
+        emergencyContactNumber: '0770001111',
         emergencyContactRelationship: 'Husband',
       })
       .expect(201);
@@ -77,35 +84,61 @@ describe('Matching agent (e2e)', () => {
     const phone = newPhone('077');
     const reg = await api()
       .post('/auth/register-patient')
-      .send({ email: `match-client-${run}-${++n}@example.com`, password: 'SelfRegPass123', fullName: 'Nimal Kumara Perera', phone, consentAccepted: true, ...intake });
+      .send({
+        email: `match-client-${run}-${++n}@example.com`,
+        password: 'SelfRegPass123',
+        fullName: 'Nimal Kumara Perera',
+        phone,
+        consentAccepted: true,
+        ...intake,
+      });
     if (reg.status !== 201) throw new Error(`register-patient: ${JSON.stringify(reg.body)}`);
     if (over.preference || over.urgency) {
       await db
         .update(patients)
-        .set({ ...(over.preference ? { preferredCaregiverGender: over.preference } : {}), ...(over.urgency ? { careStart: over.urgency as 'IMMEDIATELY' } : {}) })
+        .set({
+          ...(over.preference ? { preferredCaregiverGender: over.preference } : {}),
+          ...(over.urgency ? { careStart: over.urgency as 'IMMEDIATELY' } : {}),
+        })
         .where(eq(patients.id, reg.body.patientId));
     }
     const careType = over.careType === undefined ? 'HOME_SHIFT' : over.careType;
-    const res = await api().post('/care-requests').set(bearer(staffToken)).send({ language: 'en', patientId: reg.body.patientId, careType: careType ?? undefined, message: 'Mother needs help after surgery' }).expect(201);
+    const res = await api()
+      .post('/care-requests')
+      .set(bearer(staffToken))
+      .send({ language: 'en', patientId: reg.body.patientId, careType: careType ?? undefined, message: 'Mother needs help after surgery' })
+      .expect(201);
     return { id: res.body.id as string, reference: res.body.reference as string, phone };
   }
 
   const mode = (m: string) => api().patch('/settings/automation/functions/MATCHING').set(bearer(adminToken)).send({ mode: m }).expect(200);
-  const sweep = (...requests: { id: string }[]) => agent.sweep(new Date(), requests.map((r) => r.id));
+  const sweep = (...requests: { id: string }[]) =>
+    agent.sweep(
+      new Date(),
+      requests.map((r) => r.id),
+    );
   const decisionsFor = (requestId: string, action = 'matching.send_offer') =>
     db
       .select()
       .from(agentDecisions)
       .where(and(eq(agentDecisions.caseType, 'REQUEST'), eq(agentDecisions.caseId, requestId), eq(agentDecisions.action, action)))
       .orderBy(agentDecisions.createdAt);
-  const offersOn = async (requestId: string) => (await api().get(`/care-requests/${requestId}/offers`).set(bearer(staffToken)).expect(200)).body as StaffCareOffer[];
-  const offered = async (requestId: string, status = 'OFFERED') => (await offersOn(requestId)).filter((o) => o.status === status).map((o) => o.caregiver.registrationNumber).sort();
+  const offersOn = async (requestId: string) =>
+    (await api().get(`/care-requests/${requestId}/offers`).set(bearer(staffToken)).expect(200)).body as StaffCareOffer[];
+  const offered = async (requestId: string, status = 'OFFERED') =>
+    (await offersOn(requestId))
+      .filter((o) => o.status === status)
+      .map((o) => o.caregiver.registrationNumber)
+      .sort();
   const mine = async (cg: Cg) => (await api().get('/me/care-offers').set(bearer(cg.token)).expect(200)).body as CaregiverCareOffer[];
   const panel = async (requestId: string) => (await api().get(`/automation/cases/REQUEST/${requestId}`).set(bearer(staffToken)).expect(200)).body;
   const regs = (...cgs: Cg[]) => cgs.map((c) => c.reg).sort();
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).overrideProvider(ThrottlerStorage).useValue(unlimitedThrottle).compile();
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+      .overrideProvider(ThrottlerStorage)
+      .useValue(unlimitedThrottle)
+      .compile();
     app = moduleRef.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
     await app.init();
@@ -124,21 +157,35 @@ describe('Matching agent (e2e)', () => {
     const towns = (await api().get(`/public/meta/locations/cities?districtId=${districtId}&locale=en`).expect(200)).body as { id: number }[];
     [cityId, otherCityId] = [towns[0].id, towns[1].id];
     intake = {
-      registrantType: 'GUARDIAN', recipientName: 'Sunil Fernando', recipientRelationship: 'PARENT', recipientAge: 78, recipientGender: 'MALE',
-      preferredContactMethod: 'PHONE_CALL', districtId, cityId, careNeeds: 'Needs help with bathing, meals and medication reminders.',
-      careSchedule: 'DAY', careStart: 'WITHIN_WEEK',
+      registrantType: 'GUARDIAN',
+      recipientName: 'Sunil Fernando',
+      recipientRelationship: 'PARENT',
+      recipientAge: 78,
+      recipientGender: 'MALE',
+      preferredContactMethod: 'PHONE_CALL',
+      districtId,
+      cityId,
+      careNeeds: 'Needs help with bathing, meals and medication reminders.',
+      careSchedule: 'DAY',
+      careStart: 'WITHIN_WEEK',
     };
     await api().post('/settings/automation/master').set(bearer(adminToken)).send({ on: false }).expect(200);
   });
 
   // Each test starts with nobody living in the test district: caregivers from earlier tests (and earlier runs) move out.
   beforeEach(async () => {
-    await db.update(caregivers).set({ districtId: null, cityId: null }).where(and(eq(caregivers.districtId, districtId), like(caregivers.fullName, 'Matched Caregiver %')));
+    await db
+      .update(caregivers)
+      .set({ districtId: null, cityId: null })
+      .where(and(eq(caregivers.districtId, districtId), like(caregivers.fullName, 'Matched Caregiver %')));
   });
 
   afterAll(async () => {
     await mode('MANUAL');
-    await db.update(caregivers).set({ districtId: null, cityId: null }).where(and(eq(caregivers.districtId, districtId), like(caregivers.fullName, 'Matched Caregiver %')));
+    await db
+      .update(caregivers)
+      .set({ districtId: null, cityId: null })
+      .where(and(eq(caregivers.districtId, districtId), like(caregivers.fullName, 'Matched Caregiver %')));
     await app.close();
   });
 
@@ -150,7 +197,12 @@ describe('Matching agent (e2e)', () => {
     expect(await decisionsFor(req.id)).toHaveLength(0);
     expect(await offersOn(req.id)).toHaveLength(0);
     // Nothing is even queued for the agent while it is switched off.
-    expect(await db.select().from(jobs).where(and(eq(jobs.type, MATCHING_REQUEST_JOB), sql`JSON_EXTRACT(${jobs.payload}, '$.requestId') = ${req.id}`))).toHaveLength(0);
+    expect(
+      await db
+        .select()
+        .from(jobs)
+        .where(and(eq(jobs.type, MATCHING_REQUEST_JOB), sql`JSON_EXTRACT(${jobs.payload}, '$.requestId') = ${req.id}`)),
+    ).toHaveLength(0);
   });
 
   it('in Auto, offers the job to the three who fit best, then to the next when one says no, and stops when one accepts', async () => {
@@ -196,7 +248,10 @@ describe('Matching agent (e2e)', () => {
 
     // One says no: the agent is asked to look again, and offers the job to the next on the list.
     await api().post(`/me/care-offers/${offer.id}/decline`).set(bearer(best.token)).send({ reason: 'TOO_FAR' }).expect(200);
-    const nudges = await db.select().from(jobs).where(and(eq(jobs.type, MATCHING_REQUEST_JOB), sql`JSON_EXTRACT(${jobs.payload}, '$.requestId') = ${req.id}`));
+    const nudges = await db
+      .select()
+      .from(jobs)
+      .where(and(eq(jobs.type, MATCHING_REQUEST_JOB), sql`JSON_EXTRACT(${jobs.payload}, '$.requestId') = ${req.id}`));
     expect(nudges).toHaveLength(2); // one when the request came in, one for this answer
     expect(await sweep(req)).toMatchObject({ decided: 1 });
     expect(await offered(req.id)).toEqual(regs(near, unchecked, last));
@@ -207,7 +262,11 @@ describe('Matching agent (e2e)', () => {
     await api().post(`/me/care-offers/${theirs.id}/accept`).set(bearer(near.token)).expect(200);
     // Staff are told (bell and email): nobody else would be, since the agent sent the offer.
     expect(alerts).toHaveBeenCalledTimes(1);
-    expect(alerts.mock.calls[0][0]).toMatchObject({ subject: `Offer accepted: ${req.reference}`, path: `/requests/${req.id}`, label: `offer accepted ${theirs.id}` });
+    expect(alerts.mock.calls[0][0]).toMatchObject({
+      subject: `Offer accepted: ${req.reference}`,
+      path: `/requests/${req.id}`,
+      label: `offer accepted ${theirs.id}`,
+    });
     expect(alerts.mock.calls[0][0].paragraphs[0]).toBe(`${near.reg} accepted the job offer the matching agent sent, and is now attached to the request.`);
     for (const secret of ['Nimal', 'Perera', 'Sunil', 'surgery', req.phone]) expect(JSON.stringify(alerts.mock.calls[0][0])).not.toContain(secret);
     alerts.mockRestore();
@@ -251,7 +310,11 @@ describe('Matching agent (e2e)', () => {
     await mode('AUTO');
     await newCaregiver();
     const req = await newRequest();
-    await api().post(`/automation/cases/REQUEST/${req.id}/take-over`).set(bearer(staffToken)).send({ reason: 'The family asked for someone they know' }).expect(200);
+    await api()
+      .post(`/automation/cases/REQUEST/${req.id}/take-over`)
+      .set(bearer(staffToken))
+      .send({ reason: 'The family asked for someone they know' })
+      .expect(200);
     expect(await sweep(req)).toMatchObject({ considered: 1, decided: 0 });
     expect(await offersOn(req.id)).toHaveLength(0);
     await api().post(`/automation/cases/REQUEST/${req.id}/hand-back`).set(bearer(staffToken)).expect(200);
@@ -270,7 +333,11 @@ describe('Matching agent (e2e)', () => {
     expect(await sweep(req)).toMatchObject({ mode: 'ASSIST', decided: 1 });
     expect(await offersOn(req.id)).toHaveLength(0);
     const proposals = await decisionsFor(req.id);
-    expect(proposals.map((p) => [p.outcome, (p.proposal as SendOfferProposal).caregiverRegistration])).toEqual([['PROPOSED', a.reg], ['PROPOSED', b.reg], ['PROPOSED', c.reg]]);
+    expect(proposals.map((p) => [p.outcome, (p.proposal as SendOfferProposal).caregiverRegistration])).toEqual([
+      ['PROPOSED', a.reg],
+      ['PROPOSED', b.reg],
+      ['PROPOSED', c.reg],
+    ]);
     expect(proposals[0].reason).toBe(`Offer the job to ${a.reg}: Checked by the office; Lives in the same town`);
     expect((await panel(req.id)).handoverNote.waiting).toBe('Staff to approve or decline each offer');
     const waiting = (await api().get('/automation/decisions?awaitingStaff=true&pageSize=100').set(bearer(staffToken)).expect(200)).body as { id: string }[];
@@ -302,7 +369,11 @@ describe('Matching agent (e2e)', () => {
 
     expect(await sweep(agreed, differed)).toMatchObject({ mode: 'SHADOW', considered: 2, decided: 2, scored: 0 });
     expect(await offersOn(agreed.id)).toHaveLength(0);
-    expect((await decisionsFor(agreed.id)).map((x) => [x.outcome, (x.proposal as SendOfferProposal).caregiverRegistration])).toEqual([['SHADOW', a.reg], ['SHADOW', b.reg], ['SHADOW', c.reg]]);
+    expect((await decisionsFor(agreed.id)).map((x) => [x.outcome, (x.proposal as SendOfferProposal).caregiverRegistration])).toEqual([
+      ['SHADOW', a.reg],
+      ['SHADOW', b.reg],
+      ['SHADOW', c.reg],
+    ]);
     // Looking again logs nothing new and scores nothing: staff have not chosen yet.
     expect(await sweep(agreed, differed)).toMatchObject({ decided: 0, scored: 0 });
     expect(await decisionsFor(agreed.id)).toHaveLength(3);
@@ -326,12 +397,22 @@ describe('Matching agent (e2e)', () => {
 
   describe('with an AI model set up', () => {
     let chat: jest.SpyInstance;
-    const endpoint = (clearedFor: string) => ({ name: `Matching model ${run}-${++n}`, provider: 'OLLAMA', baseUrl: 'http://10.0.0.5:11434', model: 'qwen2.5:14b', clearedFor });
+    const endpoint = (clearedFor: string) => ({
+      name: `Matching model ${run}-${++n}`,
+      provider: 'OLLAMA',
+      baseUrl: 'http://10.0.0.5:11434',
+      model: 'qwen2.5:14b',
+      clearedFor,
+    });
     async function useModel(clearedFor: string) {
       const body = endpoint(clearedFor);
       const o = (await api().post('/settings/automation/endpoints').set(bearer(adminToken)).send(body).expect(201)).body as AutomationOverview;
       const id = o.endpoints.find((e) => e.name === body.name)!.id;
-      await api().patch('/settings/automation/functions/MATCHING/endpoints').set(bearer(adminToken)).send({ endpointId: id, fallbackEndpointId: null }).expect(200);
+      await api()
+        .patch('/settings/automation/functions/MATCHING/endpoints')
+        .set(bearer(adminToken))
+        .send({ endpointId: id, fallbackEndpointId: null })
+        .expect(200);
     }
 
     beforeEach(() => {
@@ -339,7 +420,11 @@ describe('Matching agent (e2e)', () => {
     });
     afterEach(async () => {
       chat.mockRestore();
-      await api().patch('/settings/automation/functions/MATCHING/endpoints').set(bearer(adminToken)).send({ endpointId: null, fallbackEndpointId: null }).expect(200);
+      await api()
+        .patch('/settings/automation/functions/MATCHING/endpoints')
+        .set(bearer(adminToken))
+        .send({ endpointId: null, fallbackEndpointId: null })
+        .expect(200);
     });
 
     it('lets the model move people a place or two, and shows it nothing that says who anyone is', async () => {
@@ -356,7 +441,8 @@ describe('Matching agent (e2e)', () => {
       expect(chat).toHaveBeenCalledTimes(1);
       const sent = JSON.stringify(chat.mock.calls[0][1]);
       for (const cg of [a, b, c, d]) for (const secret of [cg.reg, cg.id, cg.phone, cg.userId]) expect(sent).not.toContain(secret);
-      for (const secret of ['Nimal', 'Perera', 'Sunil', 'Fernando', 'Matched Caregiver', req.phone, req.reference, req.id, 'surgery', 'bathing']) expect(sent).not.toContain(secret);
+      for (const secret of ['Nimal', 'Perera', 'Sunil', 'Fernando', 'Matched Caregiver', req.phone, req.reference, req.id, 'surgery', 'bathing'])
+        expect(sent).not.toContain(secret);
       expect(sent).toContain('HOME_SHIFT');
 
       expect(await offered(req.id)).toEqual(regs(a, b, d));

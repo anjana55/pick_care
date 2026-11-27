@@ -65,24 +65,12 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
             <div>
-              <Label htmlFor="email" >
-                {t('login.email')}
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                {...register('email', { required: true })}
-              />
+              <Label htmlFor="email">{t('login.email')}</Label>
+              <Input id="email" type="email" {...register('email', { required: true })} />
             </div>
             <div>
-              <Label htmlFor="password" >
-                {t('login.password')}
-              </Label>
-              <Input
-                id="password"
-                type="password"
-                {...register('password', { required: true })}
-              />
+              <Label htmlFor="password">{t('login.password')}</Label>
+              <Input id="password" type="password" {...register('password', { required: true })} />
               <div className="mt-1.5 text-right">
                 <Link href="/forgot-password?for=client" className="text-xs font-medium text-brand-dark hover:underline">
                   {t('passwordReset.forgotLink')}
@@ -92,7 +80,9 @@ export default function LoginPage() {
 
             {serverError && (
               <div>
-                <p role="alert" className="text-sm text-danger">{serverError}</p>
+                <p role="alert" className="text-sm text-danger">
+                  {serverError}
+                </p>
                 <p className="mt-1 text-xs text-ink/40">{t('login.unverifiedHint')}</p>
               </div>
             )}
@@ -129,11 +119,15 @@ export default function LoginPage() {
             <div className="space-y-1 border-t border-border pt-4 text-center text-xs text-ink/50">
               <p>
                 {t('login.caregiverPrompt')}{' '}
-                <Link href="/caregiver/login" className="font-medium text-brand-dark hover:underline">{t('login.caregiverLink')}</Link>
+                <Link href="/caregiver/login" className="font-medium text-brand-dark hover:underline">
+                  {t('login.caregiverLink')}
+                </Link>
               </p>
               <p>
                 {t('login.staffPrompt')}{' '}
-                <a href="/staff/login" className="font-medium text-brand-dark hover:underline">{t('login.staffLink')}</a>
+                <a href="/staff/login" className="font-medium text-brand-dark hover:underline">
+                  {t('login.staffLink')}
+                </a>
               </p>
             </div>
           </form>

@@ -21,7 +21,10 @@ export function TalentPoolTab() {
   const [minReady, setMinReady] = useState(0);
   const [search, setSearch] = useState('');
   const { data = [], isLoading } = useTalentPool({ country: country || undefined, minReady, search: search.trim() || undefined });
-  const countries = [...COUNTRY_CODES].filter((c) => c !== 'LK').map((code) => ({ code, name: countryName(code, locale) })).sort((a, b) => a.name.localeCompare(b.name));
+  const countries = [...COUNTRY_CODES]
+    .filter((c) => c !== 'LK')
+    .map((code) => ({ code, name: countryName(code, locale) }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <div>
@@ -39,7 +42,12 @@ export function TalentPoolTab() {
             </option>
           ))}
         </Select>
-        <Select className="sm:w-44" value={String(minReady)} onChange={(e) => setMinReady(Number(e.target.value))} aria-label={t('international.pool.minReady')}>
+        <Select
+          className="sm:w-44"
+          value={String(minReady)}
+          onChange={(e) => setMinReady(Number(e.target.value))}
+          aria-label={t('international.pool.minReady')}
+        >
           {[0, 3, 5, 7].map((n) => (
             <option key={n} value={n}>
               {n === 0 ? t('international.pool.anyReadiness') : t('international.pool.atLeast', { count: n })}

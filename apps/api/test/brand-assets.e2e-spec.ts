@@ -16,8 +16,12 @@ import { SEED_PASSWORD } from './seed-password';
 const unlimitedThrottle = {
   increment: async () => ({ totalHits: 1, timeToExpire: 0, isBlocked: false, timeToBlockExpire: 0 }),
 };
-const SYMBOL = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><circle cx="50" cy="50" r="40" fill="#1B8086"/></svg>');
-const WIDE = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 92" width="448" height="92"><rect width="448" height="92" fill="#FFFFFF"/></svg>');
+const SYMBOL = Buffer.from(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><circle cx="50" cy="50" r="40" fill="#1B8086"/></svg>',
+);
+const WIDE = Buffer.from(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 92" width="448" height="92"><rect width="448" height="92" fill="#FFFFFF"/></svg>',
+);
 
 describe('Brand assets (e2e)', () => {
   let app: INestApplication;
@@ -30,7 +34,10 @@ describe('Brand assets (e2e)', () => {
   const remove = (path: string) => api().delete(`/settings/branding/${path}`).set(bearer(adminToken));
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).overrideProvider(ThrottlerStorage).useValue(unlimitedThrottle).compile();
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+      .overrideProvider(ThrottlerStorage)
+      .useValue(unlimitedThrottle)
+      .compile();
     app = moduleRef.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
     await app.init();
@@ -63,11 +70,15 @@ describe('Brand assets (e2e)', () => {
 
   it('draws any of them as a PNG of a listed size, for the phone', async () => {
     await upload('symbol', SYMBOL).expect(201);
-    const res = await api().get('/branding/symbol?size=128').buffer(true).parse((r, cb) => {
-      const chunks: Buffer[] = [];
-      r.on('data', (c: Buffer) => chunks.push(c));
-      r.on('end', () => cb(null, Buffer.concat(chunks)));
-    }).expect(200);
+    const res = await api()
+      .get('/branding/symbol?size=128')
+      .buffer(true)
+      .parse((r, cb) => {
+        const chunks: Buffer[] = [];
+        r.on('data', (c: Buffer) => chunks.push(c));
+        r.on('end', () => cb(null, Buffer.concat(chunks)));
+      })
+      .expect(200);
     expect(res.headers['content-type']).toBe('image/png');
     expect(await sharp(res.body as Buffer).metadata()).toMatchObject({ format: 'png', width: 128, height: 128 });
     await api().get('/branding/symbol?size=4000').expect(400);

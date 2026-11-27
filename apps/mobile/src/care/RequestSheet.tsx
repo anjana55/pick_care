@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, TextInput, View } from 'react-native';
-import { CARE_REQUEST_MESSAGE_MAX, careTypeValues, colomboToday, type CareType, type ClientCareRequest, type CreateCareRequestBody } from '@care-platform/shared';
+import {
+  CARE_REQUEST_MESSAGE_MAX,
+  careTypeValues,
+  colomboToday,
+  type CareType,
+  type ClientCareRequest,
+  type CreateCareRequestBody,
+} from '@care-platform/shared';
 import { ApiError } from '@/api';
 import { useTranslation } from '@/i18n';
 import { useColors } from '@/theme';
@@ -156,7 +163,15 @@ export function RequestSheet({
                 placeholder={t(`${prefix}.messagePlaceholder`)}
                 placeholderTextColor={colors.muted}
                 multiline
-                style={[styles.input, { borderColor: tooLong ? colors.danger : colors.border, backgroundColor: colors.surface, color: colors.ink, fontFamily: fontFamilyFor(locale, false) }]}
+                style={[
+                  styles.input,
+                  {
+                    borderColor: tooLong ? colors.danger : colors.border,
+                    backgroundColor: colors.surface,
+                    color: colors.ink,
+                    fontFamily: fontFamilyFor(locale, false),
+                  },
+                ]}
               />
               <Text style={{ fontSize: 13, color: tooLong ? colors.danger : colors.muted }}>
                 {t('care.dialog.charsLeft', { count: CARE_REQUEST_MESSAGE_MAX - message.length })}

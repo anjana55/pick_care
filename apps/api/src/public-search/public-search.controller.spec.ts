@@ -40,13 +40,10 @@ describe('PublicSearchController', () => {
   // No 'locations' entry: the province/district/city routes moved to
   // LocationsController when the reference data became real tables, and are
   // covered by locations.controller.spec.ts instead.
-  it.each(['search', 'findOne', 'photo', 'skills', 'languages', 'searchConfig', 'coverage'])(
-    '%s is marked @Public()',
-    (handlerName) => {
-      const isPublic = reflector.get<boolean>(IS_PUBLIC_KEY, (controller as any)[handlerName]);
-      expect(isPublic).toBe(true);
-    },
-  );
+  it.each(['search', 'findOne', 'photo', 'skills', 'languages', 'searchConfig', 'coverage'])('%s is marked @Public()', (handlerName) => {
+    const isPublic = reflector.get<boolean>(IS_PUBLIC_KEY, (controller as any)[handlerName]);
+    expect(isPublic).toBe(true);
+  });
 
   it('advertises AI search only while Settings > AI has it switched on', async () => {
     aiSettings.forFeature.mockResolvedValueOnce(null);

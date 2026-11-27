@@ -5,16 +5,7 @@ import en from '../src/i18n/en.json';
 import Documents from '../app/(caregiver)/documents';
 import Today from '../app/(caregiver)/home';
 import Me from '../app/(caregiver)/me';
-import {
-  asksExpiry,
-  documentTypeFor,
-  expiryFrom,
-  hasExpired,
-  MAX_BYTES,
-  missingCore,
-  normaliseFile,
-  problemWith,
-} from '../src/caregiver/documents';
+import { asksExpiry, documentTypeFor, expiryFrom, hasExpired, MAX_BYTES, missingCore, normaliseFile, problemWith } from '../src/caregiver/documents';
 import { AppProviders, serveApi } from '../test-utils/app';
 import { mockRouter } from '../test-utils/router';
 import { tokensFor } from '../test-utils/helpers';
@@ -87,11 +78,18 @@ beforeEach(() => {
 describe('the upload rules', () => {
   it('names a picked file after its type, which the API checks', () => {
     // A camera photo with no name.
-    expect(normaliseFile({ uri: 'file:///c/ImagePicker/9F2A', name: null, mimeType: 'image/jpeg', size: 10 })).toMatchObject({ name: '9F2A.jpg', mimeType: 'image/jpeg' });
+    expect(normaliseFile({ uri: 'file:///c/ImagePicker/9F2A', name: null, mimeType: 'image/jpeg', size: 10 })).toMatchObject({
+      name: '9F2A.jpg',
+      mimeType: 'image/jpeg',
+    });
     // An iPhone photo still called .heic after it was turned into a JPEG.
     expect(normaliseFile({ uri: 'file:///x.heic', name: 'IMG_1.HEIC', mimeType: 'image/jpeg' }).name).toBe('IMG_1.jpg');
     // A file with no type: worked out from the name.
-    expect(normaliseFile({ uri: 'content://x', name: 'police.PDF', mimeType: null, size: 5 })).toMatchObject({ name: 'police.PDF', mimeType: 'application/pdf', size: 5 });
+    expect(normaliseFile({ uri: 'content://x', name: 'police.PDF', mimeType: null, size: 5 })).toMatchObject({
+      name: 'police.PDF',
+      mimeType: 'application/pdf',
+      size: 5,
+    });
     expect(normaliseFile({ uri: 'file:///a.png', name: 'a.png', mimeType: 'image/png', size: undefined }).size).toBe(0);
   });
 
@@ -99,7 +97,9 @@ describe('the upload rules', () => {
     const ok = normaliseFile({ uri: 'u', name: 'id.jpg', mimeType: 'image/jpeg', size: MAX_BYTES });
     expect(problemWith(ok)).toBeNull();
     expect(problemWith({ ...ok, size: MAX_BYTES + 1 })).toBe('tooLarge');
-    expect(problemWith(normaliseFile({ uri: 'u', name: 'cv.docx', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }))).toBe('badType');
+    expect(problemWith(normaliseFile({ uri: 'u', name: 'cv.docx', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }))).toBe(
+      'badType',
+    );
     expect(problemWith(normaliseFile({ uri: 'u', name: 'id.heic', mimeType: 'image/heic' }))).toBe('badType');
     expect(problemWith({ ...ok, name: 'id.png' })).toBe('badType');
   });
@@ -110,13 +110,13 @@ describe('the upload rules', () => {
     expect(documentTypeFor('police', 'NIC')).toBe('POLICE_CLEARANCE');
     expect(documentTypeFor('gn', 'NIC')).toBe('GRAMA_NILADHARI_CERTIFICATE');
     expect(documentTypeFor('other', 'PASSPORT')).toBe('OTHER');
-    expect([asksExpiry('identity', 'NIC'), asksExpiry('identity', 'PASSPORT'), asksExpiry('police', 'NIC'), asksExpiry('gn', 'NIC'), asksExpiry('other', 'NIC')]).toEqual([
-      false,
-      true,
-      true,
-      false,
-      true,
-    ]);
+    expect([
+      asksExpiry('identity', 'NIC'),
+      asksExpiry('identity', 'PASSPORT'),
+      asksExpiry('police', 'NIC'),
+      asksExpiry('gn', 'NIC'),
+      asksExpiry('other', 'NIC'),
+    ]).toEqual([false, true, true, false, true]);
   });
 
   it('reads the expiry date from the day, month and year', () => {
@@ -146,7 +146,13 @@ describe('Documents', () => {
         status: 200,
         body: [
           doc(1, { verificationStatus: 'VERIFIED' }),
-          doc(3, { documentType: 'POLICE_CLEARANCE', verificationStatus: 'REJECTED', originalFilename: 'police.pdf', mimeType: 'application/pdf', sizeBytes: 300_000 }),
+          doc(3, {
+            documentType: 'POLICE_CLEARANCE',
+            verificationStatus: 'REJECTED',
+            originalFilename: 'police.pdf',
+            mimeType: 'application/pdf',
+            sizeBytes: 300_000,
+          }),
           doc(2, { documentType: 'PASSPORT', expiresOn: '2020-01-01', verificationStatus: 'IN_PROGRESS' }),
         ],
       }),
@@ -319,7 +325,7 @@ describe('Documents', () => {
     alert.mockRestore();
   });
 
-  it("opens a document with the sign-in header, renewing an expired session once, and clears the copy when it closes", async () => {
+  it('opens a document with the sign-in header, renewing an expired session once, and clears the copy when it closes', async () => {
     await signIn();
     const fresh = tokensFor('CAREGIVER', { caregiverId: 'cg-1', sub: 'u-1', expiresInSeconds: 1800 });
     serveApi({

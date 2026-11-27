@@ -22,7 +22,13 @@ export function LiveVisitsPanel({ onTheWay }: { onTheWay: number }) {
   if (!onTheWay && !open) return null;
   const shares = (data ?? []).filter((s) => s.kind === 'ON_THE_WAY');
   const eta = (s: StaffLiveShare) =>
-    s.stale ? t('visits.live.stale') : s.eta.arriving ? t('visits.note.arriving') : s.eta.minutes !== null ? t('visits.note.onTheWayEta', { minutes: s.eta.minutes }) : t('visits.note.onTheWay');
+    s.stale
+      ? t('visits.live.stale')
+      : s.eta.arriving
+        ? t('visits.note.arriving')
+        : s.eta.minutes !== null
+          ? t('visits.note.onTheWayEta', { minutes: s.eta.minutes })
+          : t('visits.note.onTheWay');
 
   return (
     <section aria-labelledby="live-heading" className="mb-6 rounded border border-border bg-white p-3">
@@ -43,7 +49,9 @@ export function LiveVisitsPanel({ onTheWay }: { onTheWay: number }) {
           {shares.length > 0 && (
             <>
               <LiveMap
-                caregivers={shares.filter((s) => s.position).map((s) => ({ id: s.shareId, label: `${s.caregiverName} · ${s.bookingReference}`, ...s.position! }))}
+                caregivers={shares
+                  .filter((s) => s.position)
+                  .map((s) => ({ id: s.shareId, label: `${s.caregiverName} · ${s.bookingReference}`, ...s.position! }))}
                 homes={shares.filter((s) => s.home).map((s) => ({ id: s.shareId, label: s.clientName, ...s.home! }))}
                 label={t('visits.live.map')}
                 failedText={t('careLocation.mapFailed')}

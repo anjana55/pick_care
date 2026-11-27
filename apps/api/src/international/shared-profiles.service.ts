@@ -193,7 +193,10 @@ export class SharedProfilesService {
   async deletePhoto(caregiverId: string): Promise<SharedProfileSettings> {
     const row = await this.row(caregiverId);
     if (row?.photoKey) {
-      await this.db.update(sharedProfiles).set({ photoKey: null, photoMimeType: null, updatedAt: new Date() }).where(eq(sharedProfiles.caregiverId, caregiverId));
+      await this.db
+        .update(sharedProfiles)
+        .set({ photoKey: null, photoMimeType: null, updatedAt: new Date() })
+        .where(eq(sharedProfiles.caregiverId, caregiverId));
       await this.storage.delete(row.photoKey).catch(() => undefined);
     }
     return this.settings(caregiverId);

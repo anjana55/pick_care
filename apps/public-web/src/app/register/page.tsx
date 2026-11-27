@@ -30,7 +30,11 @@ function makeRegisterSchema(t: (key: string) => string, opts: { askPhone: boolea
       fullName: z.string().trim().min(2, t('register.validation.fullName')),
       // Not asked after WhatsApp: the verified number is the contact number.
       phone: opts.askPhone
-        ? z.string().trim().min(1, t('register.validation.phoneRequired')).refine((v) => isPhoneNumber(v), t('register.validation.phone'))
+        ? z
+            .string()
+            .trim()
+            .min(1, t('register.validation.phoneRequired'))
+            .refine((v) => isPhoneNumber(v), t('register.validation.phone'))
         : z.string().optional(),
       // Checked in the object rather than in a .refine() after it, so the
       // messages show with every other missing answer, not only once the rest is right.
@@ -165,9 +169,21 @@ export default function RegisterPage() {
 
             <section className="bg-brand-light/40 py-10">
               <div className="mx-auto grid max-w-4xl gap-6 px-4 sm:grid-cols-3">
-                <Benefit icon={<MessageCircle className="mx-auto mb-2 h-7 w-7 text-brand" aria-hidden />} title={t('register.benefit1Title')} body={t('register.benefit1Body')} />
-                <Benefit icon={<Heart className="mx-auto mb-2 h-7 w-7 text-brand" aria-hidden />} title={t('register.benefit2Title')} body={t('register.benefit2Body')} />
-                <Benefit icon={<Send className="mx-auto mb-2 h-7 w-7 text-brand" aria-hidden />} title={t('register.benefit3Title')} body={t('register.benefit3Body')} />
+                <Benefit
+                  icon={<MessageCircle className="mx-auto mb-2 h-7 w-7 text-brand" aria-hidden />}
+                  title={t('register.benefit1Title')}
+                  body={t('register.benefit1Body')}
+                />
+                <Benefit
+                  icon={<Heart className="mx-auto mb-2 h-7 w-7 text-brand" aria-hidden />}
+                  title={t('register.benefit2Title')}
+                  body={t('register.benefit2Body')}
+                />
+                <Benefit
+                  icon={<Send className="mx-auto mb-2 h-7 w-7 text-brand" aria-hidden />}
+                  title={t('register.benefit3Title')}
+                  body={t('register.benefit3Body')}
+                />
               </div>
             </section>
           </>

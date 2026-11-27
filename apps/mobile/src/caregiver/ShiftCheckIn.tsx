@@ -37,7 +37,10 @@ export function ShiftCheckIn({ shift, locate = phonePosition }: { shift: Caregiv
   if (shift.paused && !c?.checkedInAt) return <Text style={{ fontSize: 14, fontWeight: '600', color: colors.danger }}>{t('portal.shifts.paused')}</Text>;
   if (!c || (shift.status !== 'SCHEDULED' && shift.status !== 'COMPLETED')) return null;
 
-  if (c.checkedInAt && c.checkedOutAt) return <Text style={{ fontSize: 14, color: colors.brand }}>{t('checkIn.caregiver.out', { in: fmtTime(c.checkedInAt), out: fmtTime(c.checkedOutAt) })}</Text>;
+  if (c.checkedInAt && c.checkedOutAt)
+    return (
+      <Text style={{ fontSize: 14, color: colors.brand }}>{t('checkIn.caregiver.out', { in: fmtTime(c.checkedInAt), out: fmtTime(c.checkedOutAt) })}</Text>
+    );
   if (c.checkedInAt) {
     return (
       <View style={{ gap: 8 }}>
@@ -125,7 +128,9 @@ export function ShiftCheckIn({ shift, locate = phonePosition }: { shift: Caregiv
           {t('checkIn.caregiver.notAtHome')}
         </Text>
       ) : null}
-      {c.presence ? <Text style={{ fontSize: 14, lineHeight: 20, color: colors.muted }}>{t('visitChecks.notice', { minutes: c.presence.everyMinutes })}</Text> : null}
+      {c.presence ? (
+        <Text style={{ fontSize: 14, lineHeight: 20, color: colors.muted }}>{t('visitChecks.notice', { minutes: c.presence.everyMinutes })}</Text>
+      ) : null}
       <Field
         label={t('checkIn.caregiver.codeLabel')}
         hint={t('checkIn.caregiver.codeHint')}

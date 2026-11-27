@@ -12,6 +12,10 @@ export const caregiverHealthInformation = mysqlTable('caregiver_health_informati
   mentalHealthInformation: text('mental_health_information'),
   physicalAbilityToLiftPatients: boolean('physical_ability_to_lift_patients').notNull().default(true),
   otherNotes: text('other_notes'),
-  createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+  createdAt: datetime('created_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: datetime('updated_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
 });

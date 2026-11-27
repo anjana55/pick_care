@@ -118,7 +118,12 @@ export default function CaregiverShiftsPage() {
   };
 
   if (isLoading) return <p className="text-sm text-ink/60">{t('common.loading')}</p>;
-  if (isError) return <p role="alert" className="text-sm text-danger">{t('portal.loadError')}</p>;
+  if (isError)
+    return (
+      <p role="alert" className="text-sm text-danger">
+        {t('portal.loadError')}
+      </p>
+    );
 
   const noShift = !form.dayDuty && !form.nightDuty && !form.liveIn24h;
 
@@ -126,101 +131,125 @@ export default function CaregiverShiftsPage() {
     <div className="space-y-8">
       <h1 className="text-xl font-semibold text-ink">{t('portal.shifts.title')}</h1>
       <BookedShifts />
-    <form onSubmit={onSubmit} className="space-y-5" noValidate>
-      <div>
-        <h2 className="text-base font-semibold text-ink">{t('portal.shifts.availabilityTitle')}</h2>
-        <p className="mt-1 text-sm text-ink/60">{t('portal.shifts.subtitle')}</p>
-      </div>
+      <form onSubmit={onSubmit} className="space-y-5" noValidate>
+        <div>
+          <h2 className="text-base font-semibold text-ink">{t('portal.shifts.availabilityTitle')}</h2>
+          <p className="mt-1 text-sm text-ink/60">{t('portal.shifts.subtitle')}</p>
+        </div>
 
-      <fieldset className="rounded-lg border border-border bg-white p-5">
-        <legend className="px-1 text-sm font-semibold text-ink">{t('portal.shifts.careTypesTitle')}</legend>
-        <p className="mb-3 text-xs text-ink/50">{t('portal.shifts.careTypesHint')}</p>
-        <div className="grid gap-2 sm:grid-cols-2">
-          {careTypeValues.map((type) => (
-            <label key={type} className="flex items-center gap-3 text-sm text-ink">
-              <input
-                type="checkbox"
-                checked={form.careTypes.includes(type)}
-                onChange={(e) =>
-                  set('careTypes', e.target.checked ? careTypeValues.filter((v) => v === type || form.careTypes.includes(v)) : form.careTypes.filter((v) => v !== type))
-                }
-                className="h-4 w-4 rounded border-border text-brand focus:ring-brand"
+        <fieldset className="rounded-lg border border-border bg-white p-5">
+          <legend className="px-1 text-sm font-semibold text-ink">{t('portal.shifts.careTypesTitle')}</legend>
+          <p className="mb-3 text-xs text-ink/50">{t('portal.shifts.careTypesHint')}</p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {careTypeValues.map((type) => (
+              <label key={type} className="flex items-center gap-3 text-sm text-ink">
+                <input
+                  type="checkbox"
+                  checked={form.careTypes.includes(type)}
+                  onChange={(e) =>
+                    set(
+                      'careTypes',
+                      e.target.checked ? careTypeValues.filter((v) => v === type || form.careTypes.includes(v)) : form.careTypes.filter((v) => v !== type),
+                    )
+                  }
+                  className="h-4 w-4 rounded border-border text-brand focus:ring-brand"
+                />
+                {t(`careTypes.${type}`)}
+              </label>
+            ))}
+          </div>
+          <FieldError message={errors.careTypes} />
+        </fieldset>
+
+        <fieldset className="rounded-lg border border-border bg-white p-5">
+          <legend className="px-1 text-sm font-semibold text-ink">{t('portal.shifts.canWork')}</legend>
+          <div className="space-y-3">
+            {(['dayDuty', 'nightDuty', 'liveIn24h'] as const).map((key) => (
+              <label key={key} className="flex items-start gap-3 text-sm">
+                <input
+                  type="checkbox"
+                  checked={form[key]}
+                  onChange={(e) => set(key, e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-border text-brand focus:ring-brand"
+                />
+                <span>
+                  <span className="font-medium text-ink">{t(`portal.shifts.${key}`)}</span>
+                  <span className="block text-xs text-ink/50">{t(`portal.shifts.${key}Hint`)}</span>
+                </span>
+              </label>
+            ))}
+          </div>
+          {noShift && (
+            <p role="status" className="mt-3 text-xs text-amber-700">
+              {t('portal.shifts.noneSelected')}
+            </p>
+          )}
+
+          <div className="mt-5 grid gap-4 sm:grid-cols-2">
+            <div>
+              <Label htmlFor="preferredShift">{t('portal.shifts.preferred')}</Label>
+              <Select id="preferredShift" value={form.preferredShift} onChange={(e) => set('preferredShift', e.target.value as ShiftPreference)}>
+                {SHIFT_PREFERENCES.map((p) => (
+                  <option key={p} value={p}>
+                    {t(`portal.shifts.preference.${p}`)}
+                  </option>
+                ))}
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="availableFrom">{t('portal.shifts.availableFrom')}</Label>
+              <Input id="availableFrom" type="date" value={form.availableFrom} onChange={(e) => set('availableFrom', e.target.value)} />
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset className="rounded-lg border border-border bg-white p-5">
+          <legend className="px-1 text-sm font-semibold text-ink">{t('portal.shifts.terms')}</legend>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <Label htmlFor="expectedDailyRate">{t('portal.shifts.dailyRate')}</Label>
+              <Input id="expectedDailyRate" inputMode="decimal" value={form.expectedDailyRate} onChange={(e) => set('expectedDailyRate', e.target.value)} />
+              <FieldError message={errors.expectedDailyRate} />
+            </div>
+            <div>
+              <Label htmlFor="expectedMonthlyRate">{t('portal.shifts.monthlyRate')}</Label>
+              <Input
+                id="expectedMonthlyRate"
+                inputMode="decimal"
+                value={form.expectedMonthlyRate}
+                onChange={(e) => set('expectedMonthlyRate', e.target.value)}
               />
-              {t(`careTypes.${type}`)}
-            </label>
-          ))}
-        </div>
-        <FieldError message={errors.careTypes} />
-      </fieldset>
+              <FieldError message={errors.expectedMonthlyRate} />
+            </div>
+            <div>
+              <Label htmlFor="expectedLeaveDays">{t('portal.shifts.leaveDays')}</Label>
+              <Input id="expectedLeaveDays" inputMode="numeric" value={form.expectedLeaveDays} onChange={(e) => set('expectedLeaveDays', e.target.value)} />
+              <FieldError message={errors.expectedLeaveDays} />
+            </div>
+            <div>
+              <Label htmlFor="preferredLeavePattern">{t('portal.shifts.leavePattern')}</Label>
+              <Input id="preferredLeavePattern" value={form.preferredLeavePattern} onChange={(e) => set('preferredLeavePattern', e.target.value)} />
+            </div>
+          </div>
+          <p className="mt-3 text-xs text-ink/50">{t('portal.shifts.termsHint')}</p>
+        </fieldset>
 
-      <fieldset className="rounded-lg border border-border bg-white p-5">
-        <legend className="px-1 text-sm font-semibold text-ink">{t('portal.shifts.canWork')}</legend>
-        <div className="space-y-3">
-          {(['dayDuty', 'nightDuty', 'liveIn24h'] as const).map((key) => (
-            <label key={key} className="flex items-start gap-3 text-sm">
-              <input
-                type="checkbox"
-                checked={form[key]}
-                onChange={(e) => set(key, e.target.checked)}
-                className="mt-0.5 h-4 w-4 rounded border-border text-brand focus:ring-brand"
-              />
-              <span>
-                <span className="font-medium text-ink">{t(`portal.shifts.${key}`)}</span>
-                <span className="block text-xs text-ink/50">{t(`portal.shifts.${key}Hint`)}</span>
-              </span>
-            </label>
-          ))}
+        {serverError && (
+          <p role="alert" className="text-sm text-danger">
+            {serverError}
+          </p>
+        )}
+        <div className="flex items-center gap-3">
+          <Button type="submit" disabled={save.isPending}>
+            {save.isPending ? t('common.loading') : t('common.save')}
+          </Button>
+          {saved && (
+            <span role="status" className="text-sm text-brand-dark">
+              {t('portal.saved')}
+            </span>
+          )}
         </div>
-        {noShift && <p role="status" className="mt-3 text-xs text-amber-700">{t('portal.shifts.noneSelected')}</p>}
-
-        <div className="mt-5 grid gap-4 sm:grid-cols-2">
-          <div>
-            <Label htmlFor="preferredShift">{t('portal.shifts.preferred')}</Label>
-            <Select id="preferredShift" value={form.preferredShift} onChange={(e) => set('preferredShift', e.target.value as ShiftPreference)}>
-              {SHIFT_PREFERENCES.map((p) => (
-                <option key={p} value={p}>{t(`portal.shifts.preference.${p}`)}</option>
-              ))}
-            </Select>
-          </div>
-          <div>
-            <Label htmlFor="availableFrom">{t('portal.shifts.availableFrom')}</Label>
-            <Input id="availableFrom" type="date" value={form.availableFrom} onChange={(e) => set('availableFrom', e.target.value)} />
-          </div>
-        </div>
-      </fieldset>
-
-      <fieldset className="rounded-lg border border-border bg-white p-5">
-        <legend className="px-1 text-sm font-semibold text-ink">{t('portal.shifts.terms')}</legend>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <Label htmlFor="expectedDailyRate">{t('portal.shifts.dailyRate')}</Label>
-            <Input id="expectedDailyRate" inputMode="decimal" value={form.expectedDailyRate} onChange={(e) => set('expectedDailyRate', e.target.value)} />
-            <FieldError message={errors.expectedDailyRate} />
-          </div>
-          <div>
-            <Label htmlFor="expectedMonthlyRate">{t('portal.shifts.monthlyRate')}</Label>
-            <Input id="expectedMonthlyRate" inputMode="decimal" value={form.expectedMonthlyRate} onChange={(e) => set('expectedMonthlyRate', e.target.value)} />
-            <FieldError message={errors.expectedMonthlyRate} />
-          </div>
-          <div>
-            <Label htmlFor="expectedLeaveDays">{t('portal.shifts.leaveDays')}</Label>
-            <Input id="expectedLeaveDays" inputMode="numeric" value={form.expectedLeaveDays} onChange={(e) => set('expectedLeaveDays', e.target.value)} />
-            <FieldError message={errors.expectedLeaveDays} />
-          </div>
-          <div>
-            <Label htmlFor="preferredLeavePattern">{t('portal.shifts.leavePattern')}</Label>
-            <Input id="preferredLeavePattern" value={form.preferredLeavePattern} onChange={(e) => set('preferredLeavePattern', e.target.value)} />
-          </div>
-        </div>
-        <p className="mt-3 text-xs text-ink/50">{t('portal.shifts.termsHint')}</p>
-      </fieldset>
-
-      {serverError && <p role="alert" className="text-sm text-danger">{serverError}</p>}
-      <div className="flex items-center gap-3">
-        <Button type="submit" disabled={save.isPending}>{save.isPending ? t('common.loading') : t('common.save')}</Button>
-        {saved && <span role="status" className="text-sm text-brand-dark">{t('portal.saved')}</span>}
-      </div>
-    </form>
+      </form>
     </div>
   );
 }

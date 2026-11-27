@@ -26,7 +26,10 @@ describe('Address search (e2e)', () => {
   let town: { name: string; district: string };
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).overrideProvider(ThrottlerStorage).useValue(unlimitedThrottle).compile();
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+      .overrideProvider(ThrottlerStorage)
+      .useValue(unlimitedThrottle)
+      .compile();
     app = moduleRef.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
     await app.init();
@@ -44,19 +47,35 @@ describe('Address search (e2e)', () => {
 
   it('finds a town from the reference data, with its district, even when the map search is down', async () => {
     global.fetch = jest.fn(async () => ({ ok: false, status: 503, json: async () => ({}) })) as never;
-    const res = await api().get('/geo/address-search').query({ q: `12 Main Street, ${town.name}`, locale: 'en' }).set(bearer(staffToken)).expect(200);
+    const res = await api()
+      .get('/geo/address-search')
+      .query({ q: `12 Main Street, ${town.name}`, locale: 'en' })
+      .set(bearer(staffToken))
+      .expect(200);
     const body = res.body as AddressSearchResult;
     expect(body.mapSearchUnavailable).toBe(true);
-    expect(body.results).toEqual(expect.arrayContaining([expect.objectContaining({ label: town.name, detail: town.district, precision: 'TOWN', source: 'TOWNS' })]));
+    expect(body.results).toEqual(
+      expect.arrayContaining([expect.objectContaining({ label: town.name, detail: town.district, precision: 'TOWN', source: 'TOWNS' })]),
+    );
   });
 
   it('returns map matches first when the map search answers', async () => {
     global.fetch = jest.fn(async () => ({
       ok: true,
       status: 200,
-      json: async () => [{ lat: '6.9', lon: '79.86', name: 'Lady Ridgeway Hospital', display_name: 'Lady Ridgeway Hospital, Dr Danister De Silva Mawatha, Colombo 8, Sri Lanka', addresstype: 'hospital', class: 'amenity' }],
+      json: async () => [
+        {
+          lat: '6.9',
+          lon: '79.86',
+          name: 'Lady Ridgeway Hospital',
+          display_name: 'Lady Ridgeway Hospital, Dr Danister De Silva Mawatha, Colombo 8, Sri Lanka',
+          addresstype: 'hospital',
+          class: 'amenity',
+        },
+      ],
     })) as never;
-    const body = (await api().get('/geo/address-search').query({ q: 'Lady Ridgeway Hospital' }).set(bearer(staffToken)).expect(200)).body as AddressSearchResult;
+    const body = (await api().get('/geo/address-search').query({ q: 'Lady Ridgeway Hospital' }).set(bearer(staffToken)).expect(200))
+      .body as AddressSearchResult;
     expect(body.results[0]).toMatchObject({ label: 'Lady Ridgeway Hospital', precision: 'ADDRESS', source: 'MAP', latitude: 6.9, longitude: 79.86 });
   });
 
@@ -64,12 +83,34 @@ describe('Address search (e2e)', () => {
     global.fetch = jest.fn(async () => ({ ok: true, status: 200, json: async () => [] })) as never;
     await api().get('/geo/address-search').query({ q: town.name }).expect(401);
     const db = app.get<Database>(DRIZZLE);
-    const [client] = await db.select({ userId: patients.userId, patientId: patients.id }).from(patients).innerJoin(users, eq(users.id, patients.userId)).where(eq(users.isActive, true)).limit(1);
-    const [cg] = await db.select({ userId: caregivers.userId, caregiverId: caregivers.id }).from(caregivers).innerJoin(users, eq(users.id, caregivers.userId)).where(and(isNotNull(caregivers.userId), eq(users.isActive, true))).limit(1);
-    await api().get('/geo/address-search').query({ q: town.name }).set(bearer(sign({ sub: client.userId, role: 'PATIENT_GUARDIAN', patientId: client.patientId }))).expect(200);
-    await api().get('/geo/address-search').query({ q: town.name }).set(bearer(sign({ sub: cg.userId, role: 'CAREGIVER', caregiverId: cg.caregiverId }))).expect(200);
+    const [client] = await db
+      .select({ userId: patients.userId, patientId: patients.id })
+      .from(patients)
+      .innerJoin(users, eq(users.id, patients.userId))
+      .where(eq(users.isActive, true))
+      .limit(1);
+    const [cg] = await db
+      .select({ userId: caregivers.userId, caregiverId: caregivers.id })
+      .from(caregivers)
+      .innerJoin(users, eq(users.id, caregivers.userId))
+      .where(and(isNotNull(caregivers.userId), eq(users.isActive, true)))
+      .limit(1);
+    await api()
+      .get('/geo/address-search')
+      .query({ q: town.name })
+      .set(bearer(sign({ sub: client.userId, role: 'PATIENT_GUARDIAN', patientId: client.patientId })))
+      .expect(200);
+    await api()
+      .get('/geo/address-search')
+      .query({ q: town.name })
+      .set(bearer(sign({ sub: cg.userId, role: 'CAREGIVER', caregiverId: cg.caregiverId })))
+      .expect(200);
     await api().get('/geo/address-search').query({ q: 'ab' }).set(bearer(staffToken)).expect(400);
-    await api().get('/geo/address-search').query({ q: 'x'.repeat(201) }).set(bearer(staffToken)).expect(400);
+    await api()
+      .get('/geo/address-search')
+      .query({ q: 'x'.repeat(201) })
+      .set(bearer(staffToken))
+      .expect(400);
     await api().get('/geo/address-search').query({ q: town.name, locale: 'fr' }).set(bearer(staffToken)).expect(400);
   });
 });

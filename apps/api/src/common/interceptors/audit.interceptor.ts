@@ -12,10 +12,7 @@ export class AuditInterceptor implements NestInterceptor {
   ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    const meta = this.reflector.getAllAndOverride<AuditMeta>(AUDIT_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const meta = this.reflector.getAllAndOverride<AuditMeta>(AUDIT_KEY, [context.getHandler(), context.getClass()]);
 
     if (!meta) {
       return next.handle();

@@ -21,7 +21,21 @@ import { ResultsTab } from '@/components/international/results-tab';
 import { ReportsTab } from '@/components/international/reports-tab';
 import { cn } from '@/lib/utils';
 
-const TABS = ['enquiries', 'interviews', 'offers', 'vacancies', 'placements', 'welfare', 'invoices', 'employers', 'pool', 'results', 'expiring', 'profiles', 'reports'] as const;
+const TABS = [
+  'enquiries',
+  'interviews',
+  'offers',
+  'vacancies',
+  'placements',
+  'welfare',
+  'invoices',
+  'employers',
+  'pool',
+  'results',
+  'expiring',
+  'profiles',
+  'reports',
+] as const;
 type Tab = (typeof TABS)[number];
 
 /**
@@ -111,7 +125,12 @@ export default function InternationalPage() {
             >
               {t(s.label)}
               {n > 0 && (
-                <span className={cn('rounded-full px-1.5 text-xs font-semibold tabular-nums', urgent ? 'bg-danger text-white' : current ? 'bg-white text-brand-dark' : 'bg-accent text-white')}>
+                <span
+                  className={cn(
+                    'rounded-full px-1.5 text-xs font-semibold tabular-nums',
+                    urgent ? 'bg-danger text-white' : current ? 'bg-white text-brand-dark' : 'bg-accent text-white',
+                  )}
+                >
                   {n}
                 </span>
               )}
@@ -137,7 +156,12 @@ export default function InternationalPage() {
               >
                 {t(`international.tabs.${key}`)}
                 {!!n && (
-                  <span className={cn('rounded-full px-1.5 text-xs font-semibold tabular-nums text-white', key === 'welfare' && summary?.urgentWelfare ? 'bg-danger' : 'bg-accent')}>
+                  <span
+                    className={cn(
+                      'rounded-full px-1.5 text-xs font-semibold tabular-nums text-white',
+                      key === 'welfare' && summary?.urgentWelfare ? 'bg-danger' : 'bg-accent',
+                    )}
+                  >
                     {n}
                   </span>
                 )}

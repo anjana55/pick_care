@@ -35,11 +35,7 @@ export function combineTurns(turns: string[]): string {
 
 /** Required inputs still unknown. The API says so; older APIs did not, so fall back to looking. */
 export function missingOf(extracted: ExtractedRequirements): AiMissingField[] {
-  const missing: AiMissingField[] = extracted.missing
-    ? [...extracted.missing]
-    : extracted.requirements.location?.districtId
-      ? []
-      : ['location'];
+  const missing: AiMissingField[] = extracted.missing ? [...extracted.missing] : extracted.requirements.location?.districtId ? [] : ['location'];
   // Older APIs did not ask for the care type; it is required either way.
   if (!extracted.requirements.careType && !missing.includes('careType')) missing.unshift('careType');
   return extracted.requirements.careType ? missing.filter((m) => m !== 'careType') : missing;

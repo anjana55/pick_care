@@ -22,11 +22,7 @@ const CONTACT_METHODS = ['PHONE_CALL', 'WHATSAPP', 'EMAIL'] as const satisfies r
  * is mapped to undefined *before* coercion, because coercing first would make
  * it 0 - a real id shape that .positive() rightly rejects.
  */
-const unsetId = () =>
-  z.preprocess(
-    (v) => (v === '' || v === null ? undefined : v),
-    z.coerce.number().int().positive().optional(),
-  );
+const unsetId = () => z.preprocess((v) => (v === '' || v === null ? undefined : v), z.coerce.number().int().positive().optional());
 
 /**
  * Every field except the name is optional here, unlike the caregiver intake

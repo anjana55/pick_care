@@ -24,19 +24,46 @@ type Lang = 'en' | 'si' | 'ta';
 /** {number}, {amount}, {date}. The advance lines add what happens to visits. */
 const TEXT: Record<PaymentReminderStage, Record<Lang, { title: string; body: string; advance?: string }>> = {
   BEFORE: {
-    en: { title: 'Invoice {number} is due on {date}', body: '{amount} is due on {date}. You can pay it online from the invoice.', advance: 'Paying by then keeps your visits going.' },
-    si: { title: '{number} ඉන්වොයිසිය {date} දින ගෙවිය යුතුය', body: '{amount} {date} දින ගෙවිය යුතුය. ඔබට ඉන්වොයිසියෙන් එය මාර්ගගතව ගෙවිය හැක.', advance: 'ඒ වන විට ගෙවීමෙන් ඔබගේ හමුවීම් දිගටම පවතී.' },
-    ta: { title: 'விலைப்பட்டியல் {number} {date} அன்று செலுத்த வேண்டும்', body: '{amount} {date} அன்று செலுத்த வேண்டும். விலைப்பட்டியலில் இருந்து இணையத்தில் செலுத்தலாம்.', advance: 'அதற்குள் செலுத்தினால் உங்கள் வருகைகள் தொடரும்.' },
+    en: {
+      title: 'Invoice {number} is due on {date}',
+      body: '{amount} is due on {date}. You can pay it online from the invoice.',
+      advance: 'Paying by then keeps your visits going.',
+    },
+    si: {
+      title: '{number} ඉන්වොයිසිය {date} දින ගෙවිය යුතුය',
+      body: '{amount} {date} දින ගෙවිය යුතුය. ඔබට ඉන්වොයිසියෙන් එය මාර්ගගතව ගෙවිය හැක.',
+      advance: 'ඒ වන විට ගෙවීමෙන් ඔබගේ හමුවීම් දිගටම පවතී.',
+    },
+    ta: {
+      title: 'விலைப்பட்டியல் {number} {date} அன்று செலுத்த வேண்டும்',
+      body: '{amount} {date} அன்று செலுத்த வேண்டும். விலைப்பட்டியலில் இருந்து இணையத்தில் செலுத்தலாம்.',
+      advance: 'அதற்குள் செலுத்தினால் உங்கள் வருகைகள் தொடரும்.',
+    },
   },
   DUE: {
-    en: { title: 'Invoice {number} is due today', body: '{amount} is due today. You can pay it online from the invoice.', advance: 'If it is not paid, visits pause from tomorrow until it is.' },
-    si: { title: '{number} ඉන්වොයිසිය අද ගෙවිය යුතුය', body: '{amount} අද ගෙවිය යුතුය. ඔබට ඉන්වොයිසියෙන් එය මාර්ගගතව ගෙවිය හැක.', advance: 'එය නොගෙවුවහොත්, ගෙවන තුරු හෙට සිට හමුවීම් නවතී.' },
-    ta: { title: 'விலைப்பட்டியல் {number} இன்று செலுத்த வேண்டும்', body: '{amount} இன்று செலுத்த வேண்டும். விலைப்பட்டியலில் இருந்து இணையத்தில் செலுத்தலாம்.', advance: 'செலுத்தப்படாவிட்டால், செலுத்தும் வரை நாளை முதல் வருகைகள் நிறுத்தப்படும்.' },
+    en: {
+      title: 'Invoice {number} is due today',
+      body: '{amount} is due today. You can pay it online from the invoice.',
+      advance: 'If it is not paid, visits pause from tomorrow until it is.',
+    },
+    si: {
+      title: '{number} ඉන්වොයිසිය අද ගෙවිය යුතුය',
+      body: '{amount} අද ගෙවිය යුතුය. ඔබට ඉන්වොයිසියෙන් එය මාර්ගගතව ගෙවිය හැක.',
+      advance: 'එය නොගෙවුවහොත්, ගෙවන තුරු හෙට සිට හමුවීම් නවතී.',
+    },
+    ta: {
+      title: 'விலைப்பட்டியல் {number} இன்று செலுத்த வேண்டும்',
+      body: '{amount} இன்று செலுத்த வேண்டும். விலைப்பட்டியலில் இருந்து இணையத்தில் செலுத்தலாம்.',
+      advance: 'செலுத்தப்படாவிட்டால், செலுத்தும் வரை நாளை முதல் வருகைகள் நிறுத்தப்படும்.',
+    },
   },
   OVERDUE: {
     en: { title: 'Invoice {number} is overdue', body: '{amount} was due on {date}. Please pay it, or contact us if something is not right.' },
     si: { title: '{number} ඉන්වොයිසිය ගෙවීම ප්‍රමාදයි', body: '{amount} {date} දින ගෙවිය යුතුව තිබුණි. කරුණාකර එය ගෙවන්න, නැතහොත් යමක් වැරදි නම් අප අමතන්න.' },
-    ta: { title: 'விலைப்பட்டியல் {number} தாமதமாகிவிட்டது', body: '{amount} {date} அன்று செலுத்த வேண்டியிருந்தது. தயவுசெய்து செலுத்துங்கள், அல்லது ஏதேனும் சரியில்லை என்றால் எங்களைத் தொடர்பு கொள்ளுங்கள்.' },
+    ta: {
+      title: 'விலைப்பட்டியல் {number} தாமதமாகிவிட்டது',
+      body: '{amount} {date} அன்று செலுத்த வேண்டியிருந்தது. தயவுசெய்து செலுத்துங்கள், அல்லது ஏதேனும் சரியில்லை என்றால் எங்களைத் தொடர்பு கொள்ளுங்கள்.',
+    },
   },
 };
 
@@ -102,7 +129,15 @@ export class PaymentRemindersService implements OnApplicationBootstrap {
       )
       .limit(1000);
     if (!rows.length) return out;
-    const sent = await this.db.select().from(invoiceReminders).where(inArray(invoiceReminders.invoiceId, rows.map((r) => r.id)));
+    const sent = await this.db
+      .select()
+      .from(invoiceReminders)
+      .where(
+        inArray(
+          invoiceReminders.invoiceId,
+          rows.map((r) => r.id),
+        ),
+      );
     for (const r of rows) {
       const stage = paymentReminderStage(
         { issueDate: r.issueDate, dueDate: r.dueDate!, advance: r.timing === 'ADVANCE' },
@@ -116,7 +151,12 @@ export class PaymentRemindersService implements OnApplicationBootstrap {
       const decision = await this.automation.decide({
         action: ACTION,
         case: ref,
-        reason: stage === 'OVERDUE' ? `Remind the client: invoice ${r.number} was due on ${r.dueDate}` : stage === 'DUE' ? `Remind the client: invoice ${r.number} is due today` : `Remind the client: invoice ${r.number} is due on ${r.dueDate}`,
+        reason:
+          stage === 'OVERDUE'
+            ? `Remind the client: invoice ${r.number} was due on ${r.dueDate}`
+            : stage === 'DUE'
+              ? `Remind the client: invoice ${r.number} is due today`
+              : `Remind the client: invoice ${r.number} is due on ${r.dueDate}`,
         proposal: { invoiceId: r.id, number: r.number ?? '', stage } satisfies ReminderProposal,
         dedupeKey: `${r.id}|${stage}`,
       });
@@ -149,8 +189,12 @@ export class PaymentRemindersService implements OnApplicationBootstrap {
       .where(eq(invoices.id, p.invoiceId))
       .limit(1);
     // Paid, voided or changed since: say so rather than remind.
-    if (!inv || inv.invoice.status !== 'ISSUED' || Number(inv.invoice.total) <= Number(inv.invoice.amountPaid)) throw new BadRequestException('This invoice is no longer waiting for payment');
-    const [claimed] = await this.db.insert(invoiceReminders).values({ invoiceId: p.invoiceId, stage: p.stage, sentAt: new Date() }).onDuplicateKeyUpdate({ set: { invoiceId: sql`invoice_id` } });
+    if (!inv || inv.invoice.status !== 'ISSUED' || Number(inv.invoice.total) <= Number(inv.invoice.amountPaid))
+      throw new BadRequestException('This invoice is no longer waiting for payment');
+    const [claimed] = await this.db
+      .insert(invoiceReminders)
+      .values({ invoiceId: p.invoiceId, stage: p.stage, sentAt: new Date() })
+      .onDuplicateKeyUpdate({ set: { invoiceId: sql`invoice_id` } });
     if ((claimed as { affectedRows: number }).affectedRows !== 1) throw new BadRequestException('This reminder has already been sent');
 
     const lang = (inv.invoice.language ?? 'en') as Lang;
@@ -158,7 +202,11 @@ export class PaymentRemindersService implements OnApplicationBootstrap {
     const balance = formatLkr(Number(inv.invoice.total) - Number(inv.invoice.amountPaid));
     const words = (l: Lang) => {
       const t = TEXT[p.stage][l];
-      const fill = (s: string) => s.replaceAll('{number}', inv.invoice.number ?? '').replaceAll('{amount}', balance).replaceAll('{date}', inv.invoice.dueDate ?? '');
+      const fill = (s: string) =>
+        s
+          .replaceAll('{number}', inv.invoice.number ?? '')
+          .replaceAll('{amount}', balance)
+          .replaceAll('{date}', inv.invoice.dueDate ?? '');
       return { title: fill(t.title), body: fill(advance && t.advance ? `${t.body} ${t.advance}` : t.body) };
     };
     const told: string[] = [];
@@ -178,7 +226,11 @@ export class PaymentRemindersService implements OnApplicationBootstrap {
     if (inv.invoice.billToEmail) {
       try {
         const w = words(lang);
-        await this.email.sendNotificationEmail(inv.invoice.billToEmail, { subject: w.title, blocks: [{ lang, heading: w.title, paragraphs: [w.body] }] }, `payment reminder ${p.invoiceId} ${p.stage}`);
+        await this.email.sendNotificationEmail(
+          inv.invoice.billToEmail,
+          { subject: w.title, blocks: [{ lang, heading: w.title, paragraphs: [w.body] }] },
+          `payment reminder ${p.invoiceId} ${p.stage}`,
+        );
         told.push('email');
       } catch (err) {
         this.logger.warn(`Payment reminder email for ${p.number} failed - ${(err as Error).message}`);
@@ -186,7 +238,11 @@ export class PaymentRemindersService implements OnApplicationBootstrap {
     }
     await this.automation.setHandoverNote(
       { caseType: 'INVOICE', caseId: p.invoiceId },
-      { done: `Reminded the client (${told.join(', ')}): ${words('en').title}`, waiting: 'The client to pay', next: p.stage === 'OVERDUE' ? 'Staff to follow up if it stays unpaid' : 'Another reminder if it is still unpaid' },
+      {
+        done: `Reminded the client (${told.join(', ')}): ${words('en').title}`,
+        waiting: 'The client to pay',
+        next: p.stage === 'OVERDUE' ? 'Staff to follow up if it stays unpaid' : 'Another reminder if it is still unpaid',
+      },
     );
     return { told };
   };
@@ -196,16 +252,31 @@ export class PaymentRemindersService implements OnApplicationBootstrap {
     const open = await this.db
       .select({ id: agentDecisions.id, caseId: agentDecisions.caseId })
       .from(agentDecisions)
-      .where(and(eq(agentDecisions.action, ACTION), eq(agentDecisions.outcome, 'SHADOW'), sql`${agentDecisions.staffVerdict} IS NULL`, only ? inArray(agentDecisions.caseId, only.length ? only : ['-']) : undefined))
+      .where(
+        and(
+          eq(agentDecisions.action, ACTION),
+          eq(agentDecisions.outcome, 'SHADOW'),
+          sql`${agentDecisions.staffVerdict} IS NULL`,
+          only ? inArray(agentDecisions.caseId, only.length ? only : ['-']) : undefined,
+        ),
+      )
       .limit(500);
     if (!open.length) return 0;
-    const states = await this.db.select({ id: invoices.id, status: invoices.status }).from(invoices).where(inArray(invoices.id, [...new Set(open.map((d) => d.caseId!))]));
+    const states = await this.db
+      .select({ id: invoices.id, status: invoices.status })
+      .from(invoices)
+      .where(inArray(invoices.id, [...new Set(open.map((d) => d.caseId!))]));
     const agent = (await this.automation.agentActor('BILLING')).userId;
     let scored = 0;
     for (const d of open) {
       const status = states.find((s) => s.id === d.caseId)?.status;
       if (status !== 'PAID' && status !== 'VOID') continue;
-      await this.automation.review(d.id, status === 'PAID' ? 'AGREED' : 'DIFFERED', status === 'PAID' ? 'Scored automatically: the invoice was owed' : 'Scored automatically: the invoice was voided', agent);
+      await this.automation.review(
+        d.id,
+        status === 'PAID' ? 'AGREED' : 'DIFFERED',
+        status === 'PAID' ? 'Scored automatically: the invoice was owed' : 'Scored automatically: the invoice was voided',
+        agent,
+      );
       scored++;
     }
     return scored;

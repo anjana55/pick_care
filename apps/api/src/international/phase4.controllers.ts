@@ -121,7 +121,11 @@ export class CaregiverPhase4Controller {
   @Put('placements/:placementId/contact')
   @CaregiverScope('ADMIN', 'STAFF')
   @Audit({ action: 'UPDATE_CONTACT_ABROAD', entityType: 'Placement' })
-  async contact(@Param('caregiverId', ParseUUIDPipe) caregiverId: string, @Param('placementId', ParseUUIDPipe) placementId: string, @Body() dto: ContactAbroadDto) {
+  async contact(
+    @Param('caregiverId', ParseUUIDPipe) caregiverId: string,
+    @Param('placementId', ParseUUIDPipe) placementId: string,
+    @Body() dto: ContactAbroadDto,
+  ) {
     await this.journey.updateContact(caregiverId, placementId, dto);
     return this.placements.forCaregiver(caregiverId);
   }

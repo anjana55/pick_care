@@ -43,7 +43,10 @@ export default function DataTransferPage() {
             role="tab"
             aria-selected={kind === k}
             onClick={() => setKind(k)}
-            className={cn('-mb-px border-b-2 px-3 py-2 text-sm font-medium transition-colors', kind === k ? 'border-brand text-brand-dark' : 'border-transparent text-ink/60 hover:text-ink')}
+            className={cn(
+              '-mb-px border-b-2 px-3 py-2 text-sm font-medium transition-colors',
+              kind === k ? 'border-brand text-brand-dark' : 'border-transparent text-ink/60 hover:text-ink',
+            )}
           >
             {t(`dataTransfer.tabs.${k}`)}
           </button>

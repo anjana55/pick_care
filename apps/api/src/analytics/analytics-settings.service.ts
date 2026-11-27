@@ -1,11 +1,6 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
-import {
-  DISABLED_ANALYTICS,
-  GA_MEASUREMENT_ID_RE,
-  normalizeMeasurementId,
-  type PublicAnalyticsConfig,
-} from '@care-platform/shared';
+import { DISABLED_ANALYTICS, GA_MEASUREMENT_ID_RE, normalizeMeasurementId, type PublicAnalyticsConfig } from '@care-platform/shared';
 import { DRIZZLE, type Database } from '../database/database.module';
 import { analyticsSettings } from '../database/schema';
 import { UpdateAnalyticsSettingsDto } from './dto/update-analytics-settings.dto';
@@ -31,7 +26,10 @@ export class AnalyticsSettingsService {
   private async getRow(): Promise<Row> {
     const [existing] = await this.db.select().from(analyticsSettings).where(eq(analyticsSettings.id, SETTINGS_ID)).limit(1);
     if (existing) return existing;
-    await this.db.insert(analyticsSettings).values({ id: SETTINGS_ID }).onDuplicateKeyUpdate({ set: { id: SETTINGS_ID } });
+    await this.db
+      .insert(analyticsSettings)
+      .values({ id: SETTINGS_ID })
+      .onDuplicateKeyUpdate({ set: { id: SETTINGS_ID } });
     const [created] = await this.db.select().from(analyticsSettings).where(eq(analyticsSettings.id, SETTINGS_ID)).limit(1);
     return created;
   }
@@ -69,10 +67,7 @@ export class AnalyticsSettingsService {
     const enabled = dto.enabled ?? current.enabled;
     if (enabled && !measurementId) throw new BadRequestException('Enter your measurement ID before switching Google Analytics on');
 
-    await this.db
-      .update(analyticsSettings)
-      .set({ enabled, measurementId, updatedBy, updatedAt: new Date() })
-      .where(eq(analyticsSettings.id, SETTINGS_ID));
+    await this.db.update(analyticsSettings).set({ enabled, measurementId, updatedBy, updatedAt: new Date() }).where(eq(analyticsSettings.id, SETTINGS_ID));
     return this.getForAdmin();
   }
 }

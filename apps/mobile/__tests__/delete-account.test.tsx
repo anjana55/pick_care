@@ -59,7 +59,9 @@ describe('Delete my account', () => {
 
     mockRouter.reset();
     await tokenStore.set(tokensFor('CAREGIVER', { caregiverId: 'cg-1', phone: '+94771234567' }));
-    serveApi({ 'GET /caregivers/cg-1': () => ({ status: 200, body: { id: 'cg-1', fullName: 'Nimali', registrationNumber: 'CG-1', status: 'ACTIVE', documents: [] } }) });
+    serveApi({
+      'GET /caregivers/cg-1': () => ({ status: 200, body: { id: 'cg-1', fullName: 'Nimali', registrationNumber: 'CG-1', status: 'ACTIVE', documents: [] } }),
+    });
     await show(<Me />);
     await fireEvent.press(await screen.findByRole('link', { name: en.deleteAccount.title }));
     expect(mockRouter.push).toHaveBeenCalledWith('/delete-account');

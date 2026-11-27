@@ -76,8 +76,12 @@ export function useEmployerEnquiry(id: string) {
 export function useUpdateEmployerEnquiry(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (body: { status?: EmployerEnquiryStatus; staffNote?: string | null; placementFeeAmount?: number | null; placementFeeCurrency?: string | null }) =>
-      api.patch<EmployerEnquiry>(`/international/enquiries/${id}`, body),
+    mutationFn: (body: {
+      status?: EmployerEnquiryStatus;
+      staffNote?: string | null;
+      placementFeeAmount?: number | null;
+      placementFeeCurrency?: string | null;
+    }) => api.patch<EmployerEnquiry>(`/international/enquiries/${id}`, body),
     onSuccess: (data) => {
       queryClient.setQueryData(['international', 'enquiry', id], data);
       queryClient.invalidateQueries({ queryKey: ['international', 'enquiries'] });
@@ -130,7 +134,9 @@ export function useSaveTrainingProgramme() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, body }: { id?: string; body: TrainingProgrammeInput }) =>
-      id ? api.put<TrainingProgramme>(`/international/training/programmes/${id}`, body) : api.post<TrainingProgramme>('/international/training/programmes', body),
+      id
+        ? api.put<TrainingProgramme>(`/international/training/programmes/${id}`, body)
+        : api.post<TrainingProgramme>('/international/training/programmes', body),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['international', 'programmes'] }),
   });
 }
@@ -212,7 +218,8 @@ export function useEnquiryCandidates(enquiryId: string) {
 export function useProposeCandidate(enquiryId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (body: { caregiverId: string; messageToEmployer?: string }) => api.post<StaffCandidate[]>(`/international/enquiries/${enquiryId}/candidates`, body),
+    mutationFn: (body: { caregiverId: string; messageToEmployer?: string }) =>
+      api.post<StaffCandidate[]>(`/international/enquiries/${enquiryId}/candidates`, body),
     onSuccess: (data) => {
       queryClient.setQueryData(['international', 'candidates', enquiryId], data);
       queryClient.invalidateQueries({ queryKey: ['international', 'enquiry', enquiryId] });
@@ -224,8 +231,16 @@ export function useProposeCandidate(enquiryId: string) {
 export function useUpdateCandidate(enquiryId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, ...body }: { id: string; status?: CandidateStatus; interviewAt?: string | null; messageToEmployer?: string | null; staffNote?: string | null }) =>
-      api.patch<StaffCandidate>(`/international/candidates/${id}`, body),
+    mutationFn: ({
+      id,
+      ...body
+    }: {
+      id: string;
+      status?: CandidateStatus;
+      interviewAt?: string | null;
+      messageToEmployer?: string | null;
+      staffNote?: string | null;
+    }) => api.patch<StaffCandidate>(`/international/candidates/${id}`, body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['international', 'candidates', enquiryId] });
       queryClient.invalidateQueries({ queryKey: ['international', 'interview-requests'] });
@@ -253,7 +268,11 @@ const invalidateOverseas = (queryClient: ReturnType<typeof useQueryClient>, ...k
 export function useStaffVacancies(filters: { status?: string; enquiryId?: string }, enabled = true) {
   return useQuery({
     queryKey: ['international', 'vacancies', filters],
-    queryFn: () => api.get<StaffVacancy[]>('/international/vacancies', { ...(filters.status ? { status: filters.status } : {}), ...(filters.enquiryId ? { enquiryId: filters.enquiryId } : {}) }),
+    queryFn: () =>
+      api.get<StaffVacancy[]>('/international/vacancies', {
+        ...(filters.status ? { status: filters.status } : {}),
+        ...(filters.enquiryId ? { enquiryId: filters.enquiryId } : {}),
+      }),
     enabled,
   });
 }
@@ -287,8 +306,15 @@ export function useVacancyApplications(vacancyId: string | null) {
 export function useUpdateApplication(vacancyId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, ...body }: { id: string; status?: 'PUT_FORWARD' | 'NOT_SUCCESSFUL' | 'APPLIED'; messageToEmployer?: string | null; staffNote?: string | null }) =>
-      api.patch<StaffVacancyApplication>(`/international/vacancy-applications/${id}`, body),
+    mutationFn: ({
+      id,
+      ...body
+    }: {
+      id: string;
+      status?: 'PUT_FORWARD' | 'NOT_SUCCESSFUL' | 'APPLIED';
+      messageToEmployer?: string | null;
+      staffNote?: string | null;
+    }) => api.patch<StaffVacancyApplication>(`/international/vacancy-applications/${id}`, body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['international', 'vacancy-applications', vacancyId] });
       queryClient.invalidateQueries({ queryKey: ['international', 'candidates'] });
@@ -323,7 +349,8 @@ export function useUpdatePlacement(id: string) {
 export function useRecordCheckin(placementId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ checkinId, ...body }: CheckinUpdate & { checkinId: string }) => api.patch<StaffPlacement>(`/international/placements/${placementId}/checkins/${checkinId}`, body),
+    mutationFn: ({ checkinId, ...body }: CheckinUpdate & { checkinId: string }) =>
+      api.patch<StaffPlacement>(`/international/placements/${placementId}/checkins/${checkinId}`, body),
     onSuccess: (data) => {
       queryClient.setQueryData(['international', 'placement', placementId], data);
       invalidateOverseas(queryClient, 'placements');
@@ -340,7 +367,10 @@ export function usePlacementInvoices(status: string, enabled = true) {
 }
 
 export function usePlacementInvoice(id: string) {
-  return useQuery({ queryKey: ['international', 'placement-invoice', id], queryFn: () => api.get<PlacementInvoice>(`/international/placement-invoices/${id}`) });
+  return useQuery({
+    queryKey: ['international', 'placement-invoice', id],
+    queryFn: () => api.get<PlacementInvoice>(`/international/placement-invoices/${id}`),
+  });
 }
 
 type InvoiceAction =
@@ -415,9 +445,19 @@ export function useAssessmentActions() {
     queryClient.invalidateQueries({ queryKey: ['international', 'assessments'] });
     queryClient.invalidateQueries({ queryKey: ['international', 'summary'] });
   };
-  const record = useMutation({ mutationFn: ({ caregiverId, body }: { caregiverId: string; body: AssessmentInput }) => api.post<StaffAssessment>(`/international/caregivers/${caregiverId}/assessments`, body), onSuccess: refresh });
-  const update = useMutation({ mutationFn: ({ id, body }: { id: string; body: AssessmentInput }) => api.put<StaffAssessment>(`/international/assessments/${id}`, body), onSuccess: refresh });
-  const verify = useMutation({ mutationFn: ({ id, verified }: { id: string; verified: boolean }) => api.patch<StaffAssessment>(`/international/assessments/${id}/verify`, { verified }), onSuccess: refresh });
+  const record = useMutation({
+    mutationFn: ({ caregiverId, body }: { caregiverId: string; body: AssessmentInput }) =>
+      api.post<StaffAssessment>(`/international/caregivers/${caregiverId}/assessments`, body),
+    onSuccess: refresh,
+  });
+  const update = useMutation({
+    mutationFn: ({ id, body }: { id: string; body: AssessmentInput }) => api.put<StaffAssessment>(`/international/assessments/${id}`, body),
+    onSuccess: refresh,
+  });
+  const verify = useMutation({
+    mutationFn: ({ id, verified }: { id: string; verified: boolean }) => api.patch<StaffAssessment>(`/international/assessments/${id}/verify`, { verified }),
+    onSuccess: refresh,
+  });
   const remove = useMutation({ mutationFn: (id: string) => api.delete(`/international/assessments/${id}`), onSuccess: refresh });
   return { record, update, verify, remove };
 }
@@ -431,7 +471,11 @@ export function useRevokeCertificate(programmeId: string | null) {
 }
 
 export function useStaffInterviews(when: 'upcoming' | 'past' | 'all', enabled = true) {
-  return useQuery({ queryKey: ['international', 'interviews', when], queryFn: () => api.get<StaffInterview[]>('/international/interviews', { when }), enabled });
+  return useQuery({
+    queryKey: ['international', 'interviews', when],
+    queryFn: () => api.get<StaffInterview[]>('/international/interviews', { when }),
+    enabled,
+  });
 }
 
 export function useInterviewActions(enquiryId: string | null) {
@@ -442,13 +486,24 @@ export function useInterviewActions(enquiryId: string | null) {
     queryClient.invalidateQueries({ queryKey: ['international', 'interview-requests'] });
     queryClient.invalidateQueries({ queryKey: ['international', 'summary'] });
   };
-  const schedule = useMutation({ mutationFn: ({ candidateId, body }: { candidateId: string; body: InterviewInput }) => api.post<StaffInterview>(`/international/candidates/${candidateId}/interviews`, body), onSuccess: refresh });
-  const update = useMutation({ mutationFn: ({ id, body }: { id: string; body: InterviewUpdate }) => api.patch<StaffInterview>(`/international/interviews/${id}`, body), onSuccess: refresh });
+  const schedule = useMutation({
+    mutationFn: ({ candidateId, body }: { candidateId: string; body: InterviewInput }) =>
+      api.post<StaffInterview>(`/international/candidates/${candidateId}/interviews`, body),
+    onSuccess: refresh,
+  });
+  const update = useMutation({
+    mutationFn: ({ id, body }: { id: string; body: InterviewUpdate }) => api.patch<StaffInterview>(`/international/interviews/${id}`, body),
+    onSuccess: refresh,
+  });
   return { schedule, update };
 }
 
 export function useStaffOffers(status: string, enabled = true) {
-  return useQuery({ queryKey: ['international', 'offers', status], queryFn: () => api.get<StaffJobOffer[]>('/international/offers', status ? { status } : undefined), enabled });
+  return useQuery({
+    queryKey: ['international', 'offers', status],
+    queryFn: () => api.get<StaffJobOffer[]>('/international/offers', status ? { status } : undefined),
+    enabled,
+  });
 }
 
 export function useReviewOffer() {
@@ -466,13 +521,19 @@ export function useReviewOffer() {
 export function useUpdateChecklistItem(placementId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ item, body }: { item: DepartureItem; body: DepartureItemUpdate }) => api.patch<StaffPlacement>(`/international/placements/${placementId}/checklist/${item}`, body),
+    mutationFn: ({ item, body }: { item: DepartureItem; body: DepartureItemUpdate }) =>
+      api.patch<StaffPlacement>(`/international/placements/${placementId}/checklist/${item}`, body),
     onSuccess: (data) => queryClient.setQueryData(['international', 'placement', placementId], data),
   });
 }
 
 export function useWelfareReports(status: string, enabled = true) {
-  return useQuery({ queryKey: ['international', 'welfare', status], queryFn: () => api.get<StaffWelfareReport[]>('/international/welfare', { status }), enabled, refetchInterval: 30_000 });
+  return useQuery({
+    queryKey: ['international', 'welfare', status],
+    queryFn: () => api.get<StaffWelfareReport[]>('/international/welfare', { status }),
+    enabled,
+    refetchInterval: 30_000,
+  });
 }
 
 export function useWelfareActions() {
@@ -481,8 +542,14 @@ export function useWelfareActions() {
     queryClient.invalidateQueries({ queryKey: ['international', 'welfare'] });
     queryClient.invalidateQueries({ queryKey: ['international', 'summary'] });
   };
-  const reply = useMutation({ mutationFn: ({ id, body }: { id: string; body: string }) => api.post<StaffWelfareReport>(`/international/welfare/${id}/messages`, { body }), onSuccess: refresh });
-  const setStatus = useMutation({ mutationFn: ({ id, status }: { id: string; status: WelfareStatus }) => api.patch<StaffWelfareReport>(`/international/welfare/${id}/status`, { status }), onSuccess: refresh });
+  const reply = useMutation({
+    mutationFn: ({ id, body }: { id: string; body: string }) => api.post<StaffWelfareReport>(`/international/welfare/${id}/messages`, { body }),
+    onSuccess: refresh,
+  });
+  const setStatus = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: WelfareStatus }) => api.patch<StaffWelfareReport>(`/international/welfare/${id}/status`, { status }),
+    onSuccess: refresh,
+  });
   return { reply, setStatus };
 }
 

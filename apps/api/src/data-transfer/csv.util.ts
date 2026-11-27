@@ -43,7 +43,10 @@ export function toCsv<T>(columns: CsvColumn<T>[], rows: T[]): string {
 
 /** `Full name`, `full_name` and `FullName` all address the same column. */
 export function headerKey(header: string): string {
-  return header.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+  return header
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '');
 }
 
 /** Picks `;` only when the header line clearly uses it, as Excel does in some locales. */
@@ -137,7 +140,10 @@ export function parseDate(value: string): string | null {
  * the words a person would type (`Phone call`, `phone-call`, `whatsapp`).
  */
 export function parseEnum<T extends string>(value: string, allowed: readonly T[]): T | null {
-  const key = value.trim().toUpperCase().replace(/[\s-]+/g, '_');
+  const key = value
+    .trim()
+    .toUpperCase()
+    .replace(/[\s-]+/g, '_');
   const squashed = key.replace(/_/g, '');
   return allowed.find((a) => a === key || a.replace(/_/g, '') === squashed) ?? null;
 }

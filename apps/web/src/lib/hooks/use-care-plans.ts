@@ -44,10 +44,13 @@ function useTemplateWrite<V>(fn: (v: V) => Promise<CarePlanTemplateView>) {
 }
 
 export const useCreateCarePlanTemplate = () => useTemplateWrite((v: CarePlanTemplateInput) => api.post<CarePlanTemplateView>('/care-plan-templates', v));
-export const useUpdateCarePlanTemplate = (id: string) => useTemplateWrite((v: CarePlanTemplateInput) => api.put<CarePlanTemplateView>(`/care-plan-templates/${id}`, v));
+export const useUpdateCarePlanTemplate = (id: string) =>
+  useTemplateWrite((v: CarePlanTemplateInput) => api.put<CarePlanTemplateView>(`/care-plan-templates/${id}`, v));
 export const useDuplicateCarePlanTemplate = () => useTemplateWrite((id: string) => api.post<CarePlanTemplateView>(`/care-plan-templates/${id}/duplicate`, {}));
 export const useSetCarePlanTemplateStatus = (id: string) =>
-  useTemplateWrite((status: 'ACTIVE' | 'ARCHIVED') => api.post<CarePlanTemplateView>(`/care-plan-templates/${id}/${status === 'ARCHIVED' ? 'archive' : 'restore'}`, {}));
+  useTemplateWrite((status: 'ACTIVE' | 'ARCHIVED') =>
+    api.post<CarePlanTemplateView>(`/care-plan-templates/${id}/${status === 'ARCHIVED' ? 'archive' : 'restore'}`, {}),
+  );
 
 // --- a booking's plan -------------------------------------------------------------------
 
@@ -72,8 +75,10 @@ function usePlanWrite<V>(bookingId: string, fn: (v: V) => Promise<CarePlanRespon
   });
 }
 
-export const useCreateCarePlan = (bookingId: string) => usePlanWrite(bookingId, (v: CreateCarePlanInput) => api.post<CarePlanResponse>(`/bookings/${bookingId}/care-plan`, v));
-export const useUpdateCarePlan = (bookingId: string) => usePlanWrite(bookingId, (v: UpdateCarePlanInput) => api.put<CarePlanResponse>(`/bookings/${bookingId}/care-plan`, v));
+export const useCreateCarePlan = (bookingId: string) =>
+  usePlanWrite(bookingId, (v: CreateCarePlanInput) => api.post<CarePlanResponse>(`/bookings/${bookingId}/care-plan`, v));
+export const useUpdateCarePlan = (bookingId: string) =>
+  usePlanWrite(bookingId, (v: UpdateCarePlanInput) => api.put<CarePlanResponse>(`/bookings/${bookingId}/care-plan`, v));
 
 export function useSaveCarePlanAsTemplate(bookingId: string) {
   const queryClient = useQueryClient();

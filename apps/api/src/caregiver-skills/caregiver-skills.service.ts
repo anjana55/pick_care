@@ -42,9 +42,7 @@ export class CaregiverSkillsService {
   }
 
   async remove(caregiverId: string, skillId: string) {
-    await this.db
-      .delete(caregiverSkills)
-      .where(and(eq(caregiverSkills.caregiverId, caregiverId), eq(caregiverSkills.skillId, skillId)));
+    await this.db.delete(caregiverSkills).where(and(eq(caregiverSkills.caregiverId, caregiverId), eq(caregiverSkills.skillId, skillId)));
     return { success: true };
   }
 }

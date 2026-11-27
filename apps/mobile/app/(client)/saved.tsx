@@ -20,11 +20,7 @@ export default function Saved() {
   const saved = useSavedCaregivers();
   const setSaved = useSetSaved();
 
-  const head = (
-    <View style={styles.head}>
-      {!client ? <SignInPrompt body={t('profile.saveCta')} returnTo="/saved" /> : null}
-    </View>
-  );
+  const head = <View style={styles.head}>{!client ? <SignInPrompt body={t('profile.saveCta')} returnTo="/saved" /> : null}</View>;
 
   const empty = !client ? null : saved.isLoading ? (
     <ActivityIndicator color={colors.brand} />

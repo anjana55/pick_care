@@ -135,7 +135,12 @@ export class JobsService implements OnApplicationBootstrap, OnModuleDestroy {
       await tx
         .update(jobs)
         .set({ status: 'RUNNING', lockedAt: new Date(), lockedBy: this.worker, attempts: sql`${jobs.attempts} + 1` })
-        .where(inArray(jobs.id, due.map((j) => j.id)));
+        .where(
+          inArray(
+            jobs.id,
+            due.map((j) => j.id),
+          ),
+        );
       return due.map((j) => ({ ...j, attempts: j.attempts + 1 }));
     });
 
@@ -185,8 +190,17 @@ export class JobsService implements OnApplicationBootstrap, OnModuleDestroy {
 
   async summary(now = new Date()): Promise<JobsSummary> {
     const [counts, [oldest], failures] = await Promise.all([
-      this.db.select({ status: jobs.status, n: sql<number>`COUNT(*)` }).from(jobs).where(inArray(jobs.status, ['PENDING', 'RUNNING', 'FAILED'])).groupBy(jobs.status),
-      this.db.select({ runAt: jobs.runAt }).from(jobs).where(and(eq(jobs.status, 'PENDING'), lte(jobs.runAt, now))).orderBy(asc(jobs.runAt)).limit(1),
+      this.db
+        .select({ status: jobs.status, n: sql<number>`COUNT(*)` })
+        .from(jobs)
+        .where(inArray(jobs.status, ['PENDING', 'RUNNING', 'FAILED']))
+        .groupBy(jobs.status),
+      this.db
+        .select({ runAt: jobs.runAt })
+        .from(jobs)
+        .where(and(eq(jobs.status, 'PENDING'), lte(jobs.runAt, now)))
+        .orderBy(asc(jobs.runAt))
+        .limit(1),
       this.db
         .select({ id: jobs.id, type: jobs.type, lastError: jobs.lastError, finishedAt: jobs.finishedAt })
         .from(jobs)

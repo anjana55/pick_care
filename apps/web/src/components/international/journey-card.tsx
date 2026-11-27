@@ -64,7 +64,9 @@ function ChecklistRow({ placementId, item: c }: { placementId: string; item: Dep
         </button>
         {c.done && c.doneOn && <span className="text-xs text-ink/50">{day(c.doneOn, locale)}</span>}
         {!c.done && c.dueOn && (
-          <span className={`text-xs ${c.dueOn < todayColombo() ? 'font-medium text-danger' : 'text-ink/50'}`}>{t('international.journey.due', { date: day(c.dueOn, locale) })}</span>
+          <span className={`text-xs ${c.dueOn < todayColombo() ? 'font-medium text-danger' : 'text-ink/50'}`}>
+            {t('international.journey.due', { date: day(c.dueOn, locale) })}
+          </span>
         )}
         <button type="button" onClick={() => setEditing(!editing)} className="ml-auto text-xs text-brand-dark hover:underline">
           {editing ? t('common.cancel') : t('international.journey.edit')}
@@ -81,7 +83,13 @@ function ChecklistRow({ placementId, item: c }: { placementId: string; item: Dep
         >
           <div>
             <Label htmlFor={`n-${c.item}`}>{t('international.journey.note')}</Label>
-            <Input id={`n-${c.item}`} value={note} onChange={(e) => setNote(e.target.value)} maxLength={500} placeholder={t('international.journey.notePlaceholder')} />
+            <Input
+              id={`n-${c.item}`}
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              maxLength={500}
+              placeholder={t('international.journey.notePlaceholder')}
+            />
           </div>
           <div>
             <Label htmlFor={`d-${c.item}`}>{t('international.journey.dueLabel')}</Label>
@@ -104,7 +112,8 @@ function ContactForm({ placement: p }: { placement: StaffPlacement }) {
   const [phone, setPhone] = useState(p.journey.phoneAbroad ?? '');
   const [address, setAddress] = useState(p.journey.addressAbroad ?? '');
   const [saved, setSaved] = useState(false);
-  const dirty = departureDetails !== (p.journey.departureDetails ?? '') || phone !== (p.journey.phoneAbroad ?? '') || address !== (p.journey.addressAbroad ?? '');
+  const dirty =
+    departureDetails !== (p.journey.departureDetails ?? '') || phone !== (p.journey.phoneAbroad ?? '') || address !== (p.journey.addressAbroad ?? '');
 
   return (
     <form
@@ -112,12 +121,21 @@ function ContactForm({ placement: p }: { placement: StaffPlacement }) {
       onSubmit={(e) => {
         e.preventDefault();
         setSaved(false);
-        update.mutate({ departureDetails: departureDetails.trim() || null, phoneAbroad: phone.trim() || null, addressAbroad: address.trim() || null }, { onSuccess: () => setSaved(true) });
+        update.mutate(
+          { departureDetails: departureDetails.trim() || null, phoneAbroad: phone.trim() || null, addressAbroad: address.trim() || null },
+          { onSuccess: () => setSaved(true) },
+        );
       }}
     >
       <div>
         <Label htmlFor="j-flight">{t('international.journey.flight')}</Label>
-        <Input id="j-flight" value={departureDetails} onChange={(e) => setDepartureDetails(e.target.value)} maxLength={CONTACT_ABROAD_LIMITS.departureDetails} placeholder={t('international.journey.flightPlaceholder')} />
+        <Input
+          id="j-flight"
+          value={departureDetails}
+          onChange={(e) => setDepartureDetails(e.target.value)}
+          maxLength={CONTACT_ABROAD_LIMITS.departureDetails}
+          placeholder={t('international.journey.flightPlaceholder')}
+        />
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
         <div>

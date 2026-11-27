@@ -77,9 +77,7 @@ export function WhatsappOtpForm({ phone, purpose, portal, codeLength, resendAfte
       </p>
 
       <div>
-        <Label htmlFor="otp">
-          {t('whatsapp.otp.code')}
-        </Label>
+        <Label htmlFor="otp">{t('whatsapp.otp.code')}</Label>
         <Input
           id="otp"
           inputMode="numeric"
@@ -98,7 +96,11 @@ export function WhatsappOtpForm({ phone, purpose, portal, codeLength, resendAfte
         </div>
       )}
 
-      {error && <p role="alert" className="text-sm text-danger">{error}</p>}
+      {error && (
+        <p role="alert" className="text-sm text-danger">
+          {error}
+        </p>
+      )}
       {info && <p className="text-sm text-brand-dark">{info}</p>}
 
       <button

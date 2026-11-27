@@ -41,11 +41,7 @@ export function FindForMeCard({ prominent }: { prominent: boolean }) {
             <h2 className="text-base font-semibold text-ink">{t('care.findForMe.title')}</h2>
             <p className="mt-1 text-sm text-ink/70">{t('care.findForMe.body')}</p>
           </div>
-          <button
-            type="button"
-            onClick={start}
-            className="shrink-0 rounded-DEFAULT bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark"
-          >
+          <button type="button" onClick={start} className="shrink-0 rounded-DEFAULT bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark">
             {t('care.findForMe.cta')}
           </button>
         </div>

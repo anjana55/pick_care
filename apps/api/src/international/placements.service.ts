@@ -66,7 +66,11 @@ export function checkPlacementChange(current: PlacementRow, next: PlacementRow, 
     if (!next.endedOn) extra.endedOn = today;
   }
   if (next.status === 'COMPLETED' && !next.endedOn) extra.endedOn = contractEndsOn(next) ?? today;
-  if ((next.status === 'PRE_DEPARTURE' || next.status === 'DEPLOYED') && current.status !== next.status && (current.status === 'COMPLETED' || current.status === 'ENDED_EARLY')) {
+  if (
+    (next.status === 'PRE_DEPARTURE' || next.status === 'DEPLOYED') &&
+    current.status !== next.status &&
+    (current.status === 'COMPLETED' || current.status === 'ENDED_EARLY')
+  ) {
     // Reopened: the end no longer applies.
     extra.endedOn = null;
     extra.endReason = null;
@@ -171,7 +175,10 @@ export class PlacementsService {
     }
     const next = { ...current, ...changes } as PlacementRow;
     Object.assign(changes, checkPlacementChange(current, next));
-    await this.db.update(placements).set({ ...changes, updatedAt: new Date() }).where(eq(placements.id, id));
+    await this.db
+      .update(placements)
+      .set({ ...changes, updatedAt: new Date() })
+      .where(eq(placements.id, id));
 
     const arrived = changes.arrivedOn !== undefined ? changes.arrivedOn : current.arrivedOn;
     if (arrived && arrived !== current.arrivedOn) await this.schedule(id, arrived);
@@ -313,7 +320,8 @@ export class PlacementsService {
     for (const { kind, dueOn } of checkinSchedule(arrivedOn)) {
       const c = byKind.get(kind);
       if (!c) await this.db.insert(placementCheckins).values({ id: uuid(), placementId, kind, dueOn });
-      else if (!c.completedOn && c.dueOn !== dueOn) await this.db.update(placementCheckins).set({ dueOn, updatedAt: new Date() }).where(eq(placementCheckins.id, c.id));
+      else if (!c.completedOn && c.dueOn !== dueOn)
+        await this.db.update(placementCheckins).set({ dueOn, updatedAt: new Date() }).where(eq(placementCheckins.id, c.id));
     }
   }
 
@@ -332,7 +340,9 @@ export class PlacementsService {
       .$dynamic();
   }
 
-  private async toStaff(rows: { p: PlacementRow; reference: string; organisationName: string; registrationNumber: string; fullName: string }[]): Promise<StaffPlacement[]> {
+  private async toStaff(
+    rows: { p: PlacementRow; reference: string; organisationName: string; registrationNumber: string; fullName: string }[],
+  ): Promise<StaffPlacement[]> {
     const ids = rows.map((r) => r.p.id);
     if (!ids.length) return [];
     const [checkins, invoices, journeys, welfare] = await Promise.all([
@@ -388,7 +398,10 @@ export class PlacementsService {
   private async notifyReplacementDue(p: PlacementRow, until: string) {
     await this.notifier.toStaff(`placement ended early ${p.id}`, {
       subject: 'A placement ended inside its guarantee period',
-      paragraphs: [`A placement in ${p.country} ended on ${p.endedOn}, before its replacement guarantee ran out (${until}).`, 'The employer is owed a replacement caregiver without a second placement fee.'],
+      paragraphs: [
+        `A placement in ${p.country} ended on ${p.endedOn}, before its replacement guarantee ran out (${until}).`,
+        'The employer is owed a replacement caregiver without a second placement fee.',
+      ],
       cta: { label: 'Open placement', url: this.notifier.staffUrl(`/international/placements/${p.id}`) },
     });
   }

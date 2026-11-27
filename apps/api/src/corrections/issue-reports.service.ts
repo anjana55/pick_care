@@ -34,11 +34,19 @@ export class IssueReportsService {
   async createForClient(user: AuthenticatedUser, bookingId: string, dto: CreateIssueReportDto, lang: CareRequestLanguage): Promise<MyIssueReport> {
     if (user.role !== 'PATIENT_GUARDIAN' || !user.patientId) throw new ForbiddenException('You do not have permission to perform this action');
     if (!CLIENT_ISSUE_CATEGORIES.includes(dto.category)) throw new BadRequestException('Choose what is wrong');
-    const [b] = await this.db.select({ id: bookings.id, patientId: bookings.patientId, status: bookings.status }).from(bookings).where(eq(bookings.id, bookingId)).limit(1);
+    const [b] = await this.db
+      .select({ id: bookings.id, patientId: bookings.patientId, status: bookings.status })
+      .from(bookings)
+      .where(eq(bookings.id, bookingId))
+      .limit(1);
     // Someone else's booking, or a draft they cannot see, reads as not found.
     if (!b || b.patientId !== user.patientId || b.status === 'DRAFT') throw new NotFoundException('Booking not found');
     if (dto.shiftId) {
-      const [s] = await this.db.select({ bookingId: bookingShifts.bookingId, status: bookingShifts.status }).from(bookingShifts).where(eq(bookingShifts.id, dto.shiftId)).limit(1);
+      const [s] = await this.db
+        .select({ bookingId: bookingShifts.bookingId, status: bookingShifts.status })
+        .from(bookingShifts)
+        .where(eq(bookingShifts.id, dto.shiftId))
+        .limit(1);
       if (!s || s.bookingId !== b.id || s.status === 'DRAFT') throw new NotFoundException('Shift not found');
     }
     return this.create({ bookingId: b.id, shiftId: dto.shiftId ?? null, role: 'CLIENT', caregiverId: null, user, dto, lang });
@@ -76,7 +84,9 @@ export class IssueReportsService {
       const [{ open }] = await t
         .select({ open: count() })
         .from(bookingIssueReports)
-        .where(and(eq(bookingIssueReports.bookingId, p.bookingId), eq(bookingIssueReports.reporterUserId, p.user.userId), eq(bookingIssueReports.status, 'OPEN')));
+        .where(
+          and(eq(bookingIssueReports.bookingId, p.bookingId), eq(bookingIssueReports.reporterUserId, p.user.userId), eq(bookingIssueReports.status, 'OPEN')),
+        );
       if (open >= MAX_OPEN_REPORTS) throw new ConflictException('You already have several reports waiting on this booking - our team will get back to you');
       await t.insert(bookingIssueReports).values({
         id,
@@ -99,7 +109,12 @@ export class IssueReportsService {
   /** The reporter's own reports, newest first (or just the given ones). */
   async listMine(user: AuthenticatedUser, only?: string[]): Promise<MyIssueReport[]> {
     if (user.role !== 'PATIENT_GUARDIAN' && user.role !== 'CAREGIVER') throw new ForbiddenException('You do not have permission to perform this action');
-    const rows = await this.rows(only ? and(eq(bookingIssueReports.reporterUserId, user.userId), inArray(bookingIssueReports.id, only)) : eq(bookingIssueReports.reporterUserId, user.userId), 100);
+    const rows = await this.rows(
+      only
+        ? and(eq(bookingIssueReports.reporterUserId, user.userId), inArray(bookingIssueReports.id, only))
+        : eq(bookingIssueReports.reporterUserId, user.userId),
+      100,
+    );
     return rows.map(({ r, reference, startsAt }) => this.mine(r, reference, startsAt));
   }
 
@@ -107,17 +122,32 @@ export class IssueReportsService {
   async listForBooking(bookingId: string): Promise<IssueReportView[]> {
     const rows = await this.rows(eq(bookingIssueReports.bookingId, bookingId), 200);
     const ids = [...new Set(rows.flatMap(({ r }) => [r.reporterUserId, r.closedByUserId]).filter((v): v is string => Boolean(v)))];
-    const names = new Map(ids.length ? (await this.db.select({ id: users.id, fullName: users.fullName }).from(users).where(inArray(users.id, ids))).map((u) => [u.id, u]) : []);
+    const names = new Map(
+      ids.length ? (await this.db.select({ id: users.id, fullName: users.fullName }).from(users).where(inArray(users.id, ids))).map((u) => [u.id, u]) : [],
+    );
     // The client and caregiver as staff know them, rather than their account names.
     const cgIds = [...new Set(rows.map(({ r }) => r.caregiverId).filter((v): v is string => Boolean(v)))];
-    const cgNames = new Map(cgIds.length ? (await this.db.select({ id: caregivers.id, fullName: caregivers.fullName }).from(caregivers).where(inArray(caregivers.id, cgIds))).map((c) => [c.id, c.fullName]) : []);
+    const cgNames = new Map(
+      cgIds.length
+        ? (await this.db.select({ id: caregivers.id, fullName: caregivers.fullName }).from(caregivers).where(inArray(caregivers.id, cgIds))).map((c) => [
+            c.id,
+            c.fullName,
+          ])
+        : [],
+    );
     const [client] = rows.length
-      ? await this.db.select({ fullName: patients.fullName }).from(bookings).innerJoin(patients, eq(bookings.patientId, patients.id)).where(eq(bookings.id, bookingId)).limit(1)
+      ? await this.db
+          .select({ fullName: patients.fullName })
+          .from(bookings)
+          .innerJoin(patients, eq(bookings.patientId, patients.id))
+          .where(eq(bookings.id, bookingId))
+          .limit(1)
       : [];
     return rows.map(({ r, reference, startsAt }) => ({
       ...this.mine(r, reference, startsAt),
       reporterRole: r.reporterRole,
-      reporterName: (r.reporterRole === 'CLIENT' ? client?.fullName : r.caregiverId ? cgNames.get(r.caregiverId) : null) ?? names.get(r.reporterUserId)?.fullName ?? null,
+      reporterName:
+        (r.reporterRole === 'CLIENT' ? client?.fullName : r.caregiverId ? cgNames.get(r.caregiverId) : null) ?? names.get(r.reporterUserId)?.fullName ?? null,
       amendmentId: r.amendmentId,
       closedBy: r.closedByUserId ? (names.get(r.closedByUserId) ?? null) : null,
     }));

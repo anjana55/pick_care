@@ -153,7 +153,12 @@ export function brandingAssetUrl(
  */
 export function initialsOf(name: string): string {
   const words = name.trim().split(/\s+/).filter(Boolean);
-  if (words.length > 1) return words.slice(0, 2).map((w) => [...w][0]).join('').toUpperCase();
+  if (words.length > 1)
+    return words
+      .slice(0, 2)
+      .map((w) => [...w][0])
+      .join('')
+      .toUpperCase();
   const word = words[0] ?? '';
   const capitals = [...word].filter((c) => c !== c.toLowerCase());
   const letters = capitals.length >= 2 ? capitals.slice(0, 2) : [...word].slice(0, 2);
@@ -183,7 +188,14 @@ function toRgb(hex: string): Rgb {
 }
 
 function toHex([r, g, b]: Rgb): string {
-  return `#${[r, g, b].map((c) => Math.round(Math.min(255, Math.max(0, c))).toString(16).padStart(2, '0')).join('').toUpperCase()}`;
+  return `#${[r, g, b]
+    .map((c) =>
+      Math.round(Math.min(255, Math.max(0, c)))
+        .toString(16)
+        .padStart(2, '0'),
+    )
+    .join('')
+    .toUpperCase()}`;
 }
 
 /** Blends `hex` toward `toward` - weight 0 keeps `hex`, 1 gives `toward`. */
@@ -240,7 +252,13 @@ export interface BrandPalette {
 export function derivePalette(primary: string, accent: string): BrandPalette {
   const p = isHexColor(primary) ? primary.toUpperCase() : DEFAULT_PRIMARY_COLOR;
   const a = isHexColor(accent) ? accent.toUpperCase() : DEFAULT_ACCENT_COLOR;
-  const brandPart = { brand: p, brandDark: mix(p, '#000000', 0.17), brandLight: mix(p, '#FFFFFF', 0.83), paper: mix(p, '#FFFFFF', 0.945), border: mix(p, '#FFFFFF', 0.78) };
+  const brandPart = {
+    brand: p,
+    brandDark: mix(p, '#000000', 0.17),
+    brandLight: mix(p, '#FFFFFF', 0.83),
+    paper: mix(p, '#FFFFFF', 0.945),
+    border: mix(p, '#FFFFFF', 0.78),
+  };
   const accentPart = { accent: a, accentDark: mix(a, '#000000', 0.12), accentLight: mix(a, '#FFFFFF', 0.83) };
   return { ...brandPart, ...accentPart };
 }

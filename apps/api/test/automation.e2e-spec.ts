@@ -63,13 +63,23 @@ describe('Automation rail (e2e)', () => {
   const action = (o: AutomationOverview, key: string) => o.functions.flatMap((f) => f.actions).find((a) => a.key === key)!;
 
   async function wipe() {
-    for (const table of ['automation_endpoints', 'agent_decisions', 'automation_cases', 'automation_action_policies', 'automation_functions', 'automation_settings']) {
+    for (const table of [
+      'automation_endpoints',
+      'agent_decisions',
+      'automation_cases',
+      'automation_action_policies',
+      'automation_functions',
+      'automation_settings',
+    ]) {
       await db.execute(sql.raw(`DELETE FROM ${table}`));
     }
   }
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).overrideProvider(ThrottlerStorage).useValue(unlimitedThrottle).compile();
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+      .overrideProvider(ThrottlerStorage)
+      .useValue(unlimitedThrottle)
+      .compile();
     app = moduleRef.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
     await app.init();
@@ -127,7 +137,13 @@ describe('Automation rail (e2e)', () => {
     const invoice = { caseType: 'INVOICE' as const, caseId: uuid() };
 
     await admin.mode('BILLING', 'SHADOW').expect(200);
-    const shadow = await automation.decide({ action: 'billing.issue_invoice', case: invoice, reason: 'All 5 shifts completed', confidence: 0.93, model: 'test-model' });
+    const shadow = await automation.decide({
+      action: 'billing.issue_invoice',
+      case: invoice,
+      reason: 'All 5 shifts completed',
+      confidence: 0.93,
+      model: 'test-model',
+    });
     expect(shadow.outcome).toBe('SHADOW');
 
     await admin.mode('BILLING', 'ASSIST').expect(200);
@@ -143,7 +159,14 @@ describe('Automation rail (e2e)', () => {
 
     const log = (await api().get(`/automation/decisions?caseType=INVOICE&caseId=${invoice.caseId}`).set(bearer(staffToken)).expect(200)).body;
     expect(log.map((d: { outcome: string }) => d.outcome)).toEqual(['EXECUTED', 'PROPOSED', 'SHADOW']);
-    expect(log[2]).toMatchObject({ mode: 'SHADOW', tier: 1, reason: 'All 5 shifts completed', confidence: 0.93, model: 'test-model', actionLabel: 'Issue an invoice for completed shifts' });
+    expect(log[2]).toMatchObject({
+      mode: 'SHADOW',
+      tier: 1,
+      reason: 'All 5 shifts completed',
+      confidence: 0.93,
+      model: 'test-model',
+      actionLabel: 'Issue an invoice for completed shifts',
+    });
 
     const awaiting = (await api().get('/automation/decisions?awaitingStaff=true').set(bearer(staffToken)).expect(200)).body;
     expect(awaiting).toHaveLength(1);
@@ -261,14 +284,20 @@ describe('Automation rail (e2e)', () => {
     expect(view.decisions).toHaveLength(1);
     expect(view.decisions[0]).toMatchObject({ outcome: 'EXECUTED', reason: 'Closest verified match' });
     // An invoice is not worked on by the matching agent: its page shows nothing.
-    expect((await api().get(`/automation/cases/INVOICE/${uuid()}`).set(bearer(staffToken)).expect(200)).body).toMatchObject({ agentActive: false, mode: 'MANUAL' });
+    expect((await api().get(`/automation/cases/INVOICE/${uuid()}`).set(bearer(staffToken)).expect(200)).body).toMatchObject({
+      agentActive: false,
+      mode: 'MANUAL',
+    });
     // With the master switch on, no agent is active on any page.
     await admin.master(true).expect(200);
     expect((await api().get(path).set(bearer(staffToken)).expect(200)).body).toMatchObject({ agentActive: false, mode: 'MANUAL' });
     await admin.master(false).expect(200);
     expect((await automation.gate('matching.send_offer', mine)).outcome).toBe('EXECUTE');
 
-    await api().get('/automation/cases/TICKET/' + mine.caseId).set(bearer(staffToken)).expect(400);
+    await api()
+      .get('/automation/cases/TICKET/' + mine.caseId)
+      .set(bearer(staffToken))
+      .expect(400);
     await api().get('/automation/cases/REQUEST/not-a-uuid').set(bearer(staffToken)).expect(400);
   });
 
@@ -451,11 +480,17 @@ describe('Automation rail (e2e)', () => {
   });
 
   it('writes every switch to the audit log', async () => {
-    const [{ before }] = (await db.select({ before: sql<number>`COUNT(*)` }).from(auditLogs).where(eq(auditLogs.entityType, 'AutomationSettings'))) as { before: number }[];
+    const [{ before }] = (await db
+      .select({ before: sql<number>`COUNT(*)` })
+      .from(auditLogs)
+      .where(eq(auditLogs.entityType, 'AutomationSettings'))) as { before: number }[];
     await admin.master(true, 'Drill').expect(200);
     await admin.master(false).expect(200);
     await new Promise((r) => setTimeout(r, 300));
-    const [{ after }] = (await db.select({ after: sql<number>`COUNT(*)` }).from(auditLogs).where(eq(auditLogs.entityType, 'AutomationSettings'))) as { after: number }[];
+    const [{ after }] = (await db
+      .select({ after: sql<number>`COUNT(*)` })
+      .from(auditLogs)
+      .where(eq(auditLogs.entityType, 'AutomationSettings'))) as { after: number }[];
     expect(Number(after) - Number(before)).toBe(2);
   });
 });

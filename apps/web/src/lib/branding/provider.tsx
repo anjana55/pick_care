@@ -2,14 +2,7 @@
 
 import { createContext, useContext, useEffect, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import {
-  DEFAULT_BRANDING,
-  brandingLogoUrl,
-  derivePalette,
-  normalizeBranding,
-  paletteCssVars,
-  type PublicBranding,
-} from '@care-platform/shared';
+import { DEFAULT_BRANDING, brandingLogoUrl, derivePalette, normalizeBranding, paletteCssVars, type PublicBranding } from '@care-platform/shared';
 import { API_URL } from '@/lib/api/client';
 import { I18nProvider } from '@/lib/i18n/provider';
 

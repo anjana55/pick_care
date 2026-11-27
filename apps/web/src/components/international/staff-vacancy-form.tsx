@@ -126,7 +126,15 @@ export function StaffVacancyForm({
         </div>
         <div className="sm:col-span-2">
           <Label htmlFor="sv-description">{t('international.vacancies.form.description')}</Label>
-          <Textarea id="sv-description" rows={4} value={description} maxLength={VACANCY_LIMITS.description} onChange={(e) => setDescription(e.target.value)} required minLength={20} />
+          <Textarea
+            id="sv-description"
+            rows={4}
+            value={description}
+            maxLength={VACANCY_LIMITS.description}
+            onChange={(e) => setDescription(e.target.value)}
+            required
+            minLength={20}
+          />
         </div>
         <div>
           <Label htmlFor="sv-experience">{t('international.vacancies.form.experience')}</Label>
@@ -144,7 +152,13 @@ export function StaffVacancyForm({
         </div>
         <div className="sm:col-span-2">
           <Label htmlFor="sv-requirements">{t('international.vacancies.form.requirements')}</Label>
-          <Textarea id="sv-requirements" rows={2} value={requirements} maxLength={VACANCY_LIMITS.requirements} onChange={(e) => setRequirements(e.target.value)} />
+          <Textarea
+            id="sv-requirements"
+            rows={2}
+            value={requirements}
+            maxLength={VACANCY_LIMITS.requirements}
+            onChange={(e) => setRequirements(e.target.value)}
+          />
         </div>
       </div>
       <div className="grid gap-3 sm:grid-cols-4">

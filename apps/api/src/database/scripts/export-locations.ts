@@ -37,12 +37,8 @@ function write(name: string, header: string[], rows: (string | number | null)[][
 async function main() {
   const connection = await mysql.createConnection(requireDatabaseUrl());
 
-  const [provinces] = await connection.query<mysql.RowDataPacket[]>(
-    'SELECT id, name_en, name_si, name_ta FROM provinces ORDER BY id',
-  );
-  const [districts] = await connection.query<mysql.RowDataPacket[]>(
-    'SELECT id, province_id, name_en, name_si, name_ta FROM districts ORDER BY id',
-  );
+  const [provinces] = await connection.query<mysql.RowDataPacket[]>('SELECT id, name_en, name_si, name_ta FROM provinces ORDER BY id');
+  const [districts] = await connection.query<mysql.RowDataPacket[]>('SELECT id, province_id, name_en, name_si, name_ta FROM districts ORDER BY id');
   const [cities] = await connection.query<mysql.RowDataPacket[]>(
     `SELECT c.id, c.district_id, c.name_en, c.name_si, c.name_ta,
             c.sub_name_en, c.sub_name_si, c.sub_name_ta, c.postcode,
@@ -57,12 +53,32 @@ async function main() {
   }
 
   const written = [
-    write('provinces.csv', ['provinces_id', 'name_en', 'name_si', 'name_ta'], provinces.map((r) => [r.id, r.name_en, r.name_si, r.name_ta])),
-    write('districts.csv', ['district id', 'province_id', 'name_en', 'name_si', 'name_ta'], districts.map((r) => [r.id, r.province_id, r.name_en, r.name_si, r.name_ta])),
+    write(
+      'provinces.csv',
+      ['provinces_id', 'name_en', 'name_si', 'name_ta'],
+      provinces.map((r) => [r.id, r.name_en, r.name_si, r.name_ta]),
+    ),
+    write(
+      'districts.csv',
+      ['district id', 'province_id', 'name_en', 'name_si', 'name_ta'],
+      districts.map((r) => [r.id, r.province_id, r.name_en, r.name_si, r.name_ta]),
+    ),
     write(
       'cities.csv',
       ['city id', 'district_id', 'name_en', 'name_si', 'name_ta', 'sub_name_en', 'sub_name_si', 'sub_name_ta', 'postcode', 'latitude', 'longitude'],
-      cities.map((r) => [r.id, r.district_id, r.name_en, r.name_si, r.name_ta, r.sub_name_en, r.sub_name_si, r.sub_name_ta, r.postcode, r.latitude, r.longitude]),
+      cities.map((r) => [
+        r.id,
+        r.district_id,
+        r.name_en,
+        r.name_si,
+        r.name_ta,
+        r.sub_name_en,
+        r.sub_name_si,
+        r.sub_name_ta,
+        r.postcode,
+        r.latitude,
+        r.longitude,
+      ]),
     ),
   ];
   written.forEach((path) => console.log(`Wrote ${path}`));

@@ -1,12 +1,4 @@
-import {
-  DEFAULT_BRANDING,
-  contrastRatio,
-  derivePalette,
-  makeAccessible,
-  meetsBrandContrast,
-  normalizeBranding,
-  paletteCss,
-} from '@care-platform/shared';
+import { DEFAULT_BRANDING, contrastRatio, derivePalette, makeAccessible, meetsBrandContrast, normalizeBranding, paletteCss } from '@care-platform/shared';
 
 /**
  * The colour rules shared by Settings > Branding, the API and both web apps
@@ -48,7 +40,22 @@ describe('branding colours', () => {
 
   it('treats malformed or unreadable branding from the network as the default', () => {
     expect(normalizeBranding(null)).toEqual(DEFAULT_BRANDING);
-    const b = normalizeBranding({ companyName: '  Acme  ', primaryColor: '#FFFF00', accentColor: 'red', defaultLocale: 'xx', enabledLocales: ['ta'], logoVersion: '../x' });
-    expect(b).toMatchObject({ companyName: 'Acme', shortName: 'AC', primaryColor: '#0F5C5C', accentColor: '#BA5942', defaultLocale: 'en', enabledLocales: ['en', 'ta'], logoVersion: null });
+    const b = normalizeBranding({
+      companyName: '  Acme  ',
+      primaryColor: '#FFFF00',
+      accentColor: 'red',
+      defaultLocale: 'xx',
+      enabledLocales: ['ta'],
+      logoVersion: '../x',
+    });
+    expect(b).toMatchObject({
+      companyName: 'Acme',
+      shortName: 'AC',
+      primaryColor: '#0F5C5C',
+      accentColor: '#BA5942',
+      defaultLocale: 'en',
+      enabledLocales: ['en', 'ta'],
+      logoVersion: null,
+    });
   });
 });

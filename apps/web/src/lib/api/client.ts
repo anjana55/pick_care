@@ -167,14 +167,14 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
 }
 
 export const api = {
-  get: <T,>(path: string, params?: RequestOptions['params']) => apiRequest<T>(path, { params }),
-  post: <T,>(path: string, body?: unknown) => apiRequest<T>(path, { method: 'POST', body }),
-  patch: <T,>(path: string, body?: unknown) => apiRequest<T>(path, { method: 'PATCH', body }),
-  put: <T,>(path: string, body?: unknown) => apiRequest<T>(path, { method: 'PUT', body }),
-  delete: <T,>(path: string) => apiRequest<T>(path, { method: 'DELETE' }),
+  get: <T>(path: string, params?: RequestOptions['params']) => apiRequest<T>(path, { params }),
+  post: <T>(path: string, body?: unknown) => apiRequest<T>(path, { method: 'POST', body }),
+  patch: <T>(path: string, body?: unknown) => apiRequest<T>(path, { method: 'PATCH', body }),
+  put: <T>(path: string, body?: unknown) => apiRequest<T>(path, { method: 'PUT', body }),
+  delete: <T>(path: string) => apiRequest<T>(path, { method: 'DELETE' }),
   /** A file the API sends back (a CSV export, say), with the same sign-in refresh as every other call. */
   download: (path: string, params?: RequestOptions['params']) => apiRequest<Blob>(path, { params, asBlob: true }),
-  upload: <T,>(path: string, formData: FormData) => apiRequest<T>(path, { method: 'POST', body: formData, isFormData: true }),
+  upload: <T>(path: string, formData: FormData) => apiRequest<T>(path, { method: 'POST', body: formData, isFormData: true }),
 };
 
 export { API_URL };

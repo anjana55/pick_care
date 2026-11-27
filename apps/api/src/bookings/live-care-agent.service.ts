@@ -16,7 +16,16 @@ import { BookingsService } from './bookings.service';
 import { CheckInService } from './check-in.service';
 import type { UpdateShiftDto } from './dto/booking.dto';
 import { LIVE_CARE_SHIFT_JOB, LIVE_CARE_SWEEP_JOB } from './live-care-jobs';
-import { EARLY_CHASE_WINDOW_MINUTES, FLAG_AFTER_CHASE_MINUTES, FLAG_NEXT, LIVE_WINDOW_HOURS, flagReason, flagSubject, liveStep, type FlagKind } from './live-care-rules';
+import {
+  EARLY_CHASE_WINDOW_MINUTES,
+  FLAG_AFTER_CHASE_MINUTES,
+  FLAG_NEXT,
+  LIVE_WINDOW_HOURS,
+  flagReason,
+  flagSubject,
+  liveStep,
+  type FlagKind,
+} from './live-care-rules';
 import { openShares } from './location-shares.db';
 
 const CHASE = 'live_care.chase_late_caregiver' as const;
@@ -44,16 +53,34 @@ export interface VisitProposal extends Record<string, unknown> {
 
 /** "Please check in" - the caregiver's bell and push, and the WhatsApp message, in their language. */
 const CHASE_TEXT = {
-  en: { title: 'Please check in for your shift', body: 'Your shift started at {time} and you have not checked in. If you are with the client, check in now with their code. If you cannot be there, call the office.' },
-  si: { title: 'ඔබගේ වාරය සඳහා පැමිණීම සටහන් කරන්න', body: 'ඔබගේ වාරය {time} ට ආරම්භ වූ නමුත් ඔබ පැමිණීම සටහන් කර නැත. ඔබ සේවාලාභියා සමඟ සිටී නම්, ඔවුන්ගේ කේතයෙන් දැන් පැමිණීම සටහන් කරන්න. ඔබට එහි සිටිය නොහැකි නම්, කාර්යාලයට අමතන්න.' },
-  ta: { title: 'உங்கள் பணிநேரத்திற்கு வருகையைப் பதிவுசெய்யுங்கள்', body: 'உங்கள் பணிநேரம் {time} மணிக்குத் தொடங்கியது, ஆனால் நீங்கள் வருகையைப் பதிவுசெய்யவில்லை. நீங்கள் வாடிக்கையாளருடன் இருந்தால், அவர்களின் குறியீட்டைக் கொண்டு இப்போதே பதிவுசெய்யுங்கள். வர முடியாவிட்டால், அலுவலகத்தை அழைக்கவும்.' },
+  en: {
+    title: 'Please check in for your shift',
+    body: 'Your shift started at {time} and you have not checked in. If you are with the client, check in now with their code. If you cannot be there, call the office.',
+  },
+  si: {
+    title: 'ඔබගේ වාරය සඳහා පැමිණීම සටහන් කරන්න',
+    body: 'ඔබගේ වාරය {time} ට ආරම්භ වූ නමුත් ඔබ පැමිණීම සටහන් කර නැත. ඔබ සේවාලාභියා සමඟ සිටී නම්, ඔවුන්ගේ කේතයෙන් දැන් පැමිණීම සටහන් කරන්න. ඔබට එහි සිටිය නොහැකි නම්, කාර්යාලයට අමතන්න.',
+  },
+  ta: {
+    title: 'உங்கள் பணிநேரத்திற்கு வருகையைப் பதிவுசெய்யுங்கள்',
+    body: 'உங்கள் பணிநேரம் {time} மணிக்குத் தொடங்கியது, ஆனால் நீங்கள் வருகையைப் பதிவுசெய்யவில்லை. நீங்கள் வாடிக்கையாளருடன் இருந்தால், அவர்களின் குறியீட்டைக் கொண்டு இப்போதே பதிவுசெய்யுங்கள். வர முடியாவிட்டால், அலுவலகத்தை அழைக்கவும்.',
+  },
 } as const;
 
 /** On my way, but the phone's ETA is after "late after": a word before they are late. */
 const EARLY_CHASE_TEXT = {
-  en: { title: 'Running late for your {time} visit?', body: 'Your phone says you are about {minutes} min away. If you will be late, call the office so they can tell the client.' },
-  si: { title: 'ඔබගේ {time} මුරයට ප්‍රමාද වනවාද?', body: 'ඔබ මිනිත්තු {minutes} ක් පමණ දුරින් සිටින බව ඔබගේ දුරකථනය පවසයි. ඔබ ප්‍රමාද වන්නේ නම්, සේවාලාභියාට දැනුම් දීමට හැකි වන සේ කාර්යාලයට අමතන්න.' },
-  ta: { title: 'உங்கள் {time} வருகைக்குத் தாமதமாகிறதா?', body: 'நீங்கள் ஏறக்குறைய {minutes} நிமிடத் தொலைவில் இருப்பதாக உங்கள் தொலைபேசி காட்டுகிறது. தாமதமாகும் என்றால், வாடிக்கையாளருக்குத் தெரிவிக்க அலுவலகத்தை அழைக்கவும்.' },
+  en: {
+    title: 'Running late for your {time} visit?',
+    body: 'Your phone says you are about {minutes} min away. If you will be late, call the office so they can tell the client.',
+  },
+  si: {
+    title: 'ඔබගේ {time} මුරයට ප්‍රමාද වනවාද?',
+    body: 'ඔබ මිනිත්තු {minutes} ක් පමණ දුරින් සිටින බව ඔබගේ දුරකථනය පවසයි. ඔබ ප්‍රමාද වන්නේ නම්, සේවාලාභියාට දැනුම් දීමට හැකි වන සේ කාර්යාලයට අමතන්න.',
+  },
+  ta: {
+    title: 'உங்கள் {time} வருகைக்குத் தாமதமாகிறதா?',
+    body: 'நீங்கள் ஏறக்குறைய {minutes} நிமிடத் தொலைவில் இருப்பதாக உங்கள் தொலைபேசி காட்டுகிறது. தாமதமாகும் என்றால், வாடிக்கையாளருக்குத் தெரிவிக்க அலுவலகத்தை அழைக்கவும்.',
+  },
 } as const;
 
 /** Another part of the same agent (cover), run in the same pass and counted in the same result. */
@@ -200,7 +227,10 @@ export class LiveCareAgentService implements OnApplicationBootstrap, OnModuleDes
           // Shifts under way, and (for the early chase from On my way) those starting soon.
           only
             ? inArray(bookingShifts.id, only)
-            : and(lt(bookingShifts.startsAt, new Date(now.getTime() + EARLY_CHASE_WINDOW_MINUTES * 60_000)), gt(bookingShifts.endsAt, new Date(now.getTime() - LIVE_WINDOW_HOURS * 3_600_000))),
+            : and(
+                lt(bookingShifts.startsAt, new Date(now.getTime() + EARLY_CHASE_WINDOW_MINUTES * 60_000)),
+                gt(bookingShifts.endsAt, new Date(now.getTime() - LIVE_WINDOW_HOURS * 3_600_000)),
+              ),
         ),
       )
       .orderBy(bookingShifts.startsAt)
@@ -231,7 +261,12 @@ export class LiveCareAgentService implements OnApplicationBootstrap, OnModuleDes
     }
 
     // On my way: when each caregiver's phone says they will arrive (a fresh point only).
-    const shares = settings.liveEnabled ? await openShares(this.db, rows.map((r) => r.shiftId)) : new Map();
+    const shares = settings.liveEnabled
+      ? await openShares(
+          this.db,
+          rows.map((r) => r.shiftId),
+        )
+      : new Map();
     const arrivals = new Map<string, Date>();
     for (const [shiftId, share] of shares) {
       if (!share.lastAt || now.getTime() - new Date(share.lastAt).getTime() > LOCATION_STALE_MINUTES * 60_000) continue;
@@ -410,8 +445,21 @@ export class LiveCareAgentService implements OnApplicationBootstrap, OnModuleDes
         to,
         {
           subject,
-          blocks: [{ lang: 'en', heading: subject, paragraphs: [`${decision.reason}.`, `${FLAG_NEXT[p.kind]}.`, 'Sent by the live-care agent. Take over the booking to stop it acting on this booking.'] }],
-          cta: { label: "Open Today's visits", url: `${(this.config.get<string>('CAREGIVER_WEB_URL') ?? 'http://localhost:3000/staff').replace(/\/+$/, '')}/bookings/today` },
+          blocks: [
+            {
+              lang: 'en',
+              heading: subject,
+              paragraphs: [
+                `${decision.reason}.`,
+                `${FLAG_NEXT[p.kind]}.`,
+                'Sent by the live-care agent. Take over the booking to stop it acting on this booking.',
+              ],
+            },
+          ],
+          cta: {
+            label: "Open Today's visits",
+            url: `${(this.config.get<string>('CAREGIVER_WEB_URL') ?? 'http://localhost:3000/staff').replace(/\/+$/, '')}/bookings/today`,
+          },
         },
         `visit ${p.shiftId} ${p.kind}`,
       );
@@ -427,10 +475,18 @@ export class LiveCareAgentService implements OnApplicationBootstrap, OnModuleDes
     const p = decision.proposal as VisitProposal | null;
     const v = await this.visit(p);
     if (!v.checkedInAt || !v.checkedOutAt) throw new BadRequestException('This visit has no check-in and check-out');
-    await this.bookingsService.updateShift(p!.bookingId, p!.shiftId, { status: 'COMPLETED' } as UpdateShiftDto, { userId: actor.userId, email: actor.email, role: actor.role });
+    await this.bookingsService.updateShift(p!.bookingId, p!.shiftId, { status: 'COMPLETED' } as UpdateShiftDto, {
+      userId: actor.userId,
+      email: actor.email,
+      role: actor.role,
+    });
     await this.automation.setHandoverNote(
       { caseType: 'BOOKING', caseId: p!.bookingId },
-      { done: `Marked the ${toColombo(p!.startsAt).time} shift done after ${p!.caregiverRegistration} checked out`, waiting: 'Nothing', next: 'Nothing more from the live-care agent on this visit' },
+      {
+        done: `Marked the ${toColombo(p!.startsAt).time} shift done after ${p!.caregiverRegistration} checked out`,
+        waiting: 'Nothing',
+        next: 'Nothing more from the live-care agent on this visit',
+      },
     );
     return { shiftId: p!.shiftId };
   };
@@ -444,7 +500,14 @@ export class LiveCareAgentService implements OnApplicationBootstrap, OnModuleDes
     const open = await this.db
       .select()
       .from(agentDecisions)
-      .where(and(eq(agentDecisions.action, COMPLETE), eq(agentDecisions.outcome, 'SHADOW'), isNull(agentDecisions.staffVerdict), eq(agentDecisions.caseType, 'BOOKING')))
+      .where(
+        and(
+          eq(agentDecisions.action, COMPLETE),
+          eq(agentDecisions.outcome, 'SHADOW'),
+          isNull(agentDecisions.staffVerdict),
+          eq(agentDecisions.caseType, 'BOOKING'),
+        ),
+      )
       .limit(500);
     const mine = open.filter((d) => {
       const id = (d.proposal as VisitProposal | null)?.shiftId;
@@ -454,7 +517,15 @@ export class LiveCareAgentService implements OnApplicationBootstrap, OnModuleDes
     const shifts = await this.db
       .select({ id: bookingShifts.id, status: bookingShifts.status, by: bookingShifts.updatedByUserId })
       .from(bookingShifts)
-      .where(and(inArray(bookingShifts.id, mine.map((d) => (d.proposal as VisitProposal).shiftId)), inArray(bookingShifts.status, ['COMPLETED', 'MISSED', 'CANCELLED'])));
+      .where(
+        and(
+          inArray(
+            bookingShifts.id,
+            mine.map((d) => (d.proposal as VisitProposal).shiftId),
+          ),
+          inArray(bookingShifts.status, ['COMPLETED', 'MISSED', 'CANCELLED']),
+        ),
+      );
     let scored = 0;
     for (const d of mine) {
       const p = d.proposal as VisitProposal;

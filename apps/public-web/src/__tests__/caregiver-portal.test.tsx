@@ -45,7 +45,9 @@ jest.mock('next/navigation', () => ({
 jest.mock('next/link', () => ({
   __esModule: true,
   default: ({ href, children, ...rest }: { href: string; children: React.ReactNode }) => (
-    <a href={href} {...rest}>{children}</a>
+    <a href={href} {...rest}>
+      {children}
+    </a>
   ),
 }));
 jest.mock('@/lib/api/auth-context', () => ({ useAuth: () => ({ ...auth, logout }) }));
@@ -103,7 +105,16 @@ const doc = (over: Record<string, unknown> = {}) => ({
   ...over,
 });
 
-const TREE = [{ id: 1, name: 'Western Province', districts: [{ id: 1, name: 'Colombo' }, { id: 2, name: 'Gampaha' }] }];
+const TREE = [
+  {
+    id: 1,
+    name: 'Western Province',
+    districts: [
+      { id: 1, name: 'Colombo' },
+      { id: 2, name: 'Gampaha' },
+    ],
+  },
+];
 
 /** What the API would answer; a test overrides only the parts it cares about. */
 function serve(data: Partial<Record<'caregiver' | 'documents' | 'availability' | 'qualifications' | 'experiences', unknown>> = {}) {
@@ -114,8 +125,16 @@ function serve(data: Partial<Record<'caregiver' | 'documents' | 'availability' |
     if (path === '/caregivers/cg-1/availability') return Promise.resolve(state.availability);
     if (path === '/caregivers/cg-1/qualifications') return Promise.resolve(state.qualifications);
     if (path === '/caregivers/cg-1/experiences') return Promise.resolve(state.experiences);
-    if (path === '/skills') return Promise.resolve([{ id: 's1', name: 'Dementia care' }, { id: 's2', name: 'Wound dressing' }]);
-    if (path === '/languages') return Promise.resolve([{ id: 'l1', name: 'Sinhala' }, { id: 'l2', name: 'English' }]);
+    if (path === '/skills')
+      return Promise.resolve([
+        { id: 's1', name: 'Dementia care' },
+        { id: 's2', name: 'Wound dressing' },
+      ]);
+    if (path === '/languages')
+      return Promise.resolve([
+        { id: 'l1', name: 'Sinhala' },
+        { id: 'l2', name: 'English' },
+      ]);
     if (path.startsWith('/public/meta/locations/tree')) return Promise.resolve(TREE);
     if (path.includes('/cities')) return Promise.resolve([{ id: 10, name: 'Colombo 03', subName: 'Modara', postcode: '00300' }]);
     return Promise.resolve(null);
@@ -148,7 +167,11 @@ beforeEach(() => {
 describe('who may see the area', () => {
   it('sends an anonymous visitor to sign in, without flashing the page', async () => {
     auth = { user: null, loading: false };
-    renderPage(<PortalLayout><p>secret page</p></PortalLayout>);
+    renderPage(
+      <PortalLayout>
+        <p>secret page</p>
+      </PortalLayout>,
+    );
 
     await waitFor(() => expect(replace).toHaveBeenCalledWith('/caregiver/login'));
     expect(screen.queryByText('secret page')).toBeNull();
@@ -156,7 +179,11 @@ describe('who may see the area', () => {
 
   it('sends a signed-in patient home - this area is for caregivers', async () => {
     auth = { user: { userId: 'p1', email: 'p@example.com', role: 'PATIENT_GUARDIAN' }, loading: false };
-    renderPage(<PortalLayout><p>secret page</p></PortalLayout>);
+    renderPage(
+      <PortalLayout>
+        <p>secret page</p>
+      </PortalLayout>,
+    );
 
     await waitFor(() => expect(replace).toHaveBeenCalledWith('/'));
     expect(screen.queryByText('secret page')).toBeNull();
@@ -164,18 +191,36 @@ describe('who may see the area', () => {
 
   it('waits while the session is still being read instead of redirecting', () => {
     auth = { user: null, loading: true };
-    renderPage(<PortalLayout><p>secret page</p></PortalLayout>);
+    renderPage(
+      <PortalLayout>
+        <p>secret page</p>
+      </PortalLayout>,
+    );
 
     expect(replace).not.toHaveBeenCalled();
   });
 
   it('shows a caregiver the eight sections and marks the current one', () => {
     pathname = '/caregiver/documents';
-    renderPage(<PortalLayout><p>inside</p></PortalLayout>);
+    renderPage(
+      <PortalLayout>
+        <p>inside</p>
+      </PortalLayout>,
+    );
 
     const nav = screen.getByRole('navigation');
-    expect(within(nav).getAllByRole('link').map((l) => l.getAttribute('href'))).toEqual([
-      '/caregiver/dashboard', '/caregiver/profile', '/caregiver/documents', '/caregiver/care-offers', '/caregiver/shifts', '/caregiver/payments', '/caregiver/work-abroad',
+    expect(
+      within(nav)
+        .getAllByRole('link')
+        .map((l) => l.getAttribute('href')),
+    ).toEqual([
+      '/caregiver/dashboard',
+      '/caregiver/profile',
+      '/caregiver/documents',
+      '/caregiver/care-offers',
+      '/caregiver/shifts',
+      '/caregiver/payments',
+      '/caregiver/work-abroad',
     ]);
     expect(within(nav).getByRole('link', { name: 'Documents' }).getAttribute('aria-current')).toBe('page');
     expect(within(nav).getByRole('link', { name: 'Profile' }).getAttribute('aria-current')).toBeNull();
@@ -184,14 +229,28 @@ describe('who may see the area', () => {
 
   it('lets the caregiver switch language, and the whole area follows', () => {
     pathname = '/caregiver/profile';
-    renderPage(<PortalLayout><p>inside</p></PortalLayout>);
+    renderPage(
+      <PortalLayout>
+        <p>inside</p>
+      </PortalLayout>,
+    );
     const nav = () => within(screen.getByRole('navigation'));
 
     expect(nav().getByRole('link', { name: en.portal.nav.documents })).toBeDefined();
 
     fireEvent.click(screen.getByRole('button', { name: 'සිං' }));
-    expect(nav().getAllByRole('link').map((l) => l.textContent)).toEqual([
-      si.nav.home, si.portal.nav.profile, si.portal.nav.documents, si.portal.offers.nav, si.portal.nav.shifts, si.portal.nav.payments, si.portal.nav.workAbroad,
+    expect(
+      nav()
+        .getAllByRole('link')
+        .map((l) => l.textContent),
+    ).toEqual([
+      si.nav.home,
+      si.portal.nav.profile,
+      si.portal.nav.documents,
+      si.portal.offers.nav,
+      si.portal.nav.shifts,
+      si.portal.nav.payments,
+      si.portal.nav.workAbroad,
     ]);
     expect(screen.getByRole('button', { name: si.caregiverDashboard.signOut })).toBeDefined();
 
@@ -205,7 +264,11 @@ describe('who may see the area', () => {
   it('signs out and returns to the sign-in page', () => {
     const assign = jest.fn();
     jest.mocked(hardNavigate).mockImplementation(assign);
-    renderPage(<PortalLayout><p>inside</p></PortalLayout>);
+    renderPage(
+      <PortalLayout>
+        <p>inside</p>
+      </PortalLayout>,
+    );
 
     fireEvent.click(screen.getByRole('button', { name: /sign out/i }));
 
@@ -267,14 +330,35 @@ describe('shifts', () => {
   it('lets the caregiver report a problem on a shift they worked, but not on one still to come', async () => {
     serve();
     const base = get.getMockImplementation()!;
-    const worked = { id: 'sh1', startsAt: '2026-10-06T02:30:00.000Z', endsAt: '2026-10-06T10:30:00.000Z', status: 'COMPLETED', isCover: false, bookingReference: 'BK-7K2QM9', scheduleType: 'DAY', area: 'Dehiwala' };
+    const worked = {
+      id: 'sh1',
+      startsAt: '2026-10-06T02:30:00.000Z',
+      endsAt: '2026-10-06T10:30:00.000Z',
+      status: 'COMPLETED',
+      isCover: false,
+      bookingReference: 'BK-7K2QM9',
+      scheduleType: 'DAY',
+      area: 'Dehiwala',
+    };
     const upcoming = { ...worked, id: 'sh2', startsAt: '2099-01-01T02:30:00.000Z', endsAt: '2099-01-01T10:30:00.000Z', status: 'SCHEDULED' };
     get.mockImplementation((path: string) => {
       if (path === '/me/shifts') return Promise.resolve([worked, upcoming]);
       if (path === '/me/issues') return Promise.resolve([]);
       return base(path);
     });
-    post.mockResolvedValue({ id: 'r1', bookingId: 'b1', bookingReference: 'BK-7K2QM9', shiftId: 'sh1', shiftStartsAt: worked.startsAt, category: 'PAY', message: 'x', status: 'OPEN', resolutionNote: null, createdAt: '', closedAt: null });
+    post.mockResolvedValue({
+      id: 'r1',
+      bookingId: 'b1',
+      bookingReference: 'BK-7K2QM9',
+      shiftId: 'sh1',
+      shiftStartsAt: worked.startsAt,
+      category: 'PAY',
+      message: 'x',
+      status: 'OPEN',
+      resolutionNote: null,
+      createdAt: '',
+      closedAt: null,
+    });
     renderPage(<ShiftsPage />);
 
     const buttons = await screen.findAllByRole('button', { name: 'Report a problem' });
@@ -290,12 +374,21 @@ describe('shifts', () => {
     expect(await screen.findByText(/your report has reached our team/)).toBeInTheDocument();
   });
 
-  it('checks in with the code the client reads out, shows a wrong code\'s reason, then checks out', async () => {
+  it("checks in with the code the client reads out, shows a wrong code's reason, then checks out", async () => {
     serve();
     const base = get.getMockImplementation()!;
     const shift = (checkIn: object | null) => ({
-      id: 'sh9', startsAt: '2099-01-01T02:30:00.000Z', endsAt: '2099-01-01T10:30:00.000Z', status: 'SCHEDULED', isCover: false, bookingReference: 'BK-7K2QM9', scheduleType: 'DAY',
-      area: 'Dehiwala', hasCarePlan: false, paused: false, checkIn,
+      id: 'sh9',
+      startsAt: '2099-01-01T02:30:00.000Z',
+      endsAt: '2099-01-01T10:30:00.000Z',
+      status: 'SCHEDULED',
+      isCover: false,
+      bookingReference: 'BK-7K2QM9',
+      scheduleType: 'DAY',
+      area: 'Dehiwala',
+      hasCarePlan: false,
+      paused: false,
+      checkIn,
     });
     const open = { state: 'DUE', opensAt: '2099-01-01T01:30:00.000Z', checkedInAt: null, checkedOutAt: null, codeLocked: false };
     let current = shift(open);
@@ -343,8 +436,18 @@ describe('shifts', () => {
     serve();
     const base = get.getMockImplementation()!;
     let current: Record<string, unknown> = {
-      id: 'sh8', startsAt: '2099-01-03T02:30:00.000Z', endsAt: '2099-01-03T10:30:00.000Z', status: 'SCHEDULED', isCover: false, bookingReference: 'BK-CANT01', scheduleType: 'DAY',
-      area: 'Dehiwala', hasCarePlan: false, paused: false, checkIn: null, cantMake: null,
+      id: 'sh8',
+      startsAt: '2099-01-03T02:30:00.000Z',
+      endsAt: '2099-01-03T10:30:00.000Z',
+      status: 'SCHEDULED',
+      isCover: false,
+      bookingReference: 'BK-CANT01',
+      scheduleType: 'DAY',
+      area: 'Dehiwala',
+      hasCarePlan: false,
+      paused: false,
+      checkIn: null,
+      cantMake: null,
     };
     get.mockImplementation((path: string) => {
       if (path === '/me/shifts') return Promise.resolve([current]);
@@ -374,11 +477,26 @@ describe('shifts', () => {
     serve();
     const base = get.getMockImplementation()!;
     const shift = (id: string, checkIn: object | null) => ({
-      id, startsAt: '2099-01-01T02:30:00.000Z', endsAt: '2099-01-01T10:30:00.000Z', status: 'SCHEDULED', isCover: false, bookingReference: `BK-${id}`, scheduleType: 'DAY', area: null, hasCarePlan: false, paused: false, checkIn,
+      id,
+      startsAt: '2099-01-01T02:30:00.000Z',
+      endsAt: '2099-01-01T10:30:00.000Z',
+      status: 'SCHEDULED',
+      isCover: false,
+      bookingReference: `BK-${id}`,
+      scheduleType: 'DAY',
+      area: null,
+      hasCarePlan: false,
+      paused: false,
+      checkIn,
     });
     const at = { opensAt: '2099-01-01T01:30:00.000Z', checkedInAt: null, checkedOutAt: null };
     get.mockImplementation((path: string) => {
-      if (path === '/me/shifts') return Promise.resolve([shift('early', { ...at, state: 'UPCOMING', codeLocked: false }), shift('locked', { ...at, state: 'LATE', codeLocked: true }), shift('off', null)]);
+      if (path === '/me/shifts')
+        return Promise.resolve([
+          shift('early', { ...at, state: 'UPCOMING', codeLocked: false }),
+          shift('locked', { ...at, state: 'LATE', codeLocked: true }),
+          shift('off', null),
+        ]);
       if (path === '/me/issues') return Promise.resolve([]);
       return base(path);
     });
@@ -393,8 +511,19 @@ describe('shifts', () => {
     get.mockImplementation((path: string) => {
       if (path === '/me/shifts')
         return Promise.resolve([
-          { id: 'p1', startsAt: '2099-01-01T02:30:00.000Z', endsAt: '2099-01-01T10:30:00.000Z', status: 'SCHEDULED', isCover: false, bookingReference: 'BK-P1', scheduleType: 'DAY', area: null, hasCarePlan: false, paused: true,
-            checkIn: { opensAt: '2099-01-01T01:30:00.000Z', checkedInAt: null, checkedOutAt: null, state: 'DUE', codeLocked: false } },
+          {
+            id: 'p1',
+            startsAt: '2099-01-01T02:30:00.000Z',
+            endsAt: '2099-01-01T10:30:00.000Z',
+            status: 'SCHEDULED',
+            isCover: false,
+            bookingReference: 'BK-P1',
+            scheduleType: 'DAY',
+            area: null,
+            hasCarePlan: false,
+            paused: true,
+            checkIn: { opensAt: '2099-01-01T01:30:00.000Z', checkedInAt: null, checkedOutAt: null, state: 'DUE', codeLocked: false },
+          },
         ]);
       if (path === '/me/issues') return Promise.resolve([]);
       return base(path);
@@ -407,9 +536,16 @@ describe('shifts', () => {
   it('shows what is saved', async () => {
     serve({
       availability: {
-        id: 'a1', dayDuty: true, nightDuty: false, liveIn24h: true, preferredShift: 'NIGHT',
-        availableFrom: '2026-11-01T00:00:00.000Z', expectedDailyRate: '6500.00', expectedMonthlyRate: null,
-        expectedLeaveDays: 4, preferredLeavePattern: 'Weekends',
+        id: 'a1',
+        dayDuty: true,
+        nightDuty: false,
+        liveIn24h: true,
+        preferredShift: 'NIGHT',
+        availableFrom: '2026-11-01T00:00:00.000Z',
+        expectedDailyRate: '6500.00',
+        expectedMonthlyRate: null,
+        expectedLeaveDays: 4,
+        preferredLeavePattern: 'Weekends',
       },
     });
     renderPage(<ShiftsPage />);
@@ -440,7 +576,11 @@ describe('shifts', () => {
 
     await waitFor(() => expect(put).toHaveBeenCalledTimes(1));
     expect(put).toHaveBeenCalledWith('/caregivers/cg-1/availability', {
-      dayDuty: true, nightDuty: false, liveIn24h: false, preferredShift: 'DAY', expectedDailyRate: '7000',
+      dayDuty: true,
+      nightDuty: false,
+      liveIn24h: false,
+      preferredShift: 'DAY',
+      expectedDailyRate: '7000',
       careTypes: ['HOME_SHIFT', 'LIVE_IN', 'HOSPITAL', 'NURSING_HOME', 'RETIREMENT_HOME'],
     });
     expect(await screen.findByText('Saved')).toBeDefined();
@@ -457,7 +597,7 @@ describe('shifts', () => {
     expect(put).not.toHaveBeenCalled();
   });
 
-  it('shows the server\'s reason when a save fails', async () => {
+  it("shows the server's reason when a save fails", async () => {
     put.mockRejectedValue(Object.assign(new (jest.requireActual('@/lib/api/client').ApiError)(400, 'Available from is not a valid date')));
     renderPage(<ShiftsPage />);
     fireEvent.click(await screen.findByRole('button', { name: 'Save' }));
@@ -468,11 +608,30 @@ describe('shifts', () => {
 
 describe('job offers', () => {
   const offer = (over: Record<string, unknown>) => ({
-    id: 'o1', kind: 'JOB', reference: 'CR-2026-0042', status: 'OFFERED', careType: 'ELDERLY_CARE', district: { en: 'Kandy', si: 'මහනුවර', ta: 'கண்டி' }, city: { en: 'Peradeniya', si: 'පේරාදෙණිය', ta: 'பேராதனை' },
-    desiredStartDate: '2099-02-01', shift: null, rateType: 'DAILY', payRate: 2800, note: null, expiresAt: '2099-01-01T03:00:00.000Z', respondedAt: null, createdAt: '2099-01-01T02:00:00.000Z',
+    id: 'o1',
+    kind: 'JOB',
+    reference: 'CR-2026-0042',
+    status: 'OFFERED',
+    careType: 'ELDERLY_CARE',
+    district: { en: 'Kandy', si: 'මහනුවර', ta: 'கண்டி' },
+    city: { en: 'Peradeniya', si: 'පේරාදෙණිය', ta: 'பேராதனை' },
+    desiredStartDate: '2099-02-01',
+    shift: null,
+    rateType: 'DAILY',
+    payRate: 2800,
+    note: null,
+    expiresAt: '2099-01-01T03:00:00.000Z',
+    respondedAt: null,
+    createdAt: '2099-01-01T02:00:00.000Z',
     ...over,
   });
-  const cover = offer({ id: 'o2', kind: 'COVER', reference: 'BK-2026-0007', desiredStartDate: null, shift: { startsAt: '2099-01-01T02:30:00.000Z', endsAt: '2099-01-01T10:30:00.000Z' } });
+  const cover = offer({
+    id: 'o2',
+    kind: 'COVER',
+    reference: 'BK-2026-0007',
+    desiredStartDate: null,
+    shift: { startsAt: '2099-01-01T02:30:00.000Z', endsAt: '2099-01-01T10:30:00.000Z' },
+  });
   /** The list as the API holds it; accepting an offer changes it, as the server would. */
   const serveOffers = (list: Record<string, unknown>[]) => {
     serve();
@@ -519,7 +678,11 @@ describe('job offers', () => {
     serveOffers([cover]);
     renderPage(<CareOffersPage />);
     const card = within(await screen.findByTestId('offer-o2'));
-    post.mockImplementation((path: string) => (path === '/me/care-offers/o2/accept' ? Promise.reject(new (jest.requireActual('@/lib/api/client').ApiError)(409, 'You have another shift at that time')) : Promise.resolve({})));
+    post.mockImplementation((path: string) =>
+      path === '/me/care-offers/o2/accept'
+        ? Promise.reject(new (jest.requireActual('@/lib/api/client').ApiError)(409, 'You have another shift at that time'))
+        : Promise.resolve({}),
+    );
     fireEvent.click(card.getByRole('button', { name: 'Take this shift' }));
     expect(await card.findByRole('alert')).toHaveTextContent('You have another shift at that time');
   });
@@ -598,7 +761,10 @@ describe('documents', () => {
   });
 
   describe('choosing what is being uploaded', () => {
-    const optionsOf = (select: HTMLElement) => within(select).getAllByRole('option').map((o) => o.textContent);
+    const optionsOf = (select: HTMLElement) =>
+      within(select)
+        .getAllByRole('option')
+        .map((o) => o.textContent);
 
     it('offers exactly proof of identity, police clearance, Grama Niladhari certificate and Other', async () => {
       renderPage(<DocumentsPage />);
@@ -668,7 +834,12 @@ describe('documents', () => {
       ['ta', ta, 'த', true],
     ] as const)('in %s', (code, dict, switchLabel, needsSwitch) => {
       it('shows the picker, the ID-kind pick and the document names in that language', async () => {
-        renderPage(<><LanguageSwitcher /><DocumentsPage /></>);
+        renderPage(
+          <>
+            <LanguageSwitcher />
+            <DocumentsPage />
+          </>,
+        );
         await screen.findByText(/have not uploaded anything/i);
         if (needsSwitch) fireEvent.click(screen.getByRole('button', { name: switchLabel }));
 
@@ -687,7 +858,7 @@ describe('documents', () => {
     });
   });
 
-  it('shows the server\'s reason when it rejects the upload', async () => {
+  it("shows the server's reason when it rejects the upload", async () => {
     post.mockRejectedValue(new (jest.requireActual('@/lib/api/client').ApiError)(400, 'The file content does not match its type.'));
     renderPage(<DocumentsPage />);
     await screen.findByText(/have not uploaded anything/i);
@@ -801,7 +972,7 @@ describe('profile', () => {
     }
   });
 
-  it('shows the server\'s reason when a save is refused', async () => {
+  it("shows the server's reason when a save is refused", async () => {
     patch.mockRejectedValue(new (jest.requireActual('@/lib/api/client').ApiError)(403, 'Your identity details are locked'));
     renderPage(<ProfilePage />);
     await settled();
@@ -835,8 +1006,15 @@ describe('profile', () => {
 
   describe('qualifications and experience', () => {
     const qualification = (over: Record<string, unknown> = {}) => ({
-      id: 'q1', name: 'NVQ Level 3', type: 'NVQ', institution: 'VTA', certificateNumber: null,
-      issueDate: null, expiryDate: null, verificationStatus: 'PENDING', ...over,
+      id: 'q1',
+      name: 'NVQ Level 3',
+      type: 'NVQ',
+      institution: 'VTA',
+      certificateNumber: null,
+      issueDate: null,
+      expiryDate: null,
+      verificationStatus: 'PENDING',
+      ...over,
     });
 
     it('adds a qualification, asking only for what the API requires', async () => {
@@ -879,7 +1057,9 @@ describe('profile', () => {
       fireEvent.change(screen.getByLabelText(/^Institution/), { target: { value: 'Another Institute' } });
       fireEvent.click(within(screen.getByRole('region', { name: 'Qualifications' })).getByRole('button', { name: 'Save' }));
 
-      await waitFor(() => expect(patch).toHaveBeenCalledWith('/caregivers/cg-1/qualifications/q1', expect.objectContaining({ institution: 'Another Institute' })));
+      await waitFor(() =>
+        expect(patch).toHaveBeenCalledWith('/caregivers/cg-1/qualifications/q1', expect.objectContaining({ institution: 'Another Institute' })),
+      );
     });
 
     it('adds work experience', async () => {
@@ -894,12 +1074,15 @@ describe('profile', () => {
 
       await waitFor(() =>
         expect(post).toHaveBeenCalledWith('/caregivers/cg-1/experiences', {
-          employerOrClient: 'Private household', role: 'Elder care', country: 'Sri Lanka', startDate: '2022-01-01',
+          employerOrClient: 'Private household',
+          role: 'Elder care',
+          country: 'Sri Lanka',
+          startDate: '2022-01-01',
         }),
       );
     });
 
-    it('shows the server\'s reason when an entry is refused', async () => {
+    it("shows the server's reason when an entry is refused", async () => {
       post.mockRejectedValue(new (jest.requireActual('@/lib/api/client').ApiError)(400, 'name must be a string'));
       renderPage(<ProfilePage />);
       fireEvent.click(await screen.findByRole('button', { name: 'Add a qualification' }));
@@ -923,8 +1106,16 @@ describe('every page speaks the chosen language', () => {
   ];
 
   describe.each(pages)('%s', (_name, page, heading) => {
-    it.each([['සිං', si], ['த', ta]] as const)('shows its translated heading and no raw keys (%s)', async (label, dict) => {
-      renderPage(<><LanguageSwitcher />{page}</>);
+    it.each([
+      ['සිං', si],
+      ['த', ta],
+    ] as const)('shows its translated heading and no raw keys (%s)', async (label, dict) => {
+      renderPage(
+        <>
+          <LanguageSwitcher />
+          {page}
+        </>,
+      );
       fireEvent.click(screen.getByRole('button', { name: label }));
 
       expect(await screen.findByText(heading(dict as Dict))).toBeDefined();
@@ -943,7 +1134,18 @@ describe('booked shifts on the Shifts page', () => {
     get.mockImplementation((path: string) =>
       Promise.resolve(
         path === '/me/shifts'
-          ? [{ id: 's1', startsAt: '2026-11-02T02:30:00.000Z', endsAt: '2026-11-02T11:30:00.000Z', status: 'SCHEDULED', isCover: true, bookingReference: 'BK-AB2345', scheduleType: 'DAY', area: 'Dehiwala, Colombo' }]
+          ? [
+              {
+                id: 's1',
+                startsAt: '2026-11-02T02:30:00.000Z',
+                endsAt: '2026-11-02T11:30:00.000Z',
+                status: 'SCHEDULED',
+                isCover: true,
+                bookingReference: 'BK-AB2345',
+                scheduleType: 'DAY',
+                area: 'Dehiwala, Colombo',
+              },
+            ]
           : path.endsWith('/availability')
             ? null
             : caregiver(),

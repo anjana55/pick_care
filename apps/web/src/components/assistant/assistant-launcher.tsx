@@ -155,7 +155,12 @@ export function AssistantLauncher() {
               <p className="truncate text-xs text-ink/55">{record ? t(`assistant.floating.context.${record}`) : t('assistant.floating.context.page')}</p>
             </div>
             <div className="flex shrink-0 items-center gap-0.5">
-              <button onClick={startOver} title={t('assistant.new')} aria-label={t('assistant.new')} className="flex h-8 w-8 items-center justify-center rounded text-ink/55 hover:bg-paper hover:text-ink">
+              <button
+                onClick={startOver}
+                title={t('assistant.new')}
+                aria-label={t('assistant.new')}
+                className="flex h-8 w-8 items-center justify-center rounded text-ink/55 hover:bg-paper hover:text-ink"
+              >
                 <Plus size={16} />
               </button>
               <Link
@@ -167,7 +172,12 @@ export function AssistantLauncher() {
               >
                 <Maximize2 size={15} />
               </Link>
-              <button onClick={close} title={t('assistant.floating.close')} aria-label={t('assistant.floating.close')} className="flex h-8 w-8 items-center justify-center rounded text-ink/55 hover:bg-paper hover:text-ink">
+              <button
+                onClick={close}
+                title={t('assistant.floating.close')}
+                aria-label={t('assistant.floating.close')}
+                className="flex h-8 w-8 items-center justify-center rounded text-ink/55 hover:bg-paper hover:text-ink"
+              >
                 <X size={17} />
               </button>
             </div>
@@ -179,7 +189,11 @@ export function AssistantLauncher() {
                 <p className="text-sm text-ink/70">{t('assistant.intro')}</p>
                 <div className="mt-4 space-y-2">
                   {starters.map((key) => (
-                    <button key={key} onClick={() => void submit(t(key))} className="block w-full rounded-lg border border-border px-3 py-2 text-left text-sm text-ink/80 hover:border-brand hover:bg-paper">
+                    <button
+                      key={key}
+                      onClick={() => void submit(t(key))}
+                      className="block w-full rounded-lg border border-border px-3 py-2 text-left text-sm text-ink/80 hover:border-brand hover:bg-paper"
+                    >
                       {t(key)}
                     </button>
                   ))}

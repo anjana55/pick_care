@@ -1,13 +1,7 @@
 'use client';
 
 import { LocateFixed, Loader2 } from 'lucide-react';
-import {
-  SEARCH_RADIUS_OPTIONS_KM,
-  type MapCityPoint,
-  type PublicSearchResponse,
-  type SearchOrigin,
-  type ServiceAreaCity,
-} from '@care-platform/shared';
+import { SEARCH_RADIUS_OPTIONS_KM, type MapCityPoint, type PublicSearchResponse, type SearchOrigin, type ServiceAreaCity } from '@care-platform/shared';
 import { useTranslation } from '@/lib/i18n';
 import type { DeviceLocationError } from '@/lib/hooks/use-device-location';
 import type { CaregiverMapLabels } from '@/components/map/caregiver-map';
@@ -135,7 +129,11 @@ export function NearbyControls({ origin, onUseMyLocation, locating, onRadiusChan
         onClick={onUseMyLocation}
         disabled={locating}
         aria-pressed={origin?.source === 'device'}
-        className={cn(chip, 'inline-flex items-center gap-1.5 px-3.5 py-2 text-ink hover:bg-paper disabled:opacity-70', origin?.source === 'device' && 'text-accent-dark')}
+        className={cn(
+          chip,
+          'inline-flex items-center gap-1.5 px-3.5 py-2 text-ink hover:bg-paper disabled:opacity-70',
+          origin?.source === 'device' && 'text-accent-dark',
+        )}
       >
         {locating ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <LocateFixed className="h-4 w-4 text-accent" aria-hidden />}
         {locating ? t('map.locating') : t('map.useMyLocation')}

@@ -88,16 +88,7 @@ export class InsightsService {
     const periodStart = colomboToUtc(p.from, '00:00');
     const periodEnd = colomboToUtc(addDays(p.to, 1), '00:00');
 
-    const [
-      invoicedRows,
-      collectedRows,
-      economicsRows,
-      requestRows,
-      placementRows,
-      shiftRows,
-      clientRows,
-      caregiverRows,
-    ] = await Promise.all([
+    const [invoicedRows, collectedRows, economicsRows, requestRows, placementRows, shiftRows, clientRows, caregiverRows] = await Promise.all([
       this.db
         .select({ day: dayText(invoices.issueDate), total: sql<string>`SUM(${invoices.total})` })
         .from(invoices)
@@ -162,22 +153,98 @@ export class InsightsService {
         .groupBy(sql`1`),
     ]);
 
-    const daily = <T>(rows: T[], pick: (r: T) => number, day: (r: T) => string) =>
-      rows.map((r): DailyValue => ({ day: day(r), value: pick(r) }));
+    const daily = <T>(rows: T[], pick: (r: T) => number, day: (r: T) => string) => rows.map((r): DailyValue => ({ day: day(r), value: pick(r) }));
 
-    const invoiced = fold(p, daily(invoicedRows, (r) => num(r.total), (r) => r.day));
-    const collected = fold(p, daily(collectedRows, (r) => num(r.total), (r) => r.day));
-    const earned = fold(p, daily(economicsRows, (r) => num(r.revenue), (r) => r.day));
-    const cost = fold(p, daily(economicsRows, (r) => num(r.cost), (r) => r.day));
-    const requests = fold(p, daily(requestRows, (r) => num(r.n), (r) => r.day));
-    const placements = fold(p, daily(placementRows, (r) => num(r.n), (r) => r.day));
+    const invoiced = fold(
+      p,
+      daily(
+        invoicedRows,
+        (r) => num(r.total),
+        (r) => r.day,
+      ),
+    );
+    const collected = fold(
+      p,
+      daily(
+        collectedRows,
+        (r) => num(r.total),
+        (r) => r.day,
+      ),
+    );
+    const earned = fold(
+      p,
+      daily(
+        economicsRows,
+        (r) => num(r.revenue),
+        (r) => r.day,
+      ),
+    );
+    const cost = fold(
+      p,
+      daily(
+        economicsRows,
+        (r) => num(r.cost),
+        (r) => r.day,
+      ),
+    );
+    const requests = fold(
+      p,
+      daily(
+        requestRows,
+        (r) => num(r.n),
+        (r) => r.day,
+      ),
+    );
+    const placements = fold(
+      p,
+      daily(
+        placementRows,
+        (r) => num(r.n),
+        (r) => r.day,
+      ),
+    );
     const completed = shiftRows.filter((r) => r.status === 'COMPLETED');
     const missed = shiftRows.filter((r) => r.status === 'MISSED');
-    const careHours = fold(p, daily(completed, (r) => num(r.minutes) / 60, (r) => r.day));
-    const completedCount = fold(p, daily(completed, (r) => num(r.n), (r) => r.day));
-    const missedCount = fold(p, daily(missed, (r) => num(r.n), (r) => r.day));
-    const newClients = fold(p, daily(clientRows, (r) => num(r.n), (r) => r.day));
-    const newCaregivers = fold(p, daily(caregiverRows, (r) => num(r.n), (r) => r.day));
+    const careHours = fold(
+      p,
+      daily(
+        completed,
+        (r) => num(r.minutes) / 60,
+        (r) => r.day,
+      ),
+    );
+    const completedCount = fold(
+      p,
+      daily(
+        completed,
+        (r) => num(r.n),
+        (r) => r.day,
+      ),
+    );
+    const missedCount = fold(
+      p,
+      daily(
+        missed,
+        (r) => num(r.n),
+        (r) => r.day,
+      ),
+    );
+    const newClients = fold(
+      p,
+      daily(
+        clientRows,
+        (r) => num(r.n),
+        (r) => r.day,
+      ),
+    );
+    const newCaregivers = fold(
+      p,
+      daily(
+        caregiverRows,
+        (r) => num(r.n),
+        (r) => r.day,
+      ),
+    );
 
     const [requestsBlock, pipeline, aging, upcoming, demandSupply, topCaregivers, now, attention] = await Promise.all([
       this.requestInsights(periodStart, periodEnd),
@@ -290,9 +357,7 @@ export class InsightsService {
         booked: num(funnel?.booked),
       },
       open: openBy,
-      closeReasons: reasons
-        .map((r) => ({ key: r.key as string, count: num(r.n) }))
-        .sort((a, b) => b.count - a.count),
+      closeReasons: reasons.map((r) => ({ key: r.key as string, count: num(r.n) })).sort((a, b) => b.count - a.count),
       sources: sourceBy,
       medianFirstResponseHours: hours === null ? null : round2(hours),
     };
@@ -332,7 +397,10 @@ export class InsightsService {
     const weekAgo = colomboToUtc(addDays(today, -7), '00:00');
     const weekAhead = colomboToUtc(addDays(today, 8), '00:00');
     const [[active], [working], [clients]] = await Promise.all([
-      this.db.select({ n: count() }).from(caregivers).where(and(eq(caregivers.status, 'ACTIVE'), isNull(caregivers.deletedAt))),
+      this.db
+        .select({ n: count() })
+        .from(caregivers)
+        .where(and(eq(caregivers.status, 'ACTIVE'), isNull(caregivers.deletedAt))),
       this.db
         .select({ n: sql<string>`COUNT(DISTINCT ${bookingShifts.caregiverId})` })
         .from(bookingShifts)
@@ -464,7 +532,10 @@ export class InsightsService {
       [awaiting],
       care,
     ] = await Promise.all([
-      this.db.select({ n: count() }).from(careRequests).where(and(eq(careRequests.status, 'NEW'), lt(careRequests.createdAt, dayAgo))),
+      this.db
+        .select({ n: count() })
+        .from(careRequests)
+        .where(and(eq(careRequests.status, 'NEW'), lt(careRequests.createdAt, dayAgo))),
       this.db
         .select({ n: count() })
         .from(careRequests)
@@ -506,7 +577,10 @@ export class InsightsService {
       .from(bookings)
       .innerJoin(invoices, and(eq(invoices.bookingId, bookings.id), eq(invoices.status, 'ISSUED')))
       .where(and(eq(bookings.status, 'DRAFT'), eq(bookings.billingTiming, 'ADVANCE')));
-    const [paused] = await this.db.select({ n: count() }).from(bookings).where(and(eq(bookings.status, 'CONFIRMED'), isNotNull(bookings.paymentHoldInvoiceId)));
+    const [paused] = await this.db
+      .select({ n: count() })
+      .from(bookings)
+      .where(and(eq(bookings.status, 'CONFIRMED'), isNotNull(bookings.paymentHoldInvoiceId)));
     const [waiting] = await this.db.select({ n: count() }).from(talkRequests).where(eq(talkRequests.status, 'OPEN'));
     // Places suggested from a first check-in, waiting for staff to confirm (GPS tracking A).
     const [places] = await this.db.select({ n: count() }).from(careLocations).where(isNull(careLocations.confirmedAt));

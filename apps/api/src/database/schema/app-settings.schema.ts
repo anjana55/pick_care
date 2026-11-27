@@ -26,6 +26,10 @@ export const appSettings = mysqlTable('app_settings', {
   androidCertFingerprints: text('android_cert_fingerprints'),
 
   updatedBy: varchar('updated_by', { length: 36 }),
-  createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+  createdAt: datetime('created_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: datetime('updated_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
 });

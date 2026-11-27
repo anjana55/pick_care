@@ -1,7 +1,20 @@
 'use client';
 
 import { useState } from 'react';
-import { AlertOctagon, CalendarClock, CalendarPlus, Check, CheckCircle2, Circle, FileSignature, LifeBuoy, MessageCircle, Phone, Trash2, Video } from 'lucide-react';
+import {
+  AlertOctagon,
+  CalendarClock,
+  CalendarPlus,
+  Check,
+  CheckCircle2,
+  Circle,
+  FileSignature,
+  LifeBuoy,
+  MessageCircle,
+  Phone,
+  Trash2,
+  Video,
+} from 'lucide-react';
 import {
   ASSESSMENT_LIMITS,
   CONTACT_ABROAD_LIMITS,
@@ -32,7 +45,21 @@ import { cn } from '@/lib/utils';
 
 const errorText = (err: unknown, fallback: string) => (err instanceof ApiError ? err.message : fallback);
 
-function Section({ id, title, intro, tone = 'plain', icon, children }: { id: string; title: string; intro?: string; tone?: 'plain' | 'brand' | 'alert'; icon?: React.ReactNode; children: React.ReactNode }) {
+function Section({
+  id,
+  title,
+  intro,
+  tone = 'plain',
+  icon,
+  children,
+}: {
+  id: string;
+  title: string;
+  intro?: string;
+  tone?: 'plain' | 'brand' | 'alert';
+  icon?: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
     <section
       id={id}
@@ -99,12 +126,15 @@ function OfferItem({ offer: o }: { offer: CaregiverJobOffer }) {
             {o.jobTitle}
           </h3>
           <p className="text-sm text-ink/60">
-            {t('portal.workAbroad.interest.who', { type: t(`international.employerTypes.${o.organisationType}`), country: countries.name(o.country) })} · {o.reference}
+            {t('portal.workAbroad.interest.who', { type: t(`international.employerTypes.${o.organisationType}`), country: countries.name(o.country) })} ·{' '}
+            {o.reference}
           </p>
         </div>
         <OfferStatusBadge status={o.status} expired={o.expired} />
       </div>
-      {open && o.expiresOn && <p className="mt-2 text-sm font-medium text-brand-dark">{t('portal.workAbroad.offers.answerBy', { date: fmtDate(o.expiresOn, locale) })}</p>}
+      {open && o.expiresOn && (
+        <p className="mt-2 text-sm font-medium text-brand-dark">{t('portal.workAbroad.offers.answerBy', { date: fmtDate(o.expiresOn, locale) })}</p>
+      )}
       <div className="mt-3">
         <OfferTermsList terms={o} />
       </div>
@@ -112,7 +142,9 @@ function OfferItem({ offer: o }: { offer: CaregiverJobOffer }) {
         <SignatureLine label={t('overseas.employerSignature')} signature={o.employerSignature} />
         <SignatureLine label={t('overseas.yourSignature')} signature={o.caregiverSignature} />
       </div>
-      {o.status === 'DECLINED' && o.declineReason && <p className="mt-2 text-sm text-ink/60">{t('portal.workAbroad.offers.yourReason', { reason: o.declineReason })}</p>}
+      {o.status === 'DECLINED' && o.declineReason && (
+        <p className="mt-2 text-sm text-ink/60">{t('portal.workAbroad.offers.yourReason', { reason: o.declineReason })}</p>
+      )}
 
       {open && mode === 'idle' && (
         <div className="mt-4 flex flex-wrap gap-2 border-t border-border pt-4">
@@ -143,7 +175,14 @@ function OfferItem({ offer: o }: { offer: CaregiverJobOffer }) {
             <Label htmlFor={`sign-${o.id}`} required>
               {t('portal.workAbroad.offers.signLabel')}
             </Label>
-            <Input id={`sign-${o.id}`} value={name} onChange={(e) => setName(e.target.value)} maxLength={120} autoComplete="name" className="max-w-sm font-serif text-lg italic" />
+            <Input
+              id={`sign-${o.id}`}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              maxLength={120}
+              autoComplete="name"
+              className="max-w-sm font-serif text-lg italic"
+            />
             <p className="mt-1 text-xs text-ink/50">{t('portal.workAbroad.offers.signHint')}</p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -197,7 +236,13 @@ export function MyInterviewsCard() {
   const upcoming = data.filter((i) => isUpcoming(i)).sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt));
   if (!upcoming.length) return null;
   return (
-    <Section id="interviews" title={t('portal.workAbroad.interviews.title')} intro={t('portal.workAbroad.interviews.intro')} tone="brand" icon={<CalendarClock className="h-5 w-5 text-brand" aria-hidden />}>
+    <Section
+      id="interviews"
+      title={t('portal.workAbroad.interviews.title')}
+      intro={t('portal.workAbroad.interviews.intro')}
+      tone="brand"
+      icon={<CalendarClock className="h-5 w-5 text-brand" aria-hidden />}
+    >
       <ul className="space-y-3">
         {upcoming.map((i) => (
           <li key={i.id} className="rounded-lg border border-border bg-white p-4">
@@ -207,7 +252,12 @@ export function MyInterviewsCard() {
               {t(`overseas.interviewMode.${i.mode}`)} · {t('overseas.minutes', { n: i.durationMinutes })} · {t('overseas.round', { n: i.round })}
             </p>
             {i.meetingLink && (
-              <a href={i.meetingLink} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-brand hover:text-brand-dark">
+              <a
+                href={i.meetingLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-brand hover:text-brand-dark"
+              >
                 <Video className="h-4 w-4" aria-hidden />
                 {t('overseas.joinCall')}
               </a>
@@ -245,7 +295,14 @@ export function DepartureCard() {
       {current.status === 'PRE_DEPARTURE' && (
         <>
           <div className="flex items-center gap-3">
-            <div className="h-2 flex-1 overflow-hidden rounded-full bg-paper" role="progressbar" aria-valuemin={0} aria-valuemax={checklist.length} aria-valuenow={done} aria-label={t('portal.workAbroad.departure.progress', { done, total: checklist.length })}>
+            <div
+              className="h-2 flex-1 overflow-hidden rounded-full bg-paper"
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={checklist.length}
+              aria-valuenow={done}
+              aria-label={t('portal.workAbroad.departure.progress', { done, total: checklist.length })}
+            >
               <div className="h-full rounded-full bg-brand" style={{ width: `${(done / checklist.length) * 100}%` }} />
             </div>
             <span className="text-sm tabular-nums text-ink/70">{t('portal.workAbroad.departure.progress', { done, total: checklist.length })}</span>
@@ -253,12 +310,20 @@ export function DepartureCard() {
           <ol className="mt-4 space-y-2">
             {checklist.map((c) => (
               <li key={c.item} className="flex items-start gap-2 text-sm">
-                {c.done ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand" aria-hidden /> : <Circle className="mt-0.5 h-4 w-4 shrink-0 text-ink/30" aria-hidden />}
+                {c.done ? (
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand" aria-hidden />
+                ) : (
+                  <Circle className="mt-0.5 h-4 w-4 shrink-0 text-ink/30" aria-hidden />
+                )}
                 <span className="min-w-0">
                   <span className={cn('font-medium', c.done ? 'text-ink' : 'text-ink/80')}>{t(`overseas.departure.${c.item}`)}</span>
                   <span className="sr-only">: {c.done ? t('portal.workAbroad.departure.done') : t('portal.workAbroad.departure.todo')}</span>
                   {c.done && c.doneOn && <span className="ml-2 text-xs text-ink/50">{fmtDate(c.doneOn, locale)}</span>}
-                  {!c.done && c.dueOn && <span className="ml-2 text-xs font-medium text-accent-dark">{t('portal.workAbroad.departure.due', { date: fmtDate(c.dueOn, locale) })}</span>}
+                  {!c.done && c.dueOn && (
+                    <span className="ml-2 text-xs font-medium text-accent-dark">
+                      {t('portal.workAbroad.departure.due', { date: fmtDate(c.dueOn, locale) })}
+                    </span>
+                  )}
                   {c.note && <span className="block text-xs text-ink/60">{c.note}</span>}
                 </span>
               </li>
@@ -288,7 +353,10 @@ function ContactAbroadForm({ placement }: { placement: CaregiverPlacement }) {
       onSubmit={(e) => {
         e.preventDefault();
         setSaved(false);
-        save.mutate({ placementId: placement.id, body: { addressAbroad: address.trim() || null, phoneAbroad: phone.trim() || null } }, { onSuccess: () => setSaved(true) });
+        save.mutate(
+          { placementId: placement.id, body: { addressAbroad: address.trim() || null, phoneAbroad: phone.trim() || null } },
+          { onSuccess: () => setSaved(true) },
+        );
       }}
     >
       <div>
@@ -298,7 +366,15 @@ function ContactAbroadForm({ placement }: { placement: CaregiverPlacement }) {
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <Label htmlFor="phone-abroad">{t('portal.workAbroad.departure.phone')}</Label>
-          <Input id="phone-abroad" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} maxLength={CONTACT_ABROAD_LIMITS.phone} placeholder="+81 90 1234 5678" autoComplete="tel" />
+          <Input
+            id="phone-abroad"
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            maxLength={CONTACT_ABROAD_LIMITS.phone}
+            placeholder="+81 90 1234 5678"
+            autoComplete="tel"
+          />
         </div>
         <div>
           <Label htmlFor="address-abroad">{t('portal.workAbroad.departure.address')}</Label>
@@ -361,7 +437,13 @@ export function WelfareCard() {
     );
 
   return (
-    <Section id="help" title={t('portal.workAbroad.welfare.title')} intro={t('portal.workAbroad.welfare.intro')} tone={abroad ? 'alert' : 'plain'} icon={<LifeBuoy className="h-5 w-5 text-amber-700" aria-hidden />}>
+    <Section
+      id="help"
+      title={t('portal.workAbroad.welfare.title')}
+      intro={t('portal.workAbroad.welfare.intro')}
+      tone={abroad ? 'alert' : 'plain'}
+      icon={<LifeBuoy className="h-5 w-5 text-amber-700" aria-hidden />}
+    >
       {abroad && (
         <div className="rounded-lg border border-red-200 bg-white p-4">
           <p className="flex items-center gap-2 text-sm font-semibold text-red-800">
@@ -478,7 +560,12 @@ function ReportThread({ report: r }: { report: WelfareReport }) {
   return (
     <details open={open} onToggle={(e) => setOpen((e.target as HTMLDetailsElement).open)} className="rounded-lg border border-border bg-white">
       <summary className="flex cursor-pointer flex-wrap items-center gap-2 px-4 py-3 text-sm">
-        <span className={cn('rounded-full px-2 py-0.5 text-xs font-semibold', r.severity === 'SOS' || r.severity === 'URGENT' ? 'bg-red-100 text-red-800' : 'bg-paper text-ink/70')}>
+        <span
+          className={cn(
+            'rounded-full px-2 py-0.5 text-xs font-semibold',
+            r.severity === 'SOS' || r.severity === 'URGENT' ? 'bg-red-100 text-red-800' : 'bg-paper text-ink/70',
+          )}
+        >
           {t(`overseas.welfareSeverity.${r.severity}`)}
         </span>
         <span className="font-medium text-ink">{t(`overseas.welfareCategory.${r.category}`)}</span>
@@ -489,8 +576,13 @@ function ReportThread({ report: r }: { report: WelfareReport }) {
       </summary>
       <div className="space-y-2 border-t border-border px-4 py-3">
         {r.messages.map((m) => (
-          <div key={m.id} className={cn('max-w-[85%] rounded-lg px-3 py-2 text-sm', m.from === 'STAFF' ? 'bg-brand-light text-ink' : 'ml-auto bg-paper text-ink')}>
-            <p className="text-xs font-semibold text-ink/60">{m.from === 'STAFF' ? t('portal.workAbroad.welfare.ourTeam') : t('portal.workAbroad.welfare.you')}</p>
+          <div
+            key={m.id}
+            className={cn('max-w-[85%] rounded-lg px-3 py-2 text-sm', m.from === 'STAFF' ? 'bg-brand-light text-ink' : 'ml-auto bg-paper text-ink')}
+          >
+            <p className="text-xs font-semibold text-ink/60">
+              {m.from === 'STAFF' ? t('portal.workAbroad.welfare.ourTeam') : t('portal.workAbroad.welfare.you')}
+            </p>
             <p className="whitespace-pre-line">{m.body}</p>
             <p className="mt-0.5 text-[11px] text-ink/40">{fmtDateTime(m.createdAt, locale)}</p>
           </div>
@@ -505,8 +597,20 @@ function ReportThread({ report: r }: { report: WelfareReport }) {
           <label htmlFor={`reply-${r.id}`} className="sr-only">
             {t('portal.workAbroad.welfare.reply')}
           </label>
-          <Input id={`reply-${r.id}`} value={reply} onChange={(e) => setReply(e.target.value)} maxLength={WELFARE_LIMITS.message} placeholder={t('portal.workAbroad.welfare.reply')} />
-          <Button type="submit" size="sm" variant="secondary" disabled={!reply.trim() || message.isPending} aria-label={t('portal.workAbroad.welfare.sendReply')}>
+          <Input
+            id={`reply-${r.id}`}
+            value={reply}
+            onChange={(e) => setReply(e.target.value)}
+            maxLength={WELFARE_LIMITS.message}
+            placeholder={t('portal.workAbroad.welfare.reply')}
+          />
+          <Button
+            type="submit"
+            size="sm"
+            variant="secondary"
+            disabled={!reply.trim() || message.isPending}
+            aria-label={t('portal.workAbroad.welfare.sendReply')}
+          >
             <MessageCircle className="h-4 w-4" aria-hidden />
           </Button>
         </form>
@@ -550,7 +654,13 @@ export function MyResultsCard() {
                   {a.verified ? t('portal.workAbroad.results.verified') : t('portal.workAbroad.results.waiting')}
                 </span>
                 {!a.verified && (
-                  <button type="button" onClick={() => remove.mutate(a.id)} disabled={remove.isPending} className="rounded p-1 text-ink/40 hover:text-danger" aria-label={t('portal.workAbroad.results.remove', { title: a.title })}>
+                  <button
+                    type="button"
+                    onClick={() => remove.mutate(a.id)}
+                    disabled={remove.isPending}
+                    className="rounded p-1 text-ink/40 hover:text-danger"
+                    aria-label={t('portal.workAbroad.results.remove', { title: a.title })}
+                  >
                     <Trash2 className="h-4 w-4" aria-hidden />
                   </button>
                 )}
@@ -607,11 +717,24 @@ export function MyResultsCard() {
               <Label htmlFor="r-title" required>
                 {t('portal.workAbroad.results.testName')}
               </Label>
-              <Input id="r-title" value={form.title} onChange={(e) => set('title', e.target.value)} maxLength={ASSESSMENT_LIMITS.title} placeholder={t('portal.workAbroad.results.testNamePlaceholder')} required />
+              <Input
+                id="r-title"
+                value={form.title}
+                onChange={(e) => set('title', e.target.value)}
+                maxLength={ASSESSMENT_LIMITS.title}
+                placeholder={t('portal.workAbroad.results.testNamePlaceholder')}
+                required
+              />
             </div>
             <div>
               <Label htmlFor="r-score">{t('portal.workAbroad.results.score')}</Label>
-              <Input id="r-score" value={form.score ?? ''} onChange={(e) => set('score', e.target.value)} maxLength={ASSESSMENT_LIMITS.score} placeholder="6.5" />
+              <Input
+                id="r-score"
+                value={form.score ?? ''}
+                onChange={(e) => set('score', e.target.value)}
+                maxLength={ASSESSMENT_LIMITS.score}
+                placeholder="6.5"
+              />
             </div>
             <div>
               <Label htmlFor="r-cefr">{t('portal.workAbroad.results.cefr')}</Label>

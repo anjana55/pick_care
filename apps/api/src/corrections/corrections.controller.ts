@@ -75,7 +75,12 @@ export class MyIssueReportsController {
   @Roles('PATIENT_GUARDIAN')
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Audit({ action: 'REPORT_BOOKING_ISSUE', entityType: 'Booking' })
-  reportOnBooking(@Param('id', ParseUUIDPipe) id: string, @Body() dto: CreateIssueReportDto, @CurrentUser() user: AuthenticatedUser, @Req() req: RequestWithLanguage) {
+  reportOnBooking(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateIssueReportDto,
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: RequestWithLanguage,
+  ) {
     return this.issues.createForClient(user, id, dto, req.lang ?? 'en');
   }
 
@@ -83,7 +88,12 @@ export class MyIssueReportsController {
   @Roles('CAREGIVER')
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Audit({ action: 'REPORT_SHIFT_ISSUE', entityType: 'BookingShift' })
-  reportOnShift(@Param('id', ParseUUIDPipe) id: string, @Body() dto: CreateIssueReportDto, @CurrentUser() user: AuthenticatedUser, @Req() req: RequestWithLanguage) {
+  reportOnShift(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateIssueReportDto,
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: RequestWithLanguage,
+  ) {
     return this.issues.createForCaregiver(user, id, dto, req.lang ?? 'en');
   }
 

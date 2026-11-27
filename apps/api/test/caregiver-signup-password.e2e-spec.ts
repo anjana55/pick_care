@@ -88,7 +88,10 @@ describe('Caregiver sign-up with email and password (e2e)', () => {
 
     const mail = sent.find((m) => m.to === email)!;
     expect(mail).toBeTruthy();
-    await api().post('/auth/verify-email').send({ token: tokenFrom(mail.url) }).expect(201);
+    await api()
+      .post('/auth/verify-email')
+      .send({ token: tokenFrom(mail.url) })
+      .expect(201);
 
     const session = await login(email).expect(201);
     const claims = jwt.verify(session.body.accessToken, { secret: accessSecret }) as { role: string; caregiverId: string };
@@ -112,7 +115,10 @@ describe('Caregiver sign-up with email and password (e2e)', () => {
     const formEmail = newEmail();
     const reg = await register(newPhone(), { email: formEmail }).expect(201);
     const other = await register(newPhone(), { email: newEmail() }).expect(201);
-    const [otherUser] = await db.select().from(users).where(eq(users.id, (jwt.decode(other.body.pendingToken) as { sub: string }).sub));
+    const [otherUser] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, (jwt.decode(other.body.pendingToken) as { sub: string }).sub));
 
     const taken = await setPassword(reg.body.pendingToken, otherUser.email!).expect(409);
     expect(taken.body.message).toBe('An account with this email already exists');
@@ -144,7 +150,10 @@ describe('Caregiver sign-up with email and password (e2e)', () => {
     const reg = await register(phoneB).expect(201);
     const email = newEmail();
     await setPassword(reg.body.pendingToken, email).expect(200);
-    await api().post('/auth/verify-email').send({ token: tokenFrom(sent.find((m) => m.to === email)!.url) }).expect(201);
+    await api()
+      .post('/auth/verify-email')
+      .send({ token: tokenFrom(sent.find((m) => m.to === email)!.url) })
+      .expect(201);
     await register(phoneB).expect(409);
     await login(email).expect(201);
   });

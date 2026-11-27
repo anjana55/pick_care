@@ -41,7 +41,9 @@ export const accountClaimCodes = mysqlTable(
     consumedAt: datetime('consumed_at'),
     // The staff member who issued a STAFF code; null for EMAIL codes.
     createdBy: varchar('created_by', { length: 36 }),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     caregiverIdx: index('account_claim_codes_caregiver_idx').on(table.caregiverId),

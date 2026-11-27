@@ -296,9 +296,7 @@ export function ColumnChart({
         {labels.map((l, i) => {
           const cx = m.l + band * i + band / 2;
           let acc = 0;
-          const segs = series
-            .map((s) => ({ s, v: s.values[i] ?? 0 }))
-            .filter((x) => x.v > 0);
+          const segs = series.map((s) => ({ s, v: s.values[i] ?? 0 })).filter((x) => x.v > 0);
           return (
             <g key={i} opacity={hover === null || hover === i ? 1 : 0.55}>
               {segs.map(({ s, v }, k) => {
@@ -545,7 +543,13 @@ export function Gauge({
 
   return (
     <figure className="flex flex-col items-center text-center" title={detail}>
-      <svg width={size} height={size / 2 + 8} viewBox={`0 0 ${size} ${size / 2 + 8}`} role="img" aria-label={`${label}: ${pct === null ? emptyLabel : `${pct}%`}. ${levelLabel}`}>
+      <svg
+        width={size}
+        height={size / 2 + 8}
+        viewBox={`0 0 ${size} ${size / 2 + 8}`}
+        role="img"
+        aria-label={`${label}: ${pct === null ? emptyLabel : `${pct}%`}. ${levelLabel}`}
+      >
         <path d={`M${sx},${sy}A${r},${r} 0 0 1 ${ex},${ey}`} fill="none" stroke="var(--viz-grid)" strokeWidth={stroke} strokeLinecap="round" />
         {value !== null && clamped > 0.005 && (
           <path
@@ -589,7 +593,9 @@ export function SplitBar({ parts }: { parts: { key: string; label: string; value
         {total === 0 ? (
           <div className="h-full w-full bg-paper" />
         ) : (
-          shown.map((p) => <div key={p.key} className="h-full" style={{ width: `${(p.value / total) * 100}%`, background: p.color }} title={`${p.label}: ${p.value}`} />)
+          shown.map((p) => (
+            <div key={p.key} className="h-full" style={{ width: `${(p.value / total) * 100}%`, background: p.color }} title={`${p.label}: ${p.value}`} />
+          ))
         )}
       </div>
       <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink/70">

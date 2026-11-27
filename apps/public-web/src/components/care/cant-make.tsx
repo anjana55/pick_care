@@ -21,7 +21,12 @@ export function CantMakeStatus({ shift }: { shift: CaregiverShift }) {
   return (
     <span className="mt-1 block text-sm text-amber-800" data-testid="cant-make-status">
       {t('portal.shifts.cantMake.told')}{' '}
-      <button type="button" className="font-medium text-brand hover:underline disabled:opacity-50" disabled={save.isPending} onClick={() => save.mutate({ shiftId: shift.id, undo: true })}>
+      <button
+        type="button"
+        className="font-medium text-brand hover:underline disabled:opacity-50"
+        disabled={save.isPending}
+        onClick={() => save.mutate({ shiftId: shift.id, undo: true })}
+      >
         {t('portal.shifts.cantMake.afterAll')}
       </button>
     </span>
@@ -45,12 +50,22 @@ export function CantMakeForm({ shift, onDone }: { shift: CaregiverShift; onDone:
     >
       <p className="text-sm font-medium text-ink">{t('portal.shifts.cantMake.title')}</p>
       <p className="mt-0.5 text-xs text-ink/60">{t('portal.shifts.cantMake.why')}</p>
-      <Label htmlFor={id} className="mt-3">{t('portal.shifts.cantMake.note')}</Label>
+      <Label htmlFor={id} className="mt-3">
+        {t('portal.shifts.cantMake.note')}
+      </Label>
       <Textarea id={id} rows={2} maxLength={CANT_MAKE_NOTE_MAX} value={note} onChange={(e) => setNote(e.target.value)} />
-      {error && <p role="alert" className="mt-2 text-sm text-danger">{error}</p>}
+      {error && (
+        <p role="alert" className="mt-2 text-sm text-danger">
+          {error}
+        </p>
+      )}
       <div className="mt-3 flex gap-2">
-        <Button type="submit" size="sm" disabled={save.isPending}>{t('portal.shifts.cantMake.send')}</Button>
-        <Button type="button" size="sm" variant="ghost" onClick={onDone}>{t('common.cancel')}</Button>
+        <Button type="submit" size="sm" disabled={save.isPending}>
+          {t('portal.shifts.cantMake.send')}
+        </Button>
+        <Button type="button" size="sm" variant="ghost" onClick={onDone}>
+          {t('common.cancel')}
+        </Button>
       </div>
     </form>
   );

@@ -77,11 +77,18 @@ export default function NewEmployerEnquiryPage() {
         <h1 className="text-xl font-bold text-ink">{t('employer.newEnquiry.title')}</h1>
         <p className="mt-1 text-sm text-ink/60">{t('employer.newEnquiry.intro', { organisation: account?.organisationName ?? '' })}</p>
       </div>
-      {talent && <p className="rounded-DEFAULT border border-accent/30 bg-accent/5 px-3 py-2 text-sm text-ink">{t('international.form.aboutTalent', { name: talent.firstName })}</p>}
+      {talent && (
+        <p className="rounded-DEFAULT border border-accent/30 bg-accent/5 px-3 py-2 text-sm text-ink">
+          {t('international.form.aboutTalent', { name: talent.firstName })}
+        </p>
+      )}
 
       <fieldset>
         <legend className="mb-2 text-xs font-medium text-ink/60">
-          {t('international.form.careSettings')} <span aria-hidden className="text-danger">*</span>
+          {t('international.form.careSettings')}{' '}
+          <span aria-hidden className="text-danger">
+            *
+          </span>
         </legend>
         <div className="flex flex-wrap gap-2">
           {careTypeValues.map((type) => {
@@ -92,7 +99,10 @@ export default function NewEmployerEnquiryPage() {
                 type="button"
                 aria-pressed={on}
                 onClick={() => setCareSettings((list) => (on ? list.filter((x) => x !== type) : [...list, type]))}
-                className={cn('rounded-full border px-3 py-1.5 text-sm transition-colors', on ? 'border-brand bg-brand text-white' : 'border-border bg-white text-ink hover:border-brand')}
+                className={cn(
+                  'rounded-full border px-3 py-1.5 text-sm transition-colors',
+                  on ? 'border-brand bg-brand text-white' : 'border-border bg-white text-ink hover:border-brand',
+                )}
               >
                 {t(`careTypes.${type}`)}
               </button>
@@ -121,7 +131,13 @@ export default function NewEmployerEnquiryPage() {
         </div>
         <div>
           <Label htmlFor="ne-start">{t('international.form.startTimeframe')}</Label>
-          <Input id="ne-start" value={startTimeframe} onChange={(e) => setStartTimeframe(e.target.value)} placeholder={t('international.form.startPlaceholder')} maxLength={100} />
+          <Input
+            id="ne-start"
+            value={startTimeframe}
+            onChange={(e) => setStartTimeframe(e.target.value)}
+            placeholder={t('international.form.startPlaceholder')}
+            maxLength={100}
+          />
         </div>
         <div>
           <Label htmlFor="ne-visa">{t('international.form.visaSponsorship')}</Label>
@@ -136,11 +152,24 @@ export default function NewEmployerEnquiryPage() {
       </div>
       <div>
         <Label htmlFor="ne-languages">{t('international.form.languages')}</Label>
-        <Input id="ne-languages" value={languages} onChange={(e) => setLanguages(e.target.value)} placeholder={t('international.form.languagesPlaceholder')} maxLength={255} />
+        <Input
+          id="ne-languages"
+          value={languages}
+          onChange={(e) => setLanguages(e.target.value)}
+          placeholder={t('international.form.languagesPlaceholder')}
+          maxLength={255}
+        />
       </div>
       <div>
         <Label htmlFor="ne-message">{t('international.form.message')}</Label>
-        <Textarea id="ne-message" rows={4} value={message} onChange={(e) => setMessage(e.target.value)} placeholder={t('international.form.messagePlaceholder')} maxLength={3000} />
+        <Textarea
+          id="ne-message"
+          rows={4}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder={t('international.form.messagePlaceholder')}
+          maxLength={3000}
+        />
       </div>
       {error && (
         <p role="alert" className="text-sm text-danger">

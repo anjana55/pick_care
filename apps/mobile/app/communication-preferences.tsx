@@ -33,7 +33,7 @@ export default function CommunicationPreferencesScreen() {
   const data = prefs.data;
   const isClient = user.role === 'PATIENT_GUARDIAN';
   // Email or WhatsApp can't be picked without an address or a number to send to.
-  const methods = contactMethodValues.filter((m) => !data || (m !== 'EMAIL' || data.hasEmail) && (m !== 'WHATSAPP' || data.hasPhone));
+  const methods = contactMethodValues.filter((m) => !data || ((m !== 'EMAIL' || data.hasEmail) && (m !== 'WHATSAPP' || data.hasPhone)));
   const error = save.error ? (save.error instanceof ApiError && save.error.message ? save.error.message : t('commsPrefs.saveError')) : null;
 
   return (
@@ -52,7 +52,9 @@ export default function CommunicationPreferencesScreen() {
                 selected={data.preferredContactMethod ? [data.preferredContactMethod] : []}
                 onToggle={(m) => save.mutate({ preferredContactMethod: m })}
               />
-              {data.preferredContactMethod === 'PHONE_CALL' ? <Text style={{ fontSize: 14, lineHeight: 20, color: colors.muted }}>{t('commsPrefs.phoneCallHint')}</Text> : null}
+              {data.preferredContactMethod === 'PHONE_CALL' ? (
+                <Text style={{ fontSize: 14, lineHeight: 20, color: colors.muted }}>{t('commsPrefs.phoneCallHint')}</Text>
+              ) : null}
               {isClient ? (
                 <Chips
                   label={t('commsPrefs.time')}
@@ -63,7 +65,13 @@ export default function CommunicationPreferencesScreen() {
               ) : null}
             </Card>
             <Card style={styles.card}>
-              <Setting label={t('commsPrefs.push')} hint={t('commsPrefs.pushHelp')} value={data.pushEnabled} busy={save.isPending} onChange={(v) => save.mutate({ pushEnabled: v })} />
+              <Setting
+                label={t('commsPrefs.push')}
+                hint={t('commsPrefs.pushHelp')}
+                value={data.pushEnabled}
+                busy={save.isPending}
+                onChange={(v) => save.mutate({ pushEnabled: v })}
+              />
               <Setting
                 label={t('commsPrefs.reminders')}
                 hint={t('commsPrefs.remindersHelp')}

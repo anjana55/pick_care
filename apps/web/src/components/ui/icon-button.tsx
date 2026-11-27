@@ -10,13 +10,7 @@ interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 export function IconButton({ icon, className, ...props }: IconButtonProps) {
   return (
-    <Button
-      type="button"
-      variant="ghost"
-      size="sm"
-      className={cn('p-1.5', className)}
-      {...props}
-    >
+    <Button type="button" variant="ghost" size="sm" className={cn('p-1.5', className)} {...props}>
       {icon}
     </Button>
   );

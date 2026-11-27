@@ -45,7 +45,9 @@ export default function EmployerOffersPage() {
                     {o.reference} · {o.enquiryReference} · {[o.city, countries.name(o.country)].filter(Boolean).join(', ')} ·{' '}
                     {t(`vacancies.per.${o.salaryPeriod}`, { amount: formatMoney(o.salaryAmount, o.salaryCurrency, locale) })}
                   </p>
-                  {o.status === 'SENT' && o.expiresOn && !o.expired && <p className="text-xs text-brand-dark">{t('employer.offers.answerBy', { date: fmtDate(o.expiresOn, locale) })}</p>}
+                  {o.status === 'SENT' && o.expiresOn && !o.expired && (
+                    <p className="text-xs text-brand-dark">{t('employer.offers.answerBy', { date: fmtDate(o.expiresOn, locale) })}</p>
+                  )}
                   {o.status === 'RETURNED' && <p className="text-xs font-medium text-amber-800">{t('employer.offers.returnedHint')}</p>}
                 </div>
                 <OfferStatusBadge status={o.status} expired={o.expired} />

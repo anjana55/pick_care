@@ -26,7 +26,19 @@ function brandColor(): string {
  * home, kept in view. The dots move as new positions arrive, without
  * reloading the map. Read-only.
  */
-export function LiveMap({ caregivers, homes, label, failedText, className }: { caregivers: LiveMapPoint[]; homes: LiveMapPoint[]; label: string; failedText: string; className?: string }) {
+export function LiveMap({
+  caregivers,
+  homes,
+  label,
+  failedText,
+  className,
+}: {
+  caregivers: LiveMapPoint[];
+  homes: LiveMapPoint[];
+  label: string;
+  failedText: string;
+  className?: string;
+}) {
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
   const lib = useRef<typeof import('maplibre-gl') | null>(null);
@@ -43,7 +55,15 @@ export function LiveMap({ caregivers, homes, label, failedText, className }: { c
         maplibre.setWorkerUrl(new URL(`${BASE_PATH}/maplibre/${maplibre.getVersion()}/maplibre-gl-worker.mjs`, window.location.origin).href);
         if (cancelled || !container.current) return;
         lib.current = maplibre;
-        const instance = new maplibre.Map({ container: container.current, style: MAP_STYLE_URL, center: [80.7, 7.8], zoom: 7, attributionControl: { compact: true }, cooperativeGestures: true, dragRotate: false });
+        const instance = new maplibre.Map({
+          container: container.current,
+          style: MAP_STYLE_URL,
+          center: [80.7, 7.8],
+          zoom: 7,
+          attributionControl: { compact: true },
+          cooperativeGestures: true,
+          dragRotate: false,
+        });
         instance.addControl(new maplibre.NavigationControl({ showCompass: false }), 'top-right');
         instance.on('load', () => !cancelled && setReady(true));
         instance.on('error', () => {

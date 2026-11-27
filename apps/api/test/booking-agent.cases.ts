@@ -8,7 +8,18 @@ import request from 'supertest';
 import { addDays, colomboToday, isoWeekday, type CaregiverCareOffer, type ClientBookingProposal } from '@care-platform/shared';
 import { AppModule } from '../src/app.module';
 import { DRIZZLE, type Database } from '../src/database/database.module';
-import { agentDecisions, bookingEvents, bookingShifts, bookings, careRequests, caregivers, jobs, notifications, patients, requestOffers } from '../src/database/schema';
+import {
+  agentDecisions,
+  bookingEvents,
+  bookingShifts,
+  bookings,
+  careRequests,
+  caregivers,
+  jobs,
+  notifications,
+  patients,
+  requestOffers,
+} from '../src/database/schema';
 import { BookingAgentService, type DraftBookingProposal } from '../src/bookings/booking-agent.service';
 import { AutomationService } from '../src/automation/automation.service';
 import { BOOKING_CONFIRM_JOB, BOOKING_REQUEST_JOB } from '../src/bookings/booking-agent-jobs';
@@ -52,33 +63,66 @@ describe('Booking agent (e2e)', () => {
     const reg = await api()
       .post('/auth/register-caregiver/unified')
       .send({
-        phone, consentAccepted: true, fullName: `Booked Caregiver ${phone}`, permanentAddress: '1 Lake Road, Kandy', dateOfBirth: '1988-01-20', gender: 'FEMALE',
-        civilStatus: 'MARRIED', emergencyContactName: 'EC', emergencyContactNumber: '0770001111', emergencyContactRelationship: 'Husband',
+        phone,
+        consentAccepted: true,
+        fullName: `Booked Caregiver ${phone}`,
+        permanentAddress: '1 Lake Road, Kandy',
+        dateOfBirth: '1988-01-20',
+        gender: 'FEMALE',
+        civilStatus: 'MARRIED',
+        emergencyContactName: 'EC',
+        emergencyContactNumber: '0770001111',
+        emergencyContactRelationship: 'Husband',
       })
       .expect(201);
     const [row] = await db.select().from(caregivers).where(eq(caregivers.registrationNumber, reg.body.registrationNumber));
     await db.update(caregivers).set({ status: 'ACTIVE' }).where(eq(caregivers.id, row.id));
-    return { id: row.id, reg: row.registrationNumber, token: jwt.sign({ sub: row.userId, role: 'CAREGIVER', caregiverId: row.id }, { secret: accessSecret, expiresIn: '10m' }) };
+    return {
+      id: row.id,
+      reg: row.registrationNumber,
+      token: jwt.sign({ sub: row.userId, role: 'CAREGIVER', caregiverId: row.id }, { secret: accessSecret, expiresIn: '10m' }),
+    };
   }
 
   /** A request whose caregiver has accepted a job offer at LKR 3,000 a day. */
   async function matched(over: { schedule?: string; urgency?: string; start?: string | null; noRate?: boolean; noClientRate?: boolean } = {}) {
     const reg = await api()
       .post('/auth/register-patient')
-      .send({ email: `booked-client-${run}-${++n}@example.com`, password: 'SelfRegPass123', fullName: 'Nimal Kumara Perera', phone: newPhone('077'), consentAccepted: true, ...intake });
+      .send({
+        email: `booked-client-${run}-${++n}@example.com`,
+        password: 'SelfRegPass123',
+        fullName: 'Nimal Kumara Perera',
+        phone: newPhone('077'),
+        consentAccepted: true,
+        ...intake,
+      });
     if (reg.status !== 201) throw new Error(`register-patient: ${JSON.stringify(reg.body)}`);
     await db
       .update(patients)
       .set({ careSchedule: (over.schedule ?? 'DAY') as 'DAY', careStart: (over.urgency ?? 'WITHIN_WEEK') as 'WITHIN_WEEK' })
       .where(eq(patients.id, reg.body.patientId));
-    const res = await api().post('/care-requests').set(bearer(staffToken)).send({ language: 'si', patientId: reg.body.patientId, careType: 'HOME_SHIFT', message: 'Mother needs help after surgery' }).expect(201);
+    const res = await api()
+      .post('/care-requests')
+      .set(bearer(staffToken))
+      .send({ language: 'si', patientId: reg.body.patientId, careType: 'HOME_SHIFT', message: 'Mother needs help after surgery' })
+      .expect(201);
     const id = res.body.id as string;
-    await db.update(careRequests).set({ desiredStartDate: over.start === undefined ? inFiveDays : over.start }).where(eq(careRequests.id, id));
+    await db
+      .update(careRequests)
+      .set({ desiredStartDate: over.start === undefined ? inFiveDays : over.start })
+      .where(eq(careRequests.id, id));
     const caregiver = await newCaregiver();
-    await api().post(`/care-requests/${id}/offers`).set(bearer(staffToken)).send({ caregiverId: caregiver.id, ...(over.noRate ? {} : { rateType: 'DAILY', payRate: 3000 }) }).expect(201);
+    await api()
+      .post(`/care-requests/${id}/offers`)
+      .set(bearer(staffToken))
+      .send({ caregiverId: caregiver.id, ...(over.noRate ? {} : { rateType: 'DAILY', payRate: 3000 }) })
+      .expect(201);
     const [offer] = (await api().get('/me/care-offers').set(bearer(caregiver.token)).expect(200)).body as CaregiverCareOffer[];
     // What the client pays depends on the fee set for this kind of care, which another suite changes: fix it here.
-    await db.update(requestOffers).set({ clientRate: over.noRate || over.noClientRate ? null : 3450 }).where(eq(requestOffers.id, offer.id));
+    await db
+      .update(requestOffers)
+      .set({ clientRate: over.noRate || over.noClientRate ? null : 3450 })
+      .where(eq(requestOffers.id, offer.id));
     await api().post(`/me/care-offers/${offer.id}/accept`).set(bearer(caregiver.token)).expect(200);
     const [patient] = await db.select({ userId: patients.userId }).from(patients).where(eq(patients.id, reg.body.patientId));
     const clientToken = jwt.sign({ sub: patient.userId, role: 'PATIENT_GUARDIAN', patientId: reg.body.patientId }, { secret: accessSecret, expiresIn: '10m' });
@@ -86,24 +130,49 @@ describe('Booking agent (e2e)', () => {
   }
 
   const mode = (m: string) => api().patch('/settings/automation/functions/BOOKING').set(bearer(adminToken)).send({ mode: m }).expect(200);
-  const sweep = (...requests: { id: string }[]) => agent.sweep(new Date(), requests.map((r) => r.id));
+  const sweep = (...requests: { id: string }[]) =>
+    agent.sweep(
+      new Date(),
+      requests.map((r) => r.id),
+    );
   const decisionsFor = (requestId: string) =>
-    db.select().from(agentDecisions).where(and(eq(agentDecisions.caseType, 'REQUEST'), eq(agentDecisions.caseId, requestId), eq(agentDecisions.action, 'booking.create_draft')));
+    db
+      .select()
+      .from(agentDecisions)
+      .where(and(eq(agentDecisions.caseType, 'REQUEST'), eq(agentDecisions.caseId, requestId), eq(agentDecisions.action, 'booking.create_draft')));
   const bookingsFor = (requestId: string) => db.select().from(bookings).where(eq(bookings.careRequestId, requestId));
   const panel = async (requestId: string) => (await api().get(`/automation/cases/REQUEST/${requestId}`).set(bearer(staffToken)).expect(200)).body;
   const proposalsOf = async (token: string) => (await api().get('/me/booking-proposals').set(bearer(token)).expect(200)).body as ClientBookingProposal[];
   const bookingRow = async (id: string) => (await db.select().from(bookings).where(eq(bookings.id, id)))[0];
   const confirmDecisions = (bookingId: string) =>
-    db.select().from(agentDecisions).where(and(eq(agentDecisions.caseType, 'BOOKING'), eq(agentDecisions.caseId, bookingId), eq(agentDecisions.action, 'booking.confirm')));
+    db
+      .select()
+      .from(agentDecisions)
+      .where(and(eq(agentDecisions.caseType, 'BOOKING'), eq(agentDecisions.caseId, bookingId), eq(agentDecisions.action, 'booking.confirm')));
   const bookingPanel = async (id: string) => (await api().get(`/automation/cases/BOOKING/${id}`).set(bearer(staffToken)).expect(200)).body;
   /** The weekday shifts the default pattern makes: the first on or after its start, the last on or before its end. */
   const weekdayOnOrAfter = (d: string) => (isoWeekday(d) <= 5 ? d : addDays(d, 8 - isoWeekday(d)));
   const weekdayOnOrBefore = (d: string) => (isoWeekday(d) <= 5 ? d : addDays(d, 5 - isoWeekday(d)));
-  const pattern = (over: Record<string, unknown> = {}) => ({ scheduleType: 'DAY', daysOfWeek: [1, 2, 3, 4, 5], shiftStartTime: '08:00', shiftEndTime: '17:00', startDate: inFiveDays, endDate: addDays(inFiveDays, 13), ...over });
-  const queued = (requestId: string) => db.select().from(jobs).where(and(eq(jobs.type, BOOKING_REQUEST_JOB), sql`JSON_EXTRACT(${jobs.payload}, '$.requestId') = ${requestId}`));
+  const pattern = (over: Record<string, unknown> = {}) => ({
+    scheduleType: 'DAY',
+    daysOfWeek: [1, 2, 3, 4, 5],
+    shiftStartTime: '08:00',
+    shiftEndTime: '17:00',
+    startDate: inFiveDays,
+    endDate: addDays(inFiveDays, 13),
+    ...over,
+  });
+  const queued = (requestId: string) =>
+    db
+      .select()
+      .from(jobs)
+      .where(and(eq(jobs.type, BOOKING_REQUEST_JOB), sql`JSON_EXTRACT(${jobs.payload}, '$.requestId') = ${requestId}`));
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).overrideProvider(ThrottlerStorage).useValue(unlimitedThrottle).compile();
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+      .overrideProvider(ThrottlerStorage)
+      .useValue(unlimitedThrottle)
+      .compile();
     app = moduleRef.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
     await app.init();
@@ -118,9 +187,17 @@ describe('Booking agent (e2e)', () => {
     const districtId = tree[0].districts[0].id;
     const [city] = (await api().get(`/public/meta/locations/cities?districtId=${districtId}&locale=en`).expect(200)).body as { id: number }[];
     intake = {
-      registrantType: 'GUARDIAN', recipientName: 'Sunil Fernando', recipientRelationship: 'PARENT', recipientAge: 78, recipientGender: 'MALE',
-      preferredContactMethod: 'PHONE_CALL', districtId, cityId: city.id, careNeeds: 'Needs help with bathing, meals and medication reminders.',
-      careSchedule: 'DAY', careStart: 'WITHIN_WEEK',
+      registrantType: 'GUARDIAN',
+      recipientName: 'Sunil Fernando',
+      recipientRelationship: 'PARENT',
+      recipientAge: 78,
+      recipientGender: 'MALE',
+      preferredContactMethod: 'PHONE_CALL',
+      districtId,
+      cityId: city.id,
+      careNeeds: 'Needs help with bathing, meals and medication reminders.',
+      careSchedule: 'DAY',
+      careStart: 'WITHIN_WEEK',
     };
     await api().post('/settings/automation/master').set(bearer(adminToken)).send({ on: false }).expect(200);
   });
@@ -148,8 +225,15 @@ describe('Booking agent (e2e)', () => {
     expect(await sweep(req)).toMatchObject({ mode: 'AUTO', considered: 1, decided: 1, leftToStaff: 0 });
     const [booking] = await bookingsFor(req.id);
     expect(booking).toMatchObject({
-      status: 'DRAFT', caregiverId: req.caregiver.id, patientId: req.patientId, scheduleType: 'DAY', daysOfWeek: '1,2,3,4,5',
-      shiftStartTime: '08:00', shiftEndTime: '17:00', payRateType: 'DAILY', language: 'si',
+      status: 'DRAFT',
+      caregiverId: req.caregiver.id,
+      patientId: req.patientId,
+      scheduleType: 'DAY',
+      daysOfWeek: '1,2,3,4,5',
+      shiftStartTime: '08:00',
+      shiftEndTime: '17:00',
+      payRateType: 'DAILY',
+      language: 'si',
     });
     expect(String(booking.startDate).slice(0, 10)).toBe(inFiveDays);
     expect(String(booking.endDate).slice(0, 10)).toBe(addDays(inFiveDays, 13));
@@ -199,7 +283,9 @@ describe('Booking agent (e2e)', () => {
     expect(booking).toMatchObject({ scheduleType: 'LIVE_IN', daysOfWeek: '1,2,3,4,5,6,7', payRateType: null, rateType: null });
     // No price to agree to, so the client is not asked: that stays with staff.
     expect(booking.clientReviewStatus).toBeNull();
-    expect((await panel(urgent.id)).handoverNote.waiting).toBe("Staff to check the times with the client and confirm the booking (the client's rate is not set yet)");
+    expect((await panel(urgent.id)).handoverNote.waiting).toBe(
+      "Staff to check the times with the client and confirm the booking (the client's rate is not set yet)",
+    );
     expect(String(booking.startDate).slice(0, 10)).toBe(addDays(today, 1));
   });
 
@@ -209,13 +295,25 @@ describe('Booking agent (e2e)', () => {
     await api()
       .post('/bookings')
       .set(bearer(staffToken))
-      .send({ careRequestId: booked.id, scheduleType: 'NIGHT', daysOfWeek: [1, 2, 3], shiftStartTime: '20:00', shiftEndTime: '06:00', startDate: inFiveDays, endDate: addDays(inFiveDays, 6) })
+      .send({
+        careRequestId: booked.id,
+        scheduleType: 'NIGHT',
+        daysOfWeek: [1, 2, 3],
+        shiftStartTime: '20:00',
+        shiftEndTime: '06:00',
+        startDate: inFiveDays,
+        endDate: addDays(inFiveDays, 6),
+      })
       .expect(201);
     expect(await sweep(booked)).toMatchObject({ considered: 0, decided: 0 });
     expect(await bookingsFor(booked.id)).toHaveLength(1);
 
     const taken = await matched();
-    await api().post(`/automation/cases/REQUEST/${taken.id}/take-over`).set(bearer(staffToken)).send({ reason: 'The family wants to agree the hours first' }).expect(200);
+    await api()
+      .post(`/automation/cases/REQUEST/${taken.id}/take-over`)
+      .set(bearer(staffToken))
+      .send({ reason: 'The family wants to agree the hours first' })
+      .expect(200);
     expect(await sweep(taken)).toMatchObject({ considered: 1, decided: 0 });
     expect(await bookingsFor(taken.id)).toHaveLength(0);
 
@@ -235,7 +333,12 @@ describe('Booking agent (e2e)', () => {
     expect((await panel(yes.id)).handoverNote.waiting).toBe('Staff to approve or decline the draft booking');
     const [proposal] = await decisionsFor(yes.id);
     expect(proposal.outcome).toBe('PROPOSED');
-    expect((proposal.proposal as DraftBookingProposal).draft).toMatchObject({ scheduleType: 'DAY', startDate: inFiveDays, shifts: 10, payRateAmount: '3000.00' });
+    expect((proposal.proposal as DraftBookingProposal).draft).toMatchObject({
+      scheduleType: 'DAY',
+      startDate: inFiveDays,
+      shifts: 10,
+      payRateAmount: '3000.00',
+    });
 
     await api().post(`/automation/decisions/${proposal.id}/approve`).set(bearer(staffToken)).expect(200);
     const [booking] = await bookingsFor(yes.id);
@@ -243,7 +346,11 @@ describe('Booking agent (e2e)', () => {
     expect((await panel(yes.id)).handoverNote.done).toBe(`Drafted booking ${booking.reference} with ${yes.caregiver.reg} and asked the client to check it`);
 
     const [declined] = await decisionsFor(no.id);
-    await api().post(`/automation/decisions/${declined.id}/decline`).set(bearer(staffToken)).send({ note: 'The family will call back about the hours' }).expect(200);
+    await api()
+      .post(`/automation/decisions/${declined.id}/decline`)
+      .set(bearer(staffToken))
+      .send({ note: 'The family will call back about the hours' })
+      .expect(200);
     await sweep(yes, no);
     expect(await decisionsFor(no.id)).toHaveLength(1);
     expect(await bookingsFor(no.id)).toHaveLength(0);
@@ -259,7 +366,15 @@ describe('Booking agent (e2e)', () => {
     await api()
       .post('/bookings')
       .set(bearer(staffToken))
-      .send({ careRequestId: req.id, scheduleType: 'DAY', daysOfWeek: [1, 2, 3, 4, 5], shiftStartTime: '08:00', shiftEndTime: '17:00', startDate: inFiveDays, endDate: addDays(inFiveDays, 13) })
+      .send({
+        careRequestId: req.id,
+        scheduleType: 'DAY',
+        daysOfWeek: [1, 2, 3, 4, 5],
+        shiftStartTime: '08:00',
+        shiftEndTime: '17:00',
+        startDate: inFiveDays,
+        endDate: addDays(inFiveDays, 13),
+      })
       .expect(201);
     const res = await api().post(`/automation/decisions/${proposal.id}/approve`).set(bearer(staffToken));
     expect(res.status).toBeGreaterThanOrEqual(400);
@@ -274,7 +389,12 @@ describe('Booking agent (e2e)', () => {
     expect(await bookingsFor(same.id)).toHaveLength(0);
     expect((await decisionsFor(same.id))[0].outcome).toBe('SHADOW');
 
-    const book = (id: string, body: Record<string, unknown>) => api().post('/bookings').set(bearer(staffToken)).send({ careRequestId: id, startDate: inFiveDays, endDate: addDays(inFiveDays, 27), ...body }).expect(201);
+    const book = (id: string, body: Record<string, unknown>) =>
+      api()
+        .post('/bookings')
+        .set(bearer(staffToken))
+        .send({ careRequestId: id, startDate: inFiveDays, endDate: addDays(inFiveDays, 27), ...body })
+        .expect(201);
     // Same kind of schedule and start date - a longer run and different hours still count as agreeing.
     await book(same.id, { scheduleType: 'DAY', daysOfWeek: [1, 2, 3, 4, 5, 6], shiftStartTime: '07:00', shiftEndTime: '16:00' });
     await book(different.id, { scheduleType: 'NIGHT', daysOfWeek: [1, 2, 3, 4, 5, 6, 7], shiftStartTime: '20:00', shiftEndTime: '08:00' });
@@ -287,7 +407,21 @@ describe('Booking agent (e2e)', () => {
 
   describe('the client checks the draft', () => {
     const staffDraft = async (req: { id: string }) =>
-      (await api().post('/bookings').set(bearer(staffToken)).send({ careRequestId: req.id, ...pattern(), rateType: 'DAILY', rateAmount: '3450.00', payRateType: 'DAILY', payRateAmount: '3000.00', notes: 'Client prefers Sinhala' }).expect(201)).body as { id: string; reference: string };
+      (
+        await api()
+          .post('/bookings')
+          .set(bearer(staffToken))
+          .send({
+            careRequestId: req.id,
+            ...pattern(),
+            rateType: 'DAILY',
+            rateAmount: '3450.00',
+            payRateType: 'DAILY',
+            payRateAmount: '3000.00',
+            notes: 'Client prefers Sinhala',
+          })
+          .expect(201)
+      ).body as { id: string; reference: string };
 
     it('by hand, with every agent off: staff ask, the client sees only their own draft and accepts, staff confirm', async () => {
       await mode('MANUAL');
@@ -298,15 +432,49 @@ describe('Booking agent (e2e)', () => {
 
       const asked = (await api().post(`/bookings/${draft.id}/ask-client`).set(bearer(staffToken)).expect(200)).body;
       expect(asked).toMatchObject({ status: 'DRAFT', clientReviewStatus: 'ASKED' });
-      expect((await api().post(`/bookings/${draft.id}/ask-client`).set(bearer(staffToken)).expect(400)).body.message).toBe('The client has already been asked and has not answered yet');
+      expect((await api().post(`/bookings/${draft.id}/ask-client`).set(bearer(staffToken)).expect(400)).body.message).toBe(
+        'The client has already been asked and has not answered yet',
+      );
 
       const [mine] = await proposalsOf(req.clientToken);
       expect(mine).toMatchObject({
-        id: draft.id, reference: draft.reference, status: 'ASKED', scheduleType: 'DAY', daysOfWeek: [1, 2, 3, 4, 5], shiftStartTime: '08:00', shiftEndTime: '17:00',
-        startDate: weekdayOnOrAfter(inFiveDays), endDate: weekdayOnOrBefore(addDays(inFiveDays, 13)), shiftCount: 10, rateType: 'DAILY', rateAmount: '3450.00', billingTiming: 'AFTER', answeredAt: null, note: null,
+        id: draft.id,
+        reference: draft.reference,
+        status: 'ASKED',
+        scheduleType: 'DAY',
+        daysOfWeek: [1, 2, 3, 4, 5],
+        shiftStartTime: '08:00',
+        shiftEndTime: '17:00',
+        startDate: weekdayOnOrAfter(inFiveDays),
+        endDate: weekdayOnOrBefore(addDays(inFiveDays, 13)),
+        shiftCount: 10,
+        rateType: 'DAILY',
+        rateAmount: '3450.00',
+        billingTiming: 'AFTER',
+        answeredAt: null,
+        note: null,
       });
       // What the caregiver is paid and the office's notes are not the client's to see.
-      expect(Object.keys(mine).sort()).toEqual(['answeredAt', 'askedAt', 'billingTiming', 'caregiver', 'daysOfWeek', 'endDate', 'firstInvoice', 'id', 'note', 'rateAmount', 'rateType', 'reference', 'scheduleType', 'shiftCount', 'shiftEndTime', 'shiftStartTime', 'startDate', 'status']);
+      expect(Object.keys(mine).sort()).toEqual([
+        'answeredAt',
+        'askedAt',
+        'billingTiming',
+        'caregiver',
+        'daysOfWeek',
+        'endDate',
+        'firstInvoice',
+        'id',
+        'note',
+        'rateAmount',
+        'rateType',
+        'reference',
+        'scheduleType',
+        'shiftCount',
+        'shiftEndTime',
+        'shiftStartTime',
+        'startDate',
+        'status',
+      ]);
       expect(JSON.stringify(mine)).not.toMatch(/3000|Sinhala/);
       // Someone else's draft: not listed, and answering it is refused the same way as one that is not waiting.
       expect(await proposalsOf(other.clientToken)).toEqual([]);
@@ -321,9 +489,16 @@ describe('Booking agent (e2e)', () => {
       await api().post(`/me/booking-proposals/${draft.id}/accept`).set(bearer(req.clientToken)).expect(409);
       // Accepting books nothing, and with Booking at Manual nothing is queued for the agent.
       expect((await bookingRow(draft.id)).status).toBe('DRAFT');
-      expect(await db.select().from(jobs).where(and(eq(jobs.type, BOOKING_CONFIRM_JOB), sql`JSON_EXTRACT(${jobs.payload}, '$.bookingId') = ${draft.id}`))).toHaveLength(0);
+      expect(
+        await db
+          .select()
+          .from(jobs)
+          .where(and(eq(jobs.type, BOOKING_CONFIRM_JOB), sql`JSON_EXTRACT(${jobs.payload}, '$.bookingId') = ${draft.id}`)),
+      ).toHaveLength(0);
       const notes = (await db.select().from(bookingEvents).where(eq(bookingEvents.bookingId, draft.id))).map((e) => e.note);
-      expect(notes).toEqual(expect.arrayContaining([expect.stringContaining('Asked the client to check the booking'), 'The client accepted the booking as drafted']));
+      expect(notes).toEqual(
+        expect.arrayContaining([expect.stringContaining('Asked the client to check the booking'), 'The client accepted the booking as drafted']),
+      );
 
       await api().post(`/bookings/${draft.id}/confirm`).set(bearer(staffToken)).expect(200);
       expect(await proposalsOf(req.clientToken)).toEqual([]);
@@ -336,16 +511,31 @@ describe('Booking agent (e2e)', () => {
       const draft = await staffDraft(req);
       await api().post(`/bookings/${draft.id}/ask-client`).set(bearer(staffToken)).expect(200);
       await api().post(`/me/booking-proposals/${draft.id}/request-changes`).set(bearer(req.clientToken)).send({ note: '  ' }).expect(400);
-      const [changed] = (await api().post(`/me/booking-proposals/${draft.id}/request-changes`).set(bearer(req.clientToken)).send({ note: 'Could the carer come at 9 instead of 8?' }).expect(200)).body as ClientBookingProposal[];
+      const [changed] = (
+        await api()
+          .post(`/me/booking-proposals/${draft.id}/request-changes`)
+          .set(bearer(req.clientToken))
+          .send({ note: 'Could the carer come at 9 instead of 8?' })
+          .expect(200)
+      ).body as ClientBookingProposal[];
       expect(changed).toMatchObject({ status: 'CHANGES_REQUESTED', note: 'Could the carer come at 9 instead of 8?' });
       // Not confirmable by the client afterwards, and staff see what was asked.
       await api().post(`/me/booking-proposals/${draft.id}/accept`).set(bearer(req.clientToken)).expect(409);
-      expect((await api().get(`/bookings/${draft.id}`).set(bearer(staffToken)).expect(200)).body).toMatchObject({ clientReviewStatus: 'CHANGES_REQUESTED', clientReviewNote: 'Could the carer come at 9 instead of 8?' });
+      expect((await api().get(`/bookings/${draft.id}`).set(bearer(staffToken)).expect(200)).body).toMatchObject({
+        clientReviewStatus: 'CHANGES_REQUESTED',
+        clientReviewNote: 'Could the carer come at 9 instead of 8?',
+      });
 
       // A note alone does not touch the answer; new times do.
       await api().patch(`/bookings/${draft.id}`).set(bearer(staffToken)).send({ notes: 'Called the daughter' }).expect(200);
       expect((await bookingRow(draft.id)).clientReviewStatus).toBe('CHANGES_REQUESTED');
-      const reshaped = (await api().patch(`/bookings/${draft.id}`).set(bearer(staffToken)).send({ pattern: pattern({ shiftStartTime: '09:00', shiftEndTime: '18:00' }) }).expect(200)).body;
+      const reshaped = (
+        await api()
+          .patch(`/bookings/${draft.id}`)
+          .set(bearer(staffToken))
+          .send({ pattern: pattern({ shiftStartTime: '09:00', shiftEndTime: '18:00' }) })
+          .expect(200)
+      ).body;
       expect(reshaped).toMatchObject({ clientReviewStatus: null, clientReviewNote: null, clientAnsweredAt: null });
 
       expect(await proposalsOf(req.clientToken)).toEqual([]);
@@ -374,18 +564,30 @@ describe('Booking agent (e2e)', () => {
       const last = weekdayOnOrBefore(addDays(inFiveDays, 13));
       await api().post(`/bookings/${draft.id}/ask-client`).set(bearer(staffToken)).expect(200);
       expect((await proposalsOf(req.clientToken))[0]).toMatchObject({ startDate: first, endDate: last, shiftCount: 10 });
-      await api().post(`/me/booking-proposals/${draft.id}/request-changes`).set(bearer(req.clientToken)).send({ note: 'Please start one day earlier' }).expect(200);
+      await api()
+        .post(`/me/booking-proposals/${draft.id}/request-changes`)
+        .set(bearer(req.clientToken))
+        .send({ note: 'Please start one day earlier' })
+        .expect(200);
 
       // Staff add the day before, and ask again.
       const dayBefore = addDays(first, -1);
-      await api().post(`/bookings/${draft.id}/shifts`).set(bearer(staffToken)).send({ start: `${dayBefore}T08:00`, end: `${dayBefore}T17:00` }).expect(201);
+      await api()
+        .post(`/bookings/${draft.id}/shifts`)
+        .set(bearer(staffToken))
+        .send({ start: `${dayBefore}T08:00`, end: `${dayBefore}T17:00` })
+        .expect(201);
       await api().post(`/bookings/${draft.id}/ask-client`).set(bearer(staffToken)).expect(200);
       expect((await proposalsOf(req.clientToken))[0]).toMatchObject({ status: 'ASKED', startDate: dayBefore, endDate: last, shiftCount: 11 });
       // The message asking them to check names the new first day too.
       // (The bell row is written just after the answer goes back, so wait for it.)
       let asks: (typeof notifications.$inferSelect)[] = [];
       for (let i = 0; i < 20 && asks.length < 2; i++) {
-        asks = await db.select().from(notifications).where(and(eq(notifications.userId, req.clientUserId), eq(notifications.path, '/bookings'))).orderBy(notifications.createdAt);
+        asks = await db
+          .select()
+          .from(notifications)
+          .where(and(eq(notifications.userId, req.clientUserId), eq(notifications.path, '/bookings')))
+          .orderBy(notifications.createdAt);
         if (asks.length < 2) await new Promise((r) => setTimeout(r, 100));
       }
       expect(JSON.stringify(asks.at(-1)?.text)).toContain(dayBefore);
@@ -404,11 +606,21 @@ describe('Booking agent (e2e)', () => {
     it('will not ask without a price, or once it is no longer a draft', async () => {
       await mode('MANUAL');
       const req = await matched();
-      const noPrice = (await api().post('/bookings').set(bearer(staffToken)).send({ careRequestId: req.id, ...pattern() }).expect(201)).body;
-      expect((await api().post(`/bookings/${noPrice.id}/ask-client`).set(bearer(staffToken)).expect(400)).body.message).toBe("Set the client's rate first - they are asked to agree to the price");
+      const noPrice = (
+        await api()
+          .post('/bookings')
+          .set(bearer(staffToken))
+          .send({ careRequestId: req.id, ...pattern() })
+          .expect(201)
+      ).body;
+      expect((await api().post(`/bookings/${noPrice.id}/ask-client`).set(bearer(staffToken)).expect(400)).body.message).toBe(
+        "Set the client's rate first - they are asked to agree to the price",
+      );
       await api().patch(`/bookings/${noPrice.id}`).set(bearer(staffToken)).send({ rateType: 'DAILY', rateAmount: '3450.00' }).expect(200);
       await api().post(`/bookings/${noPrice.id}/confirm`).set(bearer(staffToken)).expect(200);
-      expect((await api().post(`/bookings/${noPrice.id}/ask-client`).set(bearer(staffToken)).expect(400)).body.message).toBe('Only a draft booking can be sent to the client to check');
+      expect((await api().post(`/bookings/${noPrice.id}/ask-client`).set(bearer(staffToken)).expect(400)).body.message).toBe(
+        'Only a draft booking can be sent to the client to check',
+      );
       await api().post(`/bookings/${noPrice.id}/ask-client`).set(bearer(req.caregiver.token)).expect(403);
     });
 
@@ -424,10 +636,19 @@ describe('Booking agent (e2e)', () => {
       expect(await agent.answers(new Date(), [booking.id])).toMatchObject({ considered: 0, decided: 0 });
 
       await api().post(`/me/booking-proposals/${booking.id}/accept`).set(bearer(first.clientToken)).expect(200);
-      expect(await db.select().from(jobs).where(and(eq(jobs.type, BOOKING_CONFIRM_JOB), sql`JSON_EXTRACT(${jobs.payload}, '$.bookingId') = ${booking.id}`))).toHaveLength(1);
+      expect(
+        await db
+          .select()
+          .from(jobs)
+          .where(and(eq(jobs.type, BOOKING_CONFIRM_JOB), sql`JSON_EXTRACT(${jobs.payload}, '$.bookingId') = ${booking.id}`)),
+      ).toHaveLength(1);
       expect(await agent.answers(new Date(), [booking.id])).toMatchObject({ considered: 1, decided: 1, leftToStaff: 0 });
       const [asked] = await confirmDecisions(booking.id);
-      expect(asked).toMatchObject({ outcome: 'PROPOSED', mode: 'AUTO', reason: `Confirm ${booking.reference}: the client accepted the times and the price as drafted` });
+      expect(asked).toMatchObject({
+        outcome: 'PROPOSED',
+        mode: 'AUTO',
+        reason: `Confirm ${booking.reference}: the client accepted the times and the price as drafted`,
+      });
       expect((await bookingRow(booking.id)).status).toBe('DRAFT');
       expect((await bookingPanel(booking.id)).handoverNote.waiting).toBe('Staff to approve confirming it');
       // Looking again proposes nothing new.
@@ -454,14 +675,22 @@ describe('Booking agent (e2e)', () => {
       expect(await agent.answers(new Date(), [b2.id])).toMatchObject({ decided: 1, leftToStaff: 0 });
       expect(await bookingRow(b2.id)).toMatchObject({ status: 'CONFIRMED' });
       expect((await confirmDecisions(b2.id))[0]).toMatchObject({ outcome: 'EXECUTED', executionError: null });
-      expect((await bookingPanel(b2.id)).handoverNote.done).toBe(`Confirmed ${b2.reference} after the client accepted it; the client and the caregiver have been told`);
+      expect((await bookingPanel(b2.id)).handoverNote.done).toBe(
+        `Confirmed ${b2.reference} after the client accepted it; the client and the caregiver have been told`,
+      );
 
       // The caregiver is now busy at those times: a second accepted draft for them cannot be confirmed, and staff are told why.
       const clash = await matched();
       const [offer] = await db.select().from(requestOffers).where(eq(requestOffers.requestId, clash.id));
       await db.update(requestOffers).set({ caregiverId: second.caregiver.id }).where(eq(requestOffers.id, offer.id));
       await db.update(careRequests).set({ caregiverId: second.caregiver.id }).where(eq(careRequests.id, clash.id));
-      const d3 = (await api().post('/bookings').set(bearer(staffToken)).send({ careRequestId: clash.id, ...pattern(), rateType: 'DAILY', rateAmount: '3450.00' }).expect(201)).body;
+      const d3 = (
+        await api()
+          .post('/bookings')
+          .set(bearer(staffToken))
+          .send({ careRequestId: clash.id, ...pattern(), rateType: 'DAILY', rateAmount: '3450.00' })
+          .expect(201)
+      ).body;
       await api().post(`/bookings/${d3.id}/ask-client`).set(bearer(staffToken)).expect(200);
       await api().post(`/me/booking-proposals/${d3.id}/accept`).set(bearer(clash.clientToken)).expect(200);
       expect(await agent.answers(new Date(), [d3.id])).toMatchObject({ decided: 1, leftToStaff: 1 });
@@ -482,7 +711,10 @@ describe('Booking agent (e2e)', () => {
       await api().post(`/me/booking-proposals/${b.id}/accept`).set(bearer(stale.clientToken)).expect(200);
       expect(await agent.answers(new Date(), [a.id, b.id])).toMatchObject({ considered: 2, decided: 1, leftToStaff: 1 });
       expect(await confirmDecisions(a.id)).toHaveLength(0);
-      expect((await bookingPanel(a.id)).handoverNote).toMatchObject({ done: 'The client was asked to check the booking and wants changes: "Weekends too, please"', waiting: 'Staff to change the draft and ask the client again' });
+      expect((await bookingPanel(a.id)).handoverNote).toMatchObject({
+        done: 'The client was asked to check the booking and wants changes: "Weekends too, please"',
+        waiting: 'Staff to change the draft and ask the client again',
+      });
 
       const [proposal] = await confirmDecisions(b.id);
       expect(proposal.outcome).toBe('PROPOSED');
@@ -498,7 +730,10 @@ describe('Booking agent (e2e)', () => {
       const no = await matched();
       const a = await staffDraft(yes);
       const b = await staffDraft(no);
-      for (const [d, r] of [[a, yes], [b, no]] as const) {
+      for (const [d, r] of [
+        [a, yes],
+        [b, no],
+      ] as const) {
         await api().post(`/bookings/${d.id}/ask-client`).set(bearer(staffToken)).expect(200);
         await api().post(`/me/booking-proposals/${d.id}/accept`).set(bearer(r.clientToken)).expect(200);
       }
@@ -510,7 +745,10 @@ describe('Booking agent (e2e)', () => {
       await api().post(`/bookings/${b.id}/cancel`).set(bearer(staffToken)).send({ reason: 'The family found someone else' }).expect(200);
       expect(await agent.answers(new Date(), [a.id, b.id])).toMatchObject({ scored: 2, decided: 0 });
       expect((await confirmDecisions(a.id))[0].staffVerdict).toBe('AGREED');
-      expect((await confirmDecisions(b.id))[0]).toMatchObject({ staffVerdict: 'DIFFERED', staffNote: 'Scored automatically: staff cancelled the booking instead' });
+      expect((await confirmDecisions(b.id))[0]).toMatchObject({
+        staffVerdict: 'DIFFERED',
+        staffNote: 'Scored automatically: staff cancelled the booking instead',
+      });
     });
   });
 });

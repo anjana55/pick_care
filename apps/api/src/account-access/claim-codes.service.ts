@@ -19,9 +19,7 @@ export const CLAIM_CODE_POLICY = {
   STAFF: { ttlMs: 48 * 60 * 60 * 1000, maxAttempts: 10, resendCooldownMs: 0 },
 } as const satisfies Record<AccountClaimChannel, { ttlMs: number; maxAttempts: number; resendCooldownMs: number }>;
 
-export type ClaimIssueResult =
-  | { issued: true; code: string; expiresAt: Date }
-  | { issued: false; retryAfterSeconds: number };
+export type ClaimIssueResult = { issued: true; code: string; expiresAt: Date } | { issued: false; retryAfterSeconds: number };
 
 /**
  * Single-use claim codes for the EMAIL and STAFF channels (WhatsApp codes live
@@ -64,13 +62,7 @@ export class ClaimCodesService {
     await this.db
       .update(accountClaimCodes)
       .set({ consumedAt: now })
-      .where(
-        and(
-          eq(accountClaimCodes.caregiverId, caregiverId),
-          eq(accountClaimCodes.channel, channel),
-          isNull(accountClaimCodes.consumedAt),
-        ),
-      );
+      .where(and(eq(accountClaimCodes.caregiverId, caregiverId), eq(accountClaimCodes.channel, channel), isNull(accountClaimCodes.consumedAt)));
 
     const id = uuid();
     const code = channel === 'STAFF' ? this.staffCode() : String(randomInt(0, 1_000_000)).padStart(6, '0');
@@ -120,11 +112,7 @@ export class ClaimCodesService {
         .update(accountClaimCodes)
         .set({ attempts: sql`${accountClaimCodes.attempts} + 1` })
         .where(
-          and(
-            eq(accountClaimCodes.id, row.id),
-            isNull(accountClaimCodes.consumedAt),
-            sql`${accountClaimCodes.attempts} < ${accountClaimCodes.maxAttempts}`,
-          ),
+          and(eq(accountClaimCodes.id, row.id), isNull(accountClaimCodes.consumedAt), sql`${accountClaimCodes.attempts} < ${accountClaimCodes.maxAttempts}`),
         );
       if (affectedRows(attempt) !== 1) continue;
 

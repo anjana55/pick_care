@@ -20,9 +20,7 @@ import { caregivers } from '../schema';
  * auth.service.ts).
  */
 async function main() {
-  const connection = await mysql.createConnection(
-    process.env.DATABASE_URL || 'mysql://care_app:care_app_password@localhost:3306/care_platform',
-  );
+  const connection = await mysql.createConnection(process.env.DATABASE_URL || 'mysql://care_app:care_app_password@localhost:3306/care_platform');
   const db = drizzle(connection);
 
   const rows = await db.select({ id: caregivers.id }).from(caregivers).where(isNull(caregivers.publicId));

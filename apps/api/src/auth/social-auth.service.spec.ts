@@ -37,9 +37,7 @@ function stubDb(answers: DbAnswers) {
   chain.from = jest.fn(() => chain);
   chain.where = jest.fn(() => chain);
   chain.limit = jest.fn(async () => (queue.length ? queue.shift() : []));
-  chain.transaction = jest.fn(async (fn: (tx: unknown) => Promise<unknown>) =>
-    fn(chain),
-  );
+  chain.transaction = jest.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(chain));
   chain.insert = jest.fn(() => {
     const c: any = {};
     c.values = jest.fn(() => c);
@@ -58,10 +56,7 @@ function stubDb(answers: DbAnswers) {
   return { db: chain as never, chain };
 }
 
-function makeService(
-  dbAnswers: DbAnswers,
-  profile: { accountId: string; email: string },
-) {
+function makeService(dbAnswers: DbAnswers, profile: { accountId: string; email: string }) {
   const { db, chain } = stubDb(dbAnswers);
   const jwt = new JwtService({ secret: SECRET });
 
@@ -101,10 +96,7 @@ const CAREGIVER = { id: 'u1', email: 'care@x.com', role: 'CAREGIVER', isActive: 
 
 describe('SocialAuthService.completeLink', () => {
   it('links the provider when the provider email matches the record email', async () => {
-    const { service, authService, jwt } = makeService(
-      { lookups: [[CAREGIVER], [], []] },
-      { accountId: 'g-1', email: 'care@x.com' },
-    );
+    const { service, authService, jwt } = makeService({ lookups: [[CAREGIVER], [], []] }, { accountId: 'g-1', email: 'care@x.com' });
 
     const code = await service.completeLink({
       provider: 'GOOGLE',
@@ -120,10 +112,7 @@ describe('SocialAuthService.completeLink', () => {
     // The browser is sent back to /auth/social/google/callback, so the service
     // receives `google`, not `GOOGLE`. Using the raw value broke every real
     // sign-in while a test that passed the canonical name stayed green.
-    const { service, jwt } = makeService(
-      { lookups: [[CAREGIVER], [], []] },
-      { accountId: 'g-1', email: 'care@x.com' },
-    );
+    const { service, jwt } = makeService({ lookups: [[CAREGIVER], [], []] }, { accountId: 'g-1', email: 'care@x.com' });
 
     const code = await service.completeLink({
       provider: 'google',
@@ -137,39 +126,28 @@ describe('SocialAuthService.completeLink', () => {
   it('rejects a provider name it does not know', async () => {
     const { service, jwt } = makeService({ lookups: [[CAREGIVER]] }, { accountId: 'g-1', email: 'care@x.com' });
 
-    await expect(
-      service.completeLink({ provider: 'twitter', code: 'c', pendingToken: pendingToken(jwt, 'u1') }),
-    ).rejects.toThrow(/unknown sign-in provider/i);
+    await expect(service.completeLink({ provider: 'twitter', code: 'c', pendingToken: pendingToken(jwt, 'u1') })).rejects.toThrow(/unknown sign-in provider/i);
   });
 
   it('compares the address case-insensitively', async () => {
-    const { service, jwt } = makeService(
-      { lookups: [[{ ...CAREGIVER, email: 'Care@X.com' }], [], []] },
-      { accountId: 'g-1', email: 'care@x.com' },
-    );
+    const { service, jwt } = makeService({ lookups: [[{ ...CAREGIVER, email: 'Care@X.com' }], [], []] }, { accountId: 'g-1', email: 'care@x.com' });
 
-    await expect(
-      service.completeLink({ provider: 'GOOGLE', code: 'c', pendingToken: pendingToken(jwt, 'u1') }),
-    ).resolves.toEqual(expect.stringMatching(/^[0-9a-f]{64}$/));
+    await expect(service.completeLink({ provider: 'GOOGLE', code: 'c', pendingToken: pendingToken(jwt, 'u1') })).resolves.toEqual(
+      expect.stringMatching(/^[0-9a-f]{64}$/),
+    );
   });
 
   it('refuses a provider account on a different email, and issues no session', async () => {
-    const { service, authService, jwt } = makeService(
-      { lookups: [[CAREGIVER], [], []] },
-      { accountId: 'g-2', email: 'someone.else@x.com' },
-    );
+    const { service, authService, jwt } = makeService({ lookups: [[CAREGIVER], [], []] }, { accountId: 'g-2', email: 'someone.else@x.com' });
 
-    await expect(
-      service.completeLink({ provider: 'GOOGLE', code: 'c', pendingToken: pendingToken(jwt, 'u1') }),
-    ).rejects.toMatchObject({ code: 'email_mismatch' });
+    await expect(service.completeLink({ provider: 'GOOGLE', code: 'c', pendingToken: pendingToken(jwt, 'u1') })).rejects.toMatchObject({
+      code: 'email_mismatch',
+    });
     expect(authService.startSession).not.toHaveBeenCalled();
   });
 
   it('adopts the provider email when the record was registered without one', async () => {
-    const { service, chain, jwt } = makeService(
-      { lookups: [[{ ...CAREGIVER, email: null }], [], []] },
-      { accountId: 'g-1', email: 'new@x.com' },
-    );
+    const { service, chain, jwt } = makeService({ lookups: [[{ ...CAREGIVER, email: null }], [], []] }, { accountId: 'g-1', email: 'new@x.com' });
 
     await service.completeLink({ provider: 'GOOGLE', code: 'c', pendingToken: pendingToken(jwt, 'u1') });
 
@@ -181,49 +159,33 @@ describe('SocialAuthService.completeLink', () => {
   });
 
   it('refuses to take over an email another user already owns', async () => {
-    const { service, jwt } = makeService(
-      { lookups: [[{ ...CAREGIVER, email: null }], [], [{ id: 'other' }]] },
-      { accountId: 'g-1', email: 'taken@x.com' },
-    );
+    const { service, jwt } = makeService({ lookups: [[{ ...CAREGIVER, email: null }], [], [{ id: 'other' }]] }, { accountId: 'g-1', email: 'taken@x.com' });
 
-    await expect(
-      service.completeLink({ provider: 'GOOGLE', code: 'c', pendingToken: pendingToken(jwt, 'u1') }),
-    ).rejects.toMatchObject({ code: 'email_taken' });
+    await expect(service.completeLink({ provider: 'GOOGLE', code: 'c', pendingToken: pendingToken(jwt, 'u1') })).rejects.toMatchObject({ code: 'email_taken' });
   });
 
   it('refuses a provider identity already linked to a different user', async () => {
-    const { service, jwt } = makeService(
-      { lookups: [[CAREGIVER], [{ userId: 'someone-else' }]] },
-      { accountId: 'g-1', email: 'care@x.com' },
-    );
+    const { service, jwt } = makeService({ lookups: [[CAREGIVER], [{ userId: 'someone-else' }]] }, { accountId: 'g-1', email: 'care@x.com' });
 
-    await expect(
-      service.completeLink({ provider: 'GOOGLE', code: 'c', pendingToken: pendingToken(jwt, 'u1') }),
-    ).rejects.toMatchObject({ code: 'already_linked' });
+    await expect(service.completeLink({ provider: 'GOOGLE', code: 'c', pendingToken: pendingToken(jwt, 'u1') })).rejects.toMatchObject({
+      code: 'already_linked',
+    });
   });
 
   it('allows re-linking the same identity to the same user', async () => {
     // A caregiver who abandons the consent screen and comes back through a
     // fresh pending token lands here a second time. That is not an attack.
-    const { service, jwt } = makeService(
-      { lookups: [[CAREGIVER], [{ userId: 'u1' }], []] },
-      { accountId: 'g-1', email: 'care@x.com' },
-    );
+    const { service, jwt } = makeService({ lookups: [[CAREGIVER], [{ userId: 'u1' }], []] }, { accountId: 'g-1', email: 'care@x.com' });
 
-    await expect(
-      service.completeLink({ provider: 'GOOGLE', code: 'c', pendingToken: pendingToken(jwt, 'u1') }),
-    ).resolves.toEqual(expect.stringMatching(/^[0-9a-f]{64}$/));
+    await expect(service.completeLink({ provider: 'GOOGLE', code: 'c', pendingToken: pendingToken(jwt, 'u1') })).resolves.toEqual(
+      expect.stringMatching(/^[0-9a-f]{64}$/),
+    );
   });
 
   it('refuses a registration for an account that is not an active caregiver', async () => {
-    const { service, jwt } = makeService(
-      { lookups: [[{ ...CAREGIVER, isActive: false }]] },
-      { accountId: 'g-1', email: 'care@x.com' },
-    );
+    const { service, jwt } = makeService({ lookups: [[{ ...CAREGIVER, isActive: false }]] }, { accountId: 'g-1', email: 'care@x.com' });
 
-    await expect(
-      service.completeLink({ provider: 'GOOGLE', code: 'c', pendingToken: pendingToken(jwt, 'u1') }),
-    ).rejects.toBeInstanceOf(SocialLinkError);
+    await expect(service.completeLink({ provider: 'GOOGLE', code: 'c', pendingToken: pendingToken(jwt, 'u1') })).rejects.toBeInstanceOf(SocialLinkError);
   });
 
   describe('the pending token', () => {
@@ -234,29 +196,21 @@ describe('SocialAuthService.completeLink', () => {
       const { service, jwt } = makeService({ lookups: [[CAREGIVER]] }, { accountId: 'g-1', email: 'care@x.com' });
       const accessToken = jwt.sign({ sub: 'u1', email: 'care@x.com', role: 'CAREGIVER' }, { secret: SECRET });
 
-      await expect(
-        service.completeLink({ provider: 'GOOGLE', code: 'c', pendingToken: accessToken }),
-      ).rejects.toMatchObject({ code: 'expired' });
+      await expect(service.completeLink({ provider: 'GOOGLE', code: 'c', pendingToken: accessToken })).rejects.toMatchObject({ code: 'expired' });
     });
 
     it('rejects a token signed with another secret', async () => {
       const { service } = makeService({ lookups: [[CAREGIVER]] }, { accountId: 'g-1', email: 'care@x.com' });
-      const foreign = new JwtService({ secret: 'not-the-secret' }).sign(
-        { sub: 'u1', typ: 'caregiver-social-signup' },
-      );
+      const foreign = new JwtService({ secret: 'not-the-secret' }).sign({ sub: 'u1', typ: 'caregiver-social-signup' });
 
-      await expect(
-        service.completeLink({ provider: 'GOOGLE', code: 'c', pendingToken: foreign }),
-      ).rejects.toBeInstanceOf(SocialLinkError);
+      await expect(service.completeLink({ provider: 'GOOGLE', code: 'c', pendingToken: foreign })).rejects.toBeInstanceOf(SocialLinkError);
     });
 
     it('rejects an expired registration link', async () => {
       const { service, jwt } = makeService({ lookups: [[CAREGIVER]] }, { accountId: 'g-1', email: 'care@x.com' });
       const stale = jwt.sign({ sub: 'u1', typ: 'caregiver-social-signup' }, { secret: SECRET, expiresIn: '-1s' });
 
-      await expect(
-        service.completeLink({ provider: 'GOOGLE', code: 'c', pendingToken: stale }),
-      ).rejects.toBeInstanceOf(SocialLinkError);
+      await expect(service.completeLink({ provider: 'GOOGLE', code: 'c', pendingToken: stale })).rejects.toBeInstanceOf(SocialLinkError);
     });
   });
 });
@@ -266,18 +220,13 @@ describe('SocialAuthService.exchangeHandoffCode', () => {
     // The code travels in a URL, so a leaked database must not hand out live
     // sessions. sha256 is what is looked up by, so the plaintext is gone.
     const { service } = makeService({ lookups: [[]] }, { accountId: 'g-1', email: 'care@x.com' });
-    expect(service['hashToken']('live-code')).toBe(
-      'a3a9a837bb26a467b38d177ab7473679d1e8c597ef790142782edba779310084',
-    );
+    expect(service['hashToken']('live-code')).toBe('a3a9a837bb26a467b38d177ab7473679d1e8c597ef790142782edba779310084');
   });
 
   it('refuses a code that was already spent, without minting a session', async () => {
     const { service, authService } = makeService(
       {
-        lookups: [
-          [{ id: 'h1', userId: 'u1', codeHash: 'x', expiresAt: new Date(Date.now() + 1000), usedAt: new Date() }],
-          [],
-        ],
+        lookups: [[{ id: 'h1', userId: 'u1', codeHash: 'x', expiresAt: new Date(Date.now() + 1000), usedAt: new Date() }], []],
       },
       { accountId: 'g-1', email: 'care@x.com' },
     );
@@ -289,9 +238,7 @@ describe('SocialAuthService.exchangeHandoffCode', () => {
   it('refuses an expired code', async () => {
     const { service } = makeService(
       {
-        lookups: [
-          [{ id: 'h1', userId: 'u1', codeHash: 'x', expiresAt: new Date(Date.now() - 1000), usedAt: null }],
-        ],
+        lookups: [[{ id: 'h1', userId: 'u1', codeHash: 'x', expiresAt: new Date(Date.now() - 1000), usedAt: null }]],
       },
       { accountId: 'g-1', email: 'care@x.com' },
     );
@@ -302,10 +249,7 @@ describe('SocialAuthService.exchangeHandoffCode', () => {
   it('mints the session through AuthService.startSession once the code is valid', async () => {
     const { service, authService } = makeService(
       {
-        lookups: [
-          [{ id: 'h1', userId: 'u1', codeHash: 'x', expiresAt: new Date(Date.now() + 1000), usedAt: null }],
-          [{ ...CAREGIVER }],
-        ],
+        lookups: [[{ id: 'h1', userId: 'u1', codeHash: 'x', expiresAt: new Date(Date.now() + 1000), usedAt: null }], [{ ...CAREGIVER }]],
       },
       { accountId: 'g-1', email: 'care@x.com' },
     );
@@ -327,14 +271,10 @@ describe('SocialAuthService.exchangeHandoffCode', () => {
  */
 describe('SocialAuthService sign-in', () => {
   const NONCE = 'abcdefghijklmnop1234';
-  const loginState = (jwt: JwtService, nonce = NONCE) =>
-    jwt.sign({ typ: 'caregiver-social-login', nonce }, { secret: SECRET, expiresIn: '10m' });
+  const loginState = (jwt: JwtService, nonce = NONCE) => jwt.sign({ typ: 'caregiver-social-login', nonce }, { secret: SECRET, expiresIn: '10m' });
 
   it('signs in a linked caregiver and returns the browser nonce with the handoff code', async () => {
-    const { service, jwt } = makeService(
-      { lookups: [[{ userId: 'u1' }], [CAREGIVER]] },
-      { accountId: 'g-1', email: 'anything@x.com' },
-    );
+    const { service, jwt } = makeService({ lookups: [[{ userId: 'u1' }], [CAREGIVER]] }, { accountId: 'g-1', email: 'anything@x.com' });
 
     const result = await service.completeCallback({ provider: 'GOOGLE', code: 'c', state: loginState(jwt) });
 
@@ -359,21 +299,17 @@ describe('SocialAuthService sign-in', () => {
   it('tells an unlinked provider account to register instead of creating one', async () => {
     const { service, jwt, chain } = makeService({ lookups: [[]] }, { accountId: 'g-9', email: 'new@x.com' });
 
-    await expect(
-      service.completeCallback({ provider: 'GOOGLE', code: 'c', state: loginState(jwt) }),
-    ).rejects.toMatchObject({ code: 'not_registered' });
+    await expect(service.completeCallback({ provider: 'GOOGLE', code: 'c', state: loginState(jwt) })).rejects.toMatchObject({ code: 'not_registered' });
     expect(chain.insert).not.toHaveBeenCalled();
   });
 
   it('refuses a linked account that is disabled or not a caregiver', async () => {
-    for (const user of [{ ...CAREGIVER, isActive: false }, { ...CAREGIVER, role: 'ADMIN' }]) {
-      const { service, jwt } = makeService(
-        { lookups: [[{ userId: 'u1' }], [user]] },
-        { accountId: 'g-1', email: 'care@x.com' },
-      );
-      await expect(
-        service.completeCallback({ provider: 'GOOGLE', code: 'c', state: loginState(jwt) }),
-      ).rejects.toMatchObject({ code: 'account_disabled' });
+    for (const user of [
+      { ...CAREGIVER, isActive: false },
+      { ...CAREGIVER, role: 'ADMIN' },
+    ]) {
+      const { service, jwt } = makeService({ lookups: [[{ userId: 'u1' }], [user]] }, { accountId: 'g-1', email: 'care@x.com' });
+      await expect(service.completeCallback({ provider: 'GOOGLE', code: 'c', state: loginState(jwt) })).rejects.toMatchObject({ code: 'account_disabled' });
     }
   });
 
@@ -382,9 +318,7 @@ describe('SocialAuthService sign-in', () => {
     const foreign = new JwtService({ secret: 'other' }).sign({ typ: 'caregiver-social-login', nonce: NONCE });
     // A forged state is not recognised as a login state, so it falls to the
     // registration path, which rejects it on the signature.
-    await expect(service.completeCallback({ provider: 'GOOGLE', code: 'c', state: foreign })).rejects.toBeInstanceOf(
-      SocialLinkError,
-    );
+    await expect(service.completeCallback({ provider: 'GOOGLE', code: 'c', state: foreign })).rejects.toBeInstanceOf(SocialLinkError);
   });
 
   it('does not accept a registration token as a login state, or the reverse', async () => {

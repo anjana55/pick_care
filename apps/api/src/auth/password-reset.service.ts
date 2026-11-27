@@ -56,7 +56,13 @@ export class PasswordResetService {
     const [recent] = await this.db
       .select({ id: passwordResetTokens.id })
       .from(passwordResetTokens)
-      .where(and(eq(passwordResetTokens.userId, user.id), isNull(passwordResetTokens.requestedBy), gt(passwordResetTokens.createdAt, new Date(Date.now() - RESEND_GAP_MS))))
+      .where(
+        and(
+          eq(passwordResetTokens.userId, user.id),
+          isNull(passwordResetTokens.requestedBy),
+          gt(passwordResetTokens.createdAt, new Date(Date.now() - RESEND_GAP_MS)),
+        ),
+      )
       .limit(1);
     if (recent) return generic;
 
@@ -109,7 +115,10 @@ export class PasswordResetService {
     if (!user.email) throw new BadRequestException('This account has no email address, so a password cannot be used to sign in. Add an email address first.');
     const passwordHash = await bcrypt.hash(newPassword, 12);
     await this.db.transaction(async (tx) => {
-      await tx.update(users).set({ passwordHash, emailVerifiedAt: user.emailVerifiedAt ?? new Date() }).where(eq(users.id, user.id));
+      await tx
+        .update(users)
+        .set({ passwordHash, emailVerifiedAt: user.emailVerifiedAt ?? new Date() })
+        .where(eq(users.id, user.id));
       await this.voidEverything(tx as unknown as Database, user.id);
     });
     return { email: user.email };
@@ -126,7 +135,10 @@ export class PasswordResetService {
     const token = randomBytes(32).toString('hex');
     const expiresAt = new Date(Date.now() + ttlMs);
     await this.db.transaction(async (tx) => {
-      await tx.update(passwordResetTokens).set({ usedAt: new Date() }).where(and(eq(passwordResetTokens.userId, user.id), isNull(passwordResetTokens.usedAt)));
+      await tx
+        .update(passwordResetTokens)
+        .set({ usedAt: new Date() })
+        .where(and(eq(passwordResetTokens.userId, user.id), isNull(passwordResetTokens.usedAt)));
       await tx.insert(passwordResetTokens).values({ id: uuid(), userId: user.id, tokenHash: hash(token), expiresAt, requestedBy });
     });
     const base = (this.config.get<string>('PUBLIC_WEB_URL') ?? 'http://localhost:3002').replace(/\/+$/, '');
@@ -144,7 +156,11 @@ export class PasswordResetService {
 
   private async findUsable(token: string) {
     if (!/^[0-9a-f]{64}$/.test(token ?? '')) throw new UnauthorizedException(INVALID_LINK);
-    const [record] = await this.db.select().from(passwordResetTokens).where(eq(passwordResetTokens.tokenHash, hash(token))).limit(1);
+    const [record] = await this.db
+      .select()
+      .from(passwordResetTokens)
+      .where(eq(passwordResetTokens.tokenHash, hash(token)))
+      .limit(1);
     if (!record || record.usedAt || record.expiresAt < new Date()) throw new UnauthorizedException(INVALID_LINK);
     const [user] = await this.db.select().from(users).where(eq(users.id, record.userId)).limit(1);
     if (!user || !user.isActive || !PUBLIC_SITE_ROLES.includes(user.role)) throw new UnauthorizedException(INVALID_LINK);
@@ -154,7 +170,10 @@ export class PasswordResetService {
   /** Signs the account out everywhere and voids any outstanding reset links. */
   private async voidEverything(db: Database, userId: string) {
     await db.update(refreshTokens).set({ revoked: true }).where(eq(refreshTokens.userId, userId));
-    await db.update(passwordResetTokens).set({ usedAt: new Date() }).where(and(eq(passwordResetTokens.userId, userId), isNull(passwordResetTokens.usedAt)));
+    await db
+      .update(passwordResetTokens)
+      .set({ usedAt: new Date() })
+      .where(and(eq(passwordResetTokens.userId, userId), isNull(passwordResetTokens.usedAt)));
   }
 }
 

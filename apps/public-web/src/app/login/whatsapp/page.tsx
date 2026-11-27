@@ -76,7 +76,7 @@ function WhatsappLoginInner() {
             ) : step === 'phone' ? (
               <form onSubmit={requestCode} className="space-y-4">
                 <div>
-                  <Label htmlFor="phone" >{t('whatsapp.login.phone')}</Label>
+                  <Label htmlFor="phone">{t('whatsapp.login.phone')}</Label>
                   <Input
                     id="phone"
                     type="tel"
@@ -85,10 +85,14 @@ function WhatsappLoginInner() {
                     placeholder="0771234567"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    />
+                  />
                   <p className="mt-1 text-xs text-ink/50">{t('whatsapp.login.phoneHint')}</p>
                 </div>
-                {error && <p role="alert" className="text-sm text-danger">{error}</p>}
+                {error && (
+                  <p role="alert" className="text-sm text-danger">
+                    {error}
+                  </p>
+                )}
                 <button
                   type="submit"
                   disabled={loading || phone.trim().length < 7}
@@ -99,7 +103,7 @@ function WhatsappLoginInner() {
               </form>
             ) : (
               <WhatsappOtpForm
-              portal="customer"
+                portal="customer"
                 phone={phone}
                 purpose={purpose}
                 codeLength={config?.otpLength ?? 6}
@@ -113,14 +117,28 @@ function WhatsappLoginInner() {
 
           <div className="mt-6 space-y-2 text-center text-sm text-ink/60">
             {recovering ? (
-              <p><Link href="/login/whatsapp" className="font-medium text-brand-dark hover:underline">{t('whatsapp.login.backToWhatsapp')}</Link></p>
+              <p>
+                <Link href="/login/whatsapp" className="font-medium text-brand-dark hover:underline">
+                  {t('whatsapp.login.backToWhatsapp')}
+                </Link>
+              </p>
             ) : (
-              <p><Link href="/login/whatsapp?mode=recover" className="font-medium text-brand-dark hover:underline">{t('whatsapp.login.lostAccess')}</Link></p>
+              <p>
+                <Link href="/login/whatsapp?mode=recover" className="font-medium text-brand-dark hover:underline">
+                  {t('whatsapp.login.lostAccess')}
+                </Link>
+              </p>
             )}
-            <p><Link href="/login" className="font-medium text-brand-dark hover:underline">{t('whatsapp.login.useEmail')}</Link></p>
+            <p>
+              <Link href="/login" className="font-medium text-brand-dark hover:underline">
+                {t('whatsapp.login.useEmail')}
+              </Link>
+            </p>
             <p>
               {t('login.noAccount')}{' '}
-              <Link href="/register" className="font-medium text-brand-dark hover:underline">{t('signup.createAccount')}</Link>
+              <Link href="/register" className="font-medium text-brand-dark hover:underline">
+                {t('signup.createAccount')}
+              </Link>
             </p>
           </div>
         </div>

@@ -61,7 +61,12 @@ const response = (total: number, radiusKm = 25, source = 'device', label: string
   mapPoints: total ? POINTS : [],
 });
 
-const show = () => render(<AppProviders><Find /></AppProviders>);
+const show = () =>
+  render(
+    <AppProviders>
+      <Find />
+    </AppProviders>,
+  );
 
 async function searchColombo() {
   await fireEvent.press(await screen.findByRole('radio', { name: en.careTypes.HOME_SHIFT }));
@@ -131,7 +136,10 @@ describe('use my location', () => {
 describe('how far to look', () => {
   it('searches again further out, and offers a wider search when nobody is in range', async () => {
     const calls = api({
-      'POST /public/search': (body) => ({ status: 200, body: response(body.radiusKm === 50 ? 2 : 0, (body.radiusKm as number) ?? 25, 'searchCity', 'Colombo 03') }),
+      'POST /public/search': (body) => ({
+        status: 200,
+        body: response(body.radiusKm === 50 ? 2 : 0, (body.radiusKm as number) ?? 25, 'searchCity', 'Colombo 03'),
+      }),
     });
     await show();
     await searchColombo();

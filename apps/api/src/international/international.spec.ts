@@ -75,7 +75,10 @@ function profiles(results: unknown[], publicSearch?: Partial<PublicSearchService
     fake.db,
     files,
     (publicSearch ?? {}) as PublicSearchService,
-    (training ?? { completedTitles: jest.fn().mockResolvedValue(new Map()), publicCertificates: jest.fn().mockResolvedValue(new Map()) }) as unknown as TrainingService,
+    (training ?? {
+      completedTitles: jest.fn().mockResolvedValue(new Map()),
+      publicCertificates: jest.fn().mockResolvedValue(new Map()),
+    }) as unknown as TrainingService,
     { publicFor: jest.fn().mockResolvedValue(new Map()) } as never,
   );
   return { service, ...fake, files };
@@ -136,7 +139,14 @@ describe('SharedProfilesService', () => {
   });
 
   it('withdrawing consent switches sharing off, clears consent and deletes the photo', async () => {
-    const live = { ...ROW, status: 'APPROVED', isShared: true, photoKey: 'shared-profiles/cg-1/p.webp', consentAcceptedAt: new Date(), consentVersion: SHARED_PROFILE_CONSENT_VERSION };
+    const live = {
+      ...ROW,
+      status: 'APPROVED',
+      isShared: true,
+      photoKey: 'shared-profiles/cg-1/p.webp',
+      consentAcceptedAt: new Date(),
+      consentVersion: SHARED_PROFILE_CONSENT_VERSION,
+    };
     const { service, writes, files } = profiles([[live], [{ ...ROW }], []]);
     await service.withdrawConsent('cg-1');
     expect(files.delete).toHaveBeenCalledWith('shared-profiles/cg-1/p.webp');
@@ -179,11 +189,29 @@ describe('SharedProfilesService', () => {
       serviceArea: [],
     };
     const { service } = profiles(
-      [[{ p: live, overseas: { caregiverId: 'cg-1', openToOverseas: true, targetCountries: ['JP', 'XX'], passportHeld: true, passportExpiry: '2030-01-01', availableFrom: '2027-01-01' } }]],
+      [
+        [
+          {
+            p: live,
+            overseas: {
+              caregiverId: 'cg-1',
+              openToOverseas: true,
+              targetCountries: ['JP', 'XX'],
+              passportHeld: true,
+              passportExpiry: '2030-01-01',
+              availableFrom: '2027-01-01',
+            },
+          },
+        ],
+      ],
       { profilesFor: jest.fn().mockResolvedValue(new Map([['cg-1', base]])) },
       {
         completedTitles: jest.fn().mockResolvedValue(new Map([['cg-1', ['English for caregivers']]])),
-        publicCertificates: jest.fn().mockResolvedValue(new Map([['cg-1', [{ number: 'TC-2026-ABC234', verifyCode: 'ABCDEFGHJK23', programmeTitle: 'English for caregivers', issuedOn: '2026-09-01' }]]])),
+        publicCertificates: jest
+          .fn()
+          .mockResolvedValue(
+            new Map([['cg-1', [{ number: 'TC-2026-ABC234', verifyCode: 'ABCDEFGHJK23', programmeTitle: 'English for caregivers', issuedOn: '2026-09-01' }]]]),
+          ),
       },
     );
     const profile = await service.publicProfile('abcdefgh2345', 'en');
@@ -292,7 +320,16 @@ describe('training', () => {
   });
 
   it('records completion with today as the date when staff do not give one', async () => {
-    const enrolment = { id: 'e1', programmeId: 'p1', caregiverId: 'cg-1', status: 'ENROLLED', completedAt: null, score: null, progressPercent: 40, staffNote: null };
+    const enrolment = {
+      id: 'e1',
+      programmeId: 'p1',
+      caregiverId: 'cg-1',
+      status: 'ENROLLED',
+      completedAt: null,
+      score: null,
+      progressPercent: 40,
+      staffNote: null,
+    };
     // the enrolment; (update); certificate: no caregiver row found; then the programme list.
     const fake = fakeDb([[{ e: enrolment, passMark: null }], [], [row], [{ n: 1 }], [{ id: 'e1', createdAt: new Date(), cert: null }]]);
     const service = new TrainingService(fake.db);
@@ -340,8 +377,8 @@ describe('international controllers', () => {
 
   it('never lets anyone but the caregiver give consent to share', () => {
     const controller = new CaregiverInternationalController({} as never, { share: jest.fn() } as never, {} as never, {} as never, {} as never);
-    expect(() => controller.share('cg-1', { consent: true, consentVersion: SHARED_PROFILE_CONSENT_VERSION }, { userId: 'u', email: null, role: 'ADMIN' })).toThrow(
-      ForbiddenException,
-    );
+    expect(() =>
+      controller.share('cg-1', { consent: true, consentVersion: SHARED_PROFILE_CONSENT_VERSION }, { userId: 'u', email: null, role: 'ADMIN' }),
+    ).toThrow(ForbiddenException);
   });
 });

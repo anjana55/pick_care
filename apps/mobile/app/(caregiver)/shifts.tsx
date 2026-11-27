@@ -47,7 +47,6 @@ export default function Shifts() {
         contentContainerStyle={styles.page}
         refreshControl={<RefreshControl refreshing={shifts.isRefetching} onRefresh={() => void shifts.refetch()} />}
       >
-
         {shifts.isLoading ? <ActivityIndicator color={colors.brand} /> : null}
         {shifts.isError ? <Text style={{ color: colors.danger }}>{t('care.actionError')}</Text> : null}
         {shifts.isSuccess && !shifts.data.length ? <EmptyState icon="calendar-outline" body={t('portal.shifts.noBooked')} /> : null}

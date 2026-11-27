@@ -59,7 +59,7 @@ async function rawPost(url: string, body: Record<string, string>): Promise<{ sta
   return { status: res.status, json: text ? safeParse(text) : {} };
 }
 
-const unreachable: CredentialCheck = { ok: false, message: 'Could not reach the provider. Check the server\'s internet access and try again.' };
+const unreachable: CredentialCheck = { ok: false, message: "Could not reach the provider. Check the server's internet access and try again." };
 const accepted = (name: string): CredentialCheck => ({
   ok: true,
   message: `${name} did not reject the client ID and secret. (The sign-in itself is only exercised by a real sign-in.)`,
@@ -290,10 +290,7 @@ export class FacebookProviderClient implements SocialProviderClient {
   }
 
   async fetchProfile(accessToken: string): Promise<SocialProfile> {
-    const json = await getJson(
-      `https://graph.facebook.com/${this.apiVersion}/me?fields=id,email,name`,
-      accessToken,
-    );
+    const json = await getJson(`https://graph.facebook.com/${this.apiVersion}/me?fields=id,email,name`, accessToken);
     // Facebook only returns `email` for an account that has a verified address
     // and has granted the scope; without it there is nothing to match on.
     if (!json.email) {

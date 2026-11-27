@@ -34,7 +34,8 @@ export default function TodayVisitsPage() {
   }, [authLoading, user, allowed, router]);
   const { data, isLoading } = useTodayVisits(allowed);
 
-  if (authLoading || !allowed || isLoading || !data) return <div className="flex min-h-[40vh] items-center justify-center text-sm text-ink/50">{t('common.loading')}</div>;
+  if (authLoading || !allowed || isLoading || !data)
+    return <div className="flex min-h-[40vh] items-center justify-center text-sm text-ink/50">{t('common.loading')}</div>;
 
   const late = data.visits.filter((v) => v.minutesLate !== null);
   const rest = data.visits.filter((v) => v.minutesLate === null);
@@ -62,7 +63,11 @@ export default function TodayVisitsPage() {
       )}
 
       <LiveVisitsPanel onTheWay={data.visits.filter((v) => v.checkIn.onTheWay).length} />
-      {data.truncated && <p role="status" className="mt-2 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">{t('visits.truncated', { n: data.visits.length })}</p>}
+      {data.truncated && (
+        <p role="status" className="mt-2 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+          {t('visits.truncated', { n: data.visits.length })}
+        </p>
+      )}
       {data.visits.length === 0 ? (
         <p className="rounded border border-dashed border-border bg-white px-4 py-10 text-center text-sm text-ink/50">{t('visits.none')}</p>
       ) : (
@@ -147,7 +152,13 @@ function VisitRow({ visit: v, date, on }: { visit: TodayVisit; date: string; on:
           )}
         </div>
         <div className="min-w-[10rem] text-sm">
-          {live ? on ? <VisitChip checkIn={v.checkIn} minutesLate={v.minutesLate} /> : null : <ShiftStatusBadge status={v.shiftStatus} label={t(`bookings.shiftStatus.${v.shiftStatus}`)} />}
+          {live ? (
+            on ? (
+              <VisitChip checkIn={v.checkIn} minutesLate={v.minutesLate} />
+            ) : null
+          ) : (
+            <ShiftStatusBadge status={v.shiftStatus} label={t(`bookings.shiftStatus.${v.shiftStatus}`)} />
+          )}
           {on && live && <VisitNotes checkIn={v.checkIn} shiftId={v.shiftId} />}
           {/* The code matters only while the caregiver can still use it. */}
           {on && live && !v.checkIn.checkedInAt && v.checkIn.state !== 'NOT_RECORDED' && (
@@ -188,7 +199,10 @@ function RecordForm({ shiftId, what, date, onDone }: { shiftId: string; what: 'c
     e.preventDefault();
     setError(null);
     const at = time ? (colomboLocalToIso(`${date}T${time}`) ?? undefined) : undefined;
-    record.mutate({ at, note: note.trim() || undefined }, { onSuccess: onDone, onError: (err) => setError(err instanceof ApiError && err.message ? err.message : t('visits.recordError')) });
+    record.mutate(
+      { at, note: note.trim() || undefined },
+      { onSuccess: onDone, onError: (err) => setError(err instanceof ApiError && err.message ? err.message : t('visits.recordError')) },
+    );
   };
 
   return (
@@ -199,7 +213,13 @@ function RecordForm({ shiftId, what, date, onDone }: { shiftId: string; what: 'c
       </div>
       <div className="min-w-[14rem] flex-1">
         <Label htmlFor={`${id}-note`}>{t('visits.noteLabel')}</Label>
-        <Input id={`${id}-note`} value={note} maxLength={CHECK_IN_NOTE_MAX} onChange={(e) => setNote(e.target.value)} placeholder={t('visits.notePlaceholder')} />
+        <Input
+          id={`${id}-note`}
+          value={note}
+          maxLength={CHECK_IN_NOTE_MAX}
+          onChange={(e) => setNote(e.target.value)}
+          placeholder={t('visits.notePlaceholder')}
+        />
       </div>
       <Button type="submit" size="sm" disabled={record.isPending}>
         {what === 'check-in' ? t('visits.recordIn') : t('visits.recordOut')}

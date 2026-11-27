@@ -9,7 +9,18 @@ jest.mock('@/lib/api/public-search', () => ({
   publicSearchApi: { aiExtract: (...a: unknown[]) => aiExtract(...a) },
 }));
 jest.mock('@/lib/hooks/use-public-search', () => ({
-  useLocationTree: () => ({ data: [{ id: 1, name: 'Central', districts: [{ id: 5, name: 'Kandy' }, { id: 6, name: 'Matale' }] }] }),
+  useLocationTree: () => ({
+    data: [
+      {
+        id: 1,
+        name: 'Central',
+        districts: [
+          { id: 5, name: 'Kandy' },
+          { id: 6, name: 'Matale' },
+        ],
+      },
+    ],
+  }),
 }));
 
 const SKILL = '33333333-3333-4333-8333-333333333333';
@@ -30,7 +41,15 @@ beforeEach(() => aiExtract.mockReset());
 describe('AiSearchPanel', () => {
   it('searches straight away when the description is enough, and shows what was understood', async () => {
     aiExtract.mockResolvedValue({
-      requirements: { careType: 'HOME_SHIFT', location: { districtId: 5 }, shift: 'NIGHT', optionalSkillIds: [SKILL], desiredStartDate: '2026-11-01', page: 1, pageSize: 20 },
+      requirements: {
+        careType: 'HOME_SHIFT',
+        location: { districtId: 5 },
+        shift: 'NIGHT',
+        optionalSkillIds: [SKILL],
+        desiredStartDate: '2026-11-01',
+        page: 1,
+        pageSize: 20,
+      },
       summary: { patient: [], location: ['Kandy'], care: ['Night care'], preferences: ['Nice to have: Dementia Care'] },
       missing: [],
       assumed: [],
@@ -152,7 +171,11 @@ describe('AiSearchPanel', () => {
   });
 
   it('starting over clears the conversation', async () => {
-    aiExtract.mockResolvedValue({ requirements: { careType: 'HOSPITAL', location: { districtId: 5 }, desiredStartDate: '2026-10-20' }, summary: EMPTY, missing: [] });
+    aiExtract.mockResolvedValue({
+      requirements: { careType: 'HOSPITAL', location: { districtId: 5 }, desiredStartDate: '2026-10-20' },
+      summary: EMPTY,
+      missing: [],
+    });
     const onReset = jest.fn();
     setup({ onReset });
     await waitFor(() => expect(screen.getByRole('button', { name: /start over/i })).toBeInTheDocument());

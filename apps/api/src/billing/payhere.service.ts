@@ -127,16 +127,29 @@ export class PayhereService {
         return;
       }
       const amountOk = n.payhere_currency === c.currency && toCents(n.payhere_amount!) === toCents(c.amount);
-      const patch = { paymentId: n.payment_id ?? c.paymentId, method: n.method?.slice(0, 20) ?? c.method, statusMessage: n.status_message?.slice(0, 255) ?? null, updatedAt: new Date() };
+      const patch = {
+        paymentId: n.payment_id ?? c.paymentId,
+        method: n.method?.slice(0, 20) ?? c.method,
+        statusMessage: n.status_message?.slice(0, 255) ?? null,
+        updatedAt: new Date(),
+      };
 
       if (next === 'SUCCESS') {
         if (!amountOk) {
-          this.logger.error(`PayHere order ${c.id}: paid ${n.payhere_amount} ${n.payhere_currency}, expected ${c.amount} ${c.currency} - NOT applied; check it in the PayHere portal`);
-          await tx.update(payhereCheckouts).set({ ...patch, status: 'FAILED', statusMessage: 'Amount did not match the checkout' }).where(eq(payhereCheckouts.id, c.id));
+          this.logger.error(
+            `PayHere order ${c.id}: paid ${n.payhere_amount} ${n.payhere_currency}, expected ${c.amount} ${c.currency} - NOT applied; check it in the PayHere portal`,
+          );
+          await tx
+            .update(payhereCheckouts)
+            .set({ ...patch, status: 'FAILED', statusMessage: 'Amount did not match the checkout' })
+            .where(eq(payhereCheckouts.id, c.id));
           return;
         }
         if (c.status === 'SUCCESS') return; // a retry of one we already applied
-        await tx.update(payhereCheckouts).set({ ...patch, status: 'SUCCESS' }).where(eq(payhereCheckouts.id, c.id));
+        await tx
+          .update(payhereCheckouts)
+          .set({ ...patch, status: 'SUCCESS' })
+          .where(eq(payhereCheckouts.id, c.id));
         const result = await this.invoices.applyExternalPayment(t, c.invoiceId, {
           amount: c.amount,
           method: 'PAYHERE',
@@ -158,14 +171,20 @@ export class PayhereService {
             note: 'PayHere chargeback',
           });
         }
-        await tx.update(payhereCheckouts).set({ ...patch, status: 'CHARGEDBACK' }).where(eq(payhereCheckouts.id, c.id));
+        await tx
+          .update(payhereCheckouts)
+          .set({ ...patch, status: 'CHARGEDBACK' })
+          .where(eq(payhereCheckouts.id, c.id));
         return;
       }
 
       // Pending, cancelled or failed: nothing moves on the invoice. A late
       // "failed" never undoes a success already applied.
       if (c.status !== 'SUCCESS' && c.status !== 'CHARGEDBACK') {
-        await tx.update(payhereCheckouts).set({ ...patch, status: next }).where(eq(payhereCheckouts.id, c.id));
+        await tx
+          .update(payhereCheckouts)
+          .set({ ...patch, status: next })
+          .where(eq(payhereCheckouts.id, c.id));
       }
     });
     if (settledInvoice) void this.notifier.invoicePaid(settledInvoice);

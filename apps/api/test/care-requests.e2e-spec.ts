@@ -91,9 +91,11 @@ describe('Care requests and saved caregivers (e2e)', () => {
   }
 
   const send = (c: Client, caregiverPublicId: string, extra: Record<string, unknown> = {}) =>
-    api().post('/me/care-requests').set(bearer(c.token)).send({ caregiverPublicId, ...extra });
-  const move = (id: string, body: Record<string, unknown>, token = staffToken) =>
-    api().patch(`/care-requests/${id}/status`).set(bearer(token)).send(body);
+    api()
+      .post('/me/care-requests')
+      .set(bearer(c.token))
+      .send({ caregiverPublicId, ...extra });
+  const move = (id: string, body: Record<string, unknown>, token = staffToken) => api().patch(`/care-requests/${id}/status`).set(bearer(token)).send(body);
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
@@ -117,9 +119,17 @@ describe('Care requests and saved caregivers (e2e)', () => {
     const districtId = tree.flatMap((p) => p.districts)[0].id;
     const cityId = (await api().get(`/public/meta/locations/cities?districtId=${districtId}&locale=en`).expect(200)).body[0].id;
     intake = {
-      registrantType: 'GUARDIAN', recipientName: 'Sunil Fernando', recipientRelationship: 'PARENT', recipientAge: 78,
-      recipientGender: 'MALE', preferredContactMethod: 'PHONE_CALL', districtId, cityId,
-      careNeeds: 'Needs help with bathing, meals and medication reminders.', careSchedule: 'DAY', careStart: 'WITHIN_WEEK',
+      registrantType: 'GUARDIAN',
+      recipientName: 'Sunil Fernando',
+      recipientRelationship: 'PARENT',
+      recipientAge: 78,
+      recipientGender: 'MALE',
+      preferredContactMethod: 'PHONE_CALL',
+      districtId,
+      cityId,
+      careNeeds: 'Needs help with bathing, meals and medication reminders.',
+      careSchedule: 'DAY',
+      careStart: 'WITHIN_WEEK',
     };
   });
 
@@ -289,9 +299,7 @@ describe('Care requests and saved caregivers (e2e)', () => {
       expect(reopened.body.closedAt).toBeNull();
       expect(reopened.body.closeReason).toBeNull();
       const introduced = await move(created.id, { status: 'INTRODUCED' }).expect(200);
-      expect(introduced.body.events.map((e: { toStatus: string | null }) => e.toStatus)).toEqual([
-        'NEW', 'IN_PROGRESS', 'CLOSED', 'IN_PROGRESS', 'INTRODUCED',
-      ]);
+      expect(introduced.body.events.map((e: { toStatus: string | null }) => e.toStatus)).toEqual(['NEW', 'IN_PROGRESS', 'CLOSED', 'IN_PROGRESS', 'INTRODUCED']);
 
       const own = await api().get('/me/care-requests').set(bearer(client.token)).expect(200);
       expect(own.body.find((r: { id: string }) => r.id === created.id).status).toBe('INTRODUCED');
@@ -357,7 +365,10 @@ describe('Care requests and saved caregivers (e2e)', () => {
       ...extra,
     });
     const logCall = (body: Record<string, unknown>, token = staffToken) =>
-      api().post('/care-requests').set(bearer(token)).send({ language: 'en', ...body });
+      api()
+        .post('/care-requests')
+        .set(bearer(token))
+        .send({ language: 'en', ...body });
 
     it('logs a request for an existing client with no caregiver yet, and will not introduce until one is chosen', async () => {
       const client = await newClient();
@@ -427,7 +438,11 @@ describe('Care requests and saved caregivers (e2e)', () => {
       await logCall({ newClient: { ...phoneCaller(), email: body.email } }).expect(409);
 
       // And their number cannot be taken over by a later self-registration.
-      await api().patch('/settings/whatsapp').set(bearer(adminToken)).send({ enabled: true, provider: 'CONSOLE', customerEnabled: true, registrationEnabled: true }).expect(200);
+      await api()
+        .patch('/settings/whatsapp')
+        .set(bearer(adminToken))
+        .send({ enabled: true, provider: 'CONSOLE', customerEnabled: true, registrationEnabled: true })
+        .expect(200);
       await api()
         .post('/auth/whatsapp/register-patient')
         .send({ whatsappNumber: body.phone, consentAccepted: true, fullName: 'Someone Else', ...intake })
@@ -435,7 +450,11 @@ describe('Care requests and saved caregivers (e2e)', () => {
       expect((await db.select().from(patients).where(eq(patients.id, res.body.client.id))).length).toBe(1);
 
       // ...but they can sign in with a WhatsApp code and see the request staff logged for them.
-      await api().patch('/settings/whatsapp').set(bearer(adminToken)).send({ loginEnabled: true, otpResendCooldownSeconds: 15, otpMaxSendsPerHour: 20 }).expect(200);
+      await api()
+        .patch('/settings/whatsapp')
+        .set(bearer(adminToken))
+        .send({ loginEnabled: true, otpResendCooldownSeconds: 15, otpMaxSendsPerHour: 20 })
+        .expect(200);
       const otp = await api().post('/auth/whatsapp/request-otp').send({ phone: body.phone, purpose: 'LOGIN', portal: 'customer' }).expect(201);
       expect(otp.body.devOtp).toBeTruthy();
       const session = await api()
@@ -499,9 +518,7 @@ describe('Care requests and saved caregivers (e2e)', () => {
 
       await send(client, cg.publicId).expect(201);
       const rel = await api().get(`/me/caregiver-relations?publicIds=${cg.publicId}`).set(bearer(client.token)).expect(200);
-      expect(rel.body).toEqual([
-        { caregiverPublicId: cg.publicId, saved: true, openRequest: expect.objectContaining({ status: 'NEW' }) },
-      ]);
+      expect(rel.body).toEqual([{ caregiverPublicId: cg.publicId, saved: true, openRequest: expect.objectContaining({ status: 'NEW' }) }]);
 
       await api().delete(`/me/saved-caregivers/${cg.publicId}`).set(bearer(client.token)).expect(200);
       await api().delete(`/me/saved-caregivers/${cg.publicId}`).set(bearer(client.token)).expect(200);

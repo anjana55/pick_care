@@ -74,7 +74,9 @@ describe('WhatsApp login page (customers)', () => {
 
   it('does not sign in on an invalid or expired code', async () => {
     get.mockResolvedValue(config());
-    post.mockResolvedValueOnce({ resendAfterSeconds: 60 }).mockRejectedValueOnce(new ApiError(401, 'This code is invalid or has expired. Request a new one and try again.'));
+    post
+      .mockResolvedValueOnce({ resendAfterSeconds: 60 })
+      .mockRejectedValueOnce(new ApiError(401, 'This code is invalid or has expired. Request a new one and try again.'));
     renderPage();
 
     fireEvent.change(await screen.findByLabelText('WhatsApp number'), { target: { value: '0771234567' } });

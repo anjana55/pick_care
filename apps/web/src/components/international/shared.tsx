@@ -14,7 +14,11 @@ const ENQUIRY_STYLES: Record<EmployerEnquiryStatus, string> = {
 
 export function EnquiryStatusBadge({ status }: { status: EmployerEnquiryStatus }) {
   const { t } = useTranslation();
-  return <span className={cn('inline-flex items-center rounded px-2 py-0.5 text-xs font-medium', ENQUIRY_STYLES[status])}>{t(`international.status.${status}`)}</span>;
+  return (
+    <span className={cn('inline-flex items-center rounded px-2 py-0.5 text-xs font-medium', ENQUIRY_STYLES[status])}>
+      {t(`international.status.${status}`)}
+    </span>
+  );
 }
 
 /** A country name in the staff member's language, from the browser. */

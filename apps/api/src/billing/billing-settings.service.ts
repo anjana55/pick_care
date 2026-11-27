@@ -50,7 +50,10 @@ export class BillingSettingsService {
     if (existing) return existing;
     // Invoices start out issued in the company name from Settings > Branding.
     const businessName = this.branding ? await this.branding.companyName() : undefined;
-    await db.insert(billingSettings).values({ id: SETTINGS_ID, businessName }).onDuplicateKeyUpdate({ set: { id: SETTINGS_ID } });
+    await db
+      .insert(billingSettings)
+      .values({ id: SETTINGS_ID, businessName })
+      .onDuplicateKeyUpdate({ set: { id: SETTINGS_ID } });
     const [created] = await db.select().from(billingSettings).where(eq(billingSettings.id, SETTINGS_ID)).limit(1);
     return created;
   }
@@ -88,7 +91,9 @@ export class BillingSettingsService {
   }
 
   /** Who invoices are from, as printed. Copied onto an invoice when it is issued. */
-  sellerOf(s: Pick<Row, 'businessName' | 'businessAddress' | 'businessPhone' | 'businessEmail' | 'registrationNumber' | 'taxRegistrationNumber'>): BillingParty {
+  sellerOf(
+    s: Pick<Row, 'businessName' | 'businessAddress' | 'businessPhone' | 'businessEmail' | 'registrationNumber' | 'taxRegistrationNumber'>,
+  ): BillingParty {
     return {
       name: s.businessName,
       address: s.businessAddress,
@@ -109,7 +114,10 @@ export class BillingSettingsService {
     await this.getRow(tx);
     await tx.execute(sql`SELECT id FROM billing_settings WHERE id = ${SETTINGS_ID} FOR UPDATE`);
     const [row] = await tx.select().from(billingSettings).where(eq(billingSettings.id, SETTINGS_ID)).limit(1);
-    await tx.update(billingSettings).set({ nextInvoiceNumber: row.nextInvoiceNumber + 1 }).where(eq(billingSettings.id, SETTINGS_ID));
+    await tx
+      .update(billingSettings)
+      .set({ nextInvoiceNumber: row.nextInvoiceNumber + 1 })
+      .where(eq(billingSettings.id, SETTINGS_ID));
     return { number: `${row.invoicePrefix}-${String(row.nextInvoiceNumber).padStart(6, '0')}`, settings: row };
   }
 

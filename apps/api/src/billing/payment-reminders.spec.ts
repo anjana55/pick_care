@@ -1,6 +1,10 @@
 import { paymentReminderStage } from '@care-platform/shared';
 
-const inv = (dueDate: string, over: { issueDate?: string; advance?: boolean } = {}) => ({ issueDate: over.issueDate ?? '2026-11-01', dueDate, advance: over.advance ?? false });
+const inv = (dueDate: string, over: { issueDate?: string; advance?: boolean } = {}) => ({
+  issueDate: over.issueDate ?? '2026-11-01',
+  dueDate,
+  advance: over.advance ?? false,
+});
 const TODAY = '2026-11-17';
 
 describe('payment reminder stage', () => {

@@ -27,7 +27,10 @@ export function ShiftCarePlan({ shiftId }: { shiftId: string }) {
         const when = i.timing === 'AT_TIMES' ? i.dueKey : i.timing === 'SLOT' && i.slot ? t(`carePlan.slot.${i.slot}`) : t('carePlan.anyTime');
         const marked = i.status === 'NOT_DONE' ? 'notDone' : i.status === 'DONE' ? (i.source === 'AUTO' ? 'auto' : 'done') : null;
         return (
-          <View key={`${i.activityId}-${i.dueKey}`} style={[styles.item, { borderColor: colors.border }, i.isCritical && { borderLeftWidth: 3, borderLeftColor: colors.danger, paddingLeft: 8 }]}>
+          <View
+            key={`${i.activityId}-${i.dueKey}`}
+            style={[styles.item, { borderColor: colors.border }, i.isCritical && { borderLeftWidth: 3, borderLeftColor: colors.danger, paddingLeft: 8 }]}
+          >
             <Text style={{ fontSize: 13, color: colors.muted }}>{when}</Text>
             <Text style={{ fontSize: 16, fontWeight: '600', color: colors.ink }}>
               {i.title}
@@ -35,7 +38,12 @@ export function ShiftCarePlan({ shiftId }: { shiftId: string }) {
             </Text>
             {i.instructions ? <Text style={{ fontSize: 14, lineHeight: 20, color: colors.muted }}>{i.instructions}</Text> : null}
             {marked ? (
-              <Text style={[styles.badge, { color: marked === 'notDone' ? colors.danger : colors.brand, borderColor: marked === 'notDone' ? colors.danger : colors.brand }]}>
+              <Text
+                style={[
+                  styles.badge,
+                  { color: marked === 'notDone' ? colors.danger : colors.brand, borderColor: marked === 'notDone' ? colors.danger : colors.brand },
+                ]}
+              >
                 {t(`carePlan.outcome.${marked}`)}
               </Text>
             ) : null}
@@ -51,5 +59,15 @@ const styles = StyleSheet.create({
   label: { fontSize: 12, fontWeight: '700', letterSpacing: 0.5, textTransform: 'uppercase' },
   notes: { borderRadius: 8, padding: 10, fontSize: 15, lineHeight: 22 },
   item: { paddingVertical: 8, gap: 2, borderTopWidth: StyleSheet.hairlineWidth },
-  badge: { alignSelf: 'flex-start', marginTop: 4, fontSize: 12, fontWeight: '600', borderWidth: 1, borderRadius: 10, paddingHorizontal: 8, paddingVertical: 2, overflow: 'hidden' },
+  badge: {
+    alignSelf: 'flex-start',
+    marginTop: 4,
+    fontSize: 12,
+    fontWeight: '600',
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    overflow: 'hidden',
+  },
 });

@@ -28,17 +28,25 @@ export default function EmployerOverviewPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold text-ink">{account ? t('employer.overview.title', { name: account.organisationName }) : t('employer.nav.overview')}</h1>
+          <h1 className="text-xl font-bold text-ink">
+            {account ? t('employer.overview.title', { name: account.organisationName }) : t('employer.nav.overview')}
+          </h1>
           <p className="mt-1 text-sm text-ink/60">{t('employer.overview.intro')}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           {account?.status === 'VERIFIED' && (
-            <Link href="/employer/vacancies/new" className="inline-flex items-center gap-2 rounded-DEFAULT border border-brand px-4 py-2 text-sm font-semibold text-brand hover:bg-brand-light">
+            <Link
+              href="/employer/vacancies/new"
+              className="inline-flex items-center gap-2 rounded-DEFAULT border border-brand px-4 py-2 text-sm font-semibold text-brand hover:bg-brand-light"
+            >
               <Megaphone className="h-4 w-4" aria-hidden />
               {t('employer.vacancies.new')}
             </Link>
           )}
-          <Link href="/employer/enquiries/new" className="inline-flex items-center gap-2 rounded-DEFAULT bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark">
+          <Link
+            href="/employer/enquiries/new"
+            className="inline-flex items-center gap-2 rounded-DEFAULT bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark"
+          >
             <Plus className="h-4 w-4" aria-hidden />
             {t('employer.nav.newEnquiry')}
           </Link>
@@ -104,9 +112,13 @@ function CandidateRow({ candidate, verified }: { candidate: EmployerCandidate; v
   const [confirming, setConfirming] = useState<'DECLINE' | null>(null);
   const talent = candidate.talent;
   // Before phase 4, an interview was just a time on the candidate; show it only when there is no interview record.
-  const interview = candidate.interviewAt && candidate.interviews.length === 0 ? new Intl.DateTimeFormat(locale, { dateStyle: 'full', timeStyle: 'short' }).format(new Date(candidate.interviewAt)) : null;
+  const interview =
+    candidate.interviewAt && candidate.interviews.length === 0
+      ? new Intl.DateTimeFormat(locale, { dateStyle: 'full', timeStyle: 'short' }).format(new Date(candidate.interviewAt))
+      : null;
   const offer = candidate.offer;
-  const canOffer = verified && !['PLACED', 'NOT_PROCEEDING'].includes(candidate.status) && (!offer || ['DECLINED', 'WITHDRAWN'].includes(offer.status) || offer.expired);
+  const canOffer =
+    verified && !['PLACED', 'NOT_PROCEEDING'].includes(candidate.status) && (!offer || ['DECLINED', 'WITHDRAWN'].includes(offer.status) || offer.expired);
 
   if (!talent) {
     return (
@@ -196,7 +208,10 @@ function CandidateRow({ candidate, verified }: { candidate: EmployerCandidate; v
               </Button>
             )}
             {canOffer && (
-              <Link href={`/employer/offers/new?candidate=${candidate.id}`} className="inline-flex items-center gap-1.5 rounded-DEFAULT border border-brand px-3 py-1.5 text-sm font-semibold text-brand hover:bg-brand-light">
+              <Link
+                href={`/employer/offers/new?candidate=${candidate.id}`}
+                className="inline-flex items-center gap-1.5 rounded-DEFAULT border border-brand px-3 py-1.5 text-sm font-semibold text-brand hover:bg-brand-light"
+              >
                 <FileSignature className="h-4 w-4" aria-hidden />
                 {t('employer.offers.make')}
               </Link>
@@ -250,19 +265,30 @@ function InterviewLine({ interview: i, firstName }: { interview: EmployerIntervi
         <span className="text-xs text-ink/60">
           {t('overseas.round', { n: i.round })} · {t(`overseas.interviewMode.${i.mode}`)} · {t('overseas.minutes', { n: i.durationMinutes })}
         </span>
-        {i.status !== 'SCHEDULED' && <span className="rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-ink/70">{t(`overseas.interviewStatus.${i.status}`)}</span>}
+        {i.status !== 'SCHEDULED' && (
+          <span className="rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-ink/70">{t(`overseas.interviewStatus.${i.status}`)}</span>
+        )}
       </p>
       {i.status === 'CANCELLED' && i.cancelReason && <p className="mt-1 text-xs text-ink/60">{i.cancelReason}</p>}
       {upcoming && (
         <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1">
           {i.meetingLink && (
-            <a href={i.meetingLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-semibold text-brand hover:text-brand-dark">
+            <a
+              href={i.meetingLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 font-semibold text-brand hover:text-brand-dark"
+            >
               <Video className="h-4 w-4" aria-hidden />
               {t('overseas.joinCall')}
             </a>
           )}
           {i.location && <span className="text-ink/70">{i.location}</span>}
-          <button type="button" onClick={() => downloadIcs(i, t('overseas.icsSummaryEmployer', { name: firstName }))} className="inline-flex items-center gap-1 text-ink/70 hover:text-brand-dark">
+          <button
+            type="button"
+            onClick={() => downloadIcs(i, t('overseas.icsSummaryEmployer', { name: firstName }))}
+            className="inline-flex items-center gap-1 text-ink/70 hover:text-brand-dark"
+          >
             <CalendarPlus className="h-4 w-4" aria-hidden />
             {t('overseas.addToCalendar')}
           </button>

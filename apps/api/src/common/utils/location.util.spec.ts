@@ -21,11 +21,13 @@ import type { Database } from '../../database/database.module';
 const COLOMBO = { id: 1, nameEn: 'Colombo', nameSi: 'කොළඹ', nameTa: 'கொழும்பு' };
 const DEHIWALA = { id: 340, districtId: 1, nameEn: 'Dehiwala', postcode: '10350' };
 
-function stubDb(overrides: {
-  city?: unknown[] | null;
-  district?: unknown[] | null;
-  province?: unknown[] | null;
-} = {}) {
+function stubDb(
+  overrides: {
+    city?: unknown[] | null;
+    district?: unknown[] | null;
+    province?: unknown[] | null;
+  } = {},
+) {
   let call = 0;
   const chain = {
     select: () => chain,
@@ -60,12 +62,10 @@ describe('resolveLocationRefs', () => {
     // mismatch the UI's derived city list is meant to make impossible.
     // A fresh stub per assertion: the stub answers its three lookups in order,
     // so reusing one across two calls would run the second off the end.
-    await expect(
-      resolveLocationRefs(stubDb({ city: [DEHIWALA] }).db, { districtId: 2, cityId: 340 }),
-    ).rejects.toBeInstanceOf(BadRequestException);
-    await expect(
-      resolveLocationRefs(stubDb({ city: [DEHIWALA] }).db, { districtId: 2, cityId: 340 }),
-    ).rejects.toThrow('City 340 belongs to district 1, not district 2');
+    await expect(resolveLocationRefs(stubDb({ city: [DEHIWALA] }).db, { districtId: 2, cityId: 340 })).rejects.toBeInstanceOf(BadRequestException);
+    await expect(resolveLocationRefs(stubDb({ city: [DEHIWALA] }).db, { districtId: 2, cityId: 340 })).rejects.toThrow(
+      'City 340 belongs to district 1, not district 2',
+    );
   });
 
   it('rejects a city id that does not exist at all', async () => {

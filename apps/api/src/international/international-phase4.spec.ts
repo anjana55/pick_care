@@ -132,9 +132,9 @@ describe('test results', () => {
   it("does not let a caregiver claim one of the platform's own assessments", async () => {
     const fake = fakeDb([[{ n: 0 }]]);
     const service = new AssessmentsService(fake.db);
-    await expect(
-      service.addByCaregiver('cg-1', { kind: 'ENGLISH', provider: 'PLATFORM', title: 'Our English test', takenOn: '2026-01-10' }),
-    ).rejects.toThrow(/recorded by our team/);
+    await expect(service.addByCaregiver('cg-1', { kind: 'ENGLISH', provider: 'PLATFORM', title: 'Our English test', takenOn: '2026-01-10' })).rejects.toThrow(
+      /recorded by our team/,
+    );
     expect(fake.writes).toHaveLength(0);
   });
 });
@@ -159,11 +159,24 @@ describe('interviews', () => {
   it('moves the candidate to scheduled, and back to the request when every interview is called off', () => {
     const now = Date.parse('2026-10-27T00:00:00Z');
     const next = at('2026-11-01T04:00:00Z');
-    expect(candidateAfterInterviews('INTERVIEW_REQUESTED', [{ status: 'SCHEDULED', scheduledAt: next }], now)).toEqual({ status: 'INTERVIEW_SCHEDULED', interviewAt: next });
-    expect(candidateAfterInterviews('INTERVIEW_SCHEDULED', [{ status: 'CANCELLED', scheduledAt: next }], now)).toEqual({ status: 'INTERVIEW_REQUESTED', interviewAt: null });
+    expect(candidateAfterInterviews('INTERVIEW_REQUESTED', [{ status: 'SCHEDULED', scheduledAt: next }], now)).toEqual({
+      status: 'INTERVIEW_SCHEDULED',
+      interviewAt: next,
+    });
+    expect(candidateAfterInterviews('INTERVIEW_SCHEDULED', [{ status: 'CANCELLED', scheduledAt: next }], now)).toEqual({
+      status: 'INTERVIEW_REQUESTED',
+      interviewAt: null,
+    });
     // One already held: they stay interviewed.
     expect(
-      candidateAfterInterviews('INTERVIEW_SCHEDULED', [{ status: 'COMPLETED', scheduledAt: at('2026-10-20T04:00:00Z') }, { status: 'CANCELLED', scheduledAt: next }], now).status,
+      candidateAfterInterviews(
+        'INTERVIEW_SCHEDULED',
+        [
+          { status: 'COMPLETED', scheduledAt: at('2026-10-20T04:00:00Z') },
+          { status: 'CANCELLED', scheduledAt: next },
+        ],
+        now,
+      ).status,
     ).toBe('INTERVIEW_SCHEDULED');
     // A hire decision is never undone by the calendar.
     expect(candidateAfterInterviews('SELECTED', [{ status: 'SCHEDULED', scheduledAt: next }], now).status).toBe('SELECTED');
@@ -171,7 +184,15 @@ describe('interviews', () => {
 
   it('builds a calendar file in UTC with its text escaped', () => {
     const ics = interviewIcs(
-      { id: 'iv-1', scheduledAt: '2026-11-04T04:30:00.000Z', durationMinutes: 45, mode: 'VIDEO', meetingLink: 'https://meet.example/abc', location: null, instructions: 'Bring your passport; arrive early, please' },
+      {
+        id: 'iv-1',
+        scheduledAt: '2026-11-04T04:30:00.000Z',
+        durationMinutes: 45,
+        mode: 'VIDEO',
+        meetingLink: 'https://meet.example/abc',
+        location: null,
+        instructions: 'Bring your passport; arrive early, please',
+      },
       'Interview, round 1',
       new Date('2026-10-27T00:00:00Z'),
     );
@@ -218,31 +239,47 @@ describe('job offers', () => {
   function offers(results: unknown[]) {
     const fake = fakeDb(results);
     const n = notifier();
-    const service = new OffersService(fake.db, { assertVerified: jest.fn() } as never, { liveSlugs: jest.fn().mockResolvedValue(new Map([['cg-1', 's']])) } as never, n as never);
+    const service = new OffersService(
+      fake.db,
+      { assertVerified: jest.fn() } as never,
+      { liveSlugs: jest.fn().mockResolvedValue(new Map([['cg-1', 's']])) } as never,
+      n as never,
+    );
     return { service, n, ...fake };
   }
 
   it('lets only the caregiver themself sign - never staff acting for them', async () => {
     const { service, writes } = offers([]);
-    await expect(service.respond('cg-1', 'of-1', { action: 'ACCEPT', signatureName: 'Nimali Perera' }, { role: 'STAFF', ip: null })).rejects.toThrow(ForbiddenException);
+    await expect(service.respond('cg-1', 'of-1', { action: 'ACCEPT', signatureName: 'Nimali Perera' }, { role: 'STAFF', ip: null })).rejects.toThrow(
+      ForbiddenException,
+    );
     expect(writes).toHaveLength(0);
   });
 
   it('refuses an offer past its answer-by date', async () => {
     const { service } = offers([[offerRow({ expiresOn: addDays(todayColombo(), -1) })]]);
-    await expect(service.respond('cg-1', 'of-1', { action: 'ACCEPT', signatureName: 'Nimali Perera' }, { role: 'CAREGIVER', ip: '1.2.3.4' })).rejects.toThrow(/answer-by/);
+    await expect(service.respond('cg-1', 'of-1', { action: 'ACCEPT', signatureName: 'Nimali Perera' }, { role: 'CAREGIVER', ip: '1.2.3.4' })).rejects.toThrow(
+      /answer-by/,
+    );
   });
 
   it('refuses to accept terms that no longer match what the employer signed', async () => {
     const { service, writes } = offers([[offerRow({ salaryAmount: 1900 })], [{ c: { id: 'cand-1', status: 'SELECTED' }, e: ENQUIRY }]]);
-    await expect(service.respond('cg-1', 'of-1', { action: 'ACCEPT', signatureName: 'Nimali Perera' }, { role: 'CAREGIVER', ip: null })).rejects.toThrow(/changed/);
+    await expect(service.respond('cg-1', 'of-1', { action: 'ACCEPT', signatureName: 'Nimali Perera' }, { role: 'CAREGIVER', ip: null })).rejects.toThrow(
+      /changed/,
+    );
     expect(writes).toHaveLength(0);
   });
 
   it('records the signature, the time and where it came from when the caregiver accepts', async () => {
     const { service, writes, n } = offers([[offerRow()], [{ c: { id: 'cand-1', status: 'INTERVIEW_SCHEDULED' }, e: ENQUIRY }], []]);
     await service.respond('cg-1', 'of-1', { action: 'ACCEPT', signatureName: 'Nimali  Perera' }, { role: 'CAREGIVER', ip: '203.0.113.9' });
-    expect(writes[0].values).toMatchObject({ status: 'ACCEPTED', caregiverSignatureName: 'Nimali Perera', caregiverSignedIp: '203.0.113.9', caregiverSignedAt: expect.any(Date) });
+    expect(writes[0].values).toMatchObject({
+      status: 'ACCEPTED',
+      caregiverSignatureName: 'Nimali Perera',
+      caregiverSignedIp: '203.0.113.9',
+      caregiverSignedAt: expect.any(Date),
+    });
     expect(writes[1].values).toMatchObject({ status: 'SELECTED' });
     await new Promise((r) => setImmediate(r));
     expect(n.toStaff).toHaveBeenCalled();
@@ -296,7 +333,13 @@ describe('departure and welfare', () => {
       fullName: 'Nimali Perera',
       registrationNumber: 'CG-1',
       organisationName: 'Gulf Care',
-      contact: { phoneAbroad: '+971 50 000 0000', addressAbroad: 'Dubai', emergencyContactName: 'Sunil', emergencyContactNumber: '077', emergencyContactRelationship: 'Brother' },
+      contact: {
+        phoneAbroad: '+971 50 000 0000',
+        addressAbroad: 'Dubai',
+        emergencyContactName: 'Sunil',
+        emergencyContactNumber: '077',
+        emergencyContactRelationship: 'Brother',
+      },
       messages: [{ id: 'm', from: 'CAREGIVER', body: 'SOS', createdAt: '' }],
     } as never);
     await (service as never as { alertStaff: (id: string, w: string) => Promise<void> }).alertStaff('wr-1', 'new');
@@ -310,7 +353,9 @@ describe('departure and welfare', () => {
   it('stops a flood of everyday reports', async () => {
     const fake = fakeDb([[{ id: 'pl-1', caregiverId: 'cg-1', status: 'DEPLOYED' }], [{ n: 10 }]]);
     const service = new WelfareService(fake.db, notifier() as never);
-    await expect(service.create('cg-1', 'pl-1', { severity: 'QUESTION', category: 'OTHER', message: 'When is my next check-in?' }, 'u')).rejects.toThrow(/several reports/);
+    await expect(service.create('cg-1', 'pl-1', { severity: 'QUESTION', category: 'OTHER', message: 'When is my next check-in?' }, 'u')).rejects.toThrow(
+      /several reports/,
+    );
   });
 });
 

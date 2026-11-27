@@ -35,7 +35,7 @@ export function extractionPrompt(catalog: Catalog, today: string, extra?: string
   const languages = catalog.languages.map((l, i) => `L${i + 1}: ${l.name}`).join('\n');
   const districts = catalog.districts.map((d) => `${d.id}: ${d.name}`).join('\n');
   return [
-    'You turn a family\'s description of the home care they need into search filters for a caregiver-matching service in Sri Lanka.',
+    "You turn a family's description of the home care they need into search filters for a caregiver-matching service in Sri Lanka.",
     'The description may be in English, Sinhala or Tamil. Only use facts the text states or clearly implies; leave anything else null or empty.',
     `Today is ${today} (Asia/Colombo). Resolve relative dates ("next Monday", "from the 1st") to YYYY-MM-DD.`,
     'Put a skill in "mandatorySkillIds" only when the text says it is essential; otherwise use "optionalSkillIds". Medical conditions go in patient.medicalConditions as short English terms.',
@@ -92,7 +92,14 @@ export function normalizeExtraction(raw: Record<string, unknown> | null, catalog
   const age = num(patientRaw.age);
   const gender = patientRaw.gender === 'MALE' || patientRaw.gender === 'FEMALE' ? patientRaw.gender : undefined;
   const conditions = Array.isArray(patientRaw.medicalConditions)
-    ? [...new Set(patientRaw.medicalConditions.filter((c): c is string => typeof c === 'string').map((c) => c.trim().slice(0, 80)).filter(Boolean))].slice(0, 10)
+    ? [
+        ...new Set(
+          patientRaw.medicalConditions
+            .filter((c): c is string => typeof c === 'string')
+            .map((c) => c.trim().slice(0, 80))
+            .filter(Boolean),
+        ),
+      ].slice(0, 10)
     : [];
   if ((age !== undefined && Number.isInteger(Math.round(age)) && age >= 0 && age <= 120) || gender || conditions.length) {
     request.patient = {
@@ -108,7 +115,9 @@ export function normalizeExtraction(raw: Record<string, unknown> | null, catalog
   }
 
   const mandatory = codes(raw.mandatorySkillIds, 'S', catalog.skills).slice(0, 15);
-  const optional = codes(raw.optionalSkillIds, 'S', catalog.skills).filter((id) => !mandatory.includes(id)).slice(0, 15);
+  const optional = codes(raw.optionalSkillIds, 'S', catalog.skills)
+    .filter((id) => !mandatory.includes(id))
+    .slice(0, 15);
   if (mandatory.length) request.mandatorySkillIds = mandatory;
   if (optional.length) request.optionalSkillIds = optional;
   const langs = codes(raw.languageIds, 'L', catalog.languages).slice(0, 10);

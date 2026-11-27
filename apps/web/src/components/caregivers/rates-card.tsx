@@ -38,7 +38,10 @@ export function CaregiverRatesCard({ caregiverId, canEdit }: { caregiverId: stri
   const submit = () =>
     save.mutate(
       changed.map((l) => ({ careType: l.careType, amount: valueOf(l).trim() === '' ? null : Number(valueOf(l)) })),
-      { onSuccess: () => (setDrafts({}), setSaved(true), setError(null)), onError: (err) => setError(err instanceof ApiError && err.message ? err.message : t('pricing.error')) },
+      {
+        onSuccess: () => (setDrafts({}), setSaved(true), setError(null)),
+        onError: (err) => setError(err instanceof ApiError && err.message ? err.message : t('pricing.error')),
+      },
     );
 
   return (

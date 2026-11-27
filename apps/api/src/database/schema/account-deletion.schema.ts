@@ -33,8 +33,12 @@ export const accountDeletionRequests = mysqlTable(
     cancelledAt: datetime('cancelled_at'),
     cancelledByUserId: varchar('cancelled_by_user_id', { length: 36 }),
     erasedAt: datetime('erased_at'),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     dueIdx: index('account_deletion_requests_due_idx').on(table.status, table.eraseAfter),

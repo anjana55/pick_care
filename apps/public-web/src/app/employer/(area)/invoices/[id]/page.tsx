@@ -61,14 +61,21 @@ function EmployerInvoicePage() {
           <ChevronLeft size={16} aria-hidden />
           {t('employer.nav.placements')}
         </Link>
-        <button type="button" onClick={() => window.print()} className="inline-flex items-center gap-2 rounded border border-border bg-white px-3 py-1.5 text-sm font-medium text-ink hover:bg-paper">
+        <button
+          type="button"
+          onClick={() => window.print()}
+          className="inline-flex items-center gap-2 rounded border border-border bg-white px-3 py-1.5 text-sm font-medium text-ink hover:bg-paper"
+        >
           <Printer size={16} aria-hidden />
           {t('invoices.print')}
         </button>
       </div>
 
       {payment === 'return' && (
-        <p role="status" className={`mb-4 flex items-center gap-2 rounded-lg px-4 py-3 text-sm print:hidden ${invoice.status === 'PAID' ? 'bg-brand-light text-brand-dark' : 'bg-white text-ink/70'}`}>
+        <p
+          role="status"
+          className={`mb-4 flex items-center gap-2 rounded-lg px-4 py-3 text-sm print:hidden ${invoice.status === 'PAID' ? 'bg-brand-light text-brand-dark' : 'bg-white text-ink/70'}`}
+        >
           {invoice.status === 'PAID' ? (
             t('invoices.pay.thanks')
           ) : (
@@ -79,7 +86,9 @@ function EmployerInvoicePage() {
           )}
         </p>
       )}
-      {payment === 'cancelled' && invoice.status === 'ISSUED' && <p className="mb-4 rounded-lg bg-white px-4 py-3 text-sm text-ink/70 print:hidden">{t('invoices.pay.cancelled')}</p>}
+      {payment === 'cancelled' && invoice.status === 'ISSUED' && (
+        <p className="mb-4 rounded-lg bg-white px-4 py-3 text-sm text-ink/70 print:hidden">{t('invoices.pay.cancelled')}</p>
+      )}
 
       {invoice.payOnline && (
         <section className="mb-4 rounded-lg border border-brand/30 bg-white p-4 print:hidden sm:p-5" aria-labelledby="pay-online">
@@ -114,7 +123,9 @@ function EmployerInvoicePage() {
           )}
         </section>
       )}
-      {invoice.status === 'ISSUED' && !invoice.payOnline && <p className="mb-4 rounded-lg bg-white px-4 py-3 text-sm text-ink/70 print:hidden">{t('invoices.pay.offline')}</p>}
+      {invoice.status === 'ISSUED' && !invoice.payOnline && (
+        <p className="mb-4 rounded-lg bg-white px-4 py-3 text-sm text-ink/70 print:hidden">{t('invoices.pay.offline')}</p>
+      )}
 
       <PlacementInvoiceView invoice={invoice} />
     </div>
@@ -129,7 +140,9 @@ function PlacementInvoiceView({ invoice: i }: { invoice: PlacementInvoice }) {
 
   return (
     <article className="rounded-lg border border-border bg-white p-5 text-sm text-ink sm:p-8 print:border-0 print:p-0">
-      {i.status === 'VOID' && <p className="mb-6 rounded border border-danger px-3 py-2 text-center font-semibold uppercase tracking-wide text-danger">{t('invoices.doc.void')}</p>}
+      {i.status === 'VOID' && (
+        <p className="mb-6 rounded border border-danger px-3 py-2 text-center font-semibold uppercase tracking-wide text-danger">{t('invoices.doc.void')}</p>
+      )}
       <header className="flex flex-col gap-6 border-b border-border pb-6 sm:flex-row sm:items-start sm:justify-between print:flex-row">
         <div className="max-w-xs">
           <p className="text-lg font-semibold">{s.name}</p>

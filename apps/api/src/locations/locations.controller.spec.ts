@@ -48,11 +48,7 @@ describe('LocationsController', () => {
 
   it('gates both admin routes on a staff role', () => {
     for (const handler of ['adminTree', 'adminCities']) {
-      expect(reflector.get<string[]>(ROLES_KEY, (controller as any)[handler])).toEqual([
-        'ADMIN',
-        'STAFF',
-        'VERIFIER',
-      ]);
+      expect(reflector.get<string[]>(ROLES_KEY, (controller as any)[handler])).toEqual(['ADMIN', 'STAFF', 'VERIFIER']);
     }
   });
 

@@ -234,7 +234,8 @@ function touches(doc: PlanDocument, line: PlanLine, input: PlanInput, rateChange
 }
 
 const lineAmount = (built: BuiltLine, old: PlanLine) =>
-  computeTotals({ lines: [{ quantity: built.quantity, unitPrice: built.unitPrice, discountType: old.discountType, discountValue: old.discountValue }] }).lines[0].amount;
+  computeTotals({ lines: [{ quantity: built.quantity, unitPrice: built.unitPrice, discountType: old.discountType, discountValue: old.discountValue }] })
+    .lines[0].amount;
 
 const sameLine = (old: PlanLine, next: RebuiltLine) =>
   next !== null &&
@@ -246,7 +247,11 @@ const sameLine = (old: PlanLine, next: RebuiltLine) =>
   old.amount === next.amount &&
   old.caregiverId === next.caregiverId;
 
-function actionFor(doc: PlanDocument, difference: number, choice?: 'REPLACE' | 'CARRY'): { action: AmendmentDocumentAction; choices: AmendmentDocumentAction[] } {
+function actionFor(
+  doc: PlanDocument,
+  difference: number,
+  choice?: 'REPLACE' | 'CARRY',
+): { action: AmendmentDocumentAction; choices: AmendmentDocumentAction[] } {
   if (doc.status === 'DRAFT') return { action: 'REFRESH', choices: ['REFRESH'] };
   // A document the client or caregiver has seen changes only for money,
   // never just to re-word a line.
@@ -399,7 +404,11 @@ export function planAmendment(input: PlanInput): AmendmentPlan {
   for (const [shiftId, doc] of lockedPayout) {
     const s = after.shifts.find((x) => x.id === shiftId);
     if (!s || s.status !== 'COMPLETED' || s.caregiverId === doc.caregiverId) continue;
-    const pay = rebuild({ ...doc, caregiverId: s.caregiverId, status: 'DRAFT' }, { ...doc.lines.find((l) => l.shiftId === shiftId)!, discountType: null, discountValue: null }, after);
+    const pay = rebuild(
+      { ...doc, caregiverId: s.caregiverId, status: 'DRAFT' },
+      { ...doc.lines.find((l) => l.shiftId === shiftId)!, discountType: null, discountValue: null },
+      after,
+    );
     if (!pay) continue;
     const amount = computeTotals({ lines: [{ quantity: pay.quantity, unitPrice: pay.unitPrice }] }).lines[0].amount;
     if (toCents(amount) === 0) continue;
@@ -430,7 +439,9 @@ export function planAmendment(input: PlanInput): AmendmentPlan {
 
   for (const a of adjustments) {
     if (a.side === 'CLIENT' && toCents(a.amount) < 0) {
-      warnings.push(`${formatLkr(a.amount.replace('-', ''))} is owed back to ${a.partyName ?? 'the client'}. It comes off their next invoice (any part bigger than that invoice waits for the one after) - or settle it as a refund from the booking.`);
+      warnings.push(
+        `${formatLkr(a.amount.replace('-', ''))} is owed back to ${a.partyName ?? 'the client'}. It comes off their next invoice (any part bigger than that invoice waits for the one after) - or settle it as a refund from the booking.`,
+      );
     }
   }
   return { documents, adjustments, unbilled, warnings };
@@ -439,7 +450,8 @@ export function planAmendment(input: PlanInput): AmendmentPlan {
 // --- describing the change ------------------------------------------------------
 
 const RATE_UNIT = { HOURLY: 'per hour', DAILY: 'per shift', MONTHLY: 'per month' } as const;
-const rateText = (type: string | null, amount: string | null) => (type && amount ? `${formatLkr(amount)} ${RATE_UNIT[type as keyof typeof RATE_UNIT]}` : 'booking rate');
+const rateText = (type: string | null, amount: string | null) =>
+  type && amount ? `${formatLkr(amount)} ${RATE_UNIT[type as keyof typeof RATE_UNIT]}` : 'booking rate';
 const hm = (d: Date) => toColombo(d).time;
 
 /** What changed on each shift, in words, for the preview and the booking's history (English, like every history note). */
@@ -452,10 +464,14 @@ export function describeChanges(
   const out: AmendmentShiftChange[] = [];
   const bookingChanges: string[] = [];
   if (before.booking.rateAmount !== after.booking.rateAmount) {
-    bookingChanges.push(`client rate ${rateText(before.booking.rateType, before.booking.rateAmount)} → ${rateText(after.booking.rateType, after.booking.rateAmount)}`);
+    bookingChanges.push(
+      `client rate ${rateText(before.booking.rateType, before.booking.rateAmount)} → ${rateText(after.booking.rateType, after.booking.rateAmount)}`,
+    );
   }
   if (before.booking.payRateAmount !== after.booking.payRateAmount) {
-    bookingChanges.push(`pay rate ${rateText(before.booking.payRateType, before.booking.payRateAmount)} → ${rateText(after.booking.payRateType, after.booking.payRateAmount)}`);
+    bookingChanges.push(
+      `pay rate ${rateText(before.booking.payRateType, before.booking.payRateAmount)} → ${rateText(after.booking.payRateType, after.booking.payRateAmount)}`,
+    );
   }
   if (bookingChanges.length) out.push({ shiftId: null, date: '', changes: bookingChanges });
 
@@ -472,8 +488,10 @@ export function describeChanges(
       }
       if (old.status !== s.status) changes.push(`${old.status} → ${s.status}`);
       if (old.caregiverId !== s.caregiverId) changes.push(`worked by ${name(s.caregiverId)} (was ${name(old.caregiverId)})`);
-      if (old.rateType !== s.rateType || old.rateAmount !== s.rateAmount) changes.push(`client rate ${rateText(old.rateType, old.rateAmount)} → ${rateText(s.rateType, s.rateAmount)}`);
-      if (old.payRateType !== s.payRateType || old.payRateAmount !== s.payRateAmount) changes.push(`pay rate ${rateText(old.payRateType, old.payRateAmount)} → ${rateText(s.payRateType, s.payRateAmount)}`);
+      if (old.rateType !== s.rateType || old.rateAmount !== s.rateAmount)
+        changes.push(`client rate ${rateText(old.rateType, old.rateAmount)} → ${rateText(s.rateType, s.rateAmount)}`);
+      if (old.payRateType !== s.payRateType || old.payRateAmount !== s.payRateAmount)
+        changes.push(`pay rate ${rateText(old.payRateType, old.payRateAmount)} → ${rateText(s.payRateType, s.payRateAmount)}`);
       if ((old.note ?? null) !== (s.note ?? null)) changes.push(s.note ? `note: ${s.note}` : 'note removed');
       if (!changes.length) changes.push('re-checked against billing, no change');
     }

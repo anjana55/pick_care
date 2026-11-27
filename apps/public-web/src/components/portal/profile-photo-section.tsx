@@ -84,7 +84,11 @@ export function ProfilePhotoSection() {
   const photo = (src: string | undefined, alt: string, dashed = false) =>
     src ? (
       // eslint-disable-next-line @next/next/no-img-element -- a blob: URL from the signed-in API
-      <img src={src} alt={alt} className={`h-24 w-24 shrink-0 rounded-full object-cover ${dashed ? 'border-2 border-dashed border-accent' : 'border border-border'}`} />
+      <img
+        src={src}
+        alt={alt}
+        className={`h-24 w-24 shrink-0 rounded-full object-cover ${dashed ? 'border-2 border-dashed border-accent' : 'border border-border'}`}
+      />
     ) : (
       <CaregiverAvatar alt="" className="h-24 w-24" />
     );
@@ -131,14 +135,27 @@ export function ProfilePhotoSection() {
               {upload.isPending ? t('common.loading') : info?.hasPhoto || info?.pending ? t('portal.photo.replace') : t('portal.photo.upload')}
             </button>
             {(info?.hasPhoto || info?.pending) && (
-              <button type="button" disabled={busy} onClick={() => remove.mutate()} className="inline-flex items-center gap-1.5 text-sm font-medium text-ink/60 hover:text-danger disabled:opacity-50">
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => remove.mutate()}
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-ink/60 hover:text-danger disabled:opacity-50"
+              >
                 <Trash2 className="h-4 w-4" aria-hidden />
                 {t('portal.photo.remove')}
               </button>
             )}
           </div>
-          {error && <p role="alert" className="mt-2 text-sm text-danger">{error}</p>}
-          {!error && notice && <p role="status" className="mt-2 text-sm text-brand-dark">{notice}</p>}
+          {error && (
+            <p role="alert" className="mt-2 text-sm text-danger">
+              {error}
+            </p>
+          )}
+          {!error && notice && (
+            <p role="status" className="mt-2 text-sm text-brand-dark">
+              {notice}
+            </p>
+          )}
         </div>
       </div>
     </section>

@@ -59,7 +59,8 @@ export const isExpired = (r: Pick<OfferRow, 'status' | 'expiresOn'>, today = tod
 export function checkOfferDates(dto: Pick<OfferDto, 'startDate' | 'expiresOn'>, today = todayColombo()): void {
   if (dto.startDate && dto.startDate < today) throw new BadRequestException('The start date has passed.');
   if (dto.expiresOn && dto.expiresOn < today) throw new BadRequestException('The answer-by date has passed.');
-  if (dto.startDate && dto.expiresOn && dto.expiresOn > dto.startDate) throw new BadRequestException('The caregiver must be able to answer before the start date.');
+  if (dto.startDate && dto.expiresOn && dto.expiresOn > dto.startDate)
+    throw new BadRequestException('The caregiver must be able to answer before the start date.');
 }
 
 /** A typed signature: a name, not a tick. Letters (any script), spaces, dots, hyphens, apostrophes. */
@@ -174,7 +175,11 @@ export class OffersService {
       })
       .where(eq(jobOffers.id, id));
     const [e] = await this.db.select().from(employerEnquiries).where(eq(employerEnquiries.id, row.enquiryId)).limit(1);
-    void this.notifyStaff(e, `${e?.organisationName ?? 'An employer'} changed a job offer`, 'Check it and send it to the caregiver, or return it to the employer.');
+    void this.notifyStaff(
+      e,
+      `${e?.organisationName ?? 'An employer'} changed a job offer`,
+      'Check it and send it to the caregiver, or return it to the employer.',
+    );
     return this.employerGet(employerId, id);
   }
 
@@ -231,7 +236,10 @@ export class OffersService {
     const { c, e } = await this.candidateWithEnquiry(row.candidateId);
     if (dto.action === 'RETURN') {
       if (!dto.note) throw new BadRequestException('Tell the employer what to change.');
-      await this.db.update(jobOffers).set({ status: 'RETURNED', reviewNote: dto.note, reviewedByUserId: userId, updatedAt: new Date() }).where(eq(jobOffers.id, id));
+      await this.db
+        .update(jobOffers)
+        .set({ status: 'RETURNED', reviewNote: dto.note, reviewedByUserId: userId, updatedAt: new Date() })
+        .where(eq(jobOffers.id, id));
       void this.notifyEmployer(e, row.reference, 'returned', dto.note);
       return this.staffGet(id);
     }
@@ -261,7 +269,13 @@ export class OffersService {
     const out = new Map<string, { id: string; reference: string; status: OfferStatus; expired: boolean }>();
     if (!candidateIds.length) return out;
     const rows = await this.db
-      .select({ id: jobOffers.id, reference: jobOffers.reference, status: jobOffers.status, expiresOn: jobOffers.expiresOn, candidateId: jobOffers.candidateId })
+      .select({
+        id: jobOffers.id,
+        reference: jobOffers.reference,
+        status: jobOffers.status,
+        expiresOn: jobOffers.expiresOn,
+        candidateId: jobOffers.candidateId,
+      })
       .from(jobOffers)
       .where(inArray(jobOffers.candidateId, candidateIds))
       .orderBy(desc(jobOffers.createdAt));
@@ -315,12 +329,23 @@ export class OffersService {
       const signature = checkSignature(dto.signatureName);
       await this.db
         .update(jobOffers)
-        .set({ status: 'ACCEPTED', caregiverSignatureName: signature, caregiverSignedAt: new Date(), caregiverSignedIp: signer.ip, respondedAt: new Date(), updatedAt: new Date() })
+        .set({
+          status: 'ACCEPTED',
+          caregiverSignatureName: signature,
+          caregiverSignedAt: new Date(),
+          caregiverSignedIp: signer.ip,
+          respondedAt: new Date(),
+          updatedAt: new Date(),
+        })
         .where(eq(jobOffers.id, id));
       if (!CLOSED_CANDIDATE.includes(c.status) && c.status !== 'SELECTED') {
         await this.db.update(enquiryCandidates).set({ status: 'SELECTED', updatedAt: new Date() }).where(eq(enquiryCandidates.id, c.id));
       }
-      void this.notifyStaff(e, `Job offer ${row.reference} accepted by the caregiver`, 'Mark the candidate Placed to start the placement and its departure checklist.');
+      void this.notifyStaff(
+        e,
+        `Job offer ${row.reference} accepted by the caregiver`,
+        'Mark the candidate Placed to start the placement and its departure checklist.',
+      );
       void this.notifyEmployer(e, row.reference, 'accepted');
     } else {
       await this.db
@@ -394,9 +419,16 @@ export class OffersService {
 
   private async notifyEmployer(e: EnquiryRow, reference: string, what: 'returned' | 'sent' | 'accepted' | 'declined', note?: string) {
     const text = {
-      returned: [`Our team has sent your job offer ${reference} back to you to change.`, ...(note ? [`Their note: ${note}`] : []), 'Sign in to change it and sign it again.'],
+      returned: [
+        `Our team has sent your job offer ${reference} back to you to change.`,
+        ...(note ? [`Their note: ${note}`] : []),
+        'Sign in to change it and sign it again.',
+      ],
       sent: [`Your job offer ${reference} has been sent to the caregiver.`, 'We will let you know as soon as they answer.'],
-      accepted: [`Good news: the caregiver accepted your job offer ${reference}.`, 'Our team will be in touch about the employment contract, the visa and travel.'],
+      accepted: [
+        `Good news: the caregiver accepted your job offer ${reference}.`,
+        'Our team will be in touch about the employment contract, the visa and travel.',
+      ],
       declined: [`The caregiver declined your job offer ${reference}.`, 'Our team will be in touch about other candidates.'],
     }[what];
     await this.notifier.toAddress(e.email, `offer ${what} ${reference}`, {
@@ -418,7 +450,10 @@ export class OffersService {
       subject: what === 'sent' ? 'You have a job offer' : 'A job offer was withdrawn',
       paragraphs:
         what === 'sent'
-          ? [`An employer${where} has made you a job offer. Read the terms in Work abroad and accept or decline it there.`, 'Our team will call you to talk it through.']
+          ? [
+              `An employer${where} has made you a job offer. Read the terms in Work abroad and accept or decline it there.`,
+              'Our team will call you to talk it through.',
+            ]
           : [`The employer${where} has withdrawn their job offer. Our team will be in touch.`],
       cta: { label: 'Open Work abroad', url: this.notifier.publicUrl('/caregiver/work-abroad') },
     });
@@ -450,7 +485,13 @@ function toEmployer(r: { o: OfferRow; enquiryReference: string; firstName: strin
 }
 
 function toStaff(r: { o: OfferRow; enquiryReference: string; organisationName: string; fullName: string; registrationNumber: string }): StaffJobOffer {
-  return { ...base(r.o, r.enquiryReference), organisationName: r.organisationName, caregiverId: r.o.caregiverId, fullName: r.fullName, registrationNumber: r.registrationNumber };
+  return {
+    ...base(r.o, r.enquiryReference),
+    organisationName: r.organisationName,
+    caregiverId: r.o.caregiverId,
+    fullName: r.fullName,
+    registrationNumber: r.registrationNumber,
+  };
 }
 
 function countryName(code: string): string {

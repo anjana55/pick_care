@@ -119,7 +119,10 @@ export class CheckInService {
   private async settingsRow(): Promise<SettingsRow> {
     const [existing] = await this.db.select().from(checkInSettings).where(eq(checkInSettings.id, SETTINGS_ID)).limit(1);
     if (existing) return existing;
-    await this.db.insert(checkInSettings).values({ id: SETTINGS_ID }).onDuplicateKeyUpdate({ set: { id: SETTINGS_ID } });
+    await this.db
+      .insert(checkInSettings)
+      .values({ id: SETTINGS_ID })
+      .onDuplicateKeyUpdate({ set: { id: SETTINGS_ID } });
     const [created] = await this.db.select().from(checkInSettings).where(eq(checkInSettings.id, SETTINGS_ID)).limit(1);
     return created;
   }
@@ -164,7 +167,8 @@ export class CheckInService {
     }
     if (dto.locationRetentionDays !== undefined) {
       const { min, max } = CHECK_IN_SETTINGS_LIMITS.locationRetentionDays;
-      if (dto.locationRetentionDays < min || dto.locationRetentionDays > max) throw new BadRequestException(`Keeping location points must be between ${min} and ${max} days`);
+      if (dto.locationRetentionDays < min || dto.locationRetentionDays > max)
+        throw new BadRequestException(`Keeping location points must be between ${min} and ${max} days`);
       next.locationRetentionDays = dto.locationRetentionDays;
     }
     if (dto.presenceEnabled !== undefined) next.presenceEnabled = dto.presenceEnabled;
@@ -214,8 +218,20 @@ export class CheckInService {
     if (!settings.enabled) return out;
     const live = shifts.filter((s) => s.status === 'SCHEDULED' || s.status === 'COMPLETED');
     const rows = await this.rowsFor(live.map((s) => s.id));
-    const shares = settings.liveEnabled ? await openShares(this.db, live.map((s) => s.id)) : new Map();
-    const onShift = settings.liveEnabled && settings.presenceEnabled ? await openShares(this.db, live.map((s) => s.id), 'ON_SHIFT') : new Map();
+    const shares = settings.liveEnabled
+      ? await openShares(
+          this.db,
+          live.map((s) => s.id),
+        )
+      : new Map();
+    const onShift =
+      settings.liveEnabled && settings.presenceEnabled
+        ? await openShares(
+            this.db,
+            live.map((s) => s.id),
+            'ON_SHIFT',
+          )
+        : new Map();
     for (const s of live) {
       const row = rows.get(s.id);
       const times = { startsAt: s.startsAt, endsAt: s.endsAt, checkedInAt: row?.checkedInAt ?? null, checkedOutAt: row?.checkedOutAt ?? null };
@@ -223,11 +239,22 @@ export class CheckInService {
       const shareOpen = share && new Date(share.endsBy).getTime() > now.getTime();
       const visitShare = onShift.get(s.id);
       const visitOpen = visitShare && new Date(visitShare.endsBy).getTime() > now.getTime() ? visitShare : null;
-      const asked = visitOpen?.awayAskedAt && !(visitOpen.awayRepliedAt && new Date(visitOpen.awayRepliedAt) >= new Date(visitOpen.awayAskedAt)) ? new Date(visitOpen.awayAskedAt).toISOString() : null;
+      const asked =
+        visitOpen?.awayAskedAt && !(visitOpen.awayRepliedAt && new Date(visitOpen.awayRepliedAt) >= new Date(visitOpen.awayAskedAt))
+          ? new Date(visitOpen.awayAskedAt).toISOString()
+          : null;
       out.set(s.id, {
         presence:
-          settings.liveEnabled && settings.presenceEnabled && s.status === 'SCHEDULED' && !times.checkedOutAt && new Date(s.endsAt).getTime() + PRESENCE_AFTER_END_MINUTES * 60_000 > now.getTime()
-            ? { everyMinutes: visitOpen?.everyMinutes ?? settings.presenceEveryMinutes, shareId: times.checkedInAt && visitOpen ? visitOpen.id : null, askedAt: asked }
+          settings.liveEnabled &&
+          settings.presenceEnabled &&
+          s.status === 'SCHEDULED' &&
+          !times.checkedOutAt &&
+          new Date(s.endsAt).getTime() + PRESENCE_AFTER_END_MINUTES * 60_000 > now.getTime()
+            ? {
+                everyMinutes: visitOpen?.everyMinutes ?? settings.presenceEveryMinutes,
+                shareId: times.checkedInAt && visitOpen ? visitOpen.id : null,
+                askedAt: asked,
+              }
             : null,
         onMyWay:
           settings.liveEnabled && s.status === 'SCHEDULED' && !times.checkedInAt && new Date(s.endsAt).getTime() > now.getTime()
@@ -254,7 +281,12 @@ export class CheckInService {
     if (!settings.enabled) return out;
     const live = shifts.filter((s) => s.status === 'SCHEDULED' || s.status === 'COMPLETED');
     const rows = await this.rowsFor(live.map((s) => s.id));
-    const shares = settings.liveEnabled ? await openShares(this.db, live.map((s) => s.id)) : new Map();
+    const shares = settings.liveEnabled
+      ? await openShares(
+          this.db,
+          live.map((s) => s.id),
+        )
+      : new Map();
     for (const s of live) {
       const row = rows.get(s.id);
       const times = { startsAt: s.startsAt, endsAt: s.endsAt, checkedInAt: row?.checkedInAt ?? null, checkedOutAt: row?.checkedOutAt ?? null };
@@ -277,10 +309,20 @@ export class CheckInService {
     const rows = await this.rowsFor(shifts.map((s) => s.id));
     const actorIds = [...new Set([...rows.values()].flatMap((r) => [r.inByUserId, r.outByUserId]).filter((v): v is string => !!v))];
     const names = actorIds.length
-      ? new Map((await this.db.select({ id: users.id, fullName: users.fullName }).from(users).where(inArray(users.id, actorIds))).map((u) => [u.id, u.fullName]))
+      ? new Map(
+          (await this.db.select({ id: users.id, fullName: users.fullName }).from(users).where(inArray(users.id, actorIds))).map((u) => [u.id, u.fullName]),
+        )
       : new Map<string, string>();
-    const shares = settings.liveEnabled ? await openShares(this.db, shifts.map((s) => s.id)) : new Map();
-    const visitShares = await latestShiftShares(this.db, shifts.map((s) => s.id));
+    const shares = settings.liveEnabled
+      ? await openShares(
+          this.db,
+          shifts.map((s) => s.id),
+        )
+      : new Map();
+    const visitShares = await latestShiftShares(
+      this.db,
+      shifts.map((s) => s.id),
+    );
     const presence = new Map<string, StaffPresence>();
     for (const [shiftId, share] of visitShares) presence.set(shiftId, await presenceOf(this.db, share, now));
     for (const s of shifts) {
@@ -289,9 +331,15 @@ export class CheckInService {
       const shareOpen = share && !row?.checkedInAt && new Date(share.endsBy).getTime() > now.getTime();
       const eta = shareOpen ? etaFrom(share.lastDistanceM ?? null, now, settings.farMetres) : null;
       const point = (lat: number | null | undefined, lng: number | null | undefined, acc: number | null | undefined) =>
-        lat === null || lat === undefined || lng === null || lng === undefined ? null : { latitude: Number(lat), longitude: Number(lng), accuracyM: acc ?? null };
+        lat === null || lat === undefined || lng === null || lng === undefined
+          ? null
+          : { latitude: Number(lat), longitude: Number(lng), accuracyM: acc ?? null };
       out.set(s.id, {
-        state: visitState({ startsAt: s.startsAt, endsAt: s.endsAt, checkedInAt: row?.checkedInAt ?? null, checkedOutAt: row?.checkedOutAt ?? null }, settings, now),
+        state: visitState(
+          { startsAt: s.startsAt, endsAt: s.endsAt, checkedInAt: row?.checkedInAt ?? null, checkedOutAt: row?.checkedOutAt ?? null },
+          settings,
+          now,
+        ),
         arrivalCode: this.arrivalCode(s.id),
         wrongCodes: row?.wrongCodes ?? 0,
         codeLocked: !row?.checkedInAt && (row?.wrongCodes ?? 0) >= CHECK_IN_MAX_WRONG_CODES,
@@ -353,19 +401,39 @@ export class CheckInService {
       .innerJoin(caregivers, eq(bookingShifts.caregiverId, caregivers.id))
       .leftJoin(cities, eq(patients.cityId, cities.id))
       .leftJoin(districts, eq(patients.districtId, districts.id))
-      .where(and(inArray(bookingShifts.status, ['SCHEDULED', 'COMPLETED', 'MISSED']), ne(bookings.status, 'DRAFT'), lt(bookingShifts.startsAt, to), gt(bookingShifts.endsAt, from)))
+      .where(
+        and(
+          inArray(bookingShifts.status, ['SCHEDULED', 'COMPLETED', 'MISSED']),
+          ne(bookings.status, 'DRAFT'),
+          lt(bookingShifts.startsAt, to),
+          gt(bookingShifts.endsAt, from),
+        ),
+      )
       .orderBy(asc(bookingShifts.startsAt), asc(bookings.reference))
       // One more than shown, to know whether the day had more (said on the page rather than dropped quietly).
       .limit(TODAY_MAX + 1);
     const truncated = rows.length > TODAY_MAX;
     if (truncated) rows.length = TODAY_MAX;
     // With check-in off the page still lists the day; each visit simply has nothing recorded.
-    const views = await this.forStaff(rows.map((r) => ({ id: r.shiftId, startsAt: r.startsAt, endsAt: r.endsAt })), now, { ...settings, enabled: true });
+    const views = await this.forStaff(
+      rows.map((r) => ({ id: r.shiftId, startsAt: r.startsAt, endsAt: r.endsAt })),
+      now,
+      { ...settings, enabled: true },
+    );
     const waiting = rows.length
       ? await this.db
           .select({ shiftId: requestOffers.shiftId, n: sql<number>`COUNT(*)` })
           .from(requestOffers)
-          .where(and(inArray(requestOffers.shiftId, rows.map((r) => r.shiftId)), eq(requestOffers.status, 'OFFERED'), gt(requestOffers.expiresAt, now)))
+          .where(
+            and(
+              inArray(
+                requestOffers.shiftId,
+                rows.map((r) => r.shiftId),
+              ),
+              eq(requestOffers.status, 'OFFERED'),
+              gt(requestOffers.expiresAt, now),
+            ),
+          )
           .groupBy(requestOffers.shiftId)
       : [];
     const coverWaiting = new Map(waiting.map((w) => [w.shiftId, Number(w.n)]));
@@ -400,11 +468,25 @@ export class CheckInService {
     const settings = await this.settings();
     if (!settings.enabled) return 0;
     const rows = await this.db
-      .select({ id: bookingShifts.id, startsAt: bookingShifts.startsAt, endsAt: bookingShifts.endsAt, checkedInAt: shiftCheckins.checkedInAt, checkedOutAt: shiftCheckins.checkedOutAt })
+      .select({
+        id: bookingShifts.id,
+        startsAt: bookingShifts.startsAt,
+        endsAt: bookingShifts.endsAt,
+        checkedInAt: shiftCheckins.checkedInAt,
+        checkedOutAt: shiftCheckins.checkedOutAt,
+      })
       .from(bookingShifts)
       .innerJoin(bookings, eq(bookingShifts.bookingId, bookings.id))
       .leftJoin(shiftCheckins, eq(shiftCheckins.shiftId, bookingShifts.id))
-      .where(and(eq(bookingShifts.status, 'SCHEDULED'), eq(bookings.status, 'CONFIRMED'), isNull(bookings.paymentHoldInvoiceId), lt(bookingShifts.startsAt, now), gt(bookingShifts.endsAt, now)))
+      .where(
+        and(
+          eq(bookingShifts.status, 'SCHEDULED'),
+          eq(bookings.status, 'CONFIRMED'),
+          isNull(bookings.paymentHoldInvoiceId),
+          lt(bookingShifts.startsAt, now),
+          gt(bookingShifts.endsAt, now),
+        ),
+      )
       .limit(1000);
     return rows.filter((r) => visitState(r, settings, now) === 'LATE').length;
   }
@@ -439,7 +521,11 @@ export class CheckInService {
   private position(input: { latitude?: number; longitude?: number; accuracyM?: number }): (GeoPoint & { accuracyM: number | null }) | null {
     const { latitude, longitude } = input;
     if (typeof latitude !== 'number' || typeof longitude !== 'number' || Math.abs(latitude) > 90 || Math.abs(longitude) > 180) return null;
-    return { latitude, longitude, accuracyM: typeof input.accuracyM === 'number' && input.accuracyM >= 0 ? Math.min(Math.round(input.accuracyM), 100_000) : null };
+    return {
+      latitude,
+      longitude,
+      accuracyM: typeof input.accuracyM === 'number' && input.accuracyM >= 0 ? Math.min(Math.round(input.accuracyM), 100_000) : null,
+    };
   }
 
   /**
@@ -447,14 +533,26 @@ export class CheckInService {
    * located check-in on the same booking (another shift's). Null when there
    * is nothing to compare with.
    */
-  private async distanceFromHome(bookingId: string, shiftId: string, here: GeoPoint | null): Promise<{ metres: number | null; from: CheckInDistanceFrom | null }> {
+  private async distanceFromHome(
+    bookingId: string,
+    shiftId: string,
+    here: GeoPoint | null,
+  ): Promise<{ metres: number | null; from: CheckInDistanceFrom | null }> {
     if (!here) return { metres: null, from: null };
     const pin = await this.places.pointForBooking(bookingId);
     if (pin) return { metres: distanceMetres(pin, here), from: 'PIN' };
     const [first] = await this.db
       .select({ latitude: shiftCheckins.inLatitude, longitude: shiftCheckins.inLongitude })
       .from(shiftCheckins)
-      .where(and(eq(shiftCheckins.bookingId, bookingId), ne(shiftCheckins.shiftId, shiftId), isNotNull(shiftCheckins.checkedInAt), isNotNull(shiftCheckins.inLatitude), isNotNull(shiftCheckins.inLongitude)))
+      .where(
+        and(
+          eq(shiftCheckins.bookingId, bookingId),
+          ne(shiftCheckins.shiftId, shiftId),
+          isNotNull(shiftCheckins.checkedInAt),
+          isNotNull(shiftCheckins.inLatitude),
+          isNotNull(shiftCheckins.inLongitude),
+        ),
+      )
       .orderBy(asc(shiftCheckins.checkedInAt))
       .limit(1);
     if (!first || first.latitude === null || first.longitude === null) return { metres: null, from: null };
@@ -466,7 +564,12 @@ export class CheckInService {
    * check-in, so they know their phone agrees before they ask for the code.
    * Answers only yes, no or can't say - never where the home is.
    */
-  async nearHome(user: AuthenticatedUser, shiftId: string, input: { latitude?: number; longitude?: number; accuracyM?: number }, now = new Date()): Promise<NearHomeAnswer> {
+  async nearHome(
+    user: AuthenticatedUser,
+    shiftId: string,
+    input: { latitude?: number; longitude?: number; accuracyM?: number },
+    now = new Date(),
+  ): Promise<NearHomeAnswer> {
     const settings = await this.settings();
     if (!settings.enabled) return { atHome: null };
     const shift = await this.caregiverShift(user, shiftId);
@@ -500,7 +603,9 @@ export class CheckInService {
         .values({ shiftId, bookingId: shift.bookingId, wrongCodes: 1 })
         .onDuplicateKeyUpdate({ set: { wrongCodes: sql`${shiftCheckins.wrongCodes} + 1`, updatedAt: now } });
       const left = CHECK_IN_MAX_WRONG_CODES - ((row?.wrongCodes ?? 0) + 1);
-      throw new BadRequestException(left > 0 ? 'That code is not right - ask the client to read it to you again' : 'Too many wrong codes - ask the office to check you in');
+      throw new BadRequestException(
+        left > 0 ? 'That code is not right - ask the client to read it to you again' : 'Too many wrong codes - ask the office to check you in',
+      );
     }
 
     const here = this.position(input);
@@ -517,7 +622,10 @@ export class CheckInService {
       inMocked: Boolean(here && input.mocked),
       updatedAt: now,
     };
-    await this.db.insert(shiftCheckins).values({ shiftId, bookingId: shift.bookingId, ...record }).onDuplicateKeyUpdate({ set: record });
+    await this.db
+      .insert(shiftCheckins)
+      .values({ shiftId, bookingId: shift.bookingId, ...record })
+      .onDuplicateKeyUpdate({ set: record });
     // Arrived: "On my way" is over.
     await closeShares(this.db, shiftId, 'CHECKED_IN', now, 'ON_THE_WAY');
     // No place on the map yet: keep this one as a suggestion for staff to confirm (a fake position is no suggestion).
@@ -536,7 +644,11 @@ export class CheckInService {
     if (!settings.liveEnabled || !settings.presenceEnabled || !user.caregiverId) return null;
     const endsBy = new Date(new Date(shift.endsAt).getTime() + PRESENCE_AFTER_END_MINUTES * 60_000);
     if (endsBy.getTime() <= now.getTime()) return null;
-    return openShare(this.db, { kind: 'ON_SHIFT', shiftId: shift.id, bookingId: shift.bookingId, caregiverId: user.caregiverId, endsBy, everyMinutes: settings.presenceEveryMinutes }, now);
+    return openShare(
+      this.db,
+      { kind: 'ON_SHIFT', shiftId: shift.id, bookingId: shift.bookingId, caregiverId: user.caregiverId, endsBy, everyMinutes: settings.presenceEveryMinutes },
+      now,
+    );
   }
 
   async checkOut(user: AuthenticatedUser, shiftId: string, input: Omit<CheckInInput, 'code'>, now = new Date()): Promise<void> {
@@ -571,13 +683,21 @@ export class CheckInService {
 
   private async anyShift(shiftId: string) {
     const [shift] = await this.db
-      .select({ id: bookingShifts.id, bookingId: bookingShifts.bookingId, startsAt: bookingShifts.startsAt, endsAt: bookingShifts.endsAt, status: bookingShifts.status, bookingStatus: bookings.status })
+      .select({
+        id: bookingShifts.id,
+        bookingId: bookingShifts.bookingId,
+        startsAt: bookingShifts.startsAt,
+        endsAt: bookingShifts.endsAt,
+        status: bookingShifts.status,
+        bookingStatus: bookings.status,
+      })
       .from(bookingShifts)
       .innerJoin(bookings, eq(bookingShifts.bookingId, bookings.id))
       .where(eq(bookingShifts.id, shiftId))
       .limit(1);
     if (!shift) throw new NotFoundException('Shift not found');
-    if (shift.bookingStatus === 'DRAFT' || shift.status === 'DRAFT' || shift.status === 'CANCELLED') throw new BadRequestException('A visit can only be recorded on a scheduled shift');
+    if (shift.bookingStatus === 'DRAFT' || shift.status === 'DRAFT' || shift.status === 'CANCELLED')
+      throw new BadRequestException('A visit can only be recorded on a scheduled shift');
     return shift;
   }
 
@@ -598,7 +718,10 @@ export class CheckInService {
     const [row] = await this.db.select().from(shiftCheckins).where(eq(shiftCheckins.shiftId, shiftId)).limit(1);
     if (row?.checkedInAt) throw new BadRequestException('This visit already has a check-in');
     const record = { checkedInAt: at, inBy: 'STAFF' as const, inByUserId: actor.userId, inNote: input.note?.trim() || null, updatedAt: now };
-    await this.db.insert(shiftCheckins).values({ shiftId, bookingId: shift.bookingId, ...record }).onDuplicateKeyUpdate({ set: record });
+    await this.db
+      .insert(shiftCheckins)
+      .values({ shiftId, bookingId: shift.bookingId, ...record })
+      .onDuplicateKeyUpdate({ set: record });
     await closeCoverOffers(this.db, this.jobs, shiftId);
     await closeShares(this.db, shiftId, 'CHECKED_IN', now, 'ON_THE_WAY');
     return (await this.forStaff([shift], now)).get(shiftId)!;
@@ -624,7 +747,12 @@ export class CheckInService {
   private tellClient(patientUserId: string | null, at: Date, shiftId: string) {
     try {
       const time = toColombo(at).time;
-      this.notices.notify([patientUserId], (lang) => ({ title: ARRIVED[lang].title, body: ARRIVED[lang].body.replace('{time}', time) }), '/bookings', `arrived ${shiftId}`);
+      this.notices.notify(
+        [patientUserId],
+        (lang) => ({ title: ARRIVED[lang].title, body: ARRIVED[lang].body.replace('{time}', time) }),
+        '/bookings',
+        `arrived ${shiftId}`,
+      );
     } catch (err) {
       this.logger.warn(`Check-in ${shiftId}: the client could not be told - ${(err as Error).message}`);
     }

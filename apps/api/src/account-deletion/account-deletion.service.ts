@@ -1,12 +1,7 @@
 import { ConflictException, ForbiddenException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { randomUUID as uuid } from 'crypto';
 import { and, asc, desc, eq, gt, inArray, lte, or, sql } from 'drizzle-orm';
-import {
-  ACCOUNT_DELETION_GRACE_DAYS,
-  type AccountDeletionReceipt,
-  type AccountOpenItems,
-  type StaffAccountDeletion,
-} from '@care-platform/shared';
+import { ACCOUNT_DELETION_GRACE_DAYS, type AccountDeletionReceipt, type AccountOpenItems, type StaffAccountDeletion } from '@care-platform/shared';
 import { DRIZZLE, type Database } from '../database/database.module';
 import {
   accountDeletionRequests,
@@ -191,7 +186,11 @@ export class AccountDeletionService {
 
   private async alertStaff(r: Pick<Request, 'userId' | 'role' | 'caregiverId' | 'patientId'>, requestedAt: Date, eraseAfter: Date) {
     try {
-      const [who] = await this.db.select({ fullName: users.fullName, email: users.email, phone: users.phone }).from(users).where(eq(users.id, r.userId)).limit(1);
+      const [who] = await this.db
+        .select({ fullName: users.fullName, email: users.email, phone: users.phone })
+        .from(users)
+        .where(eq(users.id, r.userId))
+        .limit(1);
       const [cg] = r.caregiverId
         ? await this.db.select({ registrationNumber: caregivers.registrationNumber }).from(caregivers).where(eq(caregivers.id, r.caregiverId)).limit(1)
         : [];
@@ -212,7 +211,10 @@ export class AccountDeletionService {
 
   /** For the staff app's sidebar badge. */
   async summary(): Promise<{ pending: number }> {
-    const [row] = await this.db.select({ n: sql<number>`count(*)` }).from(accountDeletionRequests).where(eq(accountDeletionRequests.status, 'PENDING'));
+    const [row] = await this.db
+      .select({ n: sql<number>`count(*)` })
+      .from(accountDeletionRequests)
+      .where(eq(accountDeletionRequests.status, 'PENDING'));
     return { pending: Number(row?.n ?? 0) };
   }
 
@@ -232,12 +234,7 @@ export class AccountDeletionService {
       .leftJoin(users, eq(users.id, accountDeletionRequests.userId))
       .leftJoin(caregivers, eq(caregivers.id, accountDeletionRequests.caregiverId))
       .leftJoin(patients, eq(patients.id, accountDeletionRequests.patientId))
-      .where(
-        or(
-          eq(accountDeletionRequests.status, 'PENDING'),
-          gt(accountDeletionRequests.updatedAt, new Date(now.getTime() - 90 * DAY_MS)),
-        ),
-      )
+      .where(or(eq(accountDeletionRequests.status, 'PENDING'), gt(accountDeletionRequests.updatedAt, new Date(now.getTime() - 90 * DAY_MS))))
       .orderBy(sql`${accountDeletionRequests.status} = 'PENDING' DESC`, accountDeletionRequests.eraseAfter, desc(accountDeletionRequests.updatedAt));
 
     return Promise.all(
@@ -267,7 +264,8 @@ export class AccountDeletionService {
     const cancelled = await this.db.transaction(async (tx) => {
       const [r] = await tx.select().from(accountDeletionRequests).where(eq(accountDeletionRequests.id, id)).limit(1);
       if (!r) throw new NotFoundException('Deletion request not found');
-      if (r.status !== 'PENDING') throw new ConflictException(r.status === 'ERASED' ? 'This account has already been erased.' : 'This request was already cancelled.');
+      if (r.status !== 'PENDING')
+        throw new ConflictException(r.status === 'ERASED' ? 'This account has already been erased.' : 'This request was already cancelled.');
       // Staff deleted the record while this waited (before that closed the request too): turning
       // the login back on would bring back an account with no record and no email or phone.
       const [cg] = r.caregiverId ? await tx.select({ deletedAt: caregivers.deletedAt }).from(caregivers).where(eq(caregivers.id, r.caregiverId)).limit(1) : [];
@@ -279,10 +277,16 @@ export class AccountDeletionService {
         .where(eq(accountDeletionRequests.id, id));
       await tx.update(users).set({ isActive: true }).where(eq(users.id, r.userId));
       if (r.caregiverId && r.previousStatus) {
-        await tx.update(caregivers).set({ status: r.previousStatus as never }).where(eq(caregivers.id, r.caregiverId));
+        await tx
+          .update(caregivers)
+          .set({ status: r.previousStatus as never })
+          .where(eq(caregivers.id, r.caregiverId));
       }
       if (r.patientId && r.previousStatus) {
-        await tx.update(patients).set({ status: r.previousStatus as never }).where(eq(patients.id, r.patientId));
+        await tx
+          .update(patients)
+          .set({ status: r.previousStatus as never })
+          .where(eq(patients.id, r.patientId));
       }
       return r;
     });
@@ -326,18 +330,56 @@ export class AccountDeletionService {
     if (r.caregiverId) {
       const id = r.caregiverId;
       items.upcomingShifts = await count(
-        this.db.select({ n }).from(bookingShifts).where(and(eq(bookingShifts.caregiverId, id), inArray(bookingShifts.status, ['DRAFT', 'SCHEDULED']), gt(bookingShifts.endsAt, now))),
+        this.db
+          .select({ n })
+          .from(bookingShifts)
+          .where(and(eq(bookingShifts.caregiverId, id), inArray(bookingShifts.status, ['DRAFT', 'SCHEDULED']), gt(bookingShifts.endsAt, now))),
       );
-      items.unpaidPayouts = await count(this.db.select({ n }).from(payoutStatements).where(and(eq(payoutStatements.caregiverId, id), inArray(payoutStatements.status, ['DRAFT', 'APPROVED']))));
-      items.activePlacements = await count(this.db.select({ n }).from(placements).where(and(eq(placements.caregiverId, id), inArray(placements.status, ['PRE_DEPARTURE', 'DEPLOYED']))));
-      items.openAdjustments += await count(this.db.select({ n }).from(billingAdjustments).where(and(eq(billingAdjustments.caregiverId, id), eq(billingAdjustments.status, 'OPEN'))));
+      items.unpaidPayouts = await count(
+        this.db
+          .select({ n })
+          .from(payoutStatements)
+          .where(and(eq(payoutStatements.caregiverId, id), inArray(payoutStatements.status, ['DRAFT', 'APPROVED']))),
+      );
+      items.activePlacements = await count(
+        this.db
+          .select({ n })
+          .from(placements)
+          .where(and(eq(placements.caregiverId, id), inArray(placements.status, ['PRE_DEPARTURE', 'DEPLOYED']))),
+      );
+      items.openAdjustments += await count(
+        this.db
+          .select({ n })
+          .from(billingAdjustments)
+          .where(and(eq(billingAdjustments.caregiverId, id), eq(billingAdjustments.status, 'OPEN'))),
+      );
     }
     if (r.patientId) {
       const id = r.patientId;
-      items.activeBookings = await count(this.db.select({ n }).from(bookings).where(and(eq(bookings.patientId, id), inArray(bookings.status, ['DRAFT', 'CONFIRMED']))));
-      items.unpaidInvoices = await count(this.db.select({ n }).from(invoices).where(and(eq(invoices.patientId, id), inArray(invoices.status, ['DRAFT', 'ISSUED']))));
-      items.openCareRequests = await count(this.db.select({ n }).from(careRequests).where(and(eq(careRequests.patientId, id), inArray(careRequests.status, [...OPEN_CARE_REQUEST_STATUSES]))));
-      items.openAdjustments += await count(this.db.select({ n }).from(billingAdjustments).where(and(eq(billingAdjustments.patientId, id), eq(billingAdjustments.status, 'OPEN'))));
+      items.activeBookings = await count(
+        this.db
+          .select({ n })
+          .from(bookings)
+          .where(and(eq(bookings.patientId, id), inArray(bookings.status, ['DRAFT', 'CONFIRMED']))),
+      );
+      items.unpaidInvoices = await count(
+        this.db
+          .select({ n })
+          .from(invoices)
+          .where(and(eq(invoices.patientId, id), inArray(invoices.status, ['DRAFT', 'ISSUED']))),
+      );
+      items.openCareRequests = await count(
+        this.db
+          .select({ n })
+          .from(careRequests)
+          .where(and(eq(careRequests.patientId, id), inArray(careRequests.status, [...OPEN_CARE_REQUEST_STATUSES]))),
+      );
+      items.openAdjustments += await count(
+        this.db
+          .select({ n })
+          .from(billingAdjustments)
+          .where(and(eq(billingAdjustments.patientId, id), eq(billingAdjustments.status, 'OPEN'))),
+      );
     }
     return items;
   }
@@ -359,7 +401,10 @@ export class AccountDeletionService {
             eq(accountDeletionRequests.status, 'PENDING'),
             lte(accountDeletionRequests.eraseAfter, now),
             after
-              ? or(gt(accountDeletionRequests.eraseAfter, after.eraseAfter), and(eq(accountDeletionRequests.eraseAfter, after.eraseAfter), gt(accountDeletionRequests.id, after.id)))
+              ? or(
+                  gt(accountDeletionRequests.eraseAfter, after.eraseAfter),
+                  and(eq(accountDeletionRequests.eraseAfter, after.eraseAfter), gt(accountDeletionRequests.id, after.id)),
+                )
               : undefined,
           ),
         )
@@ -425,7 +470,10 @@ export class AccountDeletionService {
     const docs = await db.select({ key: caregiverDocuments.storageKey }).from(caregiverDocuments).where(eq(caregiverDocuments.caregiverId, caregiverId));
     const photos = await db.select({ key: sharedProfiles.photoKey }).from(sharedProfiles).where(eq(sharedProfiles.caregiverId, caregiverId));
     // The profile photo is the person's face: it goes with the rest of them.
-    const [profilePhoto] = await db.select({ key: caregivers.photoKey, pending: caregivers.pendingPhotoKey }).from(caregivers).where(eq(caregivers.id, caregiverId));
+    const [profilePhoto] = await db
+      .select({ key: caregivers.photoKey, pending: caregivers.pendingPhotoKey })
+      .from(caregivers)
+      .where(eq(caregivers.id, caregiverId));
 
     await db
       .update(caregivers)
@@ -481,13 +529,19 @@ export class AccountDeletionService {
     // Staff's verification record stays (it was done), without notes that may name the person.
     await db.update(verifications).set({ notes: null }).where(eq(verifications.caregiverId, caregiverId));
     // Their ratings go with the profile.
-    const reviewIds = (await db.select({ id: caregiverReviews.id }).from(caregiverReviews).where(eq(caregiverReviews.caregiverId, caregiverId))).map((r) => r.id);
+    const reviewIds = (await db.select({ id: caregiverReviews.id }).from(caregiverReviews).where(eq(caregiverReviews.caregiverId, caregiverId))).map(
+      (r) => r.id,
+    );
     if (reviewIds.length) await db.delete(caregiverReviewBadges).where(inArray(caregiverReviewBadges.reviewId, reviewIds));
     await db.delete(caregiverReviews).where(eq(caregiverReviews.caregiverId, caregiverId));
     await db.delete(caregiverRatingStats).where(eq(caregiverRatingStats.caregiverId, caregiverId));
     await db.delete(reviewRequests).where(eq(reviewRequests.caregiverId, caregiverId));
 
-    return [...docs.map((d) => d.key), ...[...photos, profilePhoto].map((p) => p?.key).filter((k): k is string => Boolean(k)), ...(profilePhoto?.pending ? [profilePhoto.pending] : [])];
+    return [
+      ...docs.map((d) => d.key),
+      ...[...photos, profilePhoto].map((p) => p?.key).filter((k): k is string => Boolean(k)),
+      ...(profilePhoto?.pending ? [profilePhoto.pending] : []),
+    ];
   }
 
   /** The client's record kept for bookings and invoices, without the person or the one they care for. */
@@ -565,7 +619,10 @@ async function eraseLocationTrail(db: Database, by: 'caregiver' | 'booking', who
   const ids = (await shares).map((s) => s.id);
   if (!ids.length) return;
   await db.delete(locationPoints).where(inArray(locationPoints.shareId, ids));
-  await db.update(locationShares).set({ lastLatitude: null, lastLongitude: null, lastAccuracyM: null, lastDistanceM: null }).where(inArray(locationShares.id, ids));
+  await db
+    .update(locationShares)
+    .set({ lastLatitude: null, lastLongitude: null, lastAccuracyM: null, lastDistanceM: null })
+    .where(inArray(locationShares.id, ids));
 }
 
 function theirBookingIds(db: Database, patientId: string) {

@@ -139,17 +139,7 @@ function stubDb(tables: Record<string, Row[]>, ownLocation: unknown[] = []) {
  * caregiverId, cityId, districtId, cityEn, citySi, cityTa, districtEn, districtSi,
  * districtTa. Used only to assert the fixture has not gone stale.
  */
-const OWN_LOCATION_SELECT = [
-  'id',
-  'city_id',
-  'district_id',
-  'name_en',
-  'name_si',
-  'name_ta',
-  'name_en',
-  'name_si',
-  'name_ta',
-];
+const OWN_LOCATION_SELECT = ['id', 'city_id', 'district_id', 'name_en', 'name_si', 'name_ta', 'name_en', 'name_si', 'name_ta'];
 
 /** The queries that decide location membership, as (sql, params) pairs. */
 function locationQueries(queries: QueryLog[]): QueryLog[] {
@@ -226,7 +216,9 @@ describe('PublicSearchService location filtering', () => {
     const { db, queries } = stubDb(REFERENCE);
     await serviceWith(db).search({ ...base, location: { districtId: 1, cityId: 340 }, radiusKm: 10 } as SearchRequestDto);
     const pool = queries.find((q) => q.sql.includes('from `caregivers`') && q.sql.includes('limit'))!;
-    expect(pool.sql).toMatch(/order by CASE WHEN `caregivers`.`city_id` = \? THEN 0 WHEN `caregivers`.`district_id` = \? THEN 1 ELSE 2 END, CASE WHEN `caregivers`.`status` in .* limit \?$/);
+    expect(pool.sql).toMatch(
+      /order by CASE WHEN `caregivers`.`city_id` = \? THEN 0 WHEN `caregivers`.`district_id` = \? THEN 1 ELSE 2 END, CASE WHEN `caregivers`.`status` in .* limit \?$/,
+    );
     expect(pool.params).toEqual(expect.arrayContaining([340, 1, 500]));
   });
 
@@ -316,17 +308,7 @@ describe('PublicSearchService location filtering', () => {
     };
 
     const searchIn = async (locale?: string, request: Partial<SearchRequestDto> = {}) => {
-      const { db } = stubDb(tables, [
-        'cg-1',
-        340,
-        1,
-        'Dehiwala',
-        'දෙහිවල',
-        'தேவிவாலை',
-        'Colombo',
-        'කොළඹ',
-        'கொழும்பு',
-      ]);
+      const { db } = stubDb(tables, ['cg-1', 340, 1, 'Dehiwala', 'දෙහිවල', 'தேவிவாலை', 'Colombo', 'කොළඹ', 'கொழும்பு']);
       return serviceWith(db).search({
         ...base,
         location: { districtId: 1, cityId: 340 },

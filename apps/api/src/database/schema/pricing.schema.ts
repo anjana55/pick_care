@@ -18,8 +18,12 @@ export const careTypePricing = mysqlTable('care_type_pricing', {
   maxRate: decimal('max_rate', { precision: 10, scale: 2, mode: 'number' }).notNull().default(0),
   feePercent: decimal('fee_percent', { precision: 5, scale: 2, mode: 'number' }).notNull().default(0),
   updatedBy: varchar('updated_by', { length: 36 }),
-  createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+  createdAt: datetime('created_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: datetime('updated_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
 });
 
 /**
@@ -36,8 +40,12 @@ export const caregiverRates = mysqlTable(
     amount: decimal('amount', { precision: 10, scale: 2, mode: 'number' }).notNull(),
     /** Who last set it: the caregiver themselves, or staff on their behalf. */
     updatedBy: varchar('updated_by', { length: 36 }),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (t) => ({
     caregiverCareType: uniqueIndex('caregiver_rates_caregiver_care_type').on(t.caregiverId, t.careType),

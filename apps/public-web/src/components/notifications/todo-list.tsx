@@ -26,7 +26,10 @@ export function useTodoText() {
     const document = p.document ? t(`notifications.document.${p.document}`) : '';
     switch (item.kind) {
       case 'PAY_INVOICE':
-        return t(p.overdue ? 'notifications.text.PAY_INVOICE_OVERDUE' : 'notifications.text.PAY_INVOICE', { number: String(p.number ?? ''), amount: String(p.amount ?? '') });
+        return t(p.overdue ? 'notifications.text.PAY_INVOICE_OVERDUE' : 'notifications.text.PAY_INVOICE', {
+          number: String(p.number ?? ''),
+          amount: String(p.amount ?? ''),
+        });
       case 'RATE_CAREGIVER':
         return t('notifications.text.RATE_CAREGIVER', { reference: String(p.reference ?? '') });
       case 'TICK_OFF_CARE':
@@ -60,15 +63,14 @@ export function TodoList({ items, role, compact = false, onOpen }: { items: Todo
         return (
           <li
             key={item.key}
-            className={cn(
-              'flex flex-wrap items-center gap-3 rounded-lg border p-3',
-              item.urgent ? 'border-amber-300 bg-amber-50' : 'border-border bg-white',
-            )}
+            className={cn('flex flex-wrap items-center gap-3 rounded-lg border p-3', item.urgent ? 'border-amber-300 bg-amber-50' : 'border-border bg-white')}
           >
             <Icon className={cn('h-5 w-5 shrink-0', item.urgent ? 'text-amber-600' : 'text-brand')} aria-hidden />
             <div className="min-w-0 flex-1">
               <p className={cn('font-medium text-ink', compact ? 'text-sm' : 'text-base')}>{text(item)}</p>
-              {item.dueOn && item.kind === 'PAY_INVOICE' && <p className="text-xs text-ink/60">{t('notifications.due', { date: fmtDate(item.dueOn, locale) })}</p>}
+              {item.dueOn && item.kind === 'PAY_INVOICE' && (
+                <p className="text-xs text-ink/60">{t('notifications.due', { date: fmtDate(item.dueOn, locale) })}</p>
+              )}
             </div>
             <Link
               href={webPathFor(item.path, role)}

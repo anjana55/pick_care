@@ -14,7 +14,7 @@ function settings(over: Partial<ResolvedEmailSettings> | Error): EmailSettingsSe
     fromName: 'Pick Care',
     fromAddress: null,
     replyTo: null,
-  requestAlertsTo: null,
+    requestAlertsTo: null,
     updatedBy: null,
     createdAt: new Date(),
     updatedAt: new Date(),

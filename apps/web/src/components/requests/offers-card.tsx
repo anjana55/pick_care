@@ -41,7 +41,9 @@ export function OffersCard({ requestId, canSend }: { requestId: string; canSend:
   const rateText = (o: StaffCareOffer) => {
     if (o.payRate === null || !o.rateType) return t('careOffers.rateOpen');
     const unit = t(`pricing.units.${o.rateType}`);
-    return o.clientRate === null ? t('careOffers.rateNoClient', { pay: money(o.payRate), unit }) : t('careOffers.rate', { pay: money(o.payRate), unit, client: money(o.clientRate) });
+    return o.clientRate === null
+      ? t('careOffers.rateNoClient', { pay: money(o.payRate), unit })
+      : t('careOffers.rate', { pay: money(o.payRate), unit, client: money(o.clientRate) });
   };
 
   return (
@@ -64,7 +66,11 @@ export function OffersCard({ requestId, canSend }: { requestId: string; canSend:
                   <span className="ml-2 text-xs text-ink/50">{o.caregiver.registrationNumber}</span>
                   <p className="text-xs text-ink/70">{rateText(o)}</p>
                   <p className="text-xs text-ink/50">
-                    {o.status === 'OFFERED' ? t('careOffers.until', { when: fmtDateTime(o.expiresAt, locale) }) : o.respondedAt ? t('careOffers.answered', { when: fmtDateTime(o.respondedAt, locale) }) : fmtDateTime(o.expiresAt, locale)}
+                    {o.status === 'OFFERED'
+                      ? t('careOffers.until', { when: fmtDateTime(o.expiresAt, locale) })
+                      : o.respondedAt
+                        ? t('careOffers.answered', { when: fmtDateTime(o.respondedAt, locale) })
+                        : fmtDateTime(o.expiresAt, locale)}
                     {o.sentByName && ` · ${t('careOffers.by', { name: o.sentByName })}`}
                   </p>
                   {o.note && <p className="text-xs text-ink/60">{o.note}</p>}
@@ -74,7 +80,12 @@ export function OffersCard({ requestId, canSend }: { requestId: string; canSend:
                   {o.declineReason && `: ${t(`careOffers.reasons.${o.declineReason}`)}`}
                 </span>
                 {o.status === 'OFFERED' && (
-                  <Button size="sm" variant="secondary" disabled={withdraw.isPending} onClick={() => (setError(null), withdraw.mutate(o.id, { onError: (e) => setError(message(e)) }))}>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    disabled={withdraw.isPending}
+                    onClick={() => (setError(null), withdraw.mutate(o.id, { onError: (e) => setError(message(e)) }))}
+                  >
                     {t('careOffers.withdraw')}
                   </Button>
                 )}

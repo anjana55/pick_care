@@ -111,7 +111,9 @@ export class ClientTransferService {
     const conditions: SQL[] = [];
     if (filter.search) {
       const term = `%${filter.search}%`;
-      conditions.push(or(like(patients.fullName, term), like(patients.recipientName, term), like(patients.phone, term), like(users.phone, term), like(users.email, term))!);
+      conditions.push(
+        or(like(patients.fullName, term), like(patients.recipientName, term), like(patients.phone, term), like(users.phone, term), like(users.email, term))!,
+      );
     }
     if (filter.status) conditions.push(eq(patients.status, filter.status));
     if (filter.districtId) conditions.push(eq(patients.districtId, filter.districtId));
@@ -242,7 +244,8 @@ export class ClientTransferService {
     };
     const phone = phoneCell('phone');
     const alternate = phoneCell('alternatePhone');
-    if (!email && !phone.raw && !errors.some((e) => e.column === col('email').header || e.column === col('phone').header)) errors.push({ code: 'needsContact' });
+    if (!email && !phone.raw && !errors.some((e) => e.column === col('email').header || e.column === col('phone').header))
+      errors.push({ code: 'needsContact' });
 
     const status = enumCell('status', IMPORT_STATUSES) ?? 'ACTIVE';
     const preferredContactMethod = enumCell('preferredContactMethod', contactMethodEnum);
@@ -262,9 +265,13 @@ export class ClientTransferService {
     const nic = text('nic')?.toUpperCase() ?? null;
     const dobRaw = text('dateOfBirth');
     const dateOfBirth = dobRaw ? parseDate(dobRaw) : null;
-    if (dobRaw && (!dateOfBirth || dateOfBirth > new Date().toISOString().slice(0, 10))) errors.push({ code: 'invalid', column: col('dateOfBirth').header, value: dobRaw });
+    if (dobRaw && (!dateOfBirth || dateOfBirth > new Date().toISOString().slice(0, 10)))
+      errors.push({ code: 'invalid', column: col('dateOfBirth').header, value: dobRaw });
     const gender = enumCell('gender', genderEnum);
-    const location = locations.resolve(v[keyOf(col('district'))] ?? '', v[keyOf(col('city'))] ?? '', warnings, { district: col('district').header, city: col('city').header });
+    const location = locations.resolve(v[keyOf(col('district'))] ?? '', v[keyOf(col('city'))] ?? '', warnings, {
+      district: col('district').header,
+      city: col('city').header,
+    });
 
     const patient = {
       phone: phone.raw,
@@ -309,8 +316,11 @@ export class ClientTransferService {
         // Name whoever holds it - a login, a caregiver or another client - so staff can check.
         const variants = phoneVariants(p.e164, cc);
         const [login] = await this.db.select({ name: users.fullName }).from(users).where(eq(users.phone, p.e164)).limit(1);
-        const [caregiver] = login ? [] : await this.db.select({ name: caregivers.fullName }).from(caregivers).where(inArray(caregivers.livePrimaryPhone, variants)).limit(1);
-        const [client] = login || caregiver ? [] : await this.db.select({ name: patients.fullName }).from(patients).where(inArray(patients.phone, variants)).limit(1);
+        const [caregiver] = login
+          ? []
+          : await this.db.select({ name: caregivers.fullName }).from(caregivers).where(inArray(caregivers.livePrimaryPhone, variants)).limit(1);
+        const [client] =
+          login || caregiver ? [] : await this.db.select({ name: patients.fullName }).from(patients).where(inArray(patients.phone, variants)).limit(1);
         return { column: col('phone').header, name: (login ?? caregiver ?? client)?.name ?? '' };
       }
     }

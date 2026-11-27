@@ -37,7 +37,12 @@ export function VacanciesTab() {
     <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <p className="max-w-2xl text-sm text-ink/60">{t('international.vacancies.hint')}</p>
-        <Select className="sm:w-56" value={filter} onChange={(e) => setFilter(e.target.value as VacancyStatus | 'all')} aria-label={t('international.vacancies.filter')}>
+        <Select
+          className="sm:w-56"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value as VacancyStatus | 'all')}
+          aria-label={t('international.vacancies.filter')}
+        >
           {[...vacancyStatusValues, 'all' as const].map((f) => (
             <option key={f} value={f}>
               {t(`international.vacancies.filters.${f}`)}
@@ -46,7 +51,9 @@ export function VacanciesTab() {
         </Select>
       </div>
       {isLoading && <p className="py-8 text-center text-sm text-ink/50">{t('common.loading')}</p>}
-      {!isLoading && data.length === 0 && <p className="rounded-lg border border-dashed border-border bg-white py-10 text-center text-sm text-ink/50">{t('international.vacancies.empty')}</p>}
+      {!isLoading && data.length === 0 && (
+        <p className="rounded-lg border border-dashed border-border bg-white py-10 text-center text-sm text-ink/50">{t('international.vacancies.empty')}</p>
+      )}
       <div className="space-y-4">
         {data.map((v) => (
           <VacancyCard key={v.id} vacancy={v} />
@@ -71,7 +78,10 @@ export function VacancyCard({ vacancy: v, compact = false }: { vacancy: StaffVac
   const decide = (status: 'PUBLISHED' | 'REJECTED' | 'CLOSED' | 'FILLED') => {
     setError(null);
     if (status === 'REJECTED' && !note.trim()) return setError(t('international.vacancies.noteRequired'));
-    review.mutate({ id: v.id, status, note: note.trim() || undefined }, { onSuccess: () => setNote(''), onError: (err) => setError(err instanceof Error ? err.message : String(err)) });
+    review.mutate(
+      { id: v.id, status, note: note.trim() || undefined },
+      { onSuccess: () => setNote(''), onError: (err) => setError(err instanceof Error ? err.message : String(err)) },
+    );
   };
 
   return (
@@ -91,11 +101,17 @@ export function VacancyCard({ vacancy: v, compact = false }: { vacancy: StaffVac
           </div>
           <span className="flex items-center gap-1">
             <span className={cn('rounded px-2 py-0.5 text-xs font-medium', STATUS_STYLES[v.status])}>{t(`international.vacancies.filters.${v.status}`)}</span>
-            <DeleteRecordButton compact path={`/international/vacancies/${v.id}`} title={t('overseasAdmin.vacancy.deleteTitle', { reference: v.reference })} body={t('overseasAdmin.vacancy.deleteBody')} />
+            <DeleteRecordButton
+              compact
+              path={`/international/vacancies/${v.id}`}
+              title={t('overseasAdmin.vacancy.deleteTitle', { reference: v.reference })}
+              body={t('overseasAdmin.vacancy.deleteBody')}
+            />
           </span>
         </div>
         <p className="mt-2 text-sm text-ink/70">
-          {[v.city, countryName(v.country, locale)].filter(Boolean).join(', ')} · {t(`careTypes.${v.careSetting}`)} · {t('international.vacancies.roles', { count: v.rolesCount })}
+          {[v.city, countryName(v.country, locale)].filter(Boolean).join(', ')} · {t(`careTypes.${v.careSetting}`)} ·{' '}
+          {t('international.vacancies.roles', { count: v.rolesCount })}
           {salary && ` · ${salary}`}
           {v.contractMonths && ` · ${t('international.vacancies.contract', { months: v.contractMonths })}`}
         </p>
@@ -109,7 +125,13 @@ export function VacancyCard({ vacancy: v, compact = false }: { vacancy: StaffVac
         ) : (
           <div className="mt-4 space-y-3 border-t border-border pt-4">
             {(v.status === 'PENDING_REVIEW' || v.status === 'PUBLISHED') && (
-              <Textarea rows={2} value={note} onChange={(e) => setNote(e.target.value)} maxLength={500} placeholder={t('international.vacancies.notePlaceholder')} />
+              <Textarea
+                rows={2}
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                maxLength={500}
+                placeholder={t('international.vacancies.notePlaceholder')}
+              />
             )}
             {error && <p className="text-xs text-danger">{error}</p>}
             <div className="flex flex-wrap items-center gap-2">
@@ -132,7 +154,12 @@ export function VacancyCard({ vacancy: v, compact = false }: { vacancy: StaffVac
                     {t('international.vacancies.close')}
                   </Button>
                   {/* The public site, on the same host: a plain link, outside the staff app's base path. */}
-                  <a href={`/work-abroad/vacancies/${v.reference}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-brand-dark hover:underline">
+                  <a
+                    href={`/work-abroad/vacancies/${v.reference}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 text-xs text-brand-dark hover:underline"
+                  >
                     <ExternalLink size={12} aria-hidden />
                     {t('international.vacancies.onBoard')}
                   </a>
@@ -193,7 +220,11 @@ function ApplicationRow({ vacancyId, application: a }: { vacancyId: string; appl
           <span className="ml-2 text-xs tabular-nums text-ink/50">{a.registrationNumber}</span>
           <div className="mt-1 flex flex-wrap items-center gap-3 text-xs">
             <ReadinessBar report={a.readiness} />
-            {a.profileLive ? <span className="text-brand-dark">{t('international.pool.live')}</span> : <span className="text-danger">{t('international.candidates.notLive')}</span>}
+            {a.profileLive ? (
+              <span className="text-brand-dark">{t('international.pool.live')}</span>
+            ) : (
+              <span className="text-danger">{t('international.candidates.notLive')}</span>
+            )}
             <span className="text-ink/50">{new Date(a.createdAt).toLocaleDateString()}</span>
           </div>
         </div>
@@ -202,9 +233,19 @@ function ApplicationRow({ vacancyId, application: a }: { vacancyId: string; appl
       {a.message && <p className="mt-2 rounded bg-paper px-3 py-2 text-sm text-ink/80">{a.message}</p>}
       {!decided && (
         <div className="mt-3 space-y-2">
-          <Textarea rows={2} maxLength={1000} value={message} onChange={(e) => setMessage(e.target.value)} placeholder={t('international.candidates.messagePlaceholder')} />
+          <Textarea
+            rows={2}
+            maxLength={1000}
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder={t('international.candidates.messagePlaceholder')}
+          />
           <div className="flex flex-wrap gap-2">
-            <Button size="sm" disabled={!a.profileLive || update.isPending} onClick={() => update.mutate({ id: a.id, status: 'PUT_FORWARD', messageToEmployer: message.trim() || null })}>
+            <Button
+              size="sm"
+              disabled={!a.profileLive || update.isPending}
+              onClick={() => update.mutate({ id: a.id, status: 'PUT_FORWARD', messageToEmployer: message.trim() || null })}
+            >
               {t('international.vacancies.putForward')}
             </Button>
             <Button size="sm" variant="secondary" disabled={update.isPending} onClick={() => update.mutate({ id: a.id, status: 'NOT_SUCCESSFUL' })}>

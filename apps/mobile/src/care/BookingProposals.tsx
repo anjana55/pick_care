@@ -46,7 +46,9 @@ function Proposal({ proposal: p }: { proposal: ClientBookingProposal }) {
       <Text accessibilityRole="header" style={[styles.title, { color: colors.ink }]}>
         {t(`account.bookingCheck.title.${p.status}`)}
       </Text>
-      <Text style={{ color: colors.muted }}>{t(`account.bookingCheck.intro.${p.status === 'ACCEPTED' && p.billingTiming === 'ADVANCE' ? 'ACCEPTED_ADVANCE' : p.status}`)}</Text>
+      <Text style={{ color: colors.muted }}>
+        {t(`account.bookingCheck.intro.${p.status === 'ACCEPTED' && p.billingTiming === 'ADVANCE' ? 'ACCEPTED_ADVANCE' : p.status}`)}
+      </Text>
       {p.firstInvoice ? <PayNow invoice={p.firstInvoice} why={t('payNow.whyFirst')} /> : null}
 
       {p.caregiver ? (
@@ -59,8 +61,14 @@ function Proposal({ proposal: p }: { proposal: ClientBookingProposal }) {
         <Text style={{ color: colors.muted }}>{t('account.bookingCheck.caregiverByTeam')}</Text>
       )}
       <Row label={t('account.bookingCheck.days')} value={days} />
-      <Row label={t('account.bookingCheck.times')} value={`${p.shiftStartTime} – ${p.shiftEndTime}${overnight ? ` ${t('account.bookingCheck.nextDay')}` : ''}`} />
-      <Row label={t('account.bookings.dates')} value={`${formatDate(p.startDate, locale)} – ${formatDate(p.endDate, locale)} (${t('account.bookingCheck.visits', { n: String(p.shiftCount) })})`} />
+      <Row
+        label={t('account.bookingCheck.times')}
+        value={`${p.shiftStartTime} – ${p.shiftEndTime}${overnight ? ` ${t('account.bookingCheck.nextDay')}` : ''}`}
+      />
+      <Row
+        label={t('account.bookings.dates')}
+        value={`${formatDate(p.startDate, locale)} – ${formatDate(p.endDate, locale)} (${t('account.bookingCheck.visits', { n: String(p.shiftCount) })})`}
+      />
       {p.rateType && p.rateAmount ? (
         <Row
           label={t('account.bookingCheck.price')}
@@ -87,7 +95,12 @@ function Proposal({ proposal: p }: { proposal: ClientBookingProposal }) {
             multiline
             maxLength={CLIENT_REVIEW_NOTE_MAX}
           />
-          <Button label={t('account.bookingCheck.send')} busy={answer.isPending} disabled={note.trim().length < 3} onPress={() => answer.mutate({ id: p.id, note: note.trim() })} />
+          <Button
+            label={t('account.bookingCheck.send')}
+            busy={answer.isPending}
+            disabled={note.trim().length < 3}
+            onPress={() => answer.mutate({ id: p.id, note: note.trim() })}
+          />
           <Button variant="secondary" label={t('account.bookingCheck.back')} onPress={() => setChanging(false)} />
         </View>
       ) : null}

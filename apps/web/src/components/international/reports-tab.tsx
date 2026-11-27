@@ -83,7 +83,9 @@ function Report({ data }: { data: OverseasReport }) {
         <Tile
           label={t('international.reports.tiles.timeToPlace')}
           value={data.timeToPlace.medianDays === null ? '-' : t('international.reports.days', { n: data.timeToPlace.medianDays })}
-          note={data.timeToPlace.medianCandidateDays === null ? undefined : t('international.reports.fromProposed', { n: data.timeToPlace.medianCandidateDays })}
+          note={
+            data.timeToPlace.medianCandidateDays === null ? undefined : t('international.reports.fromProposed', { n: data.timeToPlace.medianCandidateDays })
+          }
         />
         <Tile label={t('international.reports.tiles.collected')} value={moneyList(data.revenue.collected, locale)} />
         <Tile
@@ -151,7 +153,10 @@ function Report({ data }: { data: OverseasReport }) {
               <Row key={s} label={t(`international.placements.status.${s}`)} value={String(o.byStatus[s])} />
             ))}
             <Row label={t('international.reports.inGuarantee')} value={String(o.endedEarlyInGuarantee)} />
-            <Row label={t('international.reports.checkins')} value={checkinRate === null ? '-' : t('international.reports.checkinsValue', { done: o.checkinsDone, due: o.checkinsDue, pct: checkinRate })} />
+            <Row
+              label={t('international.reports.checkins')}
+              value={checkinRate === null ? '-' : t('international.reports.checkinsValue', { done: o.checkinsDone, due: o.checkinsDue, pct: checkinRate })}
+            />
           </dl>
           <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-ink/50">{t('international.reports.welfare')}</p>
           <dl className="mt-1 space-y-1 text-sm">
@@ -246,13 +251,17 @@ function Row({ label, value }: { label: string; value: string }) {
 function MonthBars({ rows, label }: { rows: { month: string; n: number }[]; label: string }) {
   const { locale } = useTranslation();
   const max = Math.max(1, ...rows.map((r) => r.n));
-  const fmt = (m: string) => new Intl.DateTimeFormat(locale === 'en' ? 'en-GB' : `${locale}-LK`, { month: 'short', timeZone: 'UTC' }).format(new Date(`${m}-01T00:00:00Z`));
+  const fmt = (m: string) =>
+    new Intl.DateTimeFormat(locale === 'en' ? 'en-GB' : `${locale}-LK`, { month: 'short', timeZone: 'UTC' }).format(new Date(`${m}-01T00:00:00Z`));
   return (
     <figure>
       <div className="flex h-32 items-end gap-[2px] border-b border-ink/20" aria-hidden>
         {rows.map((r) => (
           <div key={r.month} className="group relative flex h-full flex-1 items-end" title={`${fmt(r.month)} ${r.month.slice(0, 4)}: ${r.n}`}>
-            <div className="w-full rounded-t-[4px] bg-brand transition-opacity group-hover:opacity-80" style={{ height: `${(r.n / max) * 100}%`, minHeight: r.n ? 2 : 0 }} />
+            <div
+              className="w-full rounded-t-[4px] bg-brand transition-opacity group-hover:opacity-80"
+              style={{ height: `${(r.n / max) * 100}%`, minHeight: r.n ? 2 : 0 }}
+            />
           </div>
         ))}
       </div>

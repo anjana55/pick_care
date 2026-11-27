@@ -42,8 +42,13 @@ export const requestOffers = mysqlTable(
     sentByUserId: varchar('sent_by_user_id', { length: 36 }),
     expiresAt: datetime('expires_at', { fsp: 3 }).notNull(),
     respondedAt: datetime('responded_at', { fsp: 3 }),
-    createdAt: datetime('created_at', { fsp: 3 }).notNull().default(sql`CURRENT_TIMESTAMP(3)`),
-    openKey: varchar('open_key', { length: 80 }).generatedAlwaysAs(sql`IF(status = 'OFFERED', CONCAT(COALESCE(shift_id, request_id), ':', caregiver_id), NULL)`, { mode: 'stored' }),
+    createdAt: datetime('created_at', { fsp: 3 })
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP(3)`),
+    openKey: varchar('open_key', { length: 80 }).generatedAlwaysAs(
+      sql`IF(status = 'OFFERED', CONCAT(COALESCE(shift_id, request_id), ':', caregiver_id), NULL)`,
+      { mode: 'stored' },
+    ),
   },
   (t) => ({
     requestIdx: index('request_offers_request_idx').on(t.requestId, t.createdAt),

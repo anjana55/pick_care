@@ -44,7 +44,10 @@ export function useTodoText() {
     const document = p.document ? t(`notifications.document.${p.document}`) : '';
     switch (item.kind) {
       case 'PAY_INVOICE':
-        return t(p.overdue ? 'notifications.text.PAY_INVOICE_OVERDUE' : 'notifications.text.PAY_INVOICE', { number: String(p.number ?? ''), amount: String(p.amount ?? '') });
+        return t(p.overdue ? 'notifications.text.PAY_INVOICE_OVERDUE' : 'notifications.text.PAY_INVOICE', {
+          number: String(p.number ?? ''),
+          amount: String(p.amount ?? ''),
+        });
       case 'RATE_CAREGIVER':
         return t('notifications.text.RATE_CAREGIVER', { reference: String(p.reference ?? '') });
       case 'TICK_OFF_CARE':
@@ -132,7 +135,13 @@ export function NotificationList({ items }: { items: NotificationItem[] }) {
           if (target !== '/notifications') router.push(target as never);
         };
         return (
-          <View key={item.id} style={[i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border }, unread && { backgroundColor: tint(colors.brand, 0.06) }]}>
+          <View
+            key={item.id}
+            style={[
+              i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
+              unread && { backgroundColor: tint(colors.brand, 0.06) },
+            ]}
+          >
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={`${unread ? `${t('notifications.new')}. ` : ''}${item.title}. ${item.body}`}

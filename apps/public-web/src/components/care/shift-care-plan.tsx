@@ -29,7 +29,10 @@ export function ShiftCarePlan({ shiftId }: { shiftId: string }) {
             const when = i.timing === 'AT_TIMES' ? i.dueKey : i.timing === 'SLOT' && i.slot ? t(`carePlan.slot.${i.slot}`) : t('carePlan.anyTime');
             const marked = i.status === 'NOT_DONE' ? 'notDone' : i.status === 'DONE' ? (i.source === 'AUTO' ? 'auto' : 'done') : null;
             return (
-              <li key={`${i.activityId}-${i.dueKey}`} className={cn('flex flex-wrap items-start gap-x-3 gap-y-1 py-2', i.isCritical && 'border-l-2 border-l-amber-500 pl-2')}>
+              <li
+                key={`${i.activityId}-${i.dueKey}`}
+                className={cn('flex flex-wrap items-start gap-x-3 gap-y-1 py-2', i.isCritical && 'border-l-2 border-l-amber-500 pl-2')}
+              >
                 <span className="w-16 shrink-0 text-xs tabular-nums text-ink/50">{when}</span>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-ink">

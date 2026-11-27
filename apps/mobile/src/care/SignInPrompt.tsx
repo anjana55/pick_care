@@ -23,7 +23,11 @@ export function SignInPrompt({ body, returnTo }: { body: string; returnTo: strin
       </View>
       <Button label={t('signIn.client')} onPress={() => router.push({ pathname: '/sign-in', params: { role: 'client', returnTo } })} />
       {/* New here: registering is its own path, in the app, and comes back here too. */}
-      <Button variant="secondary" label={t('signup.createAccount')} onPress={() => router.push({ pathname: '/register', params: { role: 'client', returnTo } })} />
+      <Button
+        variant="secondary"
+        label={t('signup.createAccount')}
+        onPress={() => router.push({ pathname: '/register', params: { role: 'client', returnTo } })}
+      />
     </Card>
   );
 }

@@ -10,13 +10,7 @@ import { ApiError } from '@/lib/api/client';
 import { useCreateClient } from '@/lib/hooks/use-clients';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  EMPTY_NEW_CLIENT,
-  NewClientFields,
-  missingNewClientFields,
-  toPhoneClientInput,
-  type NewClientDraft,
-} from '@/components/clients/new-client-fields';
+import { EMPTY_NEW_CLIENT, NewClientFields, missingNewClientFields, toPhoneClientInput, type NewClientDraft } from '@/components/clients/new-client-fields';
 
 /**
  * "Add new client" - for people who reach the office by phone (or in person)

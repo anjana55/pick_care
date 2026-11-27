@@ -41,7 +41,9 @@ export function OfferTermsList({ terms }: { terms: OfferTerms }) {
     [t('overseas.terms.meals'), terms.mealsProvided ? t('overseas.terms.yes') : t('overseas.terms.no')],
     [t('overseas.terms.flights'), t(`overseas.flights.${terms.flightsPaidBy}`)],
     ...(terms.annualLeaveDays !== null ? ([[t('overseas.terms.leave'), t('overseas.terms.days', { n: terms.annualLeaveDays })]] as [string, string][]) : []),
-    ...(terms.probationMonths !== null ? ([[t('overseas.terms.probation'), t('overseas.terms.months', { n: terms.probationMonths })]] as [string, string][]) : []),
+    ...(terms.probationMonths !== null
+      ? ([[t('overseas.terms.probation'), t('overseas.terms.months', { n: terms.probationMonths })]] as [string, string][])
+      : []),
   ];
   return (
     <div>

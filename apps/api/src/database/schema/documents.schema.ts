@@ -26,8 +26,12 @@ export const caregiverDocuments = mysqlTable(
     // When the document stops being valid (a passport, a police clearance).
     // Null = it does not expire, or nobody has said. Reminders go out before it.
     expiresOn: date('expires_on', { mode: 'string' }),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     caregiverIdx: index('caregiver_documents_caregiver_idx').on(table.caregiverId),

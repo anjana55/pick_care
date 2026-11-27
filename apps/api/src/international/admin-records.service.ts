@@ -152,7 +152,11 @@ export class AdminRecordsService {
     await this.db.transaction(async (tx) => {
       if (dto.email !== undefined) {
         const email = dto.email.toLowerCase();
-        const [taken] = await tx.select({ id: users.id }).from(users).where(and(eq(users.email, email), ne(users.id, row.userId))).limit(1);
+        const [taken] = await tx
+          .select({ id: users.id })
+          .from(users)
+          .where(and(eq(users.email, email), ne(users.id, row.userId)))
+          .limit(1);
         if (taken) throw new ConflictException('An account with this email already exists');
         await tx.update(users).set({ email }).where(eq(users.id, row.userId));
       }
@@ -221,7 +225,10 @@ export class AdminRecordsService {
   async deleteVacancy(id: string): Promise<{ deleted: true; reference: string }> {
     const [row] = await this.db.select({ reference: overseasVacancies.reference }).from(overseasVacancies).where(eq(overseasVacancies.id, id)).limit(1);
     if (!row) throw new NotFoundException('Vacancy not found');
-    this.refuseIf(await this.countAll({ applications: [vacancyApplications, eq(vacancyApplications.vacancyId, id)] }), 'This vacancy has applications, so it cannot be deleted. Close it instead.');
+    this.refuseIf(
+      await this.countAll({ applications: [vacancyApplications, eq(vacancyApplications.vacancyId, id)] }),
+      'This vacancy has applications, so it cannot be deleted. Close it instead.',
+    );
     await this.db.delete(overseasVacancies).where(eq(overseasVacancies.id, id));
     return { deleted: true, reference: row.reference };
   }
@@ -267,7 +274,10 @@ export class AdminRecordsService {
       await tx.delete(placementCheckins).where(eq(placementCheckins.placementId, id));
       await tx.delete(placementChecklistItems).where(eq(placementChecklistItems.placementId, id));
       await tx.delete(placements).where(eq(placements.id, id));
-      await tx.update(enquiryCandidates).set({ status: 'SELECTED', updatedAt: new Date() }).where(and(eq(enquiryCandidates.id, row.candidateId), eq(enquiryCandidates.status, 'PLACED')));
+      await tx
+        .update(enquiryCandidates)
+        .set({ status: 'SELECTED', updatedAt: new Date() })
+        .where(and(eq(enquiryCandidates.id, row.candidateId), eq(enquiryCandidates.status, 'PLACED')));
     });
     return { deleted: true };
   }
@@ -276,7 +286,11 @@ export class AdminRecordsService {
 
   /** Only once resolved, so an open report - an SOS above all - can never just disappear. */
   async deleteWelfareReport(id: string): Promise<{ deleted: true; reference: string }> {
-    const [row] = await this.db.select({ reference: welfareReports.reference, status: welfareReports.status }).from(welfareReports).where(eq(welfareReports.id, id)).limit(1);
+    const [row] = await this.db
+      .select({ reference: welfareReports.reference, status: welfareReports.status })
+      .from(welfareReports)
+      .where(eq(welfareReports.id, id))
+      .limit(1);
     if (!row) throw new NotFoundException('Welfare report not found');
     if (row.status !== 'RESOLVED') throw new ConflictException('Resolve this report before deleting it.');
     await this.db.transaction(async (tx) => {
@@ -303,7 +317,11 @@ export class AdminRecordsService {
   async enrol(programmeId: string, dto: EnrolCaregiverDto): Promise<TrainingEnrolmentRow[]> {
     const [programme] = await this.db.select({ id: trainingProgrammes.id }).from(trainingProgrammes).where(eq(trainingProgrammes.id, programmeId)).limit(1);
     if (!programme) throw new NotFoundException('Programme not found');
-    const [caregiver] = await this.db.select({ id: caregivers.id, deletedAt: caregivers.deletedAt }).from(caregivers).where(eq(caregivers.id, dto.caregiverId)).limit(1);
+    const [caregiver] = await this.db
+      .select({ id: caregivers.id, deletedAt: caregivers.deletedAt })
+      .from(caregivers)
+      .where(eq(caregivers.id, dto.caregiverId))
+      .limit(1);
     if (!caregiver || caregiver.deletedAt) throw new NotFoundException('Caregiver not found');
     const [existing] = await this.db
       .select({ id: trainingEnrolments.id })

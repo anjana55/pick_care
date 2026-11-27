@@ -23,7 +23,14 @@ describe('Talk to a person', () => {
       'GET /me/bookings': () => ({ status: 200, body: [] }),
       'GET /me/talk-to-a-person': () => ({ status: 200, body: sent }),
       'POST /me/talk-to-a-person': (body) => {
-        sent.unshift({ id: 't-1', createdAt: '2026-11-17T05:00:00Z', message: (body as { message: string }).message, contact: 'CALL', status: 'OPEN', handledAt: null });
+        sent.unshift({
+          id: 't-1',
+          createdAt: '2026-11-17T05:00:00Z',
+          message: (body as { message: string }).message,
+          contact: 'CALL',
+          status: 'OPEN',
+          handledAt: null,
+        });
         return { status: 201, body: sent[0] };
       },
     });
@@ -35,7 +42,11 @@ describe('Talk to a person', () => {
     await fireEvent.press(await screen.findByText(en.talk.aboutRequest.replace('{ref}', 'CR-TALK01')));
     await fireEvent.press(screen.getByRole('button', { name: en.talk.send }));
     expect(await screen.findByText(en.talk.sentTitle)).toBeTruthy();
-    expect(calls.find((c) => c.route === 'POST /me/talk-to-a-person')!.body).toEqual({ message: 'Please call about the start', contact: 'CALL', about: { type: 'REQUEST', id: 'r-1' } });
+    expect(calls.find((c) => c.route === 'POST /me/talk-to-a-person')!.body).toEqual({
+      message: 'Please call about the start',
+      contact: 'CALL',
+      about: { type: 'REQUEST', id: 'r-1' },
+    });
     expect(await screen.findByText(en.talk.status.OPEN)).toBeTruthy();
   });
 
@@ -49,7 +60,9 @@ describe('Talk to a person', () => {
 
     mockRouter.reset();
     await tokenStore.set(tokensFor('CAREGIVER', { caregiverId: 'cg-1', phone: '+94771234567' }));
-    serveApi({ 'GET /caregivers/cg-1': () => ({ status: 200, body: { id: 'cg-1', fullName: 'Nimali', registrationNumber: 'CG-1', status: 'ACTIVE', documents: [] } }) });
+    serveApi({
+      'GET /caregivers/cg-1': () => ({ status: 200, body: { id: 'cg-1', fullName: 'Nimali', registrationNumber: 'CG-1', status: 'ACTIVE', documents: [] } }),
+    });
     await show(<Me />);
     await fireEvent.press(await screen.findByRole('button', { name: en.talk.title }));
     expect(mockRouter.push).toHaveBeenCalledWith('/talk');

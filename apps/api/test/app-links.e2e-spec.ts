@@ -61,7 +61,9 @@ describe('Android app links (e2e)', () => {
   it('publishes what the admin saved, in the form Android reads, to anyone', async () => {
     // Pasted as `keytool` and Play Console print them, or lower case without colons.
     const saved = await save({
-      appLinks: { android: { packageName: ' lk.pickcare.app ', certFingerprints: [FINGERPRINT, PLAY_FINGERPRINT.replace(/:/g, '').toLowerCase(), FINGERPRINT] } },
+      appLinks: {
+        android: { packageName: ' lk.pickcare.app ', certFingerprints: [FINGERPRINT, PLAY_FINGERPRINT.replace(/:/g, '').toLowerCase(), FINGERPRINT] },
+      },
     }).expect(200);
     expect(saved.body.appLinks.android).toEqual({ packageName: 'lk.pickcare.app', certFingerprints: [FINGERPRINT, PLAY_FINGERPRINT] });
 
@@ -91,7 +93,10 @@ describe('Android app links (e2e)', () => {
 
   it('only an admin changes them', async () => {
     await save({ appLinks: { android: { packageName: 'com.attacker.app' } } }, staffToken).expect(403);
-    await api().patch('/settings/mobile-app').send({ appLinks: { android: { packageName: 'com.attacker.app' } } }).expect(401);
+    await api()
+      .patch('/settings/mobile-app')
+      .send({ appLinks: { android: { packageName: 'com.attacker.app' } } })
+      .expect(401);
     expect((await assetLinks().expect(200)).body[0].target.package_name).toBe('lk.pickcare.app');
   });
 

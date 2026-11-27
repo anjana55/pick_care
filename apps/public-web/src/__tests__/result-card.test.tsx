@@ -54,11 +54,7 @@ describe('ResultCard', () => {
   });
 
   it('never renders a subjective claim as a match reason', () => {
-    render(
-      renderWithProviders(
-        <ResultCard caregiver={caregiver({ matchReasons: ['works in the Colombo district'] })} />,
-      ),
-    );
+    render(renderWithProviders(<ResultCard caregiver={caregiver({ matchReasons: ['works in the Colombo district'] })} />));
     const banned = [/compassionate/i, /perfect/i, /trustworthy/i, /amazing/i, /best caregiver/i];
     for (const pattern of banned) {
       expect(screen.queryByText(pattern)).not.toBeInTheDocument();

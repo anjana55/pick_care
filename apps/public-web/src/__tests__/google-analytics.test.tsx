@@ -17,7 +17,10 @@ const ON: PublicAnalyticsConfig = { enabled: true, measurementId: ID };
 const gtagScript = () => document.head.querySelector('script[src*="googletagmanager.com/gtag/js"]') as HTMLScriptElement | null;
 /** The gtag calls queued so far, as plain arrays. */
 const calls = () => (window.dataLayer ?? []).map((args) => Array.from(args as ArrayLike<unknown>));
-const pageViews = () => calls().filter((c) => c[0] === 'event' && c[1] === 'page_view').map((c) => c[2] as Record<string, string>);
+const pageViews = () =>
+  calls()
+    .filter((c) => c[0] === 'event' && c[1] === 'page_view')
+    .map((c) => c[2] as Record<string, string>);
 
 function renderAt(path: string, config: PublicAnalyticsConfig) {
   pathname = path;
@@ -50,14 +53,11 @@ describe('Google Analytics on the public site', () => {
     expect(pageViews().map((v) => v.page_path)).toEqual(['/find', '/caregivers/abc123']);
   });
 
-  it.each(['/account', '/account/invoices/inv-1', '/caregiver/dashboard', '/caregiver/social/callback'])(
-    'never loads or reports on %s',
-    (path) => {
-      renderAt(path, ON);
-      expect(gtagScript()).toBeNull();
-      expect(pageViews()).toHaveLength(0);
-    },
-  );
+  it.each(['/account', '/account/invoices/inv-1', '/caregiver/dashboard', '/caregiver/social/callback'])('never loads or reports on %s', (path) => {
+    renderAt(path, ON);
+    expect(gtagScript()).toBeNull();
+    expect(pageViews()).toHaveLength(0);
+  });
 
   it("switches Google's opt-out flag on when the visitor moves to an unmeasured page, and off again after", () => {
     const { rerender } = renderAt('/login', ON);

@@ -140,17 +140,13 @@ describe('AccountClaimService.verify', () => {
     const { service, inserts } = makeService({ claimVerify: 'STAFF' });
     const res = await service.verify('CG-2026-123456', 'ABCD-EFGH');
     expect(res.channel).toBe('STAFF');
-    expect(inserts).toContainEqual(
-      expect.objectContaining({ role: 'CAREGIVER', fullName: 'Nimali Perera', phone: null, passwordHash: null, isActive: true }),
-    );
+    expect(inserts).toContainEqual(expect.objectContaining({ role: 'CAREGIVER', fullName: 'Nimali Perera', phone: null, passwordHash: null, isActive: true }));
   });
 
   it('rejects a correct-looking code for an account that has been secured since, with the generic message', async () => {
     loadState.mockResolvedValueOnce({ user: USER, links: [{ provider: 'GOOGLE' }], claimable: false });
     const { service, claimCodes, otp } = makeService({ otpVerify: true });
-    await expect(service.verify('CG-2026-123456', '111222')).rejects.toThrow(
-      'This code is invalid or has expired. Request a new one and try again.',
-    );
+    await expect(service.verify('CG-2026-123456', '111222')).rejects.toThrow('This code is invalid or has expired. Request a new one and try again.');
     expect(claimCodes.verify).not.toHaveBeenCalled();
     expect(otp.verify).not.toHaveBeenCalled();
   });
@@ -158,8 +154,6 @@ describe('AccountClaimService.verify', () => {
   it('rejects an unknown registration number with the same message', async () => {
     findCaregiver.mockResolvedValueOnce(null);
     const { service } = makeService({ otpVerify: true });
-    await expect(service.verify('CG-2026-000000', '111222')).rejects.toThrow(
-      'This code is invalid or has expired. Request a new one and try again.',
-    );
+    await expect(service.verify('CG-2026-000000', '111222')).rejects.toThrow('This code is invalid or has expired. Request a new one and try again.');
   });
 });

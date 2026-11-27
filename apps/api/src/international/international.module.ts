@@ -32,11 +32,7 @@ import {
   PublicVacanciesController,
   StaffOverseasPhase3Controller,
 } from './phase3.controllers';
-import {
-  CaregiverInternationalController,
-  PublicInternationalController,
-  StaffInternationalController,
-} from './international.controllers';
+import { CaregiverInternationalController, PublicInternationalController, StaffInternationalController } from './international.controllers';
 
 /**
  * Overseas employers looking for caregivers from Sri Lanka, and local

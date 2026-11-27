@@ -4,7 +4,10 @@ import type { TokenStore } from '@/api/token-store';
 /** An unsigned JWT-shaped token: the app only decodes tokens; the API verifies them. */
 export function fakeJwt(payload: Record<string, unknown>): string {
   const enc = (o: unknown) =>
-    btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(o)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(o))))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
   return `${enc({ alg: 'HS256', typ: 'JWT' })}.${enc(payload)}.sig`;
 }
 

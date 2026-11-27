@@ -20,16 +20,14 @@ function stubDb(overrides: { provinces?: unknown[]; districts?: unknown[]; citie
     const chain: Record<string, unknown> = {
       select: () => makeChain(),
       from: (table: unknown) => {
-        rows =
-          table === provinces ? overrides.provinces : table === districts ? overrides.districts : overrides.cities;
+        rows = table === provinces ? overrides.provinces : table === districts ? overrides.districts : overrides.cities;
         return chain;
       },
       where: () => chain,
       innerJoin: () => chain,
       orderBy: () => chain,
       limit: () => Promise.resolve([]),
-      then: (resolve: (v: unknown) => unknown, reject?: (e: unknown) => unknown) =>
-        Promise.resolve(rows ?? []).then(resolve, reject),
+      then: (resolve: (v: unknown) => unknown, reject?: (e: unknown) => unknown) => Promise.resolve(rows ?? []).then(resolve, reject),
     };
     return chain;
   };

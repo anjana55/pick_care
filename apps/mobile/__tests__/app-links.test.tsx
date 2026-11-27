@@ -149,5 +149,4 @@ describe('arriving signed out, or on the other side', () => {
     expect(r.getPathname()).toBe('/sign-in');
     expect(r.getSearchParams()).toEqual({ role: 'caregiver', returnTo: '/shifts' });
   });
-
 });

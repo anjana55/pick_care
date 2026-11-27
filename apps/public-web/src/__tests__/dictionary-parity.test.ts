@@ -12,9 +12,7 @@ import ta from '@/lib/i18n/dictionaries/ta.json';
  */
 
 function keys(obj: Record<string, unknown>, prefix = ''): string[] {
-  return Object.entries(obj).flatMap(([k, v]) =>
-    v && typeof v === 'object' ? keys(v as Record<string, unknown>, `${prefix}${k}.`) : [`${prefix}${k}`],
-  );
+  return Object.entries(obj).flatMap(([k, v]) => (v && typeof v === 'object' ? keys(v as Record<string, unknown>, `${prefix}${k}.`) : [`${prefix}${k}`]));
 }
 
 const english = keys(en as Record<string, unknown>).sort();
@@ -37,10 +35,12 @@ describe('public-web dictionaries', () => {
   ])('%s leaves no value empty', (_name, dict) => {
     const flat = (o: Record<string, unknown>, prefix = ''): [string, string][] =>
       Object.entries(o).flatMap(([k, v]) =>
-        v && typeof v === 'object'
-          ? flat(v as Record<string, unknown>, `${prefix}${k}.`)
-          : [[`${prefix}${k}`, String(v)]],
+        v && typeof v === 'object' ? flat(v as Record<string, unknown>, `${prefix}${k}.`) : [[`${prefix}${k}`, String(v)]],
       );
-    expect(flat(dict as Record<string, unknown>).filter(([, v]) => !v.trim()).map(([k]) => k)).toEqual([]);
+    expect(
+      flat(dict as Record<string, unknown>)
+        .filter(([, v]) => !v.trim())
+        .map(([k]) => k),
+    ).toEqual([]);
   });
 });

@@ -44,8 +44,12 @@ export default function TalkScreen() {
         .map((s) => ({ value: `SHIFT:${s.id}`, label: t('talk.aboutShift', { ref: s.bookingReference, date: s.startsAt.slice(0, 10) }) }));
     }
     return [
-      ...(requests.data ?? []).filter((r) => r.status === 'NEW' || r.status === 'IN_PROGRESS').map((r) => ({ value: `REQUEST:${r.id}`, label: t('talk.aboutRequest', { ref: r.reference }) })),
-      ...(bookings.data ?? []).filter((b) => b.status === 'CONFIRMED' || b.status === 'DRAFT').map((b) => ({ value: `BOOKING:${b.id}`, label: t('talk.aboutBooking', { ref: b.reference, date: b.startDate }) })),
+      ...(requests.data ?? [])
+        .filter((r) => r.status === 'NEW' || r.status === 'IN_PROGRESS')
+        .map((r) => ({ value: `REQUEST:${r.id}`, label: t('talk.aboutRequest', { ref: r.reference }) })),
+      ...(bookings.data ?? [])
+        .filter((b) => b.status === 'CONFIRMED' || b.status === 'DRAFT')
+        .map((b) => ({ value: `BOOKING:${b.id}`, label: t('talk.aboutBooking', { ref: b.reference, date: b.startDate }) })),
     ];
   }, [isCaregiver, shifts.data, requests.data, bookings.data, t]);
 
@@ -78,17 +82,22 @@ export default function TalkScreen() {
         ) : (
           <View style={{ gap: 14 }}>
             <Field label={t('talk.message')} value={message} onChangeText={setMessage} maxLength={TALK_MESSAGE_MAX} multiline />
-            {options.length ? (
-              <SelectField label={t('talk.about')} choices={options} value={about} onChange={setAbout} none={t('talk.aboutNone')} />
-            ) : null}
-            <Chips label={t('talk.contact')} choices={TALK_CONTACT_METHODS.map((m) => ({ value: m, label: t(`talk.contactMethods.${m}`) }))} selected={[contact]} onToggle={setContact} />
+            {options.length ? <SelectField label={t('talk.about')} choices={options} value={about} onChange={setAbout} none={t('talk.aboutNone')} /> : null}
+            <Chips
+              label={t('talk.contact')}
+              choices={TALK_CONTACT_METHODS.map((m) => ({ value: m, label: t(`talk.contactMethods.${m}`) }))}
+              selected={[contact]}
+              onToggle={setContact}
+            />
             <FormError message={error} />
             <Button label={t('talk.send')} busy={ask.isPending} disabled={message.trim().length < 5} onPress={send} />
           </View>
         )}
         {(mine.data ?? []).length ? (
           <View style={{ gap: 8 }}>
-            <Text accessibilityRole="header" style={{ fontSize: 17, fontWeight: '700', color: colors.ink }}>{t('talk.mine')}</Text>
+            <Text accessibilityRole="header" style={{ fontSize: 17, fontWeight: '700', color: colors.ink }}>
+              {t('talk.mine')}
+            </Text>
             {mine.data!.map((r) => (
               <View key={r.id} style={[styles.card, { borderColor: colors.border }]}>
                 <Text style={{ fontSize: 13, color: r.status === 'OPEN' ? colors.danger : colors.brand }}>{t(`talk.status.${r.status}`)}</Text>

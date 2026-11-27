@@ -15,9 +15,15 @@ const ASK = 'live_care.check_presence' as const;
 const FLAG = 'live_care.flag_visit' as const;
 
 const ASK_TEXT = {
-  en: { title: 'Still with {name}?', body: 'Your phone shows you away from the home. If you have gone out for the client (pharmacy, hospital), open the app and say so.' },
+  en: {
+    title: 'Still with {name}?',
+    body: 'Your phone shows you away from the home. If you have gone out for the client (pharmacy, hospital), open the app and say so.',
+  },
   si: { title: 'තවමත් {name} සමඟද?', body: 'ඔබ නිවසින් පිටත සිටින බව ඔබගේ දුරකථනය පෙන්වයි. ඔබ සේවාලාභියා වෙනුවෙන් පිටතට ගොස් ඇත්නම් (ෆාමසිය, රෝහල), යෙදුම විවෘත කර එය කියන්න.' },
-  ta: { title: 'இன்னும் {name} உடன் இருக்கிறீர்களா?', body: 'நீங்கள் வீட்டுக்கு வெளியே இருப்பதாக உங்கள் தொலைபேசி காட்டுகிறது. வாடிக்கையாளருக்காக வெளியே சென்றிருந்தால் (மருந்தகம், மருத்துவமனை), செயலியைத் திறந்து அதைச் சொல்லுங்கள்.' },
+  ta: {
+    title: 'இன்னும் {name} உடன் இருக்கிறீர்களா?',
+    body: 'நீங்கள் வீட்டுக்கு வெளியே இருப்பதாக உங்கள் தொலைபேசி காட்டுகிறது. வாடிக்கையாளருக்காக வெளியே சென்றிருந்தால் (மருந்தகம், மருத்துவமனை), செயலியைத் திறந்து அதைச் சொல்லுங்கள்.',
+  },
 } as const;
 
 /**
@@ -74,7 +80,10 @@ export class PresenceAgentService implements OnModuleInit {
           isNotNull(shiftCheckins.checkedInAt),
           isNull(shiftCheckins.checkedOutAt),
           eq(bookingShifts.status, 'SCHEDULED'),
-          or(isNull(locationShares.endedAt), and(eq(locationShares.endReason, 'STOPPED'), gte(locationShares.endedAt, new Date(now.getTime() - 12 * 3_600_000)))),
+          or(
+            isNull(locationShares.endedAt),
+            and(eq(locationShares.endReason, 'STOPPED'), gte(locationShares.endedAt, new Date(now.getTime() - 12 * 3_600_000))),
+          ),
           only ? inArray(locationShares.shiftId, only) : undefined,
         ),
       )
@@ -85,18 +94,29 @@ export class PresenceAgentService implements OnModuleInit {
     const newest = new Map<string, (typeof rows)[number]>();
     for (const r of rows) {
       const seen = newest.get(r.share.shiftId);
-      const later = !seen || +new Date(seen.share.startedAt) < +new Date(r.share.startedAt) || (+new Date(seen.share.startedAt) === +new Date(r.share.startedAt) && !r.share.endedAt);
+      const later =
+        !seen ||
+        +new Date(seen.share.startedAt) < +new Date(r.share.startedAt) ||
+        (+new Date(seen.share.startedAt) === +new Date(r.share.startedAt) && !r.share.endedAt);
       if (later) newest.set(r.share.shiftId, r);
     }
     const visits = [...newest.values()];
     // The latest open share of a shift wins over a stopped one: a fresh share after "share from this phone" is not "stopped".
     const openShift = new Set(rows.filter((r) => !r.share.endedAt).map((r) => r.share.shiftId));
 
-    const done = await this.taken(visits.map((v) => v.share.bookingId), now);
+    const done = await this.taken(
+      visits.map((v) => v.share.bookingId),
+      now,
+    );
     const points = await this.db
       .select({ shareId: locationPoints.shareId, at: locationPoints.at, inside: locationPoints.inside, mocked: locationPoints.mocked })
       .from(locationPoints)
-      .where(inArray(locationPoints.shareId, visits.map((v) => v.share.id)))
+      .where(
+        inArray(
+          locationPoints.shareId,
+          visits.map((v) => v.share.id),
+        ),
+      )
       .orderBy(asc(locationPoints.at));
 
     for (const v of visits) {
@@ -176,7 +196,14 @@ export class PresenceAgentService implements OnModuleInit {
     const rows = await this.db
       .select({ action: agentDecisions.action, proposal: agentDecisions.proposal })
       .from(agentDecisions)
-      .where(and(inArray(agentDecisions.action, [ASK, FLAG]), eq(agentDecisions.caseType, 'BOOKING'), inArray(agentDecisions.caseId, [...new Set(bookingIds)]), gte(agentDecisions.createdAt, new Date(now.getTime() - 3 * 86_400_000))));
+      .where(
+        and(
+          inArray(agentDecisions.action, [ASK, FLAG]),
+          eq(agentDecisions.caseType, 'BOOKING'),
+          inArray(agentDecisions.caseId, [...new Set(bookingIds)]),
+          gte(agentDecisions.createdAt, new Date(now.getTime() - 3 * 86_400_000)),
+        ),
+      );
     for (const r of rows) {
       const p = r.proposal as (VisitProposal & { awaySince?: string }) | null;
       if (!p?.shiftId) continue;
@@ -195,10 +222,20 @@ export class PresenceAgentService implements OnModuleInit {
     const now = new Date();
     await this.db.update(locationShares).set({ awayAskedAt: now }).where(eq(locationShares.id, p.shareId));
     const name = p.clientFirstName || 'the client';
-    if (cg?.userId) this.notices.notify([cg.userId], (lang) => ({ title: ASK_TEXT[lang].title.replace('{name}', name), body: ASK_TEXT[lang].body }), '/shifts', `presence ask ${p.shiftId}`);
+    if (cg?.userId)
+      this.notices.notify(
+        [cg.userId],
+        (lang) => ({ title: ASK_TEXT[lang].title.replace('{name}', name), body: ASK_TEXT[lang].body }),
+        '/shifts',
+        `presence ask ${p.shiftId}`,
+      );
     await this.automation.setHandoverNote(
       { caseType: 'BOOKING', caseId: p.bookingId },
-      { done: `Asked ${p.caregiverRegistration} whether they are still with the client`, waiting: 'The caregiver to answer in the app', next: 'If they do not, and the next check is still away, staff are told' },
+      {
+        done: `Asked ${p.caregiverRegistration} whether they are still with the client`,
+        waiting: 'The caregiver to answer in the app',
+        next: 'If they do not, and the next check is still away, staff are told',
+      },
     );
     return { askedAt: now.toISOString() };
   };

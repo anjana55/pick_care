@@ -105,7 +105,9 @@ export function SkillsSection() {
             <CardContent className="space-y-3 py-5">
               <h3 className="text-sm font-semibold text-ink">{editingId ? t('skillsAdmin.editTitle') : t('skillsAdmin.addTitle')}</h3>
               <div>
-                <Label htmlFor="skill-name" required>{t('skillsAdmin.nameEn')}</Label>
+                <Label htmlFor="skill-name" required>
+                  {t('skillsAdmin.nameEn')}
+                </Label>
                 <Input {...field('name')} />
               </div>
               <div>

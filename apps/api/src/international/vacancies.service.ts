@@ -100,7 +100,10 @@ export class VacanciesService {
     const v = await this.row(id);
     void this.notifier.toStaff(`vacancy ${v.reference}`, {
       subject: `New vacancy to review - ${v.reference}`,
-      paragraphs: [`${employer.organisationName} posted a vacancy: "${v.title}" (${v.rolesCount} role${v.rolesCount === 1 ? '' : 's'}, ${v.country}).`, 'Check it and publish it to the vacancy board, or send it back with a note.'],
+      paragraphs: [
+        `${employer.organisationName} posted a vacancy: "${v.title}" (${v.rolesCount} role${v.rolesCount === 1 ? '' : 's'}, ${v.country}).`,
+        'Check it and publish it to the vacancy board, or send it back with a note.',
+      ],
       cta: { label: 'Review vacancy', url: this.notifier.staffUrl(`/international?tab=vacancies`) },
     });
     return (await this.listForEmployer(employerId)).find((x) => x.id === id)!;
@@ -135,7 +138,12 @@ export class VacanciesService {
 
   async staffList(query: StaffVacancyQueryDto): Promise<StaffVacancy[]> {
     const rows = await this.select()
-      .where(and(query.status ? eq(overseasVacancies.status, query.status) : undefined, query.enquiryId ? eq(overseasVacancies.enquiryId, query.enquiryId) : undefined))
+      .where(
+        and(
+          query.status ? eq(overseasVacancies.status, query.status) : undefined,
+          query.enquiryId ? eq(overseasVacancies.enquiryId, query.enquiryId) : undefined,
+        ),
+      )
       .orderBy(desc(overseasVacancies.createdAt))
       .limit(200);
     const counts = await this.applicationCounts(rows.map((r) => r.v.id));
@@ -228,7 +236,11 @@ export class VacanciesService {
     if (dto.status && dto.status !== a.status) {
       if (a.status === 'PUT_FORWARD') throw new BadRequestException('This caregiver is already a candidate - follow them on the enquiry.');
       if (dto.status === 'PUT_FORWARD') {
-        const list = await this.candidates.propose(v.enquiryId, { caregiverId: a.caregiverId, messageToEmployer: dto.messageToEmployer ?? undefined }, { source: 'APPLICATION', notifyCaregiver: false });
+        const list = await this.candidates.propose(
+          v.enquiryId,
+          { caregiverId: a.caregiverId, messageToEmployer: dto.messageToEmployer ?? undefined },
+          { source: 'APPLICATION', notifyCaregiver: false },
+        );
         changes.candidateId = list.find((c) => c.caregiverId === a.caregiverId)?.id ?? null;
       }
       changes.status = dto.status;
@@ -450,9 +462,16 @@ export class VacanciesService {
           }
         : {
             subject: `Your vacancy needs changes - ${v.reference}`,
-            paragraphs: [`Our team could not publish "${v.title}" as it is.`, ...(note ? [`Their note: ${note}`] : []), 'You can change it and send it again from your employer account.'],
+            paragraphs: [
+              `Our team could not publish "${v.title}" as it is.`,
+              ...(note ? [`Their note: ${note}`] : []),
+              'You can change it and send it again from your employer account.',
+            ],
           };
-    await this.notifier.toAddress(row?.email, `vacancy review ${v.reference}`, { ...notice, cta: { label: 'Open your vacancies', url: this.notifier.publicUrl('/employer/vacancies') } });
+    await this.notifier.toAddress(row?.email, `vacancy review ${v.reference}`, {
+      ...notice,
+      cta: { label: 'Open your vacancies', url: this.notifier.publicUrl('/employer/vacancies') },
+    });
   }
 
   private async notifyApplicant(caregiverId: string, v: VacancyRow, status: 'PUT_FORWARD' | 'NOT_SUCCESSFUL') {
@@ -470,9 +489,14 @@ export class VacanciesService {
           }
         : {
             subject: 'An update on your application',
-            paragraphs: [`Thank you for applying for "${v.title}". This time our team has not put your profile forward. Keep your Work abroad section up to date - new vacancies are posted often.`],
+            paragraphs: [
+              `Thank you for applying for "${v.title}". This time our team has not put your profile forward. Keep your Work abroad section up to date - new vacancies are posted often.`,
+            ],
           };
-    await this.notifier.toAddress(row?.email, `application ${status}`, { ...notice, cta: { label: 'Open Work abroad', url: this.notifier.publicUrl('/caregiver/work-abroad') } });
+    await this.notifier.toAddress(row?.email, `application ${status}`, {
+      ...notice,
+      cta: { label: 'Open Work abroad', url: this.notifier.publicUrl('/caregiver/work-abroad') },
+    });
   }
 }
 

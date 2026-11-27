@@ -16,7 +16,6 @@ export const CARE_SCHEDULES = ['DAY', 'NIGHT', 'LIVE_IN_24H', 'NOT_SURE'] as con
 export const CARE_STARTS = ['IMMEDIATELY', 'WITHIN_WEEK', 'WITHIN_MONTH', 'JUST_EXPLORING'] as const;
 export const CAREGIVER_GENDER_PREFERENCES = ['NO_PREFERENCE', 'MALE', 'FEMALE'] as const;
 
-
 /**
  * A number input submits a string, and a blank one is '' - "not answered", not 0.
  * Done by hand rather than with z.coerce, which would turn the undefined into
@@ -48,9 +47,7 @@ export function makePatientIntakeSchema(t: (key: string) => string, opts: { allo
       .optional()
       // The API's alternatePhone rule, from one place (isPhoneNumber).
       .refine((val) => !val || isPhoneNumber(val), v('alternatePhone')),
-    preferredContactMethod: z
-      .enum(CONTACT_METHODS, chooseOne('contactMethod'))
-      .refine((m) => opts.allowEmailContact || m !== 'EMAIL', v('contactMethod')),
+    preferredContactMethod: z.enum(CONTACT_METHODS, chooseOne('contactMethod')).refine((m) => opts.allowEmailContact || m !== 'EMAIL', v('contactMethod')),
     preferredContactTime: z.enum(CONTACT_TIMES, chooseOne('contactTime')),
     districtId: z.coerce.number().int().positive(v('district')),
     cityId: z.coerce.number().int().positive(v('city')),
@@ -71,10 +68,7 @@ export type PatientIntakeValues = z.infer<ReturnType<typeof makePatientIntakeSch
  * .extend() the object with their own fields first.
  */
 export function guardianFieldsCheck(t: (key: string) => string) {
-  return (
-    data: { registrantType?: string; recipientName?: string; recipientRelationship?: string },
-    ctx: z.RefinementCtx,
-  ) => {
+  return (data: { registrantType?: string; recipientName?: string; recipientRelationship?: string }, ctx: z.RefinementCtx) => {
     if (data.registrantType !== 'GUARDIAN') return;
     if (!data.recipientName || data.recipientName.trim().length < 2) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['recipientName'], message: t('patientIntake.validation.recipientName') });

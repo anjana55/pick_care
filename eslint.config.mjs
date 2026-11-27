@@ -36,7 +36,10 @@ export default tseslint.config(
     rules: {
       // Unused imports and variables are already errors in every tsconfig (noUnusedLocals).
       // Parameters may be unused (callbacks, interface shapes) when they start with `_`.
-      '@typescript-eslint/no-unused-vars': ['error', { args: 'after-used', argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrors: 'none', ignoreRestSiblings: true }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { args: 'after-used', argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrors: 'none', ignoreRestSiblings: true },
+      ],
       // External JSON (providers, drivers) is typed as `any` on purpose at the edges.
       '@typescript-eslint/no-explicit-any': 'off',
       // `require()` is used where a module must load lazily or only in Node (Expo config, optional native modules).

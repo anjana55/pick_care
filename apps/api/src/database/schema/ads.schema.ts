@@ -20,6 +20,10 @@ export const adsSettings = mysqlTable('ads_settings', {
   slotProfile: varchar('slot_profile', { length: 20 }),
 
   updatedBy: varchar('updated_by', { length: 36 }),
-  createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+  createdAt: datetime('created_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: datetime('updated_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
 });

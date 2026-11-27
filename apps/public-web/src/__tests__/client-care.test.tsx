@@ -39,7 +39,18 @@ jest.mock('next/link', () => ({
   ),
 }));
 jest.mock('@/lib/hooks/use-public-search', () => ({
-  useLocationTree: () => ({ data: [{ id: 1, name: 'Western', districts: [{ id: 1, name: 'Colombo' }, { id: 2, name: 'Gampaha' }] }] }),
+  useLocationTree: () => ({
+    data: [
+      {
+        id: 1,
+        name: 'Western',
+        districts: [
+          { id: 1, name: 'Colombo' },
+          { id: 2, name: 'Gampaha' },
+        ],
+      },
+    ],
+  }),
   useCities: (districtId: number | null) => ({
     data: districtId === 1 ? [{ id: 2, name: 'Dehiwala', subName: null, postcode: '10350', latitude: 6.85, longitude: 79.86 }] : [],
   }),
@@ -117,14 +128,19 @@ describe('CaregiverActions', () => {
   it('shows a signed-out visitor what their search already told us', async () => {
     auth = { user: null, loading: false };
     get.mockImplementation((path: string) => {
-      if (path === '/auth/whatsapp/config') return Promise.resolve({ enabled: false, customer: { register: false, login: false }, caregiver: {}, otpLength: 6 });
+      if (path === '/auth/whatsapp/config')
+        return Promise.resolve({ enabled: false, customer: { register: false, login: false }, caregiver: {}, otpLength: 6 });
       if (path.startsWith('/public/meta/locations/tree')) return Promise.resolve([{ id: 1, name: 'Western', districts: [{ id: 1, name: 'Colombo' }] }]);
       if (path.startsWith('/public/meta/locations/cities')) return Promise.resolve([{ id: 2, name: 'Dehiwala', subName: null, postcode: '10350' }]);
       return Promise.resolve([]);
     });
     window.localStorage.setItem(
       'care-platform-last-search',
-      JSON.stringify({ at: Date.now(), request: { location: { districtId: 1, cityId: 2 }, shift: 'NIGHT', patient: { age: 78 } }, skillNames: ['Dementia care'] }),
+      JSON.stringify({
+        at: Date.now(),
+        request: { location: { districtId: 1, cityId: 2 }, shift: 'NIGHT', patient: { age: 78 } },
+        skillNames: ['Dementia care'],
+      }),
     );
     renderUi(<CaregiverActions publicId={PUBLIC_ID} caregiverLabel="11111111" />);
 
@@ -272,7 +288,11 @@ describe('client account', () => {
     fireEvent.click(screen.getByLabelText('WhatsApp'));
     fireEvent.click(screen.getByRole('button', { name: 'Send to our team' }));
     expect(await screen.findByText('Thank you - we have your message')).toBeInTheDocument();
-    expect(post).toHaveBeenCalledWith('/me/talk-to-a-person', { message: 'Please call about the start date', contact: 'WHATSAPP', about: { type: 'REQUEST', id: 'r1' } });
+    expect(post).toHaveBeenCalledWith('/me/talk-to-a-person', {
+      message: 'Please call about the start date',
+      contact: 'WHATSAPP',
+      about: { type: 'REQUEST', id: 'r1' },
+    });
     expect(await screen.findByText('Waiting for our team')).toBeInTheDocument();
   });
 
@@ -280,7 +300,22 @@ describe('client account', () => {
     auth = { user: CLIENT, loading: false };
     pathname = '/account/requests';
     get.mockResolvedValue([
-      { id: 'r9', reference: 'CR-GAP234', status: 'NEW', createdAt: '2026-11-14T10:00:00Z', updatedAt: '2026-11-14T10:00:00Z', closedAt: null, caregiverPublicId: null, caregiver: null, careType: 'HOME_SHIFT', district: 'Colombo', city: null, desiredStartDate: null, schedule: null, detailsNeeded: ['SCHEDULE', 'START_DATE'] },
+      {
+        id: 'r9',
+        reference: 'CR-GAP234',
+        status: 'NEW',
+        createdAt: '2026-11-14T10:00:00Z',
+        updatedAt: '2026-11-14T10:00:00Z',
+        closedAt: null,
+        caregiverPublicId: null,
+        caregiver: null,
+        careType: 'HOME_SHIFT',
+        district: 'Colombo',
+        city: null,
+        desiredStartDate: null,
+        schedule: null,
+        detailsNeeded: ['SCHEDULE', 'START_DATE'],
+      },
     ]);
     patch.mockResolvedValue({});
     renderUi(<MyRequestsPage />);
@@ -300,10 +335,37 @@ describe('client account', () => {
     auth = { user: CLIENT, loading: false };
     pathname = '/account/requests';
     get.mockResolvedValue([
-      { id: 'r1', reference: 'CR-7K2QM9', status: 'NEW', createdAt: '2026-10-18T10:00:00Z', updatedAt: '2026-10-18T10:00:00Z', closedAt: null, caregiverPublicId: PUBLIC_ID, caregiver: profile },
-      { id: 'r2', reference: 'CR-ABC234', status: 'INTRODUCED', createdAt: '2026-10-10T10:00:00Z', updatedAt: '2026-10-12T10:00:00Z', closedAt: null, caregiverPublicId: '22222222-2222-4222-8222-222222222222', caregiver: null },
+      {
+        id: 'r1',
+        reference: 'CR-7K2QM9',
+        status: 'NEW',
+        createdAt: '2026-10-18T10:00:00Z',
+        updatedAt: '2026-10-18T10:00:00Z',
+        closedAt: null,
+        caregiverPublicId: PUBLIC_ID,
+        caregiver: profile,
+      },
+      {
+        id: 'r2',
+        reference: 'CR-ABC234',
+        status: 'INTRODUCED',
+        createdAt: '2026-10-10T10:00:00Z',
+        updatedAt: '2026-10-12T10:00:00Z',
+        closedAt: null,
+        caregiverPublicId: '22222222-2222-4222-8222-222222222222',
+        caregiver: null,
+      },
       // Taken over the phone, no caregiver chosen yet.
-      { id: 'r3', reference: 'CR-PHN234', status: 'IN_PROGRESS', createdAt: '2026-10-09T10:00:00Z', updatedAt: '2026-10-09T10:00:00Z', closedAt: null, caregiverPublicId: null, caregiver: null },
+      {
+        id: 'r3',
+        reference: 'CR-PHN234',
+        status: 'IN_PROGRESS',
+        createdAt: '2026-10-09T10:00:00Z',
+        updatedAt: '2026-10-09T10:00:00Z',
+        closedAt: null,
+        caregiverPublicId: null,
+        caregiver: null,
+      },
     ]);
     post.mockResolvedValue({});
     renderUi(<MyRequestsPage />);
@@ -381,17 +443,31 @@ describe('client account', () => {
   it('shows confirmed bookings with their shifts in Sri Lanka time', async () => {
     auth = { user: CLIENT, loading: false };
     pathname = '/account/bookings';
-    get.mockImplementation((path: string) => Promise.resolve(path !== '/me/bookings' ? [] : [
-      {
-        id: 'b1', reference: 'BK-7K2QM9', status: 'CONFIRMED', scheduleType: 'NIGHT', startDate: '2026-11-02', endDate: '2026-11-30',
-        rateType: 'DAILY', rateAmount: '4000.00', caregiverPublicId: PUBLIC_ID, caregiver: profile,
-        shifts: [
-          // 20:00 Colombo -> 08:00 next day.
-          { id: 's1', startsAt: '2026-11-02T14:30:00.000Z', endsAt: '2026-11-03T02:30:00.000Z', status: 'SCHEDULED', isCover: false },
-          { id: 's2', startsAt: '2026-11-03T14:30:00.000Z', endsAt: '2026-11-04T02:30:00.000Z', status: 'SCHEDULED', isCover: true },
-        ],
-      },
-    ]));
+    get.mockImplementation((path: string) =>
+      Promise.resolve(
+        path !== '/me/bookings'
+          ? []
+          : [
+              {
+                id: 'b1',
+                reference: 'BK-7K2QM9',
+                status: 'CONFIRMED',
+                scheduleType: 'NIGHT',
+                startDate: '2026-11-02',
+                endDate: '2026-11-30',
+                rateType: 'DAILY',
+                rateAmount: '4000.00',
+                caregiverPublicId: PUBLIC_ID,
+                caregiver: profile,
+                shifts: [
+                  // 20:00 Colombo -> 08:00 next day.
+                  { id: 's1', startsAt: '2026-11-02T14:30:00.000Z', endsAt: '2026-11-03T02:30:00.000Z', status: 'SCHEDULED', isCover: false },
+                  { id: 's2', startsAt: '2026-11-03T14:30:00.000Z', endsAt: '2026-11-04T02:30:00.000Z', status: 'SCHEDULED', isCover: true },
+                ],
+              },
+            ],
+      ),
+    );
     renderUi(<MyBookingsPage />);
 
     expect(await screen.findByText('BK-7K2QM9')).toBeInTheDocument();
@@ -405,13 +481,50 @@ describe('client account', () => {
   it('shows the arrival code for a visit about to start, and when the caregiver came and went', async () => {
     auth = { user: CLIENT, loading: false };
     pathname = '/account/bookings';
-    const soon = { id: 's-soon', startsAt: '2026-10-06T02:30:00.000Z', endsAt: '2026-10-06T11:30:00.000Z', status: 'SCHEDULED', isCover: false, visit: { arrivalCode: '0482', checkedInAt: null, checkedOutAt: null } };
-    const done = { id: 's-done', startsAt: '2026-10-05T02:30:00.000Z', endsAt: '2026-10-05T11:30:00.000Z', status: 'SCHEDULED', isCover: false, visit: { arrivalCode: null, checkedInAt: '2026-10-05T02:33:00.000Z', checkedOutAt: '2026-10-05T11:31:00.000Z' } };
-    const inside = { id: 's-in', startsAt: '2026-10-04T02:30:00.000Z', endsAt: '2026-10-04T11:30:00.000Z', status: 'SCHEDULED', isCover: false, visit: { arrivalCode: null, checkedInAt: '2026-10-04T02:29:00.000Z', checkedOutAt: null } };
+    const soon = {
+      id: 's-soon',
+      startsAt: '2026-10-06T02:30:00.000Z',
+      endsAt: '2026-10-06T11:30:00.000Z',
+      status: 'SCHEDULED',
+      isCover: false,
+      visit: { arrivalCode: '0482', checkedInAt: null, checkedOutAt: null },
+    };
+    const done = {
+      id: 's-done',
+      startsAt: '2026-10-05T02:30:00.000Z',
+      endsAt: '2026-10-05T11:30:00.000Z',
+      status: 'SCHEDULED',
+      isCover: false,
+      visit: { arrivalCode: null, checkedInAt: '2026-10-05T02:33:00.000Z', checkedOutAt: '2026-10-05T11:31:00.000Z' },
+    };
+    const inside = {
+      id: 's-in',
+      startsAt: '2026-10-04T02:30:00.000Z',
+      endsAt: '2026-10-04T11:30:00.000Z',
+      status: 'SCHEDULED',
+      isCover: false,
+      visit: { arrivalCode: null, checkedInAt: '2026-10-04T02:29:00.000Z', checkedOutAt: null },
+    };
     const off = { id: 's-off', startsAt: '2026-10-07T02:30:00.000Z', endsAt: '2026-10-07T11:30:00.000Z', status: 'SCHEDULED', isCover: false, visit: null };
     get.mockImplementation(async (path: string) =>
       path === '/me/bookings'
-        ? [{ id: 'b1', reference: 'BK-7K2QM9', status: 'CONFIRMED', scheduleType: 'DAY', startDate: '2026-10-04', endDate: '2026-10-07', rateType: 'DAILY', rateAmount: '3500.00', caregiverPublicId: PUBLIC_ID, caregiver: profile, shifts: [inside, done, soon, off], reviews: [], paymentHold: null }]
+        ? [
+            {
+              id: 'b1',
+              reference: 'BK-7K2QM9',
+              status: 'CONFIRMED',
+              scheduleType: 'DAY',
+              startDate: '2026-10-04',
+              endDate: '2026-10-07',
+              rateType: 'DAILY',
+              rateAmount: '3500.00',
+              caregiverPublicId: PUBLIC_ID,
+              caregiver: profile,
+              shifts: [inside, done, soon, off],
+              reviews: [],
+              paymentHold: null,
+            },
+          ]
         : [],
     );
     renderUi(<MyBookingsPage />);
@@ -430,13 +543,30 @@ describe('client account', () => {
     auth = { user: CLIENT, loading: false };
     pathname = '/account/bookings';
     const booking = {
-      id: 'b1', reference: 'BK-7K2QM9', status: 'COMPLETED', scheduleType: 'DAY', startDate: '2026-10-05', endDate: '2026-10-09',
-      rateType: 'HOURLY', rateAmount: '500.00', caregiverPublicId: PUBLIC_ID, caregiver: profile,
+      id: 'b1',
+      reference: 'BK-7K2QM9',
+      status: 'COMPLETED',
+      scheduleType: 'DAY',
+      startDate: '2026-10-05',
+      endDate: '2026-10-09',
+      rateType: 'HOURLY',
+      rateAmount: '500.00',
+      caregiverPublicId: PUBLIC_ID,
+      caregiver: profile,
       shifts: [{ id: 's1', startsAt: '2026-10-06T02:30:00.000Z', endsAt: '2026-10-06T10:30:00.000Z', status: 'COMPLETED', isCover: false }],
     };
     const answered = {
-      id: 'r0', bookingId: 'b1', bookingReference: 'BK-7K2QM9', shiftId: null, shiftStartsAt: null, category: 'CHARGE',
-      message: 'Charged twice for Monday', status: 'RESOLVED', resolutionNote: 'Refunded - sorry about that.', createdAt: '2026-10-10T04:00:00.000Z', closedAt: '2026-10-11T04:00:00.000Z',
+      id: 'r0',
+      bookingId: 'b1',
+      bookingReference: 'BK-7K2QM9',
+      shiftId: null,
+      shiftStartsAt: null,
+      category: 'CHARGE',
+      message: 'Charged twice for Monday',
+      status: 'RESOLVED',
+      resolutionNote: 'Refunded - sorry about that.',
+      createdAt: '2026-10-10T04:00:00.000Z',
+      closedAt: '2026-10-11T04:00:00.000Z',
     };
     get.mockImplementation((path: string) => Promise.resolve(path === '/me/issues' ? [answered] : path === '/me/bookings' ? [booking] : []));
     post.mockResolvedValue({ ...answered, id: 'r1', status: 'OPEN', resolutionNote: null });
@@ -457,7 +587,9 @@ describe('client account', () => {
     fireEvent.change(screen.getByLabelText(/Tell us what happened/), { target: { value: 'She stayed until 7 pm, not 4 pm' } });
     fireEvent.click(send);
 
-    await waitFor(() => expect(post).toHaveBeenCalledWith('/me/bookings/b1/issues', { category: 'TIMES', message: 'She stayed until 7 pm, not 4 pm', shiftId: 's1' }));
+    await waitFor(() =>
+      expect(post).toHaveBeenCalledWith('/me/bookings/b1/issues', { category: 'TIMES', message: 'She stayed until 7 pm, not 4 pm', shiftId: 's1' }),
+    );
     expect(await screen.findByText(/your report has reached our team/)).toBeInTheDocument();
   });
 
@@ -466,16 +598,46 @@ describe('client account', () => {
     pathname = '/account/bookings';
     const invoice = { id: 'inv-1', number: 'INV-000415', total: '35000.00', balance: '35000.00', dueDate: '2026-11-23', canPayOnline: true };
     const proposal = {
-      id: 'd2', reference: 'BK-PAY1', status: 'ACCEPTED', scheduleType: 'DAY', daysOfWeek: [1, 2, 3, 4, 5], shiftStartTime: '08:00', shiftEndTime: '17:00',
-      startDate: '2026-12-10', endDate: '2027-01-20', shiftCount: 30, rateType: 'DAILY', rateAmount: '3500.00', billingTiming: 'ADVANCE', firstInvoice: invoice, caregiver: profile,
-      askedAt: '2026-11-12T08:00:00.000Z', answeredAt: '2026-11-12T09:00:00.000Z', note: null,
+      id: 'd2',
+      reference: 'BK-PAY1',
+      status: 'ACCEPTED',
+      scheduleType: 'DAY',
+      daysOfWeek: [1, 2, 3, 4, 5],
+      shiftStartTime: '08:00',
+      shiftEndTime: '17:00',
+      startDate: '2026-12-10',
+      endDate: '2027-01-20',
+      shiftCount: 30,
+      rateType: 'DAILY',
+      rateAmount: '3500.00',
+      billingTiming: 'ADVANCE',
+      firstInvoice: invoice,
+      caregiver: profile,
+      askedAt: '2026-11-12T08:00:00.000Z',
+      answeredAt: '2026-11-12T09:00:00.000Z',
+      note: null,
     };
-    const paused = { id: 'b9', reference: 'BK-PAUSED', status: 'CONFIRMED', scheduleType: 'DAY', startDate: '2026-10-04', endDate: '2027-01-07', rateType: 'DAILY', rateAmount: '3500.00', caregiverPublicId: PUBLIC_ID, caregiver: profile, shifts: [], reviews: [],
-      paymentHold: { ...invoice, id: 'inv-2', number: 'INV-000420', balance: '12000.00', canPayOnline: false } };
+    const paused = {
+      id: 'b9',
+      reference: 'BK-PAUSED',
+      status: 'CONFIRMED',
+      scheduleType: 'DAY',
+      startDate: '2026-10-04',
+      endDate: '2027-01-07',
+      rateType: 'DAILY',
+      rateAmount: '3500.00',
+      caregiverPublicId: PUBLIC_ID,
+      caregiver: profile,
+      shifts: [],
+      reviews: [],
+      paymentHold: { ...invoice, id: 'inv-2', number: 'INV-000420', balance: '12000.00', canPayOnline: false },
+    };
     get.mockImplementation((path: string) => Promise.resolve(path === '/me/booking-proposals' ? [proposal] : path === '/me/bookings' ? [paused] : []));
     renderUi(<MyBookingsPage />);
 
-    expect(await screen.findByText('Thank you. We are sending you an invoice for the first month. Your booking is confirmed as soon as it is paid.')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Thank you. We are sending you an invoice for the first month. Your booking is confirmed as soon as it is paid.'),
+    ).toBeInTheDocument();
     const card = within(await screen.findByTestId('pay-inv-1'));
     expect(card.getByText('LKR 35,000.00 to pay · invoice INV-000415')).toBeInTheDocument();
     expect(card.getByText(/Your booking is confirmed as soon as this is paid\. Due/)).toBeInTheDocument();
@@ -493,14 +655,31 @@ describe('client account', () => {
     auth = { user: CLIENT, loading: false };
     pathname = '/account/bookings';
     const proposal = {
-      id: 'd1', reference: 'BK-DRAFT1', status: 'ASKED', scheduleType: 'NIGHT', daysOfWeek: [1, 2, 3, 4, 5, 6, 7], shiftStartTime: '20:00', shiftEndTime: '08:00',
-      startDate: '2026-11-16', endDate: '2026-11-29', shiftCount: 14, rateType: 'DAILY', rateAmount: '3450.00', billingTiming: 'ADVANCE', firstInvoice: null, caregiver: profile,
-      askedAt: '2026-11-12T08:00:00.000Z', answeredAt: null, note: null,
+      id: 'd1',
+      reference: 'BK-DRAFT1',
+      status: 'ASKED',
+      scheduleType: 'NIGHT',
+      daysOfWeek: [1, 2, 3, 4, 5, 6, 7],
+      shiftStartTime: '20:00',
+      shiftEndTime: '08:00',
+      startDate: '2026-11-16',
+      endDate: '2026-11-29',
+      shiftCount: 14,
+      rateType: 'DAILY',
+      rateAmount: '3450.00',
+      billingTiming: 'ADVANCE',
+      firstInvoice: null,
+      caregiver: profile,
+      askedAt: '2026-11-12T08:00:00.000Z',
+      answeredAt: null,
+      note: null,
     };
     let current: Record<string, unknown> = proposal;
     get.mockImplementation((path: string) => Promise.resolve(path === '/me/booking-proposals' ? [current] : []));
     post.mockImplementation((path: string, body: { note?: string }) => {
-      current = path.endsWith('/accept') ? { ...proposal, status: 'ACCEPTED', answeredAt: '2026-11-12T09:00:00.000Z' } : { ...proposal, status: 'CHANGES_REQUESTED', note: body.note };
+      current = path.endsWith('/accept')
+        ? { ...proposal, status: 'ACCEPTED', answeredAt: '2026-11-12T09:00:00.000Z' }
+        : { ...proposal, status: 'CHANGES_REQUESTED', note: body.note };
       return Promise.resolve([current]);
     });
     const view = renderUi(<MyBookingsPage />);

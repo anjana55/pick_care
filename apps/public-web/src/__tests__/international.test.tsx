@@ -183,7 +183,8 @@ describe("caregiver's Work abroad section", () => {
 
   function api(shared: SharedProfileSettings) {
     get.mockImplementation((path: string) => {
-      if (path.endsWith('/overseas')) return Promise.resolve({ openToOverseas: false, targetCountries: [], passportHeld: null, passportExpiry: null, availableFrom: null });
+      if (path.endsWith('/overseas'))
+        return Promise.resolve({ openToOverseas: false, targetCountries: [], passportHeld: null, passportExpiry: null, availableFrom: null });
       if (path === '/public/training') return Promise.resolve([]);
       if (path.endsWith('/training')) return Promise.resolve([]);
       if (path.endsWith('/shared-profile')) return Promise.resolve(shared);
@@ -193,7 +194,14 @@ describe("caregiver's Work abroad section", () => {
 
   it('asks for consent before sharing, and sends the version the caregiver was shown', async () => {
     api(draft);
-    post.mockResolvedValue({ ...draft, isShared: true, status: 'PENDING_REVIEW', slug: 'abcdefgh2345', consentAcceptedAt: '2026-10-26T09:00:00Z', consentVersion: SHARED_PROFILE_CONSENT_VERSION });
+    post.mockResolvedValue({
+      ...draft,
+      isShared: true,
+      status: 'PENDING_REVIEW',
+      slug: 'abcdefgh2345',
+      consentAcceptedAt: '2026-10-26T09:00:00Z',
+      consentVersion: SHARED_PROFILE_CONSENT_VERSION,
+    });
     renderUi(<WorkAbroadSectionPage />);
 
     const share = await screen.findByRole('button', { name: 'Share my profile' });
@@ -203,12 +211,21 @@ describe("caregiver's Work abroad section", () => {
     expect(share).toBeEnabled();
     fireEvent.click(share);
 
-    await waitFor(() => expect(post).toHaveBeenCalledWith('/caregivers/cg-1/shared-profile/share', { consent: true, consentVersion: SHARED_PROFILE_CONSENT_VERSION }));
+    await waitFor(() =>
+      expect(post).toHaveBeenCalledWith('/caregivers/cg-1/shared-profile/share', { consent: true, consentVersion: SHARED_PROFILE_CONSENT_VERSION }),
+    );
     expect(await screen.findByText('Waiting for review')).toBeInTheDocument();
   });
 
   it("shows staff's note when changes were asked for", async () => {
-    api({ ...draft, status: 'REJECTED', reviewNote: 'Please use a clearer photo.', consentAcceptedAt: '2026-10-20T00:00:00Z', consentVersion: SHARED_PROFILE_CONSENT_VERSION, slug: 'abcdefgh2345' });
+    api({
+      ...draft,
+      status: 'REJECTED',
+      reviewNote: 'Please use a clearer photo.',
+      consentAcceptedAt: '2026-10-20T00:00:00Z',
+      consentVersion: SHARED_PROFILE_CONSENT_VERSION,
+      slug: 'abcdefgh2345',
+    });
     renderUi(<WorkAbroadSectionPage />);
     const banner = await screen.findByText('Changes needed');
     expect(within(banner.closest('[role="status"]') as HTMLElement).getByText('Please use a clearer photo.')).toBeInTheDocument();

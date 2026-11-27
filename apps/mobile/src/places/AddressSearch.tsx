@@ -80,7 +80,11 @@ export function AddressSearch({ onPick }: { onPick: (m: AddressMatch) => void })
               accessibilityRole="button"
               accessibilityLabel={`${m.label}${m.detail ? `, ${m.detail}` : ''}. ${t(`addressSearch.precision.${m.precision}`)}`}
               onPress={() => choose(m)}
-              style={({ pressed }) => [styles.row, i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border }, { opacity: pressed ? 0.7 : 1 }]}
+              style={({ pressed }) => [
+                styles.row,
+                i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
+                { opacity: pressed ? 0.7 : 1 },
+              ]}
             >
               <View style={{ flex: 1, gap: 2 }}>
                 <Text style={{ fontSize: 17, fontWeight: '600', color: colors.ink }}>{m.label}</Text>

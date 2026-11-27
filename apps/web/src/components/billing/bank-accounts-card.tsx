@@ -82,7 +82,14 @@ export function BankAccountsCard() {
                     aria-label={t('billingAdmin.bankAccounts.edit', { name: a.bankName })}
                     onClick={() => {
                       save.reset();
-                      setDraft({ id: a.id, bankName: a.bankName, branch: a.branch ?? '', accountName: a.accountName, accountNumber: a.accountNumber, active: a.active });
+                      setDraft({
+                        id: a.id,
+                        bankName: a.bankName,
+                        branch: a.branch ?? '',
+                        accountName: a.accountName,
+                        accountNumber: a.accountNumber,
+                        active: a.active,
+                      });
                     }}
                   >
                     <Pencil size={14} aria-hidden />

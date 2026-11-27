@@ -114,7 +114,13 @@ export class CarePlanSweepService implements OnApplicationBootstrap, OnModuleDes
     let total = 0;
     for (let batch = 0; batch < MAX_BATCHES; batch++) {
       const due = await this.db
-        .select({ shiftId: bookingShifts.id, bookingId: bookingShifts.bookingId, startsAt: bookingShifts.startsAt, endsAt: bookingShifts.endsAt, planId: carePlans.id })
+        .select({
+          shiftId: bookingShifts.id,
+          bookingId: bookingShifts.bookingId,
+          startsAt: bookingShifts.startsAt,
+          endsAt: bookingShifts.endsAt,
+          planId: carePlans.id,
+        })
         .from(bookingShifts)
         .innerJoin(bookings, eq(bookings.id, bookingShifts.bookingId))
         .innerJoin(carePlans, eq(carePlans.bookingId, bookingShifts.bookingId))
@@ -143,7 +149,13 @@ export class CarePlanSweepService implements OnApplicationBootstrap, OnModuleDes
         await tx.insert(careShiftReviews).values({ shiftId: s.shiftId, bookingId: s.bookingId, cutOffAt: careCutOff(s.endsAt), finalizedAt: now });
         const acts = await tx.select().from(carePlanActivities).where(eq(carePlanActivities.planId, s.planId));
         const occ = careOccurrences(
-          acts.map((a) => ({ ...rowToFields(a as unknown as ActivityRow), id: a.id, sortOrder: a.sortOrder, effectiveFrom: a.effectiveFrom, effectiveTo: a.effectiveTo })),
+          acts.map((a) => ({
+            ...rowToFields(a as unknown as ActivityRow),
+            id: a.id,
+            sortOrder: a.sortOrder,
+            effectiveFrom: a.effectiveFrom,
+            effectiveTo: a.effectiveTo,
+          })),
           s,
         );
         if (!occ.length) return;

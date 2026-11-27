@@ -1,4 +1,15 @@
-import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, Logger, NotFoundException, OnApplicationBootstrap, OnModuleDestroy, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+  OnApplicationBootstrap,
+  OnModuleDestroy,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { timingSafeEqual } from 'crypto';
 import { and, asc, desc, eq, gt, gte, inArray, isNotNull, isNull, lt, lte } from 'drizzle-orm';
@@ -39,7 +50,10 @@ const round6 = (n: number) => Math.round(n * 1e6) / 1e6;
 const ON_THE_WAY_CLIENT = {
   en: { title: '{name} is on the way', body: 'Your caregiver is on the way to the {time} visit. Open the booking to see about how long until they arrive.' },
   si: { title: '{name} පැමිණෙමින් සිටී', body: 'ඔබගේ රැකවරණ සේවකයා {time} මුරය සඳහා පැමිණෙමින් සිටී. ඔවුන් පැමිණීමට ආසන්න කාලය බැලීමට වෙන්කිරීම විවෘත කරන්න.' },
-  ta: { title: '{name} வந்துகொண்டிருக்கிறார்', body: 'உங்கள் பராமரிப்பாளர் {time} வருகைக்கு வந்துகொண்டிருக்கிறார். அவர் வந்துசேர ஏறக்குறைய எவ்வளவு நேரம் என்று பார்க்க முன்பதிவைத் திறக்கவும்.' },
+  ta: {
+    title: '{name} வந்துகொண்டிருக்கிறார்',
+    body: 'உங்கள் பராமரிப்பாளர் {time} வருகைக்கு வந்துகொண்டிருக்கிறார். அவர் வந்துசேர ஏறக்குறைய எவ்வளவு நேரம் என்று பார்க்க முன்பதிவைத் திறக்கவும்.',
+  },
 };
 const ON_MY_WAY_REMINDER = {
   en: { title: 'Leaving for your {time} visit?', body: 'Tap "On my way" when you set off, so the client knows you are coming.' },
@@ -126,7 +140,11 @@ export class LocationSharesService implements OnApplicationBootstrap, OnModuleDe
 
   async stop(user: AuthenticatedUser, shareId: string, now = new Date()): Promise<void> {
     if (user.role !== 'CAREGIVER' || !user.caregiverId) throw new ForbiddenException('You do not have permission to perform this action');
-    const [row] = await this.db.select().from(locationShares).where(and(eq(locationShares.id, shareId), eq(locationShares.caregiverId, user.caregiverId))).limit(1);
+    const [row] = await this.db
+      .select()
+      .from(locationShares)
+      .where(and(eq(locationShares.id, shareId), eq(locationShares.caregiverId, user.caregiverId)))
+      .limit(1);
     if (!row) throw new NotFoundException('Not found');
     if (row.endedAt) return;
     await this.db.update(locationShares).set({ endedAt: now, endReason: 'STOPPED' }).where(eq(locationShares.id, shareId));
@@ -176,7 +194,10 @@ export class LocationSharesService implements OnApplicationBootstrap, OnModuleDe
     // Points taken before the share closed still count: the phone may have had no signal.
     const from = new Date(share.startedAt).getTime() - 2 * 60_000;
     const until = Math.min(share.endedAt ? new Date(share.endedAt).getTime() : Infinity, new Date(share.endsBy).getTime(), now.getTime() + 60_000);
-    let last: { at: number; p: GeoPoint } | null = share.lastAt && share.lastLatitude !== null && share.lastLongitude !== null ? { at: new Date(share.lastAt).getTime(), p: { latitude: Number(share.lastLatitude), longitude: Number(share.lastLongitude) } } : null;
+    let last: { at: number; p: GeoPoint } | null =
+      share.lastAt && share.lastLatitude !== null && share.lastLongitude !== null
+        ? { at: new Date(share.lastAt).getTime(), p: { latitude: Number(share.lastLatitude), longitude: Number(share.lastLongitude) } }
+        : null;
     const kept: (typeof locationPoints.$inferInsert)[] = [];
     let lastKept: (typeof locationPoints.$inferInsert & { atMs: number }) | null = null;
     const sorted = input
@@ -194,7 +215,16 @@ export class LocationSharesService implements OnApplicationBootstrap, OnModuleDe
       }
       const accuracy = typeof p.accuracyM === 'number' && p.accuracyM >= 0 ? Math.round(p.accuracyM) : null;
       const speed = typeof p.speed === 'number' && p.speed >= 0 && p.speed < 100 ? Math.round(p.speed * 10) / 10 : null;
-      const row = { shareId, at: new Date(p.atMs), latitude: here.latitude, longitude: here.longitude, accuracyM: accuracy, speed, mocked: Boolean(p.mocked), atMs: p.atMs };
+      const row = {
+        shareId,
+        at: new Date(p.atMs),
+        latitude: here.latitude,
+        longitude: here.longitude,
+        accuracyM: accuracy,
+        speed,
+        mocked: Boolean(p.mocked),
+        atMs: p.atMs,
+      };
       kept.push({ shareId, at: row.at, latitude: row.latitude, longitude: row.longitude, accuracyM: accuracy, speed, mocked: row.mocked });
       lastKept = row;
       last = { at: p.atMs, p: here };
@@ -232,7 +262,11 @@ export class LocationSharesService implements OnApplicationBootstrap, OnModuleDe
     const settings = await this.checkIns.settings();
     if (!settings.enabled || !settings.liveEnabled || !settings.presenceEnabled) throw new ForbiddenException('Location checks during visits are turned off');
     const shift = await this.checkIns.caregiverShift(user, shiftId);
-    const [row] = await this.db.select({ inAt: shiftCheckins.checkedInAt, outAt: shiftCheckins.checkedOutAt }).from(shiftCheckins).where(eq(shiftCheckins.shiftId, shiftId)).limit(1);
+    const [row] = await this.db
+      .select({ inAt: shiftCheckins.checkedInAt, outAt: shiftCheckins.checkedOutAt })
+      .from(shiftCheckins)
+      .where(eq(shiftCheckins.shiftId, shiftId))
+      .limit(1);
     if (!row?.inAt) throw new ConflictException('Check in first');
     if (row.outAt) throw new ConflictException('You have already checked out');
     return { settings, shift, now };
@@ -268,7 +302,14 @@ export class LocationSharesService implements OnApplicationBootstrap, OnModuleDe
     return {
       ...(await presenceOf(this.db, share, now)),
       home: await this.places.pointForBooking(share.bookingId),
-      points: points.map((p) => ({ at: new Date(p.at).toISOString(), latitude: Number(p.latitude), longitude: Number(p.longitude), accuracyM: p.accuracyM ?? null, inside: p.inside ?? null, mocked: p.mocked })),
+      points: points.map((p) => ({
+        at: new Date(p.at).toISOString(),
+        latitude: Number(p.latitude),
+        longitude: Number(p.longitude),
+        accuracyM: p.accuracyM ?? null,
+        inside: p.inside ?? null,
+        mocked: p.mocked,
+      })),
     };
   }
 
@@ -279,20 +320,29 @@ export class LocationSharesService implements OnApplicationBootstrap, OnModuleDe
   }
 
   private view(row: ShareRow, home: GeoPoint | null, farMetres: number, now: Date) {
-    const position = row.lastLatitude !== null && row.lastLongitude !== null ? { latitude: Number(row.lastLatitude), longitude: Number(row.lastLongitude), accuracyM: row.lastAccuracyM ?? null } : null;
+    const position =
+      row.lastLatitude !== null && row.lastLongitude !== null
+        ? { latitude: Number(row.lastLatitude), longitude: Number(row.lastLongitude), accuracyM: row.lastAccuracyM ?? null }
+        : null;
     const distance = position && home ? distanceMetres(home, position) : null;
     return {
       position,
       eta: etaFrom(distance, now, farMetres),
       updatedAt: iso(row.lastAt),
-      stale: row.lastAt ? now.getTime() - new Date(row.lastAt).getTime() > LOCATION_STALE_MINUTES * 60_000 : now.getTime() - new Date(row.startedAt).getTime() > LOCATION_STALE_MINUTES * 60_000,
+      stale: row.lastAt
+        ? now.getTime() - new Date(row.lastAt).getTime() > LOCATION_STALE_MINUTES * 60_000
+        : now.getTime() - new Date(row.startedAt).getTime() > LOCATION_STALE_MINUTES * 60_000,
     };
   }
 
   /** The client: their caregiver on the way to this booking's next visit, while the share is open. */
   async clientLive(user: AuthenticatedUser, bookingId: string, now = new Date()): Promise<ClientLive> {
     if (user.role !== 'PATIENT_GUARDIAN' || !user.patientId) throw new ForbiddenException('You do not have permission to perform this action');
-    const [b] = await this.db.select({ id: bookings.id }).from(bookings).where(and(eq(bookings.id, bookingId), eq(bookings.patientId, user.patientId))).limit(1);
+    const [b] = await this.db
+      .select({ id: bookings.id })
+      .from(bookings)
+      .where(and(eq(bookings.id, bookingId), eq(bookings.patientId, user.patientId)))
+      .limit(1);
     if (!b) throw new NotFoundException('Booking not found');
     const settings = await this.checkIns.settings();
     if (!settings.enabled || !settings.liveEnabled) return { status: 'NONE' };
@@ -301,13 +351,22 @@ export class LocationSharesService implements OnApplicationBootstrap, OnModuleDe
       .from(locationShares)
       .innerJoin(bookingShifts, eq(locationShares.shiftId, bookingShifts.id))
       .innerJoin(caregivers, eq(locationShares.caregiverId, caregivers.id))
-      .where(and(eq(locationShares.bookingId, bookingId), eq(locationShares.kind, 'ON_THE_WAY'), isNull(locationShares.endedAt), gt(locationShares.endsBy, now)))
+      .where(
+        and(eq(locationShares.bookingId, bookingId), eq(locationShares.kind, 'ON_THE_WAY'), isNull(locationShares.endedAt), gt(locationShares.endsBy, now)),
+      )
       .orderBy(asc(bookingShifts.startsAt))
       .limit(1);
     const r = rows[0];
     if (!r || !this.live(r.share, now)) return { status: 'NONE' };
     const home = await this.places.pointForBooking(bookingId);
-    return { status: 'ON_THE_WAY', shiftId: r.share.shiftId, caregiverName: firstName(r.name), startsAt: new Date(r.startsAt).toISOString(), home, ...this.view(r.share, home, settings.farMetres, now) };
+    return {
+      status: 'ON_THE_WAY',
+      shiftId: r.share.shiftId,
+      caregiverName: firstName(r.name),
+      startsAt: new Date(r.startsAt).toISOString(),
+      home,
+      ...this.view(r.share, home, settings.farMetres, now),
+    };
   }
 
   /** Staff: everyone sharing right now. */
@@ -372,14 +431,25 @@ export class LocationSharesService implements OnApplicationBootstrap, OnModuleDe
       .limit(500);
     for (const o of overdue) {
       const reason = new Date(o.shiftEnds).getTime() <= now.getTime() ? 'SHIFT_ENDED' : 'CAP';
-      await this.db.update(locationShares).set({ endedAt: new Date(o.endsBy), endReason: reason }).where(eq(locationShares.id, o.id));
+      await this.db
+        .update(locationShares)
+        .set({ endedAt: new Date(o.endsBy), endReason: reason })
+        .where(eq(locationShares.id, o.id));
       closed++;
     }
     // Live location turned off: every open share closes.
     if (!settings.enabled || !settings.liveEnabled) {
       const open = await this.db.select({ id: locationShares.id }).from(locationShares).where(isNull(locationShares.endedAt)).limit(500);
       if (open.length) {
-        await this.db.update(locationShares).set({ endedAt: now, endReason: 'TURNED_OFF' }).where(inArray(locationShares.id, open.map((o) => o.id)));
+        await this.db
+          .update(locationShares)
+          .set({ endedAt: now, endReason: 'TURNED_OFF' })
+          .where(
+            inArray(
+              locationShares.id,
+              open.map((o) => o.id),
+            ),
+          );
         closed += open.length;
       }
     }
@@ -391,7 +461,10 @@ export class LocationSharesService implements OnApplicationBootstrap, OnModuleDe
       .limit(200);
     for (const share of unsummed) {
       const p = await presenceOf(this.db, share, now);
-      await this.db.update(locationShares).set({ summary: { slots: p.slots, inside: p.inside, away: p.away, none: p.none, mocked: p.mocked } }).where(eq(locationShares.id, share.id));
+      await this.db
+        .update(locationShares)
+        .set({ summary: { slots: p.slots, inside: p.inside, away: p.away, none: p.none, mocked: p.mocked } })
+        .where(eq(locationShares.id, share.id));
     }
     const reminded = settings.enabled && settings.liveEnabled ? await this.remindOnMyWay(now, settings.onMyWayMinutes) : 0;
     const cutoff = new Date(now.getTime() - settings.locationRetentionDays * 86_400_000);
@@ -423,14 +496,27 @@ export class LocationSharesService implements OnApplicationBootstrap, OnModuleDe
       )
       .limit(200);
     if (!due.length) return 0;
-    const sharing = await this.db.select({ shiftId: locationShares.shiftId }).from(locationShares).where(inArray(locationShares.shiftId, due.map((d) => d.shiftId)));
+    const sharing = await this.db
+      .select({ shiftId: locationShares.shiftId })
+      .from(locationShares)
+      .where(
+        inArray(
+          locationShares.shiftId,
+          due.map((d) => d.shiftId),
+        ),
+      );
     const already = new Set(sharing.map((s) => s.shiftId));
     let sent = 0;
     for (const d of due) {
       await this.db.insert(locationNotices).ignore().values({ shiftId: d.shiftId, kind: 'ON_MY_WAY_REMINDER' });
       if (already.has(d.shiftId) || !d.userId) continue;
       const time = toColombo(d.startsAt).time;
-      this.notices.notify([d.userId], (lang) => ({ title: ON_MY_WAY_REMINDER[lang].title.replace('{time}', time), body: ON_MY_WAY_REMINDER[lang].body }), '/shifts', `on my way reminder ${d.shiftId}`);
+      this.notices.notify(
+        [d.userId],
+        (lang) => ({ title: ON_MY_WAY_REMINDER[lang].title.replace('{time}', time), body: ON_MY_WAY_REMINDER[lang].body }),
+        '/shifts',
+        `on my way reminder ${d.shiftId}`,
+      );
       sent++;
     }
     return sent;

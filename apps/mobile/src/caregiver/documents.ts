@@ -83,7 +83,17 @@ export interface PickedFile {
  * name when the phone gave none, and the type's extension added to a name
  * without one (camera photos often come back unnamed or as ".heic").
  */
-export function normaliseFile({ uri, name, mimeType, size }: { uri: string; name?: string | null; mimeType?: string | null; size?: number | null }): PickedFile {
+export function normaliseFile({
+  uri,
+  name,
+  mimeType,
+  size,
+}: {
+  uri: string;
+  name?: string | null;
+  mimeType?: string | null;
+  size?: number | null;
+}): PickedFile {
   const base = (name || uri.split(/[/?#]/).filter(Boolean).pop() || 'document').trim();
   const ext = base.includes('.') ? base.split('.').pop()!.toLowerCase() : '';
   const type = (mimeType || MIME_BY_EXTENSION[ext] || '').toLowerCase();

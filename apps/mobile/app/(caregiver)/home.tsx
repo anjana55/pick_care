@@ -80,7 +80,12 @@ export default function Today() {
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView
         contentContainerStyle={styles.page}
-        refreshControl={<RefreshControl refreshing={shifts.isRefetching} onRefresh={() => void queryClient.invalidateQueries({ queryKey: ['caregiver', me?.userId ?? 'none'] })} />}
+        refreshControl={
+          <RefreshControl
+            refreshing={shifts.isRefetching}
+            onRefresh={() => void queryClient.invalidateQueries({ queryKey: ['caregiver', me?.userId ?? 'none'] })}
+          />
+        }
       >
         <PageHeader isHome>
           <View style={styles.heroRow}>

@@ -7,7 +7,10 @@ const end = new Date('2026-11-16T09:00:00Z');
 const at = (minutesAfterStart: number) => new Date(start.getTime() + minutesAfterStart * 60_000);
 const visit = { startsAt: start, endsAt: end, status: 'SCHEDULED', checkedInAt: null };
 const dueAt = settings.lateAfterMinutes + COVER_AFTER_LATE_MINUTES;
-const offer = (status: 'OFFERED' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED' | 'WITHDRAWN', expiresInMinutes = 15, from = at(dueAt)) => ({ status, expiresAt: new Date(from.getTime() + expiresInMinutes * 60_000) });
+const offer = (status: 'OFFERED' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED' | 'WITHDRAWN', expiresInMinutes = 15, from = at(dueAt)) => ({
+  status,
+  expiresAt: new Date(from.getTime() + expiresInMinutes * 60_000),
+});
 
 describe('coverStep', () => {
   it('waits until the caregiver has been chased and given time to answer', () => {
@@ -40,7 +43,11 @@ describe('coverStep', () => {
   it('asks the next caregivers when everyone asked said no, and gives up after the last wave', () => {
     const declined = (n: number) => Array.from({ length: n }, () => offer('DECLINED'));
     expect(coverStep(visit, settings, declined(3), at(dueAt + 20))).toMatchObject({ step: 'offer', wave: 2 });
-    expect(coverStep(visit, settings, declined(COVER_MAX_OFFERS), at(dueAt + 40))).toEqual({ step: 'giveUp', asked: COVER_MAX_OFFERS, minutesLate: dueAt + 40 });
+    expect(coverStep(visit, settings, declined(COVER_MAX_OFFERS), at(dueAt + 40))).toEqual({
+      step: 'giveUp',
+      asked: COVER_MAX_OFFERS,
+      minutesLate: dueAt + 40,
+    });
   });
 
   it('does not start looking with too little of the visit left, and gives up if it runs short while looking', () => {
@@ -85,11 +92,26 @@ describe('coverOfferMinutes', () => {
 
   it('looks for cover at once for a shift the caregiver cannot make - days ahead, or already started', () => {
     const now = new Date('2026-11-17T04:00:00Z');
-    const ahead = { startsAt: '2026-11-20T02:30:00Z', endsAt: '2026-11-20T11:30:00Z', status: 'SCHEDULED', checkedInAt: null, cantMakeAt: '2026-11-17T03:50:00Z' };
-    expect(coverStep(ahead, { earlyMinutes: 60, lateAfterMinutes: 15 }, [], now)).toEqual({ step: 'offer', wave: 1, minutesLate: 0, minutesLeft: Math.floor((Date.parse(ahead.endsAt) - now.getTime()) / 60_000) });
+    const ahead = {
+      startsAt: '2026-11-20T02:30:00Z',
+      endsAt: '2026-11-20T11:30:00Z',
+      status: 'SCHEDULED',
+      checkedInAt: null,
+      cantMakeAt: '2026-11-17T03:50:00Z',
+    };
+    expect(coverStep(ahead, { earlyMinutes: 60, lateAfterMinutes: 15 }, [], now)).toEqual({
+      step: 'offer',
+      wave: 1,
+      minutesLate: 0,
+      minutesLeft: Math.floor((Date.parse(ahead.endsAt) - now.getTime()) / 60_000),
+    });
     expect(coverStep({ ...ahead, cantMakeAt: null }, { earlyMinutes: 60, lateAfterMinutes: 15 }, [], now)).toEqual({ step: 'none' });
     // Someone is deciding: wait. Over: nothing.
-    expect(coverStep(ahead, { earlyMinutes: 60, lateAfterMinutes: 15 }, [{ status: 'OFFERED', expiresAt: '2026-11-17T08:00:00Z' }], now)).toEqual({ step: 'none' });
-    expect(coverStep({ ...ahead, endsAt: '2026-11-17T03:00:00Z', startsAt: '2026-11-16T18:00:00Z' }, { earlyMinutes: 60, lateAfterMinutes: 15 }, [], now)).toEqual({ step: 'none' });
+    expect(coverStep(ahead, { earlyMinutes: 60, lateAfterMinutes: 15 }, [{ status: 'OFFERED', expiresAt: '2026-11-17T08:00:00Z' }], now)).toEqual({
+      step: 'none',
+    });
+    expect(
+      coverStep({ ...ahead, endsAt: '2026-11-17T03:00:00Z', startsAt: '2026-11-16T18:00:00Z' }, { earlyMinutes: 60, lateAfterMinutes: 15 }, [], now),
+    ).toEqual({ step: 'none' });
   });
 });

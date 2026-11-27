@@ -24,12 +24,9 @@ describe('caregiverRefSearchPrefix', () => {
     expect(caregiverRefSearchPrefix(input)).toBe(expected);
   });
 
-  it.each([[''], ['   '], ['abc'], ['Nimal Perera'], ['Dee'], ['CG-00012'], ['abcd123z'], [null], [undefined]])(
-    'leaves %p to the normal search',
-    (input) => {
-      expect(caregiverRefSearchPrefix(input as string)).toBeNull();
-    },
-  );
+  it.each([[''], ['   '], ['abc'], ['Nimal Perera'], ['Dee'], ['CG-00012'], ['abcd123z'], [null], [undefined]])('leaves %p to the normal search', (input) => {
+    expect(caregiverRefSearchPrefix(input as string)).toBeNull();
+  });
 
   it('round-trips the ID shown to customers', () => {
     expect(caregiverRefSearchPrefix(`Caregiver ${caregiverRef(PUBLIC_ID)}`)).toBe(caregiverRef(PUBLIC_ID));

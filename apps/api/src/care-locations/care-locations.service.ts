@@ -70,7 +70,11 @@ export class CareLocationsService {
   }
 
   async rows(patientId: string): Promise<Row[]> {
-    return this.db.select().from(careLocations).where(eq(careLocations.patientId, patientId)).orderBy(desc(careLocations.isDefault), asc(careLocations.createdAt));
+    return this.db
+      .select()
+      .from(careLocations)
+      .where(eq(careLocations.patientId, patientId))
+      .orderBy(desc(careLocations.isDefault), asc(careLocations.createdAt));
   }
 
   async list(patientId: string, opts: { includeSuggestions?: boolean } = {}): Promise<CareLocation[]> {
@@ -79,20 +83,31 @@ export class CareLocationsService {
   }
 
   private async own(patientId: string, id: string): Promise<Row> {
-    const [row] = await this.db.select().from(careLocations).where(and(eq(careLocations.id, id), eq(careLocations.patientId, patientId))).limit(1);
+    const [row] = await this.db
+      .select()
+      .from(careLocations)
+      .where(and(eq(careLocations.id, id), eq(careLocations.patientId, patientId)))
+      .limit(1);
     if (!row) throw new NotFoundException('Place not found');
     return row;
   }
 
   /** Make `id` the client's only default. */
   private async makeDefault(db: Database, patientId: string, id: string, now: Date) {
-    await db.update(careLocations).set({ isDefault: false, updatedAt: now }).where(and(eq(careLocations.patientId, patientId), eq(careLocations.isDefault, true)));
+    await db
+      .update(careLocations)
+      .set({ isDefault: false, updatedAt: now })
+      .where(and(eq(careLocations.patientId, patientId), eq(careLocations.isDefault, true)));
     await db.update(careLocations).set({ isDefault: true, updatedAt: now }).where(eq(careLocations.id, id));
   }
 
   /** After a removal or a change: if confirmed places remain and none is the default, the oldest becomes it. */
   private async keepADefault(db: Database, patientId: string, now: Date) {
-    const rows = await db.select().from(careLocations).where(and(eq(careLocations.patientId, patientId), isNotNull(careLocations.confirmedAt))).orderBy(asc(careLocations.createdAt));
+    const rows = await db
+      .select()
+      .from(careLocations)
+      .where(and(eq(careLocations.patientId, patientId), isNotNull(careLocations.confirmedAt)))
+      .orderBy(asc(careLocations.createdAt));
     if (rows.length && !rows.some((r) => r.isDefault)) await this.makeDefault(db, patientId, rows[0].id, now);
   }
 
@@ -167,7 +182,11 @@ export class CareLocationsService {
   // --- bookings ------------------------------------------------------------------
 
   private async bookingRow(bookingId: string) {
-    const [b] = await this.db.select({ id: bookings.id, patientId: bookings.patientId, careLocationId: bookings.careLocationId }).from(bookings).where(eq(bookings.id, bookingId)).limit(1);
+    const [b] = await this.db
+      .select({ id: bookings.id, patientId: bookings.patientId, careLocationId: bookings.careLocationId })
+      .from(bookings)
+      .where(eq(bookings.id, bookingId))
+      .limit(1);
     if (!b) throw new NotFoundException('Booking not found');
     return b;
   }
@@ -177,7 +196,8 @@ export class CareLocationsService {
     const b = await this.bookingRow(bookingId).catch(() => null);
     if (!b) return null;
     const rows = await this.rows(b.patientId);
-    const chosen = (b.careLocationId && rows.find((r) => r.id === b.careLocationId && r.confirmedAt !== null)) || rows.find((r) => r.isDefault && r.confirmedAt !== null);
+    const chosen =
+      (b.careLocationId && rows.find((r) => r.id === b.careLocationId && r.confirmedAt !== null)) || rows.find((r) => r.isDefault && r.confirmedAt !== null);
     return chosen ? { latitude: Number(chosen.latitude), longitude: Number(chosen.longitude) } : null;
   }
 
@@ -189,7 +209,12 @@ export class CareLocationsService {
     const own = b.careLocationId ? confirmed.find((r) => r.id === b.careLocationId) : undefined;
     const used = own ?? confirmed.find((r) => r.isDefault) ?? null;
     const suggestion = rows.find((r) => r.confirmedAt === null) ?? null;
-    return { location: used ? toCareLocation(used) : null, chosenForBooking: Boolean(own), suggestion: suggestion ? toCareLocation(suggestion) : null, options: confirmed.map(toCareLocation) };
+    return {
+      location: used ? toCareLocation(used) : null,
+      chosenForBooking: Boolean(own),
+      suggestion: suggestion ? toCareLocation(suggestion) : null,
+      options: confirmed.map(toCareLocation),
+    };
   }
 
   /** Point a booking at one of the client's places, or back to their default (null). */
@@ -243,7 +268,14 @@ export class CareLocationsService {
       .where(isNull(careLocations.confirmedAt))
       .orderBy(desc(careLocations.createdAt))
       .limit(200);
-    return rows.map((r) => ({ ...toCareLocation(r.place), patientId: r.place.patientId, clientName: r.clientName, bookingId: r.bookingId ?? null, bookingReference: r.reference ?? null, suggestedAt: new Date(r.place.createdAt).toISOString() }));
+    return rows.map((r) => ({
+      ...toCareLocation(r.place),
+      patientId: r.place.patientId,
+      clientName: r.clientName,
+      bookingId: r.bookingId ?? null,
+      bookingReference: r.reference ?? null,
+      suggestedAt: new Date(r.place.createdAt).toISOString(),
+    }));
   }
 
   /** For the client's own routes. */

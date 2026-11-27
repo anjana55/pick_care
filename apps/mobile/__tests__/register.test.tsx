@@ -31,7 +31,10 @@ const commonRoutes = (side: 'client' | 'caregiver', extra: Parameters<typeof ser
     'GET /public/meta/locations/tree': () => ({ status: 200, body: DISTRICTS }),
     'GET /public/meta/locations/cities': () => ({ status: 200, body: CITIES }),
     'GET /public/meta/skills': () => ({ status: 200, body: [] }),
-    'POST /auth/signup/whatsapp/request-otp': () => ({ status: 200, body: { phone: '+94771234567', resendAfterSeconds: 60, expiresInSeconds: 300, devOtp: '123456' } }),
+    'POST /auth/signup/whatsapp/request-otp': () => ({
+      status: 200,
+      body: { phone: '+94771234567', resendAfterSeconds: 60, expiresInSeconds: 300, devOtp: '123456' },
+    }),
     'POST /auth/signup/whatsapp/verify-otp': () => ({
       status: 200,
       body: { signedIn: false, ticket: 'wa-ticket', expiresInSeconds: 3600, method: 'WHATSAPP', side, phone: '+94771234567', email: null, name: null },
@@ -153,7 +156,12 @@ describe('registering a client in the app', () => {
 
   it('goes back to choosing when the sign-in step has expired', async () => {
     commonRoutes('client', { 'POST /auth/signup/client': () => ({ status: 401, body: { message: 'expired', code: 'ticket_expired' } }) });
-    rememberSearch({ patient: { age: 80, gender: 'MALE' }, location: { districtId: 1, cityId: 340 }, shift: 'NIGHT', desiredStartDate: new Date().toISOString().slice(0, 10) });
+    rememberSearch({
+      patient: { age: 80, gender: 'MALE' },
+      location: { districtId: 1, cityId: 340 },
+      shift: 'NIGHT',
+      desiredStartDate: new Date().toISOString().slice(0, 10),
+    });
     mockRouter.params = { role: 'client' };
     await show(<Register />);
     await throughWhatsapp();
@@ -171,7 +179,10 @@ describe('registering a caregiver in the app', () => {
   it('after email and password, asks the phone once, and says to check the inbox', async () => {
     const calls = commonRoutes('caregiver', {
       'GET /branding': () => ({ status: 200, body: { companyName: 'Pick Care', officePhone: '011 234 5678' } }),
-      'POST /auth/signup/caregiver': () => ({ status: 201, body: { signedIn: false, method: 'EMAIL', email: 'nadeesha@example.com', verificationSent: true, registrationNumber: 'CG-1' } }),
+      'POST /auth/signup/caregiver': () => ({
+        status: 201,
+        body: { signedIn: false, method: 'EMAIL', email: 'nadeesha@example.com', verificationSent: true, registrationNumber: 'CG-1' },
+      }),
     });
     mockRouter.params = { role: 'caregiver' };
     await show(<Register />);
@@ -237,12 +248,26 @@ describe('calling the office instead (clients and caregivers)', () => {
   });
 
   it.each(['client', 'caregiver'] as const)('is the 3rd choice for a %s: after WhatsApp and the providers, before email', async (side) => {
-    commonRoutes(side, { ...OFFICE, 'GET /auth/signup/methods': () => ({ status: 200, body: { ...METHODS, providers: { GOOGLE: true, MICROSOFT: false, FACEBOOK: true } } }) });
+    commonRoutes(side, {
+      ...OFFICE,
+      'GET /auth/signup/methods': () => ({ status: 200, body: { ...METHODS, providers: { GOOGLE: true, MICROSOFT: false, FACEBOOK: true } } }),
+    });
     // Stand-ins for the phone's sign-in browser, so the provider buttons show.
-    const deps = { randomBytes: () => new Uint8Array(16), sha256Base64: async () => 'x', openAuthSession: async () => ({ type: 'cancel' as const }), redirectUrl: 'pickcare://auth/callback' };
+    const deps = {
+      randomBytes: () => new Uint8Array(16),
+      sha256Base64: async () => 'x',
+      openAuthSession: async () => ({ type: 'cancel' as const }),
+      redirectUrl: 'pickcare://auth/callback',
+    };
     await show(<MethodStep side={side} onChosen={jest.fn()} onSignedIn={jest.fn()} deps={deps} />);
     await screen.findByRole('button', { name: cta });
-    const [whatsapp, google, facebook, call, email] = order([en.signup.whatsapp, en.signup.providers.GOOGLE, en.signup.providers.FACEBOOK, cta, en.signup.email]);
+    const [whatsapp, google, facebook, call, email] = order([
+      en.signup.whatsapp,
+      en.signup.providers.GOOGLE,
+      en.signup.providers.FACEBOOK,
+      cta,
+      en.signup.email,
+    ]);
     expect(whatsapp).toBeLessThan(google);
     expect(google).toBeLessThan(facebook);
     expect(facebook).toBeLessThan(call);

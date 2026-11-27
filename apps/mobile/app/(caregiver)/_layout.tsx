@@ -41,7 +41,10 @@ export default function CaregiverLayout() {
       <Tabs.Screen name="home" options={{ tabBarLabel: t('nav.home'), tabBarIcon: icon('home-outline') }} />
       <Tabs.Screen name="shifts" options={{ tabBarLabel: t('portal.nav.shifts'), tabBarIcon: icon('calendar-outline') }} />
       <Tabs.Screen name="payments" options={{ tabBarLabel: t('portal.nav.payments'), tabBarIcon: icon('wallet-outline') }} />
-      <Tabs.Screen name="me" options={{ tabBarLabel: t('nav.myAccount'), tabBarIcon: icon('person-circle-outline'), ...badge(t('nav.myAccount'), documents + offers) }} />
+      <Tabs.Screen
+        name="me"
+        options={{ tabBarLabel: t('nav.myAccount'), tabBarIcon: icon('person-circle-outline'), ...badge(t('nav.myAccount'), documents + offers) }}
+      />
       <Tabs.Screen name="documents" options={HIDDEN_TAB} />
       <Tabs.Screen name="profile" options={HIDDEN_TAB} />
       <Tabs.Screen name="ratings" options={HIDDEN_TAB} />

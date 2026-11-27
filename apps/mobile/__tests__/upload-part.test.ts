@@ -37,7 +37,10 @@ it("refuses React Native's { uri, name, type } part, as the phone did", async ()
 });
 
 it('sends the file read from the phone, with the checked name and type', async () => {
-  const form = formOf(['documentType', 'NIC'], ['file', uploadPart({ uri: 'file:///cache/ImagePicker/IMG_1.heic', name: 'IMG_1.jpg', mimeType: 'image/jpeg', size: 4 })]);
+  const form = formOf(
+    ['documentType', 'NIC'],
+    ['file', uploadPart({ uri: 'file:///cache/ImagePicker/IMG_1.heic', name: 'IMG_1.jpg', mimeType: 'image/jpeg', size: 4 })],
+  );
   const { text } = await encode(form);
   expect(mockRead).toEqual(['file:///cache/ImagePicker/IMG_1.heic']);
   expect(text).toContain('content-disposition: form-data; name="documentType"\r\n\r\nNIC\r\n');

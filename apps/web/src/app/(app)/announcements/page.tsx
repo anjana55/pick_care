@@ -41,7 +41,15 @@ function draftOf(a: Announcement): Draft {
     title: a.text[l].title === a.text.en.title ? '' : a.text[l].title,
     body: a.text[l].body === a.text.en.body ? '' : a.text[l].body,
   });
-  return { id: a.id, audience: a.audience, text: { en: a.text.en, si: own('si'), ta: own('ta') }, link: a.link ?? '', important: a.important, sendPush: a.sendPush, sendWhatsapp: a.sendWhatsapp };
+  return {
+    id: a.id,
+    audience: a.audience,
+    text: { en: a.text.en, si: own('si'), ta: own('ta') },
+    link: a.link ?? '',
+    important: a.important,
+    sendPush: a.sendPush,
+    sendWhatsapp: a.sendWhatsapp,
+  };
 }
 
 function bodyOf(d: Draft): AnnouncementBody {
@@ -57,7 +65,16 @@ function bodyOf(d: Draft): AnnouncementBody {
   };
 }
 
-const fmt = (iso: string) => new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Colombo', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(iso));
+const fmt = (iso: string) =>
+  new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Colombo',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(new Date(iso));
 
 /**
  * Announcements (ADMIN + STAFF): a message from the office to every client,
@@ -88,7 +105,8 @@ export default function AnnouncementsPage() {
   if (!allowed) return null;
 
   const errorOf = (err: unknown) => (err instanceof ApiError && err.message ? err.message : t('announcements.saveError'));
-  const setText = (lang: Lang, patch: Partial<{ title: string; body: string }>) => setDraft({ ...draft, text: { ...draft.text, [lang]: { ...draft.text[lang], ...patch } } });
+  const setText = (lang: Lang, patch: Partial<{ title: string; body: string }>) =>
+    setDraft({ ...draft, text: { ...draft.text, [lang]: { ...draft.text[lang], ...patch } } });
   const ready = draft.text.en.title.trim() && draft.text.en.body.trim();
 
   const submit = () => {
@@ -130,7 +148,12 @@ export default function AnnouncementsPage() {
             <Label htmlFor="audience" required>
               {t('announcements.audience')}
             </Label>
-            <Select id="audience" value={draft.audience} onChange={(e) => setDraft({ ...draft, audience: e.target.value as AnnouncementAudience })} className="max-w-xs">
+            <Select
+              id="audience"
+              value={draft.audience}
+              onChange={(e) => setDraft({ ...draft, audience: e.target.value as AnnouncementAudience })}
+              className="max-w-xs"
+            >
               {ANNOUNCEMENT_AUDIENCES.map((a) => (
                 <option key={a} value={a}>
                   {t(`announcements.audiences.${a}`)}
@@ -160,20 +183,40 @@ export default function AnnouncementsPage() {
                 <Label htmlFor={`title-${tab}`} required={tab === 'en'}>
                   {t('announcements.messageTitle')}
                 </Label>
-                <Input id={`title-${tab}`} maxLength={MAX_ANNOUNCEMENT_TITLE} value={draft.text[tab].title} onChange={(e) => setText(tab, { title: e.target.value })} placeholder={tab === 'en' ? '' : draft.text.en.title} />
+                <Input
+                  id={`title-${tab}`}
+                  maxLength={MAX_ANNOUNCEMENT_TITLE}
+                  value={draft.text[tab].title}
+                  onChange={(e) => setText(tab, { title: e.target.value })}
+                  placeholder={tab === 'en' ? '' : draft.text.en.title}
+                />
               </div>
               <div>
                 <Label htmlFor={`body-${tab}`} required={tab === 'en'}>
                   {t('announcements.message')}
                 </Label>
-                <Textarea id={`body-${tab}`} rows={4} maxLength={MAX_ANNOUNCEMENT_BODY} value={draft.text[tab].body} onChange={(e) => setText(tab, { body: e.target.value })} placeholder={tab === 'en' ? '' : draft.text.en.body} />
+                <Textarea
+                  id={`body-${tab}`}
+                  rows={4}
+                  maxLength={MAX_ANNOUNCEMENT_BODY}
+                  value={draft.text[tab].body}
+                  onChange={(e) => setText(tab, { body: e.target.value })}
+                  placeholder={tab === 'en' ? '' : draft.text.en.body}
+                />
               </div>
             </div>
           </div>
 
           <div>
             <Label htmlFor="link">{t('announcements.link')}</Label>
-            <Input id="link" value={draft.link} onChange={(e) => setDraft({ ...draft, link: e.target.value })} placeholder="/account/bookings" className="max-w-md" aria-describedby="link-hint" />
+            <Input
+              id="link"
+              value={draft.link}
+              onChange={(e) => setDraft({ ...draft, link: e.target.value })}
+              placeholder="/account/bookings"
+              className="max-w-md"
+              aria-describedby="link-hint"
+            />
             <p id="link-hint" className="mt-1 text-xs text-ink/50">
               {t('announcements.linkHint')}
             </p>
@@ -244,7 +287,9 @@ export default function AnnouncementsPage() {
                           <p className="whitespace-pre-line text-sm text-ink/70">{a.text.en.body}</p>
                         </div>
                       </div>
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${a.publishedAt ? 'bg-brand-light text-brand-dark' : 'bg-paper text-ink/60'}`}>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-xs font-semibold ${a.publishedAt ? 'bg-brand-light text-brand-dark' : 'bg-paper text-ink/60'}`}
+                      >
                         {a.publishedAt ? t('announcements.published') : t('announcements.draft')}
                       </span>
                     </div>
@@ -285,7 +330,13 @@ export default function AnnouncementsPage() {
 
       {confirm && (
         <ConfirmDialog
-          title={confirm.kind === 'publish' ? t('announcements.confirmPublishTitle') : confirm.a.publishedAt ? t('announcements.confirmUnpublishTitle') : t('announcements.confirmDeleteTitle')}
+          title={
+            confirm.kind === 'publish'
+              ? t('announcements.confirmPublishTitle')
+              : confirm.a.publishedAt
+                ? t('announcements.confirmUnpublishTitle')
+                : t('announcements.confirmDeleteTitle')
+          }
           message={
             confirm.kind === 'publish'
               ? t('announcements.confirmPublish', { audience: t(`announcements.audiences.${confirm.a.audience}`).toLowerCase() })
@@ -293,7 +344,9 @@ export default function AnnouncementsPage() {
                 ? t('announcements.confirmUnpublish')
                 : t('announcements.confirmDelete')
           }
-          confirmLabel={confirm.kind === 'publish' ? t('announcements.publish') : confirm.a.publishedAt ? t('announcements.unpublish') : t('announcements.delete')}
+          confirmLabel={
+            confirm.kind === 'publish' ? t('announcements.publish') : confirm.a.publishedAt ? t('announcements.unpublish') : t('announcements.delete')
+          }
           tone={confirm.kind === 'publish' ? 'primary' : 'danger'}
           pending={publish.isPending || remove.isPending}
           error={confirmError}

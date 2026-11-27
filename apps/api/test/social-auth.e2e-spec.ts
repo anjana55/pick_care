@@ -275,7 +275,12 @@ describe('Social sign-in and its admin settings (e2e)', () => {
       profile = googleProfile;
       const { pendingToken } = await registerCaregiver();
       const cb = await api().get('/auth/social/google/callback').query({ code: 'c', state: pendingToken }).expect(302);
-      const tokens = (await api().post('/auth/social/exchange').send({ code: new URL(cb.headers.location).searchParams.get('code') }).expect(201)).body;
+      const tokens = (
+        await api()
+          .post('/auth/social/exchange')
+          .send({ code: new URL(cb.headers.location).searchParams.get('code') })
+          .expect(201)
+      ).body;
       userId = decodeJwt(tokens.accessToken).sub;
     });
 
@@ -284,12 +289,20 @@ describe('Social sign-in and its admin settings (e2e)', () => {
       const n = nonce();
       const url = (await api().get('/auth/social/google/login-url').query({ nonce: n }).expect(200)).body.url as string;
 
-      const cb = await api().get('/auth/social/google/callback').query({ code: 'c', state: stateOf(url) }).expect(302);
+      const cb = await api()
+        .get('/auth/social/google/callback')
+        .query({ code: 'c', state: stateOf(url) })
+        .expect(302);
       const landing = new URL(cb.headers.location);
       expect(landing.searchParams.get('flow')).toBe('login');
       expect(landing.searchParams.get('nonce')).toBe(n);
 
-      const tokens = (await api().post('/auth/social/exchange').send({ code: landing.searchParams.get('code') }).expect(201)).body;
+      const tokens = (
+        await api()
+          .post('/auth/social/exchange')
+          .send({ code: landing.searchParams.get('code') })
+          .expect(201)
+      ).body;
       expect(decodeJwt(tokens.accessToken).sub).toBe(userId);
     });
 
@@ -297,7 +310,10 @@ describe('Social sign-in and its admin settings (e2e)', () => {
       googleProfile = { sub: `g-stranger-${Date.now()}`, email: `stranger${Date.now()}@example.com` };
       const url = (await api().get('/auth/social/google/login-url').query({ nonce: nonce() }).expect(200)).body.url as string;
 
-      const cb = await api().get('/auth/social/google/callback').query({ code: 'c', state: stateOf(url) }).expect(302);
+      const cb = await api()
+        .get('/auth/social/google/callback')
+        .query({ code: 'c', state: stateOf(url) })
+        .expect(302);
       const landing = new URL(cb.headers.location);
       expect(landing.searchParams.get('error')).toBe('not_registered');
       expect(landing.searchParams.get('flow')).toBe('login');
@@ -310,7 +326,10 @@ describe('Social sign-in and its admin settings (e2e)', () => {
       await db.execute(sql`UPDATE users SET is_active = 0 WHERE id = ${userId}`);
       try {
         const url = (await api().get('/auth/social/google/login-url').query({ nonce: nonce() }).expect(200)).body.url as string;
-        const cb = await api().get('/auth/social/google/callback').query({ code: 'c', state: stateOf(url) }).expect(302);
+        const cb = await api()
+          .get('/auth/social/google/callback')
+          .query({ code: 'c', state: stateOf(url) })
+          .expect(302);
         expect(new URL(cb.headers.location).searchParams.get('error')).toBe('account_disabled');
       } finally {
         await db.execute(sql`UPDATE users SET is_active = 1 WHERE id = ${userId}`);
@@ -329,7 +348,10 @@ describe('Social sign-in and its admin settings (e2e)', () => {
       googleProfile = profile;
       tokenReply = { status: 400, body: { error: 'invalid_grant', error_description: 'secret=GOCSPX-e2e-secret-value' } };
       const url = (await api().get('/auth/social/google/login-url').query({ nonce: nonce() }).expect(200)).body.url as string;
-      const cb = await api().get('/auth/social/google/callback').query({ code: 'c', state: stateOf(url) }).expect(302);
+      const cb = await api()
+        .get('/auth/social/google/callback')
+        .query({ code: 'c', state: stateOf(url) })
+        .expect(302);
       expect(cb.headers.location).not.toContain('GOCSPX');
       expect(new URL(cb.headers.location).searchParams.get('error')).toBe('provider_error');
     });

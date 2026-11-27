@@ -13,7 +13,14 @@ export function HomeArt({ name, width = 100 }: { name: HomeArtName; width?: numb
   const { brand } = useColors();
   const W = '#FFFFFF';
   return (
-    <Svg width={width} height={(width * 80) / 100} viewBox="0 0 100 80" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" testID={`home-art-${name}`}>
+    <Svg
+      width={width}
+      height={(width * 80) / 100}
+      viewBox="0 0 100 80"
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      testID={`home-art-${name}`}
+    >
       {name === 'find' ? (
         <>
           <Circle cx={40} cy={36} r={20} fill={W} stroke={brand} strokeWidth={6} />
@@ -61,7 +68,13 @@ export function HomeArt({ name, width = 100 }: { name: HomeArtName; width?: numb
       ) : null}
       {name === 'requests' ? (
         <>
-          <Path d="M12 18h46a8 8 0 0 1 8 8v22a8 8 0 0 1-8 8H30l-12 10V56h-6a8 8 0 0 1-8-8V26a8 8 0 0 1 8-8z" fill={W} stroke={brand} strokeWidth={5} strokeLinejoin="round" />
+          <Path
+            d="M12 18h46a8 8 0 0 1 8 8v22a8 8 0 0 1-8 8H30l-12 10V56h-6a8 8 0 0 1-8-8V26a8 8 0 0 1 8-8z"
+            fill={W}
+            stroke={brand}
+            strokeWidth={5}
+            strokeLinejoin="round"
+          />
           <Path d="M50 34h34a6 6 0 0 1 6 6v20a6 6 0 0 1-6 6h-2v10l-12-10H50a6 6 0 0 1-6-6V40a6 6 0 0 1 6-6z" fill={brand} />
         </>
       ) : null}

@@ -63,9 +63,7 @@ describe('launch', () => {
     // getItem is already the library's mock: hold back only the saved language.
     const getItem = jest.mocked(AsyncStorage.getItem);
     const realGetItem = getItem.getMockImplementation()!;
-    getItem.mockImplementation((key: string) =>
-      key === LOCALE_KEY ? new Promise<string | null>((resolve) => (release = resolve)) : realGetItem(key),
-    );
+    getItem.mockImplementation((key: string) => (key === LOCALE_KEY ? new Promise<string | null>((resolve) => (release = resolve)) : realGetItem(key)));
     restoreGetItem = () => getItem.mockImplementation(realGetItem);
 
     await render(<RootLayout />);
@@ -178,4 +176,3 @@ describe('get started', () => {
     expect(mockRouter.replace).toHaveBeenLastCalledWith('/');
   });
 });
-

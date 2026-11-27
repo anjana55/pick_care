@@ -96,7 +96,10 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
               >
                 {t(section.key)}
                 {section.href === '/caregiver/care-offers' && waitingOffers > 0 && (
-                  <span className="ml-1.5 inline-flex min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-xs font-semibold text-white" aria-hidden>
+                  <span
+                    className="ml-1.5 inline-flex min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-xs font-semibold text-white"
+                    aria-hidden
+                  >
                     {waitingOffers}
                   </span>
                 )}
@@ -108,7 +111,9 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
       <main className="mx-auto max-w-4xl px-4 py-6 print:max-w-none print:p-0">
         {pathname !== '/caregiver/talk' && (
           <p className="mb-3 text-right text-sm print:hidden">
-            <Link href="/caregiver/talk" className="font-medium text-brand hover:underline">{t('talk.link')}</Link>
+            <Link href="/caregiver/talk" className="font-medium text-brand hover:underline">
+              {t('talk.link')}
+            </Link>
           </p>
         )}
         {children}

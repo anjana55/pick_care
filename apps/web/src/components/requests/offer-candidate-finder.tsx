@@ -3,7 +3,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { ExternalLink, Search, Star, X } from 'lucide-react';
-import { MAX_CARE_OFFER_NOTE, OFFER_CANDIDATE_SORTS, type OfferCandidate, type OfferCandidateFilters, type OfferCandidateRequestFacts, type OfferCandidateSort } from '@care-platform/shared';
+import {
+  MAX_CARE_OFFER_NOTE,
+  OFFER_CANDIDATE_SORTS,
+  type OfferCandidate,
+  type OfferCandidateFilters,
+  type OfferCandidateRequestFacts,
+  type OfferCandidateSort,
+} from '@care-platform/shared';
 import { useTranslation } from '@/lib/i18n/provider';
 import { ApiError } from '@/lib/api/client';
 import { cn } from '@/lib/utils';
@@ -30,7 +37,8 @@ const DEFAULT_SWITCHES: Switches = { doesCareType: true, freeByStart: false, noC
 
 /** The caregiver-list filters that say what the request asks for: its district, time of day and the client's gender preference. */
 function fromRequest(r: OfferCandidateRequestFacts): AdvancedFilters {
-  const availability: AdvancedFilters['availability'] = r.schedule === 'DAY' ? ['dayDuty'] : r.schedule === 'NIGHT' ? ['nightDuty'] : r.schedule === 'LIVE_IN_24H' ? ['liveIn24h'] : [];
+  const availability: AdvancedFilters['availability'] =
+    r.schedule === 'DAY' ? ['dayDuty'] : r.schedule === 'NIGHT' ? ['nightDuty'] : r.schedule === 'LIVE_IN_24H' ? ['liveIn24h'] : [];
   return { ...EMPTY_ADVANCED_FILTERS, districtIds: r.districtId ? [r.districtId] : [], availability, gender: r.genderPreference ?? undefined };
 }
 
@@ -79,7 +87,9 @@ export function OfferCandidateFinder({ requestId, onDone }: { requestId: string;
   const ready = advanced !== null;
 
   // Any change of filter starts again from page 1.
-  const change = <T,>(set: (v: T) => void) => (v: T) => (setPage(1), set(v));
+  const change =
+    <T,>(set: (v: T) => void) =>
+    (v: T) => (setPage(1), set(v));
 
   const slotsLeft = request?.slotsLeft ?? 0;
   const toggle = (c: OfferCandidate) =>
@@ -91,7 +101,11 @@ export function OfferCandidateFinder({ requestId, onDone }: { requestId: string;
     });
 
   const statusOptions = useMemo(() => CAREGIVER_STATUS_OPTIONS.map((s) => ({ value: s, label: t(`caregivers.status.${s}`) })), [t]);
-  const common = { searchPlaceholder: t('caregivers.filters.searchPlaceholder'), noMatchesText: t('caregivers.filters.noMatches'), clearText: t('caregivers.filters.clear') };
+  const common = {
+    searchPlaceholder: t('caregivers.filters.searchPlaceholder'),
+    noMatchesText: t('caregivers.filters.noMatches'),
+    clearText: t('caregivers.filters.clear'),
+  };
   const message = (err: unknown) => (err instanceof ApiError && err.message ? err.message : t('careOffers.error'));
 
   /** One at a time, through the normal send with all its checks; whoever fails is listed and stays ticked. */
@@ -128,15 +142,33 @@ export function OfferCandidateFinder({ requestId, onDone }: { requestId: string;
 
       <div className="relative">
         <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink/40" />
-        <Input className="pl-9" placeholder={t('requests.picker.caregiverSearch')} aria-label={t('requests.picker.caregiverSearch')} value={term} onChange={(e) => (setPage(1), setTerm(e.target.value))} />
+        <Input
+          className="pl-9"
+          placeholder={t('requests.picker.caregiverSearch')}
+          aria-label={t('requests.picker.caregiverSearch')}
+          value={term}
+          onChange={(e) => (setPage(1), setTerm(e.target.value))}
+        />
       </div>
 
       {ready && (
         <>
           <CaregiverFilterBar filters={advanced} onChange={change(setAdvanced)} />
           <div className="-mt-2 flex flex-wrap items-center gap-2">
-            <FilterDropdown label={t('offerFinder.status')} options={statusOptions} selected={statuses} onChange={change(setStatuses)} hint={t('offerFinder.statusHint')} {...common} />
-            <Select aria-label={t('offerFinder.minRating')} value={minRating ?? ''} onChange={(e) => change(setMinRating)(e.target.value ? Number(e.target.value) : undefined)} className="h-8 w-auto py-0 text-xs">
+            <FilterDropdown
+              label={t('offerFinder.status')}
+              options={statusOptions}
+              selected={statuses}
+              onChange={change(setStatuses)}
+              hint={t('offerFinder.statusHint')}
+              {...common}
+            />
+            <Select
+              aria-label={t('offerFinder.minRating')}
+              value={minRating ?? ''}
+              onChange={(e) => change(setMinRating)(e.target.value ? Number(e.target.value) : undefined)}
+              className="h-8 w-auto py-0 text-xs"
+            >
               <option value="">{t('offerFinder.anyRating')}</option>
               {[4.5, 4, 3.5, 3].map((r) => (
                 <option key={r} value={r}>
@@ -145,8 +177,19 @@ export function OfferCandidateFinder({ requestId, onDone }: { requestId: string;
               ))}
             </Select>
             {SWITCHES.map((k) => (
-              <label key={k} className={cn('flex h-8 cursor-pointer items-center gap-1.5 rounded border px-2 text-xs', switches[k] ? 'border-brand bg-brand-light text-brand-dark' : 'border-border text-ink/70')}>
-                <input type="checkbox" className="h-3.5 w-3.5" checked={switches[k]} onChange={(e) => change(setSwitches)({ ...switches, [k]: e.target.checked })} />
+              <label
+                key={k}
+                className={cn(
+                  'flex h-8 cursor-pointer items-center gap-1.5 rounded border px-2 text-xs',
+                  switches[k] ? 'border-brand bg-brand-light text-brand-dark' : 'border-border text-ink/70',
+                )}
+              >
+                <input
+                  type="checkbox"
+                  className="h-3.5 w-3.5"
+                  checked={switches[k]}
+                  onChange={(e) => change(setSwitches)({ ...switches, [k]: e.target.checked })}
+                />
                 {t(`offerFinder.switches.${k}`)}
               </label>
             ))}
@@ -154,7 +197,14 @@ export function OfferCandidateFinder({ requestId, onDone }: { requestId: string;
               <button
                 type="button"
                 className="px-1 text-xs font-medium text-brand hover:underline"
-                onClick={() => (setPage(1), setAdvanced(fromRequest(request)), setSwitches(DEFAULT_SWITCHES), setStatuses([]), setMinRating(undefined), setTerm(''))}
+                onClick={() => (
+                  setPage(1),
+                  setAdvanced(fromRequest(request)),
+                  setSwitches(DEFAULT_SWITCHES),
+                  setStatuses([]),
+                  setMinRating(undefined),
+                  setTerm('')
+                )}
               >
                 {t('offerFinder.resetToRequest')}
               </button>
@@ -187,18 +237,27 @@ export function OfferCandidateFinder({ requestId, onDone }: { requestId: string;
           ) : (
             <ul className={cn('divide-y divide-border rounded border border-border', isFetching && 'opacity-60')} aria-busy={isFetching}>
               {data.items.map((c) => (
-                <CandidateRow key={c.id} c={c} checked={selected.has(c.id)} disabled={Boolean(c.offer) || (!selected.has(c.id) && selected.size >= slotsLeft)} onToggle={() => toggle(c)} />
+                <CandidateRow
+                  key={c.id}
+                  c={c}
+                  checked={selected.has(c.id)}
+                  disabled={Boolean(c.offer) || (!selected.has(c.id) && selected.size >= slotsLeft)}
+                  onToggle={() => toggle(c)}
+                />
               ))}
             </ul>
           )}
-          {data.total > PAGE_SIZE && <ListPagination page={page} totalPages={Math.ceil(data.total / PAGE_SIZE)} total={data.total} noun={t('offerFinder.noun')} onPage={setPage} />}
+          {data.total > PAGE_SIZE && (
+            <ListPagination page={page} totalPages={Math.ceil(data.total / PAGE_SIZE)} total={data.total} noun={t('offerFinder.noun')} onPage={setPage} />
+          )}
         </>
       )}
 
       {selected.size > 0 && (
         <div className="space-y-3 rounded bg-paper p-3">
           <p className="text-sm font-medium text-ink">
-            {t('offerFinder.selected', { count: selected.size })}: <span className="font-normal">{[...selected.values()].map((c) => c.fullName).join(', ')}</span>
+            {t('offerFinder.selected', { count: selected.size })}:{' '}
+            <span className="font-normal">{[...selected.values()].map((c) => c.fullName).join(', ')}</span>
           </p>
           <div className="grid gap-3 sm:grid-cols-[12rem_1fr]">
             <div>
@@ -213,7 +272,13 @@ export function OfferCandidateFinder({ requestId, onDone }: { requestId: string;
             </div>
             <div>
               <Label htmlFor="offer-note">{t('careOffers.note')}</Label>
-              <Input id="offer-note" value={note} maxLength={MAX_CARE_OFFER_NOTE} aria-describedby="offer-note-hint" onChange={(e) => setNote(e.target.value)} />
+              <Input
+                id="offer-note"
+                value={note}
+                maxLength={MAX_CARE_OFFER_NOTE}
+                aria-describedby="offer-note-hint"
+                onChange={(e) => setNote(e.target.value)}
+              />
               <p id="offer-note-hint" className="mt-1 text-xs text-ink/50">
                 {t('careOffers.noteHint')}
               </p>
@@ -259,7 +324,14 @@ function CandidateRow({ c, checked, disabled, onToggle }: { c: OfferCandidate; c
   const shifts = (['dayDuty', 'nightDuty', 'liveIn24h'] as const).filter((k) => c[k]).map((k) => t(`caregivers.filters.${k}`));
   return (
     <li className={cn('flex gap-3 px-3 py-2.5', checked && 'bg-brand-light/40')}>
-      <input type="checkbox" className="mt-1 h-4 w-4 shrink-0" checked={checked} disabled={disabled} onChange={onToggle} aria-label={t('offerFinder.pick', { name: c.fullName })} />
+      <input
+        type="checkbox"
+        className="mt-1 h-4 w-4 shrink-0"
+        checked={checked}
+        disabled={disabled}
+        onChange={onToggle}
+        aria-label={t('offerFinder.pick', { name: c.fullName })}
+      />
       <div className="min-w-0 flex-1 space-y-0.5">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <Link href={`/caregivers/${c.id}`} target="_blank" className="inline-flex items-center gap-1 text-sm font-medium text-ink hover:underline">
@@ -269,7 +341,11 @@ function CandidateRow({ c, checked, disabled, onToggle }: { c: OfferCandidate; c
           <span className="text-xs tabular-nums text-ink/50">{c.registrationNumber}</span>
           <CaregiverRef publicId={c.publicId} />
           <StatusBadge status={c.status as never} label={t(`caregivers.status.${c.status}`)} />
-          {c.offer && <span className="rounded bg-accent-light px-1.5 py-0.5 text-xs text-accent">{t('offerFinder.alreadyOffered', { status: t(`careOffers.statuses.${c.offer.status}`) })}</span>}
+          {c.offer && (
+            <span className="rounded bg-accent-light px-1.5 py-0.5 text-xs text-accent">
+              {t('offerFinder.alreadyOffered', { status: t(`careOffers.statuses.${c.offer.status}`) })}
+            </span>
+          )}
           {!c.hasAccount && <span className="rounded bg-ink/10 px-1.5 py-0.5 text-xs text-ink/70">{t('offerFinder.noAccount')}</span>}
           {c.doesCareType === false && <span className="rounded bg-danger-light px-1.5 py-0.5 text-xs text-danger">{t('offerFinder.notThisCare')}</span>}
         </div>
@@ -289,7 +365,11 @@ function CandidateRow({ c, checked, disabled, onToggle }: { c: OfferCandidate; c
             <Star size={12} className={c.ratingAverage !== null ? 'fill-accent text-accent' : 'text-ink/30'} aria-hidden />
             {c.ratingAverage !== null ? t('offerFinder.rating', { avg: c.ratingAverage.toFixed(1), count: c.ratingCount }) : t('offerFinder.unrated')}
           </span>
-          <span>{c.ownRate ? t('offerFinder.ownRate', { amount: money(c.ownRate.amount), unit: t(`pricing.units.${c.ownRate.rateType}`) }) : t('offerFinder.noOwnRate')}</span>
+          <span>
+            {c.ownRate
+              ? t('offerFinder.ownRate', { amount: money(c.ownRate.amount), unit: t(`pricing.units.${c.ownRate.rateType}`) })
+              : t('offerFinder.noOwnRate')}
+          </span>
           {c.availableFrom && <span>{t('offerFinder.freeFrom', { date: c.availableFrom })}</span>}
           {c.runningBookings > 0 && <span className="text-danger">{t('offerFinder.busy', { count: c.runningBookings })}</span>}
         </p>

@@ -31,9 +31,7 @@ export class AvailabilityService {
       expectedLeaveDays: dto.expectedLeaveDays,
       preferredLeavePattern: dto.preferredLeavePattern,
       // Only when the form sent the list - a save that leaves it out keeps what is there.
-      ...(dto.careTypes
-        ? Object.fromEntries(careTypeValues.map((type) => [CARE_TYPE_COLUMNS[type], dto.careTypes!.includes(type)]))
-        : {}),
+      ...(dto.careTypes ? Object.fromEntries(careTypeValues.map((type) => [CARE_TYPE_COLUMNS[type], dto.careTypes!.includes(type)])) : {}),
     };
 
     if (existing) {

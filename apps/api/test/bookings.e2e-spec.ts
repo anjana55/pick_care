@@ -53,8 +53,15 @@ describe('Bookings and shifts (e2e)', () => {
     const reg = await api()
       .post('/auth/register-caregiver/unified')
       .send({
-        phone, consentAccepted: true, fullName: `Booked Caregiver ${phone}`, permanentAddress: '1 Lake Road, Kandy',
-        dateOfBirth: '1988-01-20', gender: 'FEMALE', civilStatus: 'MARRIED', emergencyContactName: 'EC', emergencyContactNumber: '0770001111',
+        phone,
+        consentAccepted: true,
+        fullName: `Booked Caregiver ${phone}`,
+        permanentAddress: '1 Lake Road, Kandy',
+        dateOfBirth: '1988-01-20',
+        gender: 'FEMALE',
+        civilStatus: 'MARRIED',
+        emergencyContactName: 'EC',
+        emergencyContactNumber: '0770001111',
         emergencyContactRelationship: 'Husband',
       })
       .expect(201);
@@ -67,7 +74,14 @@ describe('Bookings and shifts (e2e)', () => {
   async function newClient() {
     const reg = await api()
       .post('/auth/register-patient')
-      .send({ email: `booking-client-${run}-${++n}@example.com`, password: 'SelfRegPass123', fullName: 'Booking Client', phone: newPhone(), consentAccepted: true, ...intake })
+      .send({
+        email: `booking-client-${run}-${++n}@example.com`,
+        password: 'SelfRegPass123',
+        fullName: 'Booking Client',
+        phone: newPhone(),
+        consentAccepted: true,
+        ...intake,
+      })
       .expect(201);
     const [row] = await db.select().from(patients).where(eq(patients.id, reg.body.patientId));
     const token = jwt.sign({ sub: row.userId, role: 'PATIENT_GUARDIAN', patientId: row.id }, { secret: accessSecret, expiresIn: '10m' });
@@ -75,7 +89,13 @@ describe('Bookings and shifts (e2e)', () => {
   }
 
   const pattern = (startDate: string, extra: Record<string, unknown> = {}) => ({
-    scheduleType: 'DAY', daysOfWeek: [1, 2, 3, 4, 5], shiftStartTime: '08:00', shiftEndTime: '17:00', startDate, endDate: addDays(startDate, 13), ...extra,
+    scheduleType: 'DAY',
+    daysOfWeek: [1, 2, 3, 4, 5],
+    shiftStartTime: '08:00',
+    shiftEndTime: '17:00',
+    startDate,
+    endDate: addDays(startDate, 13),
+    ...extra,
   });
   const book = (body: Record<string, unknown>, token = staffToken) => api().post('/bookings').set(bearer(token)).send(body);
   const confirm = (id: string) => api().post(`/bookings/${id}/confirm`).set(bearer(staffToken));
@@ -83,7 +103,10 @@ describe('Bookings and shifts (e2e)', () => {
     api().patch(`/bookings/${id}/shifts/${shiftId}`).set(bearer(staffToken)).send(body);
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).overrideProvider(ThrottlerStorage).useValue(unlimitedThrottle).compile();
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+      .overrideProvider(ThrottlerStorage)
+      .useValue(unlimitedThrottle)
+      .compile();
     app = moduleRef.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
     await app.init();
@@ -98,9 +121,17 @@ describe('Bookings and shifts (e2e)', () => {
     const districtId = tree.flatMap((p) => p.districts)[0].id;
     const cityId = (await api().get(`/public/meta/locations/cities?districtId=${districtId}&locale=en`).expect(200)).body[0].id;
     intake = {
-      registrantType: 'GUARDIAN', recipientName: 'Sunil Fernando', recipientRelationship: 'PARENT', recipientAge: 78, recipientGender: 'MALE',
-      preferredContactMethod: 'PHONE_CALL', districtId, cityId, careNeeds: 'Needs help with bathing, meals and medication reminders.',
-      careSchedule: 'DAY', careStart: 'WITHIN_WEEK',
+      registrantType: 'GUARDIAN',
+      recipientName: 'Sunil Fernando',
+      recipientRelationship: 'PARENT',
+      recipientAge: 78,
+      recipientGender: 'MALE',
+      preferredContactMethod: 'PHONE_CALL',
+      districtId,
+      cityId,
+      careNeeds: 'Needs help with bathing, meals and medication reminders.',
+      careSchedule: 'DAY',
+      careStart: 'WITHIN_WEEK',
     };
   });
 
@@ -111,7 +142,12 @@ describe('Bookings and shifts (e2e)', () => {
   it('turns an introduced request into a draft booking, confirms it, and closes the request as placed', async () => {
     const cg = await newCaregiver();
     const client = await newClient();
-    const req = await api().post('/me/care-requests').set(bearer(client.token)).set('Accept-Language', 'ta').send({ caregiverPublicId: cg.publicId }).expect(201);
+    const req = await api()
+      .post('/me/care-requests')
+      .set(bearer(client.token))
+      .set('Accept-Language', 'ta')
+      .send({ caregiverPublicId: cg.publicId })
+      .expect(201);
     await api().patch(`/care-requests/${req.body.id}/status`).set(bearer(staffToken)).send({ status: 'IN_PROGRESS' }).expect(200);
     await api().patch(`/care-requests/${req.body.id}/status`).set(bearer(staffToken)).send({ status: 'INTRODUCED' }).expect(200);
 
@@ -134,7 +170,11 @@ describe('Bookings and shifts (e2e)', () => {
     // Shape the roster: one shift starts later, one extra Saturday, one day off.
     const [first, second] = draft.body.shifts;
     await editShift(draft.body.id, first.id, { start: `${monday}T09:30`, end: `${monday}T18:00` }).expect(200);
-    await api().post(`/bookings/${draft.body.id}/shifts`).set(bearer(staffToken)).send({ start: `${addDays(monday, 5)}T08:00`, end: `${addDays(monday, 5)}T13:00` }).expect(201);
+    await api()
+      .post(`/bookings/${draft.body.id}/shifts`)
+      .set(bearer(staffToken))
+      .send({ start: `${addDays(monday, 5)}T08:00`, end: `${addDays(monday, 5)}T13:00` })
+      .expect(201);
     const shaped = await api().delete(`/bookings/${draft.body.id}/shifts/${second.id}`).set(bearer(staffToken)).expect(200);
     expect(shaped.body.shifts).toHaveLength(10);
     expect(isoToColomboLocal(shaped.body.shifts[0].startsAt)).toBe(`${monday}T09:30`);
@@ -161,7 +201,11 @@ describe('Bookings and shifts (e2e)', () => {
     expect(JSON.stringify(theirs.body)).not.toContain('Sunil');
 
     // A confirmed booking's pattern is fixed; a draft's isn't.
-    await api().patch(`/bookings/${draft.body.id}`).set(bearer(staffToken)).send({ pattern: pattern(monday) }).expect(400);
+    await api()
+      .patch(`/bookings/${draft.body.id}`)
+      .set(bearer(staffToken))
+      .send({ pattern: pattern(monday) })
+      .expect(400);
   });
 
   it('never lets one caregiver hold two overlapping shifts', async () => {
@@ -175,7 +219,14 @@ describe('Bookings and shifts (e2e)', () => {
 
     // A night booking for the same person, overlapping only the first Monday's evening.
     const b = await book({
-      patientId: c2.patientId, caregiverId: cg.id, scheduleType: 'CUSTOM', daysOfWeek: [1], shiftStartTime: '16:00', shiftEndTime: '20:00', startDate: monday, endDate: monday,
+      patientId: c2.patientId,
+      caregiverId: cg.id,
+      scheduleType: 'CUSTOM',
+      daysOfWeek: [1],
+      shiftStartTime: '16:00',
+      shiftEndTime: '20:00',
+      startDate: monday,
+      endDate: monday,
     }).expect(201);
     expect(b.body.blockingConflicts).toBe(1);
     expect(b.body.shifts[0].conflicts[0]).toMatchObject({ kind: 'BLOCKING', withBookingReference: a.body.reference });
@@ -197,7 +248,14 @@ describe('Bookings and shifts (e2e)', () => {
 
     // Two confirms racing for the same slot: exactly one wins.
     const [x, y] = [await newClient(), await newClient()];
-    const slot = { scheduleType: 'CUSTOM', daysOfWeek: [6], shiftStartTime: '08:00', shiftEndTime: '12:00', startDate: addDays(monday, 5), endDate: addDays(monday, 5) };
+    const slot = {
+      scheduleType: 'CUSTOM',
+      daysOfWeek: [6],
+      shiftStartTime: '08:00',
+      shiftEndTime: '12:00',
+      startDate: addDays(monday, 5),
+      endDate: addDays(monday, 5),
+    };
     const bx = await book({ patientId: x.patientId, caregiverId: cover.id, ...slot }).expect(201);
     const by = await book({ patientId: y.patientId, caregiverId: cover.id, ...slot }).expect(201);
     const results = await Promise.all([confirm(bx.body.id), confirm(by.body.id)]);
@@ -228,7 +286,11 @@ describe('Bookings and shifts (e2e)', () => {
     await editShift(future.body.id, future.body.shifts[0].id, { status: 'CANCELLED' }).expect(200);
     await editShift(future.body.id, future.body.shifts[0].id, { status: 'SCHEDULED' }).expect(200);
 
-    const extended = await api().post(`/bookings/${future.body.id}/extend`).set(bearer(staffToken)).send({ endDate: addDays(monday, 11) }).expect(200);
+    const extended = await api()
+      .post(`/bookings/${future.body.id}/extend`)
+      .set(bearer(staffToken))
+      .send({ endDate: addDays(monday, 11) })
+      .expect(200);
     expect(extended.body.shifts).toHaveLength(10);
     expect(extended.body.shifts.at(-1).status).toBe('SCHEDULED');
     await api().post(`/bookings/${future.body.id}/extend`).set(bearer(staffToken)).send({ endDate: monday }).expect(400);
@@ -252,7 +314,18 @@ describe('Bookings and shifts (e2e)', () => {
     const live = await api()
       .patch(`/bookings/${draft.body.id}`)
       .set(bearer(staffToken))
-      .send({ pattern: { scheduleType: 'LIVE_IN', daysOfWeek: [1, 2, 3, 4, 5, 6, 7], shiftStartTime: '08:00', shiftEndTime: '08:00', startDate: monday, endDate: addDays(monday, 6) }, rateType: 'MONTHLY', rateAmount: '90000' })
+      .send({
+        pattern: {
+          scheduleType: 'LIVE_IN',
+          daysOfWeek: [1, 2, 3, 4, 5, 6, 7],
+          shiftStartTime: '08:00',
+          shiftEndTime: '08:00',
+          startDate: monday,
+          endDate: addDays(monday, 6),
+        },
+        rateType: 'MONTHLY',
+        rateAmount: '90000',
+      })
       .expect(200);
     expect(live.body.shifts).toHaveLength(7);
     expect(live.body.shifts[0].hours).toBe(24);
@@ -292,7 +365,13 @@ describe('Bookings and shifts (e2e)', () => {
     const search = (date: string, page: number) =>
       api()
         .post('/public/search')
-        .send({ careType: 'HOME_SHIFT', location: { districtId: (intake as { districtId: number }).districtId, cityId: (intake as { cityId: number }).cityId }, desiredStartDate: date, page, pageSize: 50 });
+        .send({
+          careType: 'HOME_SHIFT',
+          location: { districtId: (intake as { districtId: number }).districtId, cityId: (intake as { cityId: number }).cityId },
+          desiredStartDate: date,
+          page,
+          pageSize: 50,
+        });
     // Every page: earlier runs leave many caregivers in the town.
     const ids = async (date: string) => {
       const all: string[] = [];
@@ -304,7 +383,9 @@ describe('Bookings and shifts (e2e)', () => {
       return all;
     };
     // Make sure they'd otherwise match on location.
-    await db.execute(sql`UPDATE caregivers SET district_id = ${(intake as { districtId: number }).districtId}, city_id = ${(intake as { cityId: number }).cityId} WHERE id = ${cg.id}`);
+    await db.execute(
+      sql`UPDATE caregivers SET district_id = ${(intake as { districtId: number }).districtId}, city_id = ${(intake as { cityId: number }).cityId} WHERE id = ${cg.id}`,
+    );
     expect(await ids(monday)).toContain(cg.publicId); // a draft doesn't block
     await confirm(b.body.id).expect(200);
     expect(await ids(monday)).not.toContain(cg.publicId);

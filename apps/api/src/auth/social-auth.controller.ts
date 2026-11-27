@@ -1,16 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  HttpCode,
-  HttpException,
-  Logger,
-  Param,
-  Post,
-  Query,
-  Req,
-  Res,
-} from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpException, Logger, Param, Post, Query, Req, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
@@ -182,8 +170,7 @@ export class SocialAuthController {
       // payload can contain the client secret, and a message is far too much
       // text for a query string - the callback page renders the code in the
       // reader's language. The full reason is logged here, where it is safe.
-      const reason =
-        err instanceof SocialLinkError ? err.code : err instanceof HttpException ? 'provider_error' : 'unknown';
+      const reason = err instanceof SocialLinkError ? err.code : err instanceof HttpException ? 'provider_error' : 'unknown';
       this.logger.error(`Social link failed for ${provider}`, err instanceof Error ? err.stack : undefined);
       return this.fail(res, trip, reason, provider);
     }

@@ -125,7 +125,13 @@ export class ReportsService {
       assessments,
     ] = await Promise.all([
       this.db
-        .select({ id: employerEnquiries.id, createdAt: employerEnquiries.createdAt, country: employerEnquiries.country, rolesCount: employerEnquiries.rolesCount, careSettings: employerEnquiries.careSettings })
+        .select({
+          id: employerEnquiries.id,
+          createdAt: employerEnquiries.createdAt,
+          country: employerEnquiries.country,
+          rolesCount: employerEnquiries.rolesCount,
+          careSettings: employerEnquiries.careSettings,
+        })
         .from(employerEnquiries)
         .where(inRange(employerEnquiries.createdAt)),
       this.db.select({ id: enquiryCandidates.id }).from(enquiryCandidates).where(inRange(enquiryCandidates.createdAt)),
@@ -133,8 +139,14 @@ export class ReportsService {
         .select({ id: candidateInterviews.id })
         .from(candidateInterviews)
         .where(and(eq(candidateInterviews.status, 'COMPLETED'), inRange(candidateInterviews.scheduledAt))),
-      this.db.select({ id: jobOffers.id }).from(jobOffers).where(and(isNotNull(jobOffers.sentAt), inRange(jobOffers.sentAt))),
-      this.db.select({ id: jobOffers.id }).from(jobOffers).where(and(eq(jobOffers.status, 'ACCEPTED'), inRange(jobOffers.respondedAt))),
+      this.db
+        .select({ id: jobOffers.id })
+        .from(jobOffers)
+        .where(and(isNotNull(jobOffers.sentAt), inRange(jobOffers.sentAt))),
+      this.db
+        .select({ id: jobOffers.id })
+        .from(jobOffers)
+        .where(and(eq(jobOffers.status, 'ACCEPTED'), inRange(jobOffers.respondedAt))),
       this.db
         .select({
           id: placements.id,
@@ -148,20 +160,36 @@ export class ReportsService {
         .innerJoin(enquiryCandidates, eq(placements.candidateId, enquiryCandidates.id))
         .where(inRange(placements.createdAt)),
       this.db
-        .select({ status: placements.status, endedOn: placements.endedOn, contractStartOn: placements.contractStartOn, arrivedOn: placements.arrivedOn, guaranteeMonths: placements.guaranteeMonths })
+        .select({
+          status: placements.status,
+          endedOn: placements.endedOn,
+          contractStartOn: placements.contractStartOn,
+          arrivedOn: placements.arrivedOn,
+          guaranteeMonths: placements.guaranteeMonths,
+        })
         .from(placements),
       this.db
         .select({ currency: placementInvoices.currency, amount: placementInvoices.amount })
         .from(placementInvoices)
         .where(and(ne(placementInvoices.status, 'VOID'), ne(placementInvoices.status, 'DRAFT'), inDays(placementInvoices.issueDate))),
       this.db
-        .select({ amount: placementInvoicePayments.amount, paidOn: placementInvoicePayments.paidOn, currency: placementInvoices.currency, country: employerEnquiries.country })
+        .select({
+          amount: placementInvoicePayments.amount,
+          paidOn: placementInvoicePayments.paidOn,
+          currency: placementInvoices.currency,
+          country: employerEnquiries.country,
+        })
         .from(placementInvoicePayments)
         .innerJoin(placementInvoices, eq(placementInvoicePayments.invoiceId, placementInvoices.id))
         .innerJoin(employerEnquiries, eq(placementInvoices.enquiryId, employerEnquiries.id))
         .where(inDays(placementInvoicePayments.paidOn)),
       this.db
-        .select({ currency: placementInvoices.currency, amount: placementInvoices.amount, amountPaid: placementInvoices.amountPaid, dueDate: placementInvoices.dueDate })
+        .select({
+          currency: placementInvoices.currency,
+          amount: placementInvoices.amount,
+          amountPaid: placementInvoices.amountPaid,
+          dueDate: placementInvoices.dueDate,
+        })
         .from(placementInvoices)
         .where(eq(placementInvoices.status, 'ISSUED')),
       this.db
@@ -186,7 +214,10 @@ export class ReportsService {
         .select({ id: trainingCertificates.id })
         .from(trainingCertificates)
         .where(and(isNull(trainingCertificates.revokedAt), inDays(trainingCertificates.issuedOn))),
-      this.db.select({ id: caregiverAssessments.id }).from(caregiverAssessments).where(and(isNotNull(caregiverAssessments.verifiedAt), inRange(caregiverAssessments.verifiedAt))),
+      this.db
+        .select({ id: caregiverAssessments.id })
+        .from(caregiverAssessments)
+        .where(and(isNotNull(caregiverAssessments.verifiedAt), inRange(caregiverAssessments.verifiedAt))),
     ]);
 
     // monthly
@@ -235,7 +266,8 @@ export class ReportsService {
     for (const p of pool) for (const c of p.targetCountries ?? []) poolBy.set(c, (poolBy.get(c) ?? 0) + 1);
     for (const row of demand.values()) row.talentPool = poolBy.get(row.country) ?? 0;
     // Countries caregivers want but no one has asked from yet are worth seeing too.
-    for (const [country, n] of poolBy) if (!demand.has(country)) demand.set(country, { country, enquiries: 0, vacancies: 0, roles: 0, placements: 0, talentPool: n });
+    for (const [country, n] of poolBy)
+      if (!demand.has(country)) demand.set(country, { country, enquiries: 0, vacancies: 0, roles: 0, placements: 0, talentPool: n });
 
     const settings = new Map<string, { careSetting: string; enquiries: number; vacancies: number }>();
     const s = (k: string) => {

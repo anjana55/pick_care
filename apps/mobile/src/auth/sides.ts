@@ -15,8 +15,7 @@ export const portalFor = (side: Side): PublicLoginPortal => (side === 'caregiver
  * Where a signed-in person's area starts - what the Home button opens: clients
  * on their home of big tiles (Start), caregivers on Today.
  */
-export const homeFor = (user: { role: string } | null | undefined): '/start' | '/home' =>
-  user?.role === 'CAREGIVER' ? '/home' : '/start';
+export const homeFor = (user: { role: string } | null | undefined): '/start' | '/home' => (user?.role === 'CAREGIVER' ? '/home' : '/start');
 
 /** The caregiver side's screens; everything else is the client side's. */
 export const CAREGIVER_SCREENS = ['/home', '/shifts', '/payments', '/me', '/documents', '/profile'] as const;

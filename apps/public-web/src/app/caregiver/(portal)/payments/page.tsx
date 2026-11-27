@@ -52,7 +52,9 @@ export default function PaymentsPage() {
                     </span>
                     <span className="flex items-center gap-3">
                       <span className="text-sm font-semibold tabular-nums text-ink">{formatLkr(p.total)}</span>
-                      <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${p.status === 'PAID' ? 'bg-brand-light text-brand-dark' : 'bg-accent-light text-accent'}`}>
+                      <span
+                        className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${p.status === 'PAID' ? 'bg-brand-light text-brand-dark' : 'bg-accent-light text-accent'}`}
+                      >
                         {t(`portal.payments.status.${p.status}`)}
                       </span>
                       <ChevronDown size={16} className={`text-ink/40 transition-transform ${expanded ? 'rotate-180' : ''}`} aria-hidden />

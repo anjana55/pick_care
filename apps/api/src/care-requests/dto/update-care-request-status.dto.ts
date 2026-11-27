@@ -1,12 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsEnum, IsOptional, IsString, MaxLength, ValidateIf } from 'class-validator';
-import {
-  careRequestCloseReasonEnum,
-  careRequestStatusEnum,
-  type CareRequestCloseReason,
-  type CareRequestStatus,
-} from '../../database/schema';
+import { careRequestCloseReasonEnum, careRequestStatusEnum, type CareRequestCloseReason, type CareRequestStatus } from '../../database/schema';
 
 const trimToUndefined = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() || undefined : value);
 

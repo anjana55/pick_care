@@ -42,9 +42,7 @@ export function useCareReminders(reminders: Reminder[] | null) {
     if (!n) return;
     (async () => {
       const scheduled = await n.getAllScheduledNotificationsAsync();
-      await Promise.all(
-        scheduled.filter((r) => r.content.data?.kind === REMINDER_KIND).map((r) => n.cancelScheduledNotificationAsync(r.identifier)),
-      );
+      await Promise.all(scheduled.filter((r) => r.content.data?.kind === REMINDER_KIND).map((r) => n.cancelScheduledNotificationAsync(r.identifier)));
       if (!reminders.length) return;
       let { status } = await n.getPermissionsAsync();
       if (status !== 'granted') ({ status } = await n.requestPermissionsAsync());

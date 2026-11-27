@@ -1,16 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import {
-  Search,
-  UserRound,
-  FolderKanban,
-  ShieldCheck,
-  Settings,
-  Languages,
-  BadgeCheck,
-  ArrowRight,
-} from 'lucide-react';
+import { Search, UserRound, FolderKanban, ShieldCheck, Settings, Languages, BadgeCheck, ArrowRight } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 
 /**
@@ -26,9 +17,7 @@ import { useTranslation } from '@/lib/i18n';
  */
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="text-xs font-bold uppercase tracking-[0.1em] text-accent">{children}</p>
-  );
+  return <p className="text-xs font-bold uppercase tracking-[0.1em] text-accent">{children}</p>;
 }
 
 function SectionHeading({ eyebrow, title, body }: { eyebrow: string; title: string; body?: string }) {
@@ -51,9 +40,7 @@ function AppCardBody({ app }: { app: { icon: typeof Search; tag: string; title: 
       <div className="flex h-11 w-11 items-center justify-center rounded bg-brand-light text-brand-dark">
         <Icon className="h-5 w-5" aria-hidden />
       </div>
-      <span className="w-fit rounded-full bg-accent-light px-2.5 py-0.5 text-xs font-semibold text-accent-dark">
-        {t(app.tag)}
-      </span>
+      <span className="w-fit rounded-full bg-accent-light px-2.5 py-0.5 text-xs font-semibold text-accent-dark">{t(app.tag)}</span>
       <h3 className="text-base font-semibold text-ink">{t(app.title)}</h3>
       <p className="flex-1 text-sm text-ink/60">{t(app.body)}</p>
       <span className="text-sm font-semibold text-brand transition-colors group-hover:text-brand-dark">
@@ -112,11 +99,7 @@ export function LandingApps() {
   return (
     <section className="border-t border-border bg-white py-16">
       <div className="mx-auto max-w-5xl px-4">
-        <SectionHeading
-          eyebrow={t('landing.apps.eyebrow')}
-          title={t('landing.apps.title')}
-          body={t('landing.apps.body')}
-        />
+        <SectionHeading eyebrow={t('landing.apps.eyebrow')} title={t('landing.apps.title')} body={t('landing.apps.body')} />
 
         {/* Four cards, so a 2x2 grid rather than 3-across with a lone orphan. */}
         <div className="mt-10 grid gap-4 sm:grid-cols-2">
@@ -160,13 +143,8 @@ export function LandingHowItWorks() {
 
         <ol className="mt-10 space-y-3">
           {steps.map((step, i) => (
-            <li
-              key={step.title}
-              className="flex gap-4 rounded-lg border border-border bg-white p-5"
-            >
-              <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-brand text-sm font-bold text-white">
-                {i + 1}
-              </span>
+            <li key={step.title} className="flex gap-4 rounded-lg border border-border bg-white p-5">
+              <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-brand text-sm font-bold text-white">{i + 1}</span>
               <div>
                 <h3 className="text-sm font-semibold text-ink">{step.title}</h3>
                 <p className="mt-1 text-sm text-ink/60">{step.body}</p>
@@ -197,11 +175,7 @@ export function LandingGallery() {
   return (
     <section className="border-t border-border bg-white py-16">
       <div className="mx-auto max-w-5xl px-4">
-        <SectionHeading
-          eyebrow={t('landing.gallery.eyebrow')}
-          title={t('landing.gallery.title')}
-          body={t('landing.gallery.body')}
-        />
+        <SectionHeading eyebrow={t('landing.gallery.eyebrow')} title={t('landing.gallery.title')} body={t('landing.gallery.body')} />
 
         <div className="mt-10 grid gap-4 sm:grid-cols-3">
           {cards.map((card) => (

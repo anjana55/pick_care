@@ -42,7 +42,16 @@ interface Draft {
   apiKeyHint: string | null;
 }
 
-const blank: Draft = { name: '', provider: 'OLLAMA', baseUrl: DEFAULT_URLS.OLLAMA, model: '', apiKey: '', clearedFor: 'PUBLIC', enabled: true, apiKeyHint: null };
+const blank: Draft = {
+  name: '',
+  provider: 'OLLAMA',
+  baseUrl: DEFAULT_URLS.OLLAMA,
+  model: '',
+  apiKey: '',
+  clearedFor: 'PUBLIC',
+  enabled: true,
+  apiKeyHint: null,
+};
 
 /**
  * Settings > Automation > AI models: the models agents may use, each with
@@ -82,8 +91,7 @@ export function EndpointsCard({ overview }: { overview: AutomationOverview }) {
       onError: (err) => setTested((prev) => ({ ...prev, [e.id]: { ok: false, text: message(err) } })),
     });
 
-  const copyDefault = () =>
-    save.mutate({ input: { name: t('automation.models.copyName'), copyDefault: true } }, { onError: (e) => setError(message(e)) });
+  const copyDefault = () => save.mutate({ input: { name: t('automation.models.copyName'), copyDefault: true } }, { onError: (e) => setError(message(e)) });
 
   return (
     <Card className="mt-4">
@@ -118,7 +126,9 @@ export function EndpointsCard({ overview }: { overview: AutomationOverview }) {
                     </p>
                   )}
                 </div>
-                <span className={cn('rounded px-2 py-0.5 text-xs font-medium', CLASS_STYLES[e.clearedFor])}>{t(`automation.models.classes.${e.clearedFor}`)}</span>
+                <span className={cn('rounded px-2 py-0.5 text-xs font-medium', CLASS_STYLES[e.clearedFor])}>
+                  {t(`automation.models.classes.${e.clearedFor}`)}
+                </span>
                 <span className="flex gap-2">
                   <Button size="sm" variant="secondary" disabled={test.isPending} onClick={() => runTest(e)}>
                     {test.isPending && test.variables === e.id ? t('automation.models.testing') : t('automation.models.test')}
@@ -126,7 +136,20 @@ export function EndpointsCard({ overview }: { overview: AutomationOverview }) {
                   <Button
                     size="sm"
                     variant="secondary"
-                    onClick={() => (setError(null), setDraft({ id: e.id, name: e.name, provider: e.provider, baseUrl: e.baseUrl, model: e.model, apiKey: '', clearedFor: e.clearedFor, enabled: e.enabled, apiKeyHint: e.apiKeyHint }))}
+                    onClick={() => (
+                      setError(null),
+                      setDraft({
+                        id: e.id,
+                        name: e.name,
+                        provider: e.provider,
+                        baseUrl: e.baseUrl,
+                        model: e.model,
+                        apiKey: '',
+                        clearedFor: e.clearedFor,
+                        enabled: e.enabled,
+                        apiKeyHint: e.apiKeyHint,
+                      })
+                    )}
                   >
                     {t('automation.models.edit')}
                   </Button>
@@ -200,7 +223,14 @@ export function EndpointsCard({ overview }: { overview: AutomationOverview }) {
             {draft.provider !== 'OLLAMA' && (
               <div>
                 <Label htmlFor="ep-key">{t('automation.models.form.apiKey')}</Label>
-                <Input id="ep-key" type="password" autoComplete="off" value={draft.apiKey} onChange={(e) => set('apiKey', e.target.value)} aria-describedby="ep-key-hint" />
+                <Input
+                  id="ep-key"
+                  type="password"
+                  autoComplete="off"
+                  value={draft.apiKey}
+                  onChange={(e) => set('apiKey', e.target.value)}
+                  aria-describedby="ep-key-hint"
+                />
                 {draft.apiKeyHint && (
                   <p id="ep-key-hint" className="mt-1 text-xs text-ink/50">
                     {t('automation.models.form.apiKeyKeep', { hint: draft.apiKeyHint })}

@@ -37,14 +37,7 @@ import {
   type TakeoverSource,
 } from '@care-platform/shared';
 import { DRIZZLE, type Database } from '../database/database.module';
-import {
-  agentDecisions,
-  automationActionPolicies,
-  automationCases,
-  automationFunctions,
-  automationSettings,
-  users,
-} from '../database/schema';
+import { agentDecisions, automationActionPolicies, automationCases, automationFunctions, automationSettings, users } from '../database/schema';
 import { EmailService } from '../email/email.service';
 import { AutomationEndpointsService } from './automation-endpoints.service';
 import { JobsService } from '../jobs/jobs.service';
@@ -90,7 +83,10 @@ export interface RecordDecisionInput {
 }
 
 /** Carries out one approved or automatic step, through the normal services. Returns what it produced. */
-export type ActionExecutor = (decision: AgentDecisionView, actor: { userId: string; email: string | null; role: 'ADMIN' | 'STAFF' }) => Promise<Record<string, unknown>>;
+export type ActionExecutor = (
+  decision: AgentDecisionView,
+  actor: { userId: string; email: string | null; role: 'ADMIN' | 'STAFF' },
+) => Promise<Record<string, unknown>>;
 
 /**
  * The rail every agent runs on: the dials, the risk gate, the four switches
@@ -132,7 +128,10 @@ export class AutomationService {
   private async settingsRow(): Promise<SettingsRow> {
     const [existing] = await this.db.select().from(automationSettings).where(eq(automationSettings.id, SETTINGS_ID)).limit(1);
     if (existing) return existing;
-    await this.db.insert(automationSettings).values({ id: SETTINGS_ID }).onDuplicateKeyUpdate({ set: { id: SETTINGS_ID } });
+    await this.db
+      .insert(automationSettings)
+      .values({ id: SETTINGS_ID })
+      .onDuplicateKeyUpdate({ set: { id: SETTINGS_ID } });
     const [created] = await this.db.select().from(automationSettings).where(eq(automationSettings.id, SETTINGS_ID)).limit(1);
     return created;
   }
@@ -568,11 +567,7 @@ export class AutomationService {
         .select({ n: sql<number>`COUNT(*)` })
         .from(agentDecisions)
         .where(
-          and(
-            eq(agentDecisions.action, action),
-            eq(agentDecisions.staffVerdict, 'REVERSED'),
-            gte(agentDecisions.reviewedAt, new Date(Date.now() - DAY_MS)),
-          ),
+          and(eq(agentDecisions.action, action), eq(agentDecisions.staffVerdict, 'REVERSED'), gte(agentDecisions.reviewedAt, new Date(Date.now() - DAY_MS))),
         );
       if (Number(n) >= bar.demoteAfterReversals) reason = `Staff reversed it ${Number(n)} times in a day`;
     }
@@ -637,7 +632,10 @@ export class AutomationService {
     const [control, settings, rows, decisions] = await Promise.all([
       this.caseControl(ref),
       this.settingsRow(),
-      this.db.select().from(automationFunctions).where(inArray(automationFunctions.key, [...keys])),
+      this.db
+        .select()
+        .from(automationFunctions)
+        .where(inArray(automationFunctions.key, [...keys])),
       this.decisions({ caseType: ref.caseType, caseId: ref.caseId, page: 1, pageSize: 20 }),
     ]);
     let mode: AutomationMode = 'MANUAL';

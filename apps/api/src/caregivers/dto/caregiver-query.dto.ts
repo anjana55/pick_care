@@ -5,8 +5,16 @@ import { caregiverStatusEnum } from '../../database/schema/caregivers.schema';
 import { genderEnum } from '../../database/schema/caregivers.schema';
 
 function toIdList({ value }: { value: unknown }): string[] {
-  if (Array.isArray(value)) return value.map(String).map((v) => v.trim()).filter(Boolean);
-  if (typeof value === 'string') return value.split(',').map((v) => v.trim()).filter(Boolean);
+  if (Array.isArray(value))
+    return value
+      .map(String)
+      .map((v) => v.trim())
+      .filter(Boolean);
+  if (typeof value === 'string')
+    return value
+      .split(',')
+      .map((v) => v.trim())
+      .filter(Boolean);
   return [];
 }
 
@@ -122,4 +130,3 @@ export class CaregiverQueryDto {
   @IsIn(['asc', 'desc'])
   sortDir: 'asc' | 'desc' = 'desc';
 }
-

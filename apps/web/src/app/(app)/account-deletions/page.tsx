@@ -64,7 +64,11 @@ export default function AccountDeletionsPage() {
       <Card>
         <CardContent className="p-0">
           {isLoading && <p className="p-5 text-sm text-ink/60">{t('common.loading')}</p>}
-          {isError && <p role="alert" className="p-5 text-sm text-danger">{t('common.actionFailed')}</p>}
+          {isError && (
+            <p role="alert" className="p-5 text-sm text-danger">
+              {t('common.actionFailed')}
+            </p>
+          )}
           {data && data.length === 0 && <p className="p-5 text-sm text-ink/60">{t('accountDeletions.empty')}</p>}
           {data && data.length > 0 && (
             <div className="overflow-x-auto">

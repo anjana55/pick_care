@@ -6,7 +6,17 @@ import { CurrentUser, type AuthenticatedUser } from '../common/decorators/curren
 import type { RequestWithLanguage } from '../common/i18n/language.middleware';
 import { AddCareRequestNoteDto } from '../care-requests/dto/update-care-request-status.dto';
 import { BookingsService } from './bookings.service';
-import { ConfirmBookingDto, AddShiftDto, BookingQueryDto, CancelBookingDto, CreateBookingDto, ExtendBookingDto, RequestBookingChangesDto, UpdateBookingDto, UpdateShiftDto } from './dto/booking.dto';
+import {
+  ConfirmBookingDto,
+  AddShiftDto,
+  BookingQueryDto,
+  CancelBookingDto,
+  CreateBookingDto,
+  ExtendBookingDto,
+  RequestBookingChangesDto,
+  UpdateBookingDto,
+  UpdateShiftDto,
+} from './dto/booking.dto';
 
 /** Staff booking management. ADMIN and STAFF, like Requests and Clients. */
 @ApiTags('bookings')
@@ -148,7 +158,12 @@ export class MyBookingsController {
   @HttpCode(200)
   @Roles('PATIENT_GUARDIAN')
   @Audit({ action: 'CLIENT_REQUEST_BOOKING_CHANGES', entityType: 'Booking' })
-  requestChanges(@Param('id', ParseUUIDPipe) id: string, @Body() dto: RequestBookingChangesDto, @CurrentUser() user: AuthenticatedUser, @Req() req: RequestWithLanguage) {
+  requestChanges(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: RequestBookingChangesDto,
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: RequestWithLanguage,
+  ) {
     return this.bookings.answerAsClient(user, id, 'CHANGES_REQUESTED', dto.note, req.lang);
   }
 

@@ -165,7 +165,10 @@ export class EmailService implements OnModuleInit, OnModuleDestroy {
   }
 
   /** A one-time link to set a new password (PasswordResetService). Never throws, like the others. */
-  async sendPasswordResetEmail(to: string, params: { resetUrl: string; name: string; expiresIn: string; byStaff: boolean; firstPassword: boolean }): Promise<void> {
+  async sendPasswordResetEmail(
+    to: string,
+    params: { resetUrl: string; name: string; expiresIn: string; byStaff: boolean; firstPassword: boolean },
+  ): Promise<void> {
     const message = passwordResetEmail({ ...params, brand: await this.brand() });
     await this.deliver(to, message, 'password reset email', `Password reset link for ${to}: ${params.resetUrl}`);
   }

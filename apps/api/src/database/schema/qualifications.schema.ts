@@ -22,8 +22,12 @@ export const qualifications = mysqlTable(
     expiryDate: date('expiry_date'),
     verificationStatus: mysqlEnum('verification_status', verificationStatusEnum).notNull().default('PENDING'),
     documentId: varchar('document_id', { length: 36 }),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     caregiverIdx: index('qualifications_caregiver_idx').on(table.caregiverId),
@@ -46,8 +50,12 @@ export const experiences = mysqlTable(
     patientCategory: varchar('patient_category', { length: 100 }),
     referenceContact: varchar('reference_contact', { length: 255 }),
     verificationStatus: mysqlEnum('verification_status', verificationStatusEnum).notNull().default('PENDING'),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     caregiverIdx: index('experiences_caregiver_idx').on(table.caregiverId),

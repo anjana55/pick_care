@@ -158,11 +158,7 @@ export class RankingService {
       }
     }
 
-    if (
-      request.caregiverGenderPreference &&
-      request.caregiverGenderPreference !== 'ANY' &&
-      candidate.gender === request.caregiverGenderPreference
-    ) {
+    if (request.caregiverGenderPreference && request.caregiverGenderPreference !== 'ANY' && candidate.gender === request.caregiverGenderPreference) {
       score += WEIGHTS.genderPreferenceMatch;
       reasons.push('matches the preferred caregiver gender');
     }

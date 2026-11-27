@@ -162,7 +162,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     plugins: [
       'expo-router',
       // The brand's mark on a plain screen while the app starts (Settings > Branding, via brand:assets).
-      ...(art.splashIcon ? [['expo-splash-screen', { image: art.splashIcon, imageWidth: 180, backgroundColor: art.splashBackground }] as [string, object]] : []),
+      ...(art.splashIcon
+        ? [['expo-splash-screen', { image: art.splashIcon, imageWidth: 180, backgroundColor: art.splashBackground }] as [string, object]]
+        : []),
       'expo-notifications',
       // "Use my location" on Find and a caregiver's check-in; and, started only by a caregiver's tap, "On my way" and
       // the checks during a visit (GPS tracking B and C). Those keep running with the app in the background, but

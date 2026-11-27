@@ -142,7 +142,12 @@ describe('My account › Sign-in methods', () => {
   it('shows how the client signs in, and links a provider', async () => {
     get.mockImplementation((path: string) => {
       if (path === '/me/sign-in-methods') {
-        return Promise.resolve({ email: 'amali@example.com', password: true, linked: ['GOOGLE'], providers: { GOOGLE: true, MICROSOFT: true, FACEBOOK: false } });
+        return Promise.resolve({
+          email: 'amali@example.com',
+          password: true,
+          linked: ['GOOGLE'],
+          providers: { GOOGLE: true, MICROSOFT: true, FACEBOOK: false },
+        });
       }
       return Promise.resolve({ url: 'https://login.microsoftonline.com/x?state=s' });
     });
@@ -170,7 +175,9 @@ describe('after client registration', () => {
   });
 
   it('shows nothing when no provider is switched on', () => {
-    const { container } = show(<ProviderChoices pendingToken="tok" providers={{ GOOGLE: false, MICROSOFT: false, FACEBOOK: false }} expiresInSeconds={900} offerPassword={false} />);
+    const { container } = show(
+      <ProviderChoices pendingToken="tok" providers={{ GOOGLE: false, MICROSOFT: false, FACEBOOK: false }} expiresInSeconds={900} offerPassword={false} />,
+    );
     expect(container.textContent).toBe('');
   });
 });

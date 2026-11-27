@@ -124,7 +124,8 @@ export function PinPicker({ value, start, focus, onChange, labels, className }: 
     } else {
       marker.current.setLngLat([value.longitude, value.latitude]);
     }
-    if (!instance.getBounds().contains([value.longitude, value.latitude])) instance.jumpTo({ center: [value.longitude, value.latitude], zoom: Math.max(instance.getZoom(), 15) });
+    if (!instance.getBounds().contains([value.longitude, value.latitude]))
+      instance.jumpTo({ center: [value.longitude, value.latitude], zoom: Math.max(instance.getZoom(), 15) });
   }, [ready, value, editable, labels.pin]);
 
   // A new starting point (the phone's position arrived) with no pin yet: look there.

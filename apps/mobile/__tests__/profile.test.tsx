@@ -45,21 +45,66 @@ const record = (over: Record<string, unknown> = {}) =>
 const meta = {
   'GET /public/meta/locations/tree': () => ({
     status: 200,
-    body: [{ id: 1, name: 'Western', districts: [{ id: 1, name: 'Colombo' }, { id: 2, name: 'Gampaha' }] }],
+    body: [
+      {
+        id: 1,
+        name: 'Western',
+        districts: [
+          { id: 1, name: 'Colombo' },
+          { id: 2, name: 'Gampaha' },
+        ],
+      },
+    ],
   }),
   'GET /public/meta/locations/cities': (_: unknown, q: Record<string, string>) => ({
     status: 200,
-    body: q.districtId === '1' ? [{ id: 11, name: 'Dehiwala', subName: null }, { id: 12, name: 'Maharagama', subName: null }] : [{ id: 21, name: 'Negombo', subName: null }],
+    body:
+      q.districtId === '1'
+        ? [
+            { id: 11, name: 'Dehiwala', subName: null },
+            { id: 12, name: 'Maharagama', subName: null },
+          ]
+        : [{ id: 21, name: 'Negombo', subName: null }],
   }),
-  'GET /skills': () => ({ status: 200, body: [{ id: 'sk-2', name: 'Feeding' }, { id: 'sk-1', name: 'Bathing' }] }),
-  'GET /languages': () => ({ status: 200, body: [{ id: 'la-1', name: 'Sinhala' }, { id: 'la-2', name: 'Tamil' }] }),
+  'GET /skills': () => ({
+    status: 200,
+    body: [
+      { id: 'sk-2', name: 'Feeding' },
+      { id: 'sk-1', name: 'Bathing' },
+    ],
+  }),
+  'GET /languages': () => ({
+    status: 200,
+    body: [
+      { id: 'la-1', name: 'Sinhala' },
+      { id: 'la-2', name: 'Tamil' },
+    ],
+  }),
   'GET /caregivers/cg-1/qualifications': () => ({
     status: 200,
-    body: [{ id: 'q-1', name: 'NVQ Level 3 in Elderly Care', type: 'NVQ', institution: 'Tertiary and Vocational Education Commission', verificationStatus: 'VERIFIED' }],
+    body: [
+      {
+        id: 'q-1',
+        name: 'NVQ Level 3 in Elderly Care',
+        type: 'NVQ',
+        institution: 'Tertiary and Vocational Education Commission',
+        verificationStatus: 'VERIFIED',
+      },
+    ],
   }),
   'GET /caregivers/cg-1/experiences': () => ({
     status: 200,
-    body: [{ id: 'e-1', role: 'Home nurse', employerOrClient: 'Silva family', country: 'Sri Lanka', startDate: '2021-02-01', endDate: null, verificationStatus: 'PENDING' }],
+    body: [
+      {
+        id: 'e-1',
+        role: 'Home nurse',
+        employerOrClient: 'Silva family',
+        country: 'Sri Lanka',
+        startDate: '2021-02-01',
+        endDate: null,
+        verificationStatus: 'PENDING',
+      },
+    ],
   }),
 };
 
@@ -81,7 +126,15 @@ describe('the profile rules', () => {
   it("checks the website's rules", () => {
     expect(problemsIn(details)).toEqual({});
     expect(
-      problemsIn({ ...details, permanentAddress: ' 12 ', districtId: null, cityId: null, emergencyContactName: '', emergencyContactNumber: '0771', emergencyContactRelationship: 'x' }),
+      problemsIn({
+        ...details,
+        permanentAddress: ' 12 ',
+        districtId: null,
+        cityId: null,
+        emergencyContactName: '',
+        emergencyContactNumber: '0771',
+        emergencyContactRelationship: 'x',
+      }),
     ).toEqual({
       permanentAddress: 'invalid',
       district: 'required',

@@ -1,7 +1,14 @@
 import { FIRST_BOOKING_DAYS, draftBooking, type DraftInput } from './booking-draft-rules';
 
 const input = (over: Partial<DraftInput> = {}): DraftInput => ({
-  schedule: 'DAY', urgency: 'WITHIN_WEEK', desiredStartDate: '2026-11-16', today: '2026-11-12', rateType: 'DAILY', payRate: 3000, clientRate: 3450, ...over,
+  schedule: 'DAY',
+  urgency: 'WITHIN_WEEK',
+  desiredStartDate: '2026-11-16',
+  today: '2026-11-12',
+  rateType: 'DAILY',
+  payRate: 3000,
+  clientRate: 3450,
+  ...over,
 });
 
 describe('booking draft rules', () => {
@@ -10,8 +17,17 @@ describe('booking draft rules', () => {
     expect(r).toEqual({
       ok: true,
       draft: {
-        scheduleType: 'DAY', daysOfWeek: [1, 2, 3, 4, 5], shiftStartTime: '08:00', shiftEndTime: '17:00', startDate: '2026-11-16', endDate: '2026-11-29', shifts: 10,
-        rateType: 'DAILY', rateAmount: '3450.00', payRateType: 'DAILY', payRateAmount: '3000.00',
+        scheduleType: 'DAY',
+        daysOfWeek: [1, 2, 3, 4, 5],
+        shiftStartTime: '08:00',
+        shiftEndTime: '17:00',
+        startDate: '2026-11-16',
+        endDate: '2026-11-29',
+        shifts: 10,
+        rateType: 'DAILY',
+        rateAmount: '3450.00',
+        payRateType: 'DAILY',
+        payRateAmount: '3000.00',
       },
       summary: 'Day shifts, Monday to Friday, 08:00-17:00, from 2026-11-16 for 14 days (10 shifts), at the rates agreed in the offer',
     });
@@ -25,8 +41,13 @@ describe('booking draft rules', () => {
 
   it('starts tomorrow when care is needed at once and no date was given', () => {
     const r = draftBooking(input({ desiredStartDate: null, urgency: 'IMMEDIATELY', schedule: 'LIVE_IN_24H' }));
-    expect(r).toMatchObject({ ok: true, draft: { scheduleType: 'LIVE_IN', startDate: '2026-11-13', endDate: '2026-11-26', shifts: 14, shiftStartTime: '08:00', shiftEndTime: '08:00' } });
-    expect(draftBooking(input({ schedule: 'NIGHT' }))).toMatchObject({ draft: { scheduleType: 'NIGHT', shiftStartTime: '20:00', shiftEndTime: '08:00', shifts: 14 } });
+    expect(r).toMatchObject({
+      ok: true,
+      draft: { scheduleType: 'LIVE_IN', startDate: '2026-11-13', endDate: '2026-11-26', shifts: 14, shiftStartTime: '08:00', shiftEndTime: '08:00' },
+    });
+    expect(draftBooking(input({ schedule: 'NIGHT' }))).toMatchObject({
+      draft: { scheduleType: 'NIGHT', shiftStartTime: '20:00', shiftEndTime: '08:00', shifts: 14 },
+    });
   });
 
   it('asks a person rather than guess the hours or the start', () => {

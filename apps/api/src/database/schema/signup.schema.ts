@@ -45,7 +45,9 @@ export const signupIdentities = mysqlTable(
     codeUsedAt: datetime('code_used_at'),
     // The account the ticket was registered as, once it was.
     userId: varchar('user_id', { length: 36 }),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     ticketIdx: uniqueIndex('signup_identities_ticket_idx').on(table.ticketHash),

@@ -38,14 +38,11 @@ export default function CaregiverProfilePage() {
               <CaregiverAvatar photoUrl={caregiver.photoUrl} alt={t('profile.photoAlt')} className="h-28 w-28" />
               <div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <p className="text-xs font-medium uppercase tracking-wide text-ink/40">
-                    {t('profile.anonymousId', { id: caregiver.publicId.slice(0, 8) })}
-                  </p>
+                  <p className="text-xs font-medium uppercase tracking-wide text-ink/40">{t('profile.anonymousId', { id: caregiver.publicId.slice(0, 8) })}</p>
                   {caregiver.verified && <VerifiedBadge size="md" />}
                 </div>
                 <h1 className="mt-1 text-2xl font-bold text-ink">
-                  {caregiver.gender === 'FEMALE' ? '♀' : caregiver.gender === 'MALE' ? '♂' : ''}{' '}
-                  {t('results.approxAge', { age: caregiver.approxAge })}
+                  {caregiver.gender === 'FEMALE' ? '♀' : caregiver.gender === 'MALE' ? '♂' : ''} {t('results.approxAge', { age: caregiver.approxAge })}
                 </h1>
                 <p className="mt-1 text-sm text-ink/60">{t('results.yearsExperience', { years: caregiver.yearsExperience })}</p>
               </div>

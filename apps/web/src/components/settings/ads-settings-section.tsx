@@ -132,10 +132,14 @@ export function AdsSettingsSection() {
 
       <div className="space-y-5">
         <Card>
-          <CardHeader><CardTitle>{t('adsAdmin.accountTitle')}</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>{t('adsAdmin.accountTitle')}</CardTitle>
+          </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="publisherId" required={draft.enabled}>{t('adsAdmin.publisherId')}</Label>
+              <Label htmlFor="publisherId" required={draft.enabled}>
+                {t('adsAdmin.publisherId')}
+              </Label>
               <Input
                 id="publisherId"
                 autoComplete="off"
@@ -169,7 +173,9 @@ export function AdsSettingsSection() {
         </Card>
 
         <Card>
-          <CardHeader><CardTitle>{t('adsAdmin.unitsTitle')}</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>{t('adsAdmin.unitsTitle')}</CardTitle>
+          </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-ink/60">{t('adsAdmin.unitsHint')}</p>
             {SLOTS.map(({ field, placement }) => (
@@ -194,12 +200,16 @@ export function AdsSettingsSection() {
         </Card>
 
         <Card>
-          <CardHeader><CardTitle>{t('adsAdmin.adsTxtTitle')}</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>{t('adsAdmin.adsTxtTitle')}</CardTitle>
+          </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-sm text-ink/60">{t('adsAdmin.adsTxtHint', { url: `${PUBLIC_SITE}/ads.txt` })}</p>
             {adsTxt ? (
               <div className="flex items-center gap-2">
-                <code className="flex-1 select-all overflow-x-auto whitespace-nowrap rounded-md border border-border bg-paper px-3 py-2 text-xs text-ink">{adsTxt}</code>
+                <code className="flex-1 select-all overflow-x-auto whitespace-nowrap rounded-md border border-border bg-paper px-3 py-2 text-xs text-ink">
+                  {adsTxt}
+                </code>
                 <Button variant="secondary" onClick={copyAdsTxt} aria-label={t('adsAdmin.copy')}>
                   {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                 </Button>
@@ -211,7 +221,9 @@ export function AdsSettingsSection() {
         </Card>
 
         <Card>
-          <CardHeader><CardTitle>{t('adsAdmin.whereTitle')}</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>{t('adsAdmin.whereTitle')}</CardTitle>
+          </CardHeader>
           <CardContent>
             <ul className="list-inside list-disc space-y-1 text-sm text-ink/70">
               <li>{t('adsAdmin.whereShown')}</li>

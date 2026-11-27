@@ -50,7 +50,13 @@ export default function CareOffersPage() {
       {o.shift ? (
         <div>
           <dt className="text-xs text-ink/60">{t('portal.offers.cover.when')}</dt>
-          <dd className="font-medium text-ink">{t('portal.offers.cover.whenValue', { day: fmtDay(o.shift.startsAt, locale), from: fmtTime(o.shift.startsAt, locale), to: fmtTime(o.shift.endsAt, locale) })}</dd>
+          <dd className="font-medium text-ink">
+            {t('portal.offers.cover.whenValue', {
+              day: fmtDay(o.shift.startsAt, locale),
+              from: fmtTime(o.shift.startsAt, locale),
+              to: fmtTime(o.shift.endsAt, locale),
+            })}
+          </dd>
         </div>
       ) : (
         <div>
@@ -61,7 +67,9 @@ export default function CareOffersPage() {
       <div>
         <dt className="text-xs text-ink/60">{t('portal.offers.rate')}</dt>
         <dd className="font-medium text-ink">
-          {o.payRate !== null && o.rateType ? t('portal.offers.rateValue', { amount: money(o.payRate), unit: t(`portal.offers.units.${o.rateType}`) }) : t('portal.offers.rateOpen')}
+          {o.payRate !== null && o.rateType
+            ? t('portal.offers.rateValue', { amount: money(o.payRate), unit: t(`portal.offers.units.${o.rateType}`) })
+            : t('portal.offers.rateOpen')}
         </dd>
       </div>
     </dl>
@@ -71,7 +79,9 @@ export default function CareOffersPage() {
     <li key={o.id} className="rounded-lg border border-border bg-white p-5" data-testid={`offer-${o.id}`}>
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h3 className="text-base font-semibold text-ink">{isCover(o) ? t('portal.offers.cover.title') : o.careType ? t(`careTypes.${o.careType}`) : t('portal.offers.title')}</h3>
+          <h3 className="text-base font-semibold text-ink">
+            {isCover(o) ? t('portal.offers.cover.title') : o.careType ? t(`careTypes.${o.careType}`) : t('portal.offers.title')}
+          </h3>
           <p className="text-xs text-ink/60">
             {isCover(o) && o.careType && `${t(`careTypes.${o.careType}`)} · `}
             {isCover(o) ? t('portal.offers.cover.reference', { reference: o.reference }) : t('portal.offers.reference', { reference: o.reference })}
@@ -120,12 +130,21 @@ export default function CareOffersPage() {
                 <button
                   type="button"
                   disabled={answer.isPending}
-                  onClick={() => answer.mutate({ offerId: o.id, accept: false, reason: reason || undefined }, { onSuccess: () => (setDeclining(null), setReason(''), setError(null)), onError: fail(o.id) })}
+                  onClick={() =>
+                    answer.mutate(
+                      { offerId: o.id, accept: false, reason: reason || undefined },
+                      { onSuccess: () => (setDeclining(null), setReason(''), setError(null)), onError: fail(o.id) },
+                    )
+                  }
                   className="inline-flex h-11 items-center rounded bg-danger px-5 text-sm font-medium text-white hover:bg-danger/90 disabled:opacity-50"
                 >
                   {t('portal.offers.confirmDecline')}
                 </button>
-                <button type="button" onClick={() => (setDeclining(null), setReason(''))} className="inline-flex h-11 items-center rounded border border-border bg-white px-5 text-sm font-medium text-ink hover:bg-paper">
+                <button
+                  type="button"
+                  onClick={() => (setDeclining(null), setReason(''))}
+                  className="inline-flex h-11 items-center rounded border border-border bg-white px-5 text-sm font-medium text-ink hover:bg-paper"
+                >
                   {t('portal.offers.back')}
                 </button>
               </div>
@@ -138,7 +157,11 @@ export default function CareOffersPage() {
                 onClick={() => (setError(null), answer.mutate({ offerId: o.id, accept: true }, { onError: fail(o.id) }))}
                 className="inline-flex h-12 items-center rounded bg-brand px-6 text-base font-medium text-white hover:bg-brand-dark disabled:opacity-50"
               >
-                {answer.isPending && answer.variables?.offerId === o.id && answer.variables.accept ? t('common.loading') : isCover(o) ? t('portal.offers.cover.accept') : t('portal.offers.accept')}
+                {answer.isPending && answer.variables?.offerId === o.id && answer.variables.accept
+                  ? t('common.loading')
+                  : isCover(o)
+                    ? t('portal.offers.cover.accept')
+                    : t('portal.offers.accept')}
               </button>
               <button
                 type="button"

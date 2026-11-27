@@ -1,19 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type, type TransformFnParams } from 'class-transformer';
-import {
-  IsArray,
-  IsDateString,
-  IsEnum,
-  IsInt,
-  IsNumber,
-  IsOptional,
-  IsString,
-  IsUUID,
-  Max,
-  MaxLength,
-  Min,
-  ValidateNested,
-} from 'class-validator';
+import { IsArray, IsDateString, IsEnum, IsInt, IsNumber, IsOptional, IsString, IsUUID, Max, MaxLength, Min, ValidateNested } from 'class-validator';
 import { LOCALES, MAX_SEARCH_RADIUS_KM, careTypeValues, type CareType, type Locale } from '@care-platform/shared';
 import { genderEnum } from '../../database/schema/caregivers.schema';
 import { shiftPreferenceEnum } from '../../database/schema/availability.schema';
@@ -176,7 +163,10 @@ export class SearchRequestDto {
   @IsEnum(LOCALES)
   locale?: Locale;
 
-  @ApiPropertyOptional({ enum: genderPreferenceEnum, description: 'Preference, not a hard filter unless ANY is omitted entirely by the caller choosing not to send it' })
+  @ApiPropertyOptional({
+    enum: genderPreferenceEnum,
+    description: 'Preference, not a hard filter unless ANY is omitted entirely by the caller choosing not to send it',
+  })
   @IsOptional()
   @Transform(blankToUndefined)
   @IsEnum(genderPreferenceEnum)

@@ -36,10 +36,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Input, Label, Select } from '@/components/ui/input';
 import { EndpointsCard } from '@/components/automation/endpoints-card';
 
-type Confirm =
-  | { kind: 'master'; on: boolean }
-  | { kind: 'auto'; fn: AutomationFunctionStatus }
-  | { kind: 'reset'; fn: AutomationFunctionStatus };
+type Confirm = { kind: 'master'; on: boolean } | { kind: 'auto'; fn: AutomationFunctionStatus } | { kind: 'reset'; fn: AutomationFunctionStatus };
 
 const TIER_STYLES = ['bg-ink/10 text-ink/70', 'bg-brand-light text-brand-dark', 'bg-accent-light text-accent', 'bg-danger-light text-danger'];
 const BAR_LIMITS = { cases: [10, 1000], agreementPercent: [50, 100], demoteAfterReversals: [1, 20] } as const;
@@ -114,25 +111,41 @@ export default function AutomationSettingsPage() {
           : t('automation.noRecord')}
         {a.record.serious > 0 && <span className="ml-1 text-danger">· {t('automation.recordSerious', { n: a.record.serious })}</span>}
       </span>
-      {ACTION_LIMITS[a.key] && <ActionLimit action={a} disabled={setPolicy.isPending} onSave={(limits) => setPolicy.mutate({ action: a.key, limits }, { onError: fail })} />}
+      {ACTION_LIMITS[a.key] && (
+        <ActionLimit action={a} disabled={setPolicy.isPending} onSave={(limits) => setPolicy.mutate({ action: a.key, limits }, { onError: fail })} />
+      )}
       {a.tier === 2 && (
         <span className="flex basis-full flex-wrap items-center gap-2 sm:basis-auto">
           {a.autoAllowed ? (
             <>
               <span className="text-xs font-medium text-brand-dark">{t('automation.actsAlone')}</span>
-              <Button size="sm" variant="secondary" disabled={setPolicy.isPending} onClick={() => setPolicy.mutate({ action: a.key, autoAllowed: false }, { onError: fail })}>
+              <Button
+                size="sm"
+                variant="secondary"
+                disabled={setPolicy.isPending}
+                onClick={() => setPolicy.mutate({ action: a.key, autoAllowed: false }, { onError: fail })}
+              >
                 {t('automation.withdraw')}
               </Button>
             </>
           ) : a.eligibleForAuto ? (
-            <Button size="sm" disabled={setPolicy.isPending || locked} onClick={() => setPolicy.mutate({ action: a.key, autoAllowed: true }, { onError: fail })}>
+            <Button
+              size="sm"
+              disabled={setPolicy.isPending || locked}
+              onClick={() => setPolicy.mutate({ action: a.key, autoAllowed: true }, { onError: fail })}
+            >
               {t('automation.allow')}
             </Button>
           ) : (
             <span className="text-xs text-ink/50">{t('automation.notEarned')}</span>
           )}
           {a.record.serious > 0 && !a.autoAllowed && (
-            <Button size="sm" variant="ghost" disabled={setPolicy.isPending} onClick={() => setPolicy.mutate({ action: a.key, resetRecord: true }, { onError: fail })}>
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={setPolicy.isPending}
+              onClick={() => setPolicy.mutate({ action: a.key, resetRecord: true }, { onError: fail })}
+            >
               {t('automation.resetRecord')}
             </Button>
           )}
@@ -225,7 +238,12 @@ export default function AutomationSettingsPage() {
                 </Button>
                 {ran[fn.key] && (
                   <span role="status" className="text-xs text-ink/70">
-                    {t('automation.run.result', { considered: ran[fn.key]!.considered, decided: ran[fn.key]!.decided, scored: ran[fn.key]!.scored, leftToStaff: ran[fn.key]!.leftToStaff })}
+                    {t('automation.run.result', {
+                      considered: ran[fn.key]!.considered,
+                      decided: ran[fn.key]!.decided,
+                      scored: ran[fn.key]!.scored,
+                      leftToStaff: ran[fn.key]!.leftToStaff,
+                    })}
                   </span>
                 )}
               </div>
@@ -304,7 +322,9 @@ export default function AutomationSettingsPage() {
             <h3 className="text-sm font-semibold text-ink">{t('automation.jobs.title')}</h3>
             <p className="text-xs text-ink/60">{t('automation.jobs.hint')}</p>
           </div>
-          <p className="text-sm text-ink">{t('automation.jobs.counts', { pending: data.jobs.pending, running: data.jobs.running, failed: data.jobs.failed })}</p>
+          <p className="text-sm text-ink">
+            {t('automation.jobs.counts', { pending: data.jobs.pending, running: data.jobs.running, failed: data.jobs.failed })}
+          </p>
           {(data.jobs.oldestDueMinutes ?? 0) >= 5 && (
             <p role="alert" className="rounded bg-accent-light px-3 py-2 text-sm text-accent">
               {t('automation.jobs.late', { minutes: data.jobs.oldestDueMinutes ?? 0 })}
@@ -389,7 +409,15 @@ function ActionLimit({ action, disabled, onSave }: { action: AutomationActionSta
     <span className="flex basis-full flex-wrap items-end gap-2">
       <span>
         <Label htmlFor={id}>{t('automation.limit')}</Label>
-        <Input id={id} inputMode="decimal" className="h-8 w-36" value={value} placeholder={String(def.default)} aria-describedby={`${id}-hint`} onChange={(e) => setValue(e.target.value)} />
+        <Input
+          id={id}
+          inputMode="decimal"
+          className="h-8 w-36"
+          value={value}
+          placeholder={String(def.default)}
+          aria-describedby={`${id}-hint`}
+          onChange={(e) => setValue(e.target.value)}
+        />
       </span>
       <Button size="sm" variant="secondary" disabled={disabled || bad || n === current} onClick={() => onSave({ [def.key]: n })}>
         {t('automation.limitSave')}
@@ -406,7 +434,11 @@ function ActionLimit({ action, disabled, onSave }: { action: AutomationActionSta
 /** The promotion bar: three numbers, saved together. */
 function PromotionBarCard({ overview, save }: { overview: AutomationOverview; save: ReturnType<typeof useUpdatePromotionBar> }) {
   const { t } = useTranslation();
-  const toDraft = (b: PromotionBar) => ({ cases: String(b.cases), agreementPercent: String(b.agreementPercent), demoteAfterReversals: String(b.demoteAfterReversals) });
+  const toDraft = (b: PromotionBar) => ({
+    cases: String(b.cases),
+    agreementPercent: String(b.agreementPercent),
+    demoteAfterReversals: String(b.demoteAfterReversals),
+  });
   const [draft, setDraft] = useState(() => toDraft(overview.bar));
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);

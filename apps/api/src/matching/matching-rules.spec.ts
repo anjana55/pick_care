@@ -1,4 +1,13 @@
-import { MODEL_MAX_MOVE, applyModelOrder, buildRankPrompt, offerMinutesFor, rankMatches, scoreMatch, type MatchCandidate, type MatchRequest } from './matching-rules';
+import {
+  MODEL_MAX_MOVE,
+  applyModelOrder,
+  buildRankPrompt,
+  offerMinutesFor,
+  rankMatches,
+  scoreMatch,
+  type MatchCandidate,
+  type MatchRequest,
+} from './matching-rules';
 
 const request: MatchRequest = { careType: 'HOME_SHIFT', districtId: 1, cityId: 10, schedule: 'DAY', urgency: 'WITHIN_WEEK', desiredStartDate: '2026-11-16' };
 const cg = (n: number, over: Partial<MatchCandidate> = {}): MatchCandidate => ({
@@ -24,8 +33,27 @@ const cg = (n: number, over: Partial<MatchCandidate> = {}): MatchCandidate => ({
 
 describe('matching rules', () => {
   it('gives every point a reason a person can read', () => {
-    const r = scoreMatch(request, cg(1, { verified: true, sameCity: true, dayDuty: true, ratingSignal: 0.9, ratingAverage: 4.8, ratingCount: 12, ownRate: { amount: 3000, rateType: 'DAILY' }, availableFrom: '2026-11-01' }));
-    expect(r.reasons).toEqual(['Checked by the office', 'Lives in the same town', 'Rated 4.8 by 12 clients', 'Works day shifts', 'Own rate LKR 3,000 per day', 'Free by the start date']);
+    const r = scoreMatch(
+      request,
+      cg(1, {
+        verified: true,
+        sameCity: true,
+        dayDuty: true,
+        ratingSignal: 0.9,
+        ratingAverage: 4.8,
+        ratingCount: 12,
+        ownRate: { amount: 3000, rateType: 'DAILY' },
+        availableFrom: '2026-11-01',
+      }),
+    );
+    expect(r.reasons).toEqual([
+      'Checked by the office',
+      'Lives in the same town',
+      'Rated 4.8 by 12 clients',
+      'Works day shifts',
+      'Own rate LKR 3,000 per day',
+      'Free by the start date',
+    ]);
     expect(r.score).toBe(30 + 20 + 14 + 10 + 8 + 5);
   });
 
@@ -74,7 +102,14 @@ describe('what a model is shown and how far it is trusted', () => {
       expect(sent).not.toContain(c.caregiverId);
       expect(sent).not.toContain(c.registrationNumber);
     }
-    expect(JSON.parse(prompt.user).job).toEqual({ careType: 'HOME_SHIFT', town: 'Nugegoda', district: 'Colombo', schedule: 'DAY', neededBy: 'WITHIN_WEEK', startDate: '2026-11-16' });
+    expect(JSON.parse(prompt.user).job).toEqual({
+      careType: 'HOME_SHIFT',
+      town: 'Nugegoda',
+      district: 'Colombo',
+      schedule: 'DAY',
+      neededBy: 'WITHIN_WEEK',
+      startDate: '2026-11-16',
+    });
   });
 
   it('applies a sensible reorder and keeps the reason given', () => {

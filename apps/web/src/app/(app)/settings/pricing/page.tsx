@@ -51,20 +51,40 @@ export default function PricingSettingsPage() {
 function CareTypeCard({ pricing }: { pricing: CareTypePricing }) {
   const { t } = useTranslation();
   const update = useUpdatePricing();
-  const toDraft = (p: CareTypePricing) => ({ enabled: p.enabled, rateType: p.rateType, minRate: String(p.minRate), maxRate: String(p.maxRate), feePercent: String(p.feePercent) });
+  const toDraft = (p: CareTypePricing) => ({
+    enabled: p.enabled,
+    rateType: p.rateType,
+    minRate: String(p.minRate),
+    maxRate: String(p.maxRate),
+    feePercent: String(p.feePercent),
+  });
   const [draft, setDraft] = useState(() => toDraft(pricing));
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const set = <K extends keyof typeof draft>(key: K, value: (typeof draft)[K]) => (setSaved(false), setError(null), setDraft({ ...draft, [key]: value }));
 
-  const valid = isAmount(draft.minRate) && isAmount(draft.maxRate) && isAmount(draft.feePercent) && Number(draft.maxRate) >= Number(draft.minRate) && Number(draft.feePercent) <= 100;
+  const valid =
+    isAmount(draft.minRate) &&
+    isAmount(draft.maxRate) &&
+    isAmount(draft.feePercent) &&
+    Number(draft.maxRate) >= Number(draft.minRate) &&
+    Number(draft.feePercent) <= 100;
   const id = (f: string) => `${pricing.careType}-${f}`;
   const unit = t(`pricing.units.${draft.rateType}`);
   const sample = valid ? Number(draft.minRate) : null;
 
   const submit = () =>
     update.mutate(
-      { careType: pricing.careType, values: { enabled: draft.enabled, rateType: draft.rateType, minRate: Number(draft.minRate), maxRate: Number(draft.maxRate), feePercent: Number(draft.feePercent) } },
+      {
+        careType: pricing.careType,
+        values: {
+          enabled: draft.enabled,
+          rateType: draft.rateType,
+          minRate: Number(draft.minRate),
+          maxRate: Number(draft.maxRate),
+          feePercent: Number(draft.feePercent),
+        },
+      },
       {
         onSuccess: (all) => {
           setDraft(toDraft(all.find((p) => p.careType === pricing.careType)!));
@@ -97,19 +117,39 @@ function CareTypeCard({ pricing }: { pricing: CareTypePricing }) {
           </div>
           <div>
             <Label htmlFor={id('min')}>{t('pricing.min')}</Label>
-            <Input id={id('min')} inputMode="decimal" value={draft.minRate} aria-invalid={!isAmount(draft.minRate)} onChange={(e) => set('minRate', e.target.value)} />
+            <Input
+              id={id('min')}
+              inputMode="decimal"
+              value={draft.minRate}
+              aria-invalid={!isAmount(draft.minRate)}
+              onChange={(e) => set('minRate', e.target.value)}
+            />
           </div>
           <div>
             <Label htmlFor={id('max')}>{t('pricing.max')}</Label>
-            <Input id={id('max')} inputMode="decimal" value={draft.maxRate} aria-invalid={!isAmount(draft.maxRate) || Number(draft.maxRate) < Number(draft.minRate)} onChange={(e) => set('maxRate', e.target.value)} />
+            <Input
+              id={id('max')}
+              inputMode="decimal"
+              value={draft.maxRate}
+              aria-invalid={!isAmount(draft.maxRate) || Number(draft.maxRate) < Number(draft.minRate)}
+              onChange={(e) => set('maxRate', e.target.value)}
+            />
           </div>
           <div>
             <Label htmlFor={id('fee')}>{t('pricing.fee')}</Label>
-            <Input id={id('fee')} inputMode="decimal" value={draft.feePercent} aria-invalid={!isAmount(draft.feePercent) || Number(draft.feePercent) > 100} onChange={(e) => set('feePercent', e.target.value)} />
+            <Input
+              id={id('fee')}
+              inputMode="decimal"
+              value={draft.feePercent}
+              aria-invalid={!isAmount(draft.feePercent) || Number(draft.feePercent) > 100}
+              onChange={(e) => set('feePercent', e.target.value)}
+            />
           </div>
         </div>
         {sample !== null && sample > 0 && (
-          <p className="text-xs text-ink/60">{t('pricing.example', { rate: money(sample), unit, price: money(clientPriceFor(sample, Number(draft.feePercent))) })}</p>
+          <p className="text-xs text-ink/60">
+            {t('pricing.example', { rate: money(sample), unit, price: money(clientPriceFor(sample, Number(draft.feePercent))) })}
+          </p>
         )}
         {error && (
           <p role="alert" className="text-sm text-danger">

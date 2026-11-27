@@ -47,7 +47,11 @@ export class AssessmentsService {
   // --- the caregiver -------------------------------------------------------------
 
   async forCaregiver(caregiverId: string): Promise<CaregiverAssessment[]> {
-    const rows = await this.db.select().from(caregiverAssessments).where(eq(caregiverAssessments.caregiverId, caregiverId)).orderBy(desc(caregiverAssessments.takenOn));
+    const rows = await this.db
+      .select()
+      .from(caregiverAssessments)
+      .where(eq(caregiverAssessments.caregiverId, caregiverId))
+      .orderBy(desc(caregiverAssessments.takenOn));
     return rows.map(toAssessment);
   }
 
@@ -57,7 +61,8 @@ export class AssessmentsService {
       .select({ n: count() })
       .from(caregiverAssessments)
       .where(and(eq(caregiverAssessments.caregiverId, caregiverId), isNull(caregiverAssessments.verifiedAt)));
-    if (Number(n) >= MAX_UNVERIFIED_PER_CAREGIVER) throw new BadRequestException('You have results waiting for our team to check. Please wait for those first.');
+    if (Number(n) >= MAX_UNVERIFIED_PER_CAREGIVER)
+      throw new BadRequestException('You have results waiting for our team to check. Please wait for those first.');
     // A caregiver cannot claim our own assessment: staff record those.
     if (dto.provider === 'PLATFORM') throw new BadRequestException('Our own assessments are recorded by our team.');
     await this.db.insert(caregiverAssessments).values({ id: uuid(), caregiverId, ...values(dto), note: null, addedBy: 'CAREGIVER' });
@@ -141,7 +146,11 @@ export class AssessmentsService {
     await this.row(id);
     await this.db
       .update(caregiverAssessments)
-      .set(verified ? { verifiedAt: new Date(), verifiedByUserId: userId, updatedAt: new Date() } : { verifiedAt: null, verifiedByUserId: null, updatedAt: new Date() })
+      .set(
+        verified
+          ? { verifiedAt: new Date(), verifiedByUserId: userId, updatedAt: new Date() }
+          : { verifiedAt: null, verifiedByUserId: null, updatedAt: new Date() },
+      )
       .where(eq(caregiverAssessments.id, id));
     return this.staffGet(id);
   }

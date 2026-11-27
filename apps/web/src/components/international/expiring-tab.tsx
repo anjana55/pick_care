@@ -35,7 +35,12 @@ export function ExpiringTab() {
               {t('international.expiring.runNow')}
             </Button>
           )}
-          <Select className="sm:w-48" value={within} onChange={(e) => setWithin(Number(e.target.value) as (typeof WINDOWS)[number])} aria-label={t('international.expiring.window')}>
+          <Select
+            className="sm:w-48"
+            value={within}
+            onChange={(e) => setWithin(Number(e.target.value) as (typeof WINDOWS)[number])}
+            aria-label={t('international.expiring.window')}
+          >
             {WINDOWS.map((w) => (
               <option key={w} value={w}>
                 {t('international.expiring.within', { days: w })}
@@ -47,7 +52,9 @@ export function ExpiringTab() {
       {run.data && <p className="mb-3 text-sm text-brand-dark">{t('international.expiring.ran', { count: run.data.reminders })}</p>}
       {run.isError && <p className="mb-3 text-sm text-danger">{run.error instanceof Error ? run.error.message : t('common.actionFailed')}</p>}
       {isLoading && <p className="py-8 text-center text-sm text-ink/50">{t('common.loading')}</p>}
-      {!isLoading && data.length === 0 && <p className="rounded-lg border border-dashed border-border bg-white py-10 text-center text-sm text-ink/50">{t('international.expiring.empty')}</p>}
+      {!isLoading && data.length === 0 && (
+        <p className="rounded-lg border border-dashed border-border bg-white py-10 text-center text-sm text-ink/50">{t('international.expiring.empty')}</p>
+      )}
       {data.length > 0 && (
         <ul className="divide-y divide-border rounded-lg border border-border bg-white">
           {data.map((d) => (
@@ -67,8 +74,15 @@ export function ExpiringTab() {
               </div>
               <div className="flex items-center gap-3">
                 <span className="tabular-nums text-ink/70">{day(d.expiresOn, locale)}</span>
-                <span className={cn('rounded px-2 py-0.5 text-xs font-medium', d.state === 'EXPIRED' ? 'bg-danger-light text-danger' : 'bg-accent-light text-accent')}>
-                  {d.state === 'EXPIRED' ? t('international.expiring.expired', { days: -d.daysLeft }) : t('international.expiring.daysLeft', { days: d.daysLeft })}
+                <span
+                  className={cn(
+                    'rounded px-2 py-0.5 text-xs font-medium',
+                    d.state === 'EXPIRED' ? 'bg-danger-light text-danger' : 'bg-accent-light text-accent',
+                  )}
+                >
+                  {d.state === 'EXPIRED'
+                    ? t('international.expiring.expired', { days: -d.daysLeft })
+                    : t('international.expiring.daysLeft', { days: d.daysLeft })}
                 </span>
               </div>
             </li>

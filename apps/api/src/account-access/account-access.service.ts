@@ -144,7 +144,11 @@ export class AccountAccessService {
    * password) - the same accounts they may issue claim codes for. Changing
    * the contact details of an account that already signs in is for admins.
    */
-  async changeContact(caregiverId: string, dto: ChangeCaregiverContactDto, actor: AuthenticatedUser): Promise<{ methods: SignInMethods; change: ContactChange }> {
+  async changeContact(
+    caregiverId: string,
+    dto: ChangeCaregiverContactDto,
+    actor: AuthenticatedUser,
+  ): Promise<{ methods: SignInMethods; change: ContactChange }> {
     if (dto.email === undefined && dto.phone === undefined) throw new BadRequestException('Enter a new email address or phone number');
     const caregiver = await this.findLiveCaregiver(caregiverId);
     const state = await loadAccountState(this.db, caregiver);
@@ -164,7 +168,7 @@ export class AccountAccessService {
       const t = tx as unknown as Database;
       // Re-read inside the transaction: the caregiver may have finished their
       // account in the meantime.
-      let user = state.user ? (await t.select().from(users).where(eq(users.id, state.user.id)).limit(1))[0] ?? null : null;
+      let user = state.user ? ((await t.select().from(users).where(eq(users.id, state.user.id)).limit(1))[0] ?? null) : null;
 
       if (email !== undefined && email !== (user?.email ?? '').toLowerCase()) {
         const [taken] = await t
@@ -207,18 +211,24 @@ export class AccountAccessService {
             await t.update(users).set({ phone, phoneVerifiedAt: null }).where(eq(users.id, user.id));
             // A WhatsApp code already sent to the old number must not be usable.
             if (user.phone) {
-              await t.update(whatsappOtps).set({ consumedAt: new Date() }).where(and(eq(whatsappOtps.phone, user.phone), isNull(whatsappOtps.consumedAt)));
+              await t
+                .update(whatsappOtps)
+                .set({ consumedAt: new Date() })
+                .where(and(eq(whatsappOtps.phone, user.phone), isNull(whatsappOtps.consumedAt)));
             }
           }
           if (current) {
-            await t.update(whatsappOtps).set({ consumedAt: new Date() }).where(and(eq(whatsappOtps.phone, current), isNull(whatsappOtps.consumedAt)));
+            await t
+              .update(whatsappOtps)
+              .set({ consumedAt: new Date() })
+              .where(and(eq(whatsappOtps.phone, current), isNull(whatsappOtps.consumedAt)));
           }
           change.phone = { from: caregiver.primaryPhone, to: phone };
         }
       }
     });
 
-    if (!change.email && !change.phone) throw new BadRequestException('Those are already the caregiver\'s details - nothing to change');
+    if (!change.email && !change.phone) throw new BadRequestException("Those are already the caregiver's details - nothing to change");
     if (sendVerificationTo) change.verificationSent = await this.auth.sendVerificationLink(sendVerificationTo);
     return { methods: await this.getSignInMethods(caregiver.id), change };
   }
@@ -252,9 +262,7 @@ export class AccountAccessService {
     const caregiver = await this.findLiveCaregiver(caregiverId);
     const { claimable } = await loadAccountState(this.db, caregiver);
     if (!claimable) {
-      throw new BadRequestException(
-        'This caregiver can already sign in. Reset their sign-in methods first, then issue a code.',
-      );
+      throw new BadRequestException('This caregiver can already sign in. Reset their sign-in methods first, then issue a code.');
     }
     const issued = await this.claimCodes.issue(caregiver.id, 'STAFF', issuedBy);
     if (!issued.issued) {

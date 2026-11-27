@@ -17,7 +17,9 @@ describe('translateMessage', () => {
   it('carries the variable part of a message into the translation', () => {
     expect(translateMessage('Please wait 12 seconds before requesting another code', 'si')).toContain('12');
     expect(translateMessage('Please wait 12 seconds before requesting another code', 'ta')).toContain('12');
-    expect(translateMessage('Cannot transition caregiver from DRAFT to VERIFIED. Allowed next states: REGISTERED', 'si')).toMatch(/DRAFT.*VERIFIED.*REGISTERED/);
+    expect(translateMessage('Cannot transition caregiver from DRAFT to VERIFIED. Allowed next states: REGISTERED', 'si')).toMatch(
+      /DRAFT.*VERIFIED.*REGISTERED/,
+    );
     expect(translateMessage('You can keep at most 20 documents. Remove one first.', 'ta')).toContain('20');
   });
 
@@ -33,7 +35,7 @@ describe('translateMessage', () => {
     expect(translateMessage('Mystery field must be text', 'si')).toBe('Mystery field පෙළක් විය යුතුය');
   });
 
-  it('translates class-validator\'s own wording, leaving the property name as sent', () => {
+  it("translates class-validator's own wording, leaving the property name as sent", () => {
     expect(translateMessage('email must be an email', 'si')).toBe('email වලංගු විද්‍යුත් ලිපිනයක් විය යුතුය');
     expect(translateMessage('password must be longer than or equal to 8 characters', 'ta')).toBe('password குறைந்தது 8 எழுத்துகள் இருக்க வேண்டும்');
     expect(translateMessage('purpose must be one of the following values: REGISTER, LOGIN', 'si')).toContain('REGISTER, LOGIN');

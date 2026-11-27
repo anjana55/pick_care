@@ -21,25 +21,19 @@ const CONTROL_CLASS =
 export const INPUT_CLASS = `${CONTROL_CLASS} placeholder:text-ink/40`;
 export const LABEL_CLASS = 'mb-1 block text-xs font-medium text-ink/60';
 
-export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(
-  ({ className, ...props }, ref) => (
-    <input ref={ref} className={cn(INPUT_CLASS, className)} {...props} />
-  ),
-);
+export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(({ className, ...props }, ref) => (
+  <input ref={ref} className={cn(INPUT_CLASS, className)} {...props} />
+));
 Input.displayName = 'Input';
 
-export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<HTMLTextAreaElement>>(
-  ({ className, ...props }, ref) => (
-    <textarea ref={ref} className={cn(INPUT_CLASS, className)} {...props} />
-  ),
-);
+export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<HTMLTextAreaElement>>(({ className, ...props }, ref) => (
+  <textarea ref={ref} className={cn(INPUT_CLASS, className)} {...props} />
+));
 Textarea.displayName = 'Textarea';
 
-export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement>>(
-  ({ className, ...props }, ref) => (
-    <select ref={ref} className={cn(CONTROL_CLASS, className)} {...props} />
-  ),
-);
+export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement>>(({ className, ...props }, ref) => (
+  <select ref={ref} className={cn(CONTROL_CLASS, className)} {...props} />
+));
 Select.displayName = 'Select';
 
 /**
@@ -48,12 +42,7 @@ Select.displayName = 'Select';
  * the DOM. It renders the marker only - the input itself still gets the native
  * `required` attribute where that is wanted.
  */
-export function Label({
-  className,
-  required,
-  children,
-  ...props
-}: LabelHTMLAttributes<HTMLLabelElement> & { required?: boolean }) {
+export function Label({ className, required, children, ...props }: LabelHTMLAttributes<HTMLLabelElement> & { required?: boolean }) {
   return (
     <label className={cn(LABEL_CLASS, className)} {...props}>
       {children}

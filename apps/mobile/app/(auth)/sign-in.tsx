@@ -96,7 +96,11 @@ export default function SignIn() {
       <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
         <View style={styles.head}>
           <BrandLogo height={40} />
-          <Pill icon={side === 'caregiver' ? 'medkit-outline' : 'person-outline'} tone={side === 'caregiver' ? 'accent' : 'brand'} label={t(side === 'caregiver' ? 'signIn.sideCaregiver' : 'signIn.sideClient')} />
+          <Pill
+            icon={side === 'caregiver' ? 'medkit-outline' : 'person-outline'}
+            tone={side === 'caregiver' ? 'accent' : 'brand'}
+            label={t(side === 'caregiver' ? 'signIn.sideCaregiver' : 'signIn.sideClient')}
+          />
           <Text accessibilityRole="header" style={[styles.title, { color: colors.ink }]}>
             {t(side === 'caregiver' ? 'signIn.caregiver' : 'signIn.client')}
           </Text>
@@ -152,9 +156,7 @@ export default function SignIn() {
               </>
             ) : null}
             <Button label={t('signIn.submit')} onPress={signInWithEmail} busy={busy} disabled={!email.trim() || !password} />
-            {whatsappOn ? (
-              <Button variant="link" label={t('signIn.useWhatsapp')} onPress={() => (setChosen('whatsapp'), setError(null))} />
-            ) : null}
+            {whatsappOn ? <Button variant="link" label={t('signIn.useWhatsapp')} onPress={() => (setChosen('whatsapp'), setError(null))} /> : null}
           </Card>
         )}
 

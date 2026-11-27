@@ -16,7 +16,8 @@ export function InvoiceDocument({ invoice }: { invoice: InvoiceDetail }) {
   const { t, locale } = useTranslation();
   const s = invoice.seller;
   const taxed = Boolean(invoice.taxRate);
-  const discountLabel = [invoice.discountType === 'PERCENT' ? `${Number(invoice.discountValue)}%` : null, invoice.discountReason].filter(Boolean).join(' · ') || null;
+  const discountLabel =
+    [invoice.discountType === 'PERCENT' ? `${Number(invoice.discountValue)}%` : null, invoice.discountReason].filter(Boolean).join(' · ') || null;
 
   return (
     <article className="relative mx-auto max-w-[210mm] bg-white p-8 text-sm text-ink shadow-sm print:max-w-none print:p-0 print:shadow-none sm:p-10">
@@ -35,7 +36,9 @@ export function InvoiceDocument({ invoice }: { invoice: InvoiceDetail }) {
           {s.address && <p className="whitespace-pre-line text-ink/70">{s.address}</p>}
           <p className="text-ink/70">{[s.phone, s.email].filter(Boolean).join(' · ')}</p>
           {s.registrationNumber && <p className="text-ink/60">{t('billing.doc.regNo', { number: s.registrationNumber })}</p>}
-          {taxed && s.taxRegistrationNumber && <p className="text-ink/60">{t('billing.doc.taxRegNo', { name: invoice.taxName ?? '', number: s.taxRegistrationNumber })}</p>}
+          {taxed && s.taxRegistrationNumber && (
+            <p className="text-ink/60">{t('billing.doc.taxRegNo', { name: invoice.taxName ?? '', number: s.taxRegistrationNumber })}</p>
+          )}
         </div>
         <div className="text-right">
           <p className="text-2xl font-semibold uppercase tracking-wide text-brand-dark">{taxed ? t('billing.doc.taxInvoice') : t('billing.doc.invoice')}</p>
@@ -114,7 +117,9 @@ export function InvoiceDocument({ invoice }: { invoice: InvoiceDetail }) {
         />
       </div>
 
-      {invoice.status === 'PAID' && <p className="mt-4 text-right text-base font-semibold uppercase tracking-wide text-brand-dark">{t('billing.doc.paidInFull')}</p>}
+      {invoice.status === 'PAID' && (
+        <p className="mt-4 text-right text-base font-semibold uppercase tracking-wide text-brand-dark">{t('billing.doc.paidInFull')}</p>
+      )}
       {invoice.notes && <p className="mt-8 whitespace-pre-line text-ink/80">{invoice.notes}</p>}
       {invoice.footer && <footer className="mt-8 whitespace-pre-line border-t border-border pt-4 text-xs text-ink/60">{invoice.footer}</footer>}
     </article>

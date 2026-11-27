@@ -46,9 +46,7 @@ export class PreferredLocationsService {
   }
 
   async remove(caregiverId: string, cityId: number) {
-    await this.db
-      .delete(preferredLocations)
-      .where(and(eq(preferredLocations.caregiverId, caregiverId), eq(preferredLocations.cityId, cityId)));
+    await this.db.delete(preferredLocations).where(and(eq(preferredLocations.caregiverId, caregiverId), eq(preferredLocations.cityId, cityId)));
     return { success: true };
   }
 

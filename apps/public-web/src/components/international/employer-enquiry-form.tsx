@@ -136,7 +136,14 @@ export function EmployerEnquiryForm({ talent, onClearTalent }: Props) {
           <Label htmlFor="enq-org" required>
             {t('international.form.organisationName')}
           </Label>
-          <Input id="enq-org" value={organisationName} onChange={(e) => setOrganisationName(e.target.value)} maxLength={200} autoComplete="organization" {...field('organisationName')} />
+          <Input
+            id="enq-org"
+            value={organisationName}
+            onChange={(e) => setOrganisationName(e.target.value)}
+            maxLength={200}
+            autoComplete="organization"
+            {...field('organisationName')}
+          />
           {error('organisationName')}
         </div>
         <div>
@@ -171,19 +178,43 @@ export function EmployerEnquiryForm({ talent, onClearTalent }: Props) {
           <Label htmlFor="enq-contact" required>
             {t('international.form.contactName')}
           </Label>
-          <Input id="enq-contact" value={contactName} onChange={(e) => setContactName(e.target.value)} maxLength={150} autoComplete="name" {...field('contactName')} />
+          <Input
+            id="enq-contact"
+            value={contactName}
+            onChange={(e) => setContactName(e.target.value)}
+            maxLength={150}
+            autoComplete="name"
+            {...field('contactName')}
+          />
           {error('contactName')}
         </div>
         <div>
           <Label htmlFor="enq-email" required>
             {t('international.form.email')}
           </Label>
-          <Input id="enq-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} maxLength={255} autoComplete="email" {...field('email')} />
+          <Input
+            id="enq-email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            maxLength={255}
+            autoComplete="email"
+            {...field('email')}
+          />
           {error('email')}
         </div>
         <div>
           <Label htmlFor="enq-phone">{t('international.form.phone')}</Label>
-          <Input id="enq-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+81 90 1234 5678" maxLength={30} autoComplete="tel" {...field('phone')} />
+          <Input
+            id="enq-phone"
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="+81 90 1234 5678"
+            maxLength={30}
+            autoComplete="tel"
+            {...field('phone')}
+          />
           {error('phone')}
         </div>
         <div>
@@ -194,7 +225,10 @@ export function EmployerEnquiryForm({ talent, onClearTalent }: Props) {
 
       <fieldset aria-describedby={errors.careSettings ? 'careSettings-error' : undefined}>
         <legend className="mb-2 text-xs font-medium text-ink/60">
-          {t('international.form.careSettings')} <span aria-hidden className="text-danger">*</span>
+          {t('international.form.careSettings')}{' '}
+          <span aria-hidden className="text-danger">
+            *
+          </span>
         </legend>
         <div className="flex flex-wrap gap-2">
           {careTypeValues.map((type) => {
@@ -228,7 +262,13 @@ export function EmployerEnquiryForm({ talent, onClearTalent }: Props) {
         </div>
         <div>
           <Label htmlFor="enq-start">{t('international.form.startTimeframe')}</Label>
-          <Input id="enq-start" value={startTimeframe} onChange={(e) => setStartTimeframe(e.target.value)} placeholder={t('international.form.startPlaceholder')} maxLength={100} />
+          <Input
+            id="enq-start"
+            value={startTimeframe}
+            onChange={(e) => setStartTimeframe(e.target.value)}
+            placeholder={t('international.form.startPlaceholder')}
+            maxLength={100}
+          />
         </div>
         <div>
           <Label htmlFor="enq-visa">{t('international.form.visaSponsorship')}</Label>
@@ -244,12 +284,25 @@ export function EmployerEnquiryForm({ talent, onClearTalent }: Props) {
 
       <div>
         <Label htmlFor="enq-languages">{t('international.form.languages')}</Label>
-        <Input id="enq-languages" value={languages} onChange={(e) => setLanguages(e.target.value)} placeholder={t('international.form.languagesPlaceholder')} maxLength={255} />
+        <Input
+          id="enq-languages"
+          value={languages}
+          onChange={(e) => setLanguages(e.target.value)}
+          placeholder={t('international.form.languagesPlaceholder')}
+          maxLength={255}
+        />
       </div>
 
       <div>
         <Label htmlFor="enq-message">{t('international.form.message')}</Label>
-        <Textarea id="enq-message" rows={4} value={message} onChange={(e) => setMessage(e.target.value)} placeholder={t('international.form.messagePlaceholder')} maxLength={3000} />
+        <Textarea
+          id="enq-message"
+          rows={4}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder={t('international.form.messagePlaceholder')}
+          maxLength={3000}
+        />
       </div>
 
       {/* Honeypot: hidden from people and from screen readers; bots fill every field they find. */}

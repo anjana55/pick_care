@@ -9,7 +9,11 @@ import ReferencePage from '@/app/reference/page';
  */
 
 const post = jest.fn();
-jest.mock('next/navigation', () => ({ useRouter: () => ({ replace: jest.fn(), push: jest.fn() }), usePathname: () => '/reference', useSearchParams: () => new URLSearchParams() }));
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ replace: jest.fn(), push: jest.fn() }),
+  usePathname: () => '/reference',
+  useSearchParams: () => new URLSearchParams(),
+}));
 jest.mock('@/lib/api/client', () => ({
   ...jest.requireActual('@/lib/api/client'),
   api: { get: jest.fn(), post: (...a: unknown[]) => post(...a), put: jest.fn(), patch: jest.fn(), delete: jest.fn() },
@@ -27,7 +31,9 @@ beforeEach(() => {
 
 describe('reference page', () => {
   it('asks the three questions and sends the answers', async () => {
-    post.mockResolvedValueOnce({ caregiverName: 'Kamala Perera', relationship: 'Former employer', refereeName: 'Nimal', answered: false }).mockResolvedValueOnce({ ok: true });
+    post
+      .mockResolvedValueOnce({ caregiverName: 'Kamala Perera', relationship: 'Former employer', refereeName: 'Nimal', answered: false })
+      .mockResolvedValueOnce({ ok: true });
     show();
     expect(await screen.findByText('Hello Nimal')).toBeInTheDocument();
     expect(post).toHaveBeenCalledWith('/public/references/check', { token: TOKEN });
@@ -40,11 +46,19 @@ describe('reference page', () => {
     fireEvent.change(screen.getByLabelText(/Anything you would like to add/), { target: { value: ' Very caring ' } });
     fireEvent.click(send);
     expect(await screen.findByText('Thank you')).toBeInTheDocument();
-    expect(post).toHaveBeenLastCalledWith('/public/references/answer', { token: TOKEN, knowsThem: true, years: 'OVER_3', wouldTrust: 'YES', comment: 'Very caring' });
+    expect(post).toHaveBeenLastCalledWith('/public/references/answer', {
+      token: TOKEN,
+      knowsThem: true,
+      years: 'OVER_3',
+      wouldTrust: 'YES',
+      comment: 'Very caring',
+    });
   });
 
   it('lets someone who does not know the caregiver say so, without the other questions', async () => {
-    post.mockResolvedValueOnce({ caregiverName: 'Kamala Perera', relationship: 'Neighbour', refereeName: 'Sunil', answered: false }).mockResolvedValueOnce({ ok: true });
+    post
+      .mockResolvedValueOnce({ caregiverName: 'Kamala Perera', relationship: 'Neighbour', refereeName: 'Sunil', answered: false })
+      .mockResolvedValueOnce({ ok: true });
     show();
     fireEvent.click(await screen.findByLabelText('No'));
     expect(screen.queryByText('How long have you known them?')).not.toBeInTheDocument();

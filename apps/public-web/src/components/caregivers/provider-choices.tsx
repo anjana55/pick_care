@@ -64,10 +64,7 @@ export function ProviderChoices({
     setPending(provider);
     setError(null);
     try {
-      const { url } = await api.get<{ url: string }>(
-        `/auth/social/${provider.toLowerCase()}/authorize-url`,
-        { token: pendingToken },
-      );
+      const { url } = await api.get<{ url: string }>(`/auth/social/${provider.toLowerCase()}/authorize-url`, { token: pendingToken });
       // A full navigation, not a client-side route change: the caregiver is
       // leaving this app for the provider and coming back, and this container
       // holds no route for their return.
@@ -161,7 +158,9 @@ function EmailPasswordChoice({
   if (done) {
     return (
       <div role="status" className="rounded border border-brand/30 bg-brand-light p-4">
-        <p className="text-sm font-semibold text-ink">{done.verificationSent ? t('caregiverSignup.checkEmailTitle') : t('caregiverSignup.passwordSet', { email: done.email })}</p>
+        <p className="text-sm font-semibold text-ink">
+          {done.verificationSent ? t('caregiverSignup.checkEmailTitle') : t('caregiverSignup.passwordSet', { email: done.email })}
+        </p>
         {done.verificationSent && <p className="mt-1 text-sm text-ink/70">{t('caregiverSignup.checkEmailBody', { email: done.email })}</p>}
         <Link href="/caregiver/login" className="mt-3 inline-block text-sm font-medium text-brand-dark hover:underline">
           {t('caregiverSignup.goToSignIn')}
@@ -191,7 +190,9 @@ function EmailPasswordChoice({
     if (password !== confirm) return setProblem(t('register.validation.passwordMismatch'));
     setSubmitting(true);
     try {
-      setDone(await api.post<{ email: string; verificationSent: boolean }>('/auth/register-caregiver/unified/password', { pendingToken, email: address, password }));
+      setDone(
+        await api.post<{ email: string; verificationSent: boolean }>('/auth/register-caregiver/unified/password', { pendingToken, email: address, password }),
+      );
     } catch (err) {
       setProblem(err instanceof ApiError && err.message ? err.message : t('caregiverSignup.passwordError'));
     } finally {

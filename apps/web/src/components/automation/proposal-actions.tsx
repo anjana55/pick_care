@@ -27,7 +27,11 @@ export function ProposalActions({ decision }: { decision: AgentDecisionView }) {
   return (
     <div className="mt-1">
       <div className="flex flex-wrap gap-2">
-        <Button size="sm" disabled={decide.isPending} onClick={() => (setError(null), decide.mutate({ id: decision.id, approve: true }, { onError: (e) => setError(message(e)) }))}>
+        <Button
+          size="sm"
+          disabled={decide.isPending}
+          onClick={() => (setError(null), decide.mutate({ id: decision.id, approve: true }, { onError: (e) => setError(message(e)) }))}
+        >
           {decide.isPending && decide.variables?.approve ? t('common.loading') : t('automation.case.approve')}
         </Button>
         <Button size="sm" variant="secondary" disabled={decide.isPending} onClick={() => (setError(null), setDeclining(true))}>
@@ -48,7 +52,10 @@ export function ProposalActions({ decision }: { decision: AgentDecisionView }) {
           pending={decide.isPending}
           error={error}
           onConfirm={() =>
-            decide.mutate({ id: decision.id, approve: false, reason: reason.trim() || undefined }, { onSuccess: () => (setDeclining(false), setReason('')), onError: (e) => setError(message(e)) })
+            decide.mutate(
+              { id: decision.id, approve: false, reason: reason.trim() || undefined },
+              { onSuccess: () => (setDeclining(false), setReason('')), onError: (e) => setError(message(e)) },
+            )
           }
           onCancel={() => (setDeclining(false), setError(null))}
         >

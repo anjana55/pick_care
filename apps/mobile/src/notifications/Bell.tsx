@@ -42,6 +42,18 @@ export function Bell() {
 
 const styles = StyleSheet.create({
   bell: { width: 50, height: 50, borderRadius: 25, alignItems: 'center', justifyContent: 'center' },
-  badge: { position: 'absolute', top: -4, right: -4, minWidth: 24, height: 24, borderRadius: 12, paddingHorizontal: 5, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#FFFFFF' },
+  badge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    minWidth: 24,
+    height: 24,
+    borderRadius: 12,
+    paddingHorizontal: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
   badgeText: { color: '#FFFFFF', fontSize: 13, fontWeight: '800', lineHeight: 16 },
 });

@@ -19,10 +19,7 @@ export function CatalogPicker({ kind, selectedIds }: { kind: 'skills' | 'languag
 
   const onToggle = (itemId: string) => {
     setError(null);
-    toggle.mutate(
-      { itemId, assigned: selected.has(itemId) },
-      { onError: (err) => setError(err instanceof ApiError ? err.message : t('portal.saveError')) },
-    );
+    toggle.mutate({ itemId, assigned: selected.has(itemId) }, { onError: (err) => setError(err instanceof ApiError ? err.message : t('portal.saveError')) });
   };
 
   return (
@@ -30,7 +27,11 @@ export function CatalogPicker({ kind, selectedIds }: { kind: 'skills' | 'languag
       <legend className="mb-2 text-sm font-semibold text-ink">{t(`portal.profile.${kind}`)}</legend>
       <p className="mb-3 text-xs text-ink/60">{t(`portal.profile.${kind}Hint`)}</p>
       {isLoading && <p className="text-sm text-ink/60">{t('common.loading')}</p>}
-      {isError && <p role="alert" className="text-sm text-danger">{t('portal.loadError')}</p>}
+      {isError && (
+        <p role="alert" className="text-sm text-danger">
+          {t('portal.loadError')}
+        </p>
+      )}
       <div className="flex flex-wrap gap-2">
         {catalog?.map((item) => {
           const on = selected.has(item.id);
@@ -47,7 +48,11 @@ export function CatalogPicker({ kind, selectedIds }: { kind: 'skills' | 'languag
           );
         })}
       </div>
-      {error && <p role="alert" className="mt-3 text-sm text-danger">{error}</p>}
+      {error && (
+        <p role="alert" className="mt-3 text-sm text-danger">
+          {error}
+        </p>
+      )}
     </fieldset>
   );
 }

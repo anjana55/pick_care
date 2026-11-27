@@ -102,7 +102,13 @@ describe('BrandingSettingsService', () => {
       { companyName: '  Golden Years Care ', shortName: '', tagline: 'Care close to home', primaryColor: '#1a5fb4', accentColor: '#8F3B76' },
       'admin-1',
     );
-    expect(out).toMatchObject({ companyName: 'Golden Years Care', shortName: 'GY', tagline: 'Care close to home', primaryColor: '#1A5FB4', accentColor: '#8F3B76' });
+    expect(out).toMatchObject({
+      companyName: 'Golden Years Care',
+      shortName: 'GY',
+      tagline: 'Care close to home',
+      primaryColor: '#1A5FB4',
+      accentColor: '#8F3B76',
+    });
     expect(await service.companyName()).toBe('Golden Years Care');
   });
 
@@ -171,7 +177,9 @@ describe('inspectLogo', () => {
 
   describe('the other artwork', () => {
     const square = svg('<circle cx="5" cy="5" r="4" fill="#1B8086"/>');
-    const wide = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 92" width="448" height="92"><rect width="448" height="92" fill="#0D4447"/></svg>');
+    const wide = Buffer.from(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 92" width="448" height="92"><rect width="448" height="92" fill="#0D4447"/></svg>',
+    );
 
     it('keeps each asset apart: the reverse logo, symbol and app icon have their own versions', async () => {
       const { service, files } = make({ companyName: 'Pick Care' });
@@ -226,5 +234,7 @@ describe('inspectLogo', () => {
 });
 
 async function png(width: number, height: number): Promise<Buffer> {
-  return sharp({ create: { width, height, channels: 4, background: '#1B8086' } }).png().toBuffer();
+  return sharp({ create: { width, height, channels: 4, background: '#1B8086' } })
+    .png()
+    .toBuffer();
 }

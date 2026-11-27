@@ -7,7 +7,12 @@ const HOUR = 3_600_000;
 const DAY = 24 * HOUR;
 const now = new Date('2026-11-04T06:00:00Z');
 const at = (hours: number) => new Date(now.getTime() + hours * HOUR);
-const shift = (caregiverId: string, fromHours: number, status = 'SCHEDULED', hours = 9) => ({ caregiverId, startsAt: at(fromHours), endsAt: at(fromHours + hours), status });
+const shift = (caregiverId: string, fromHours: number, status = 'SCHEDULED', hours = 9) => ({
+  caregiverId,
+  startsAt: at(fromHours),
+  endsAt: at(fromHours + hours),
+  status,
+});
 
 describe('who can rate whom, and until when', () => {
   it('counts completed shifts, and scheduled ones that have ended - never missed, cancelled or future ones', () => {
@@ -44,7 +49,16 @@ describe('who can rate whom, and until when', () => {
 });
 
 describe('what is shown publicly', () => {
-  const stats = { ratingCount: 3, ratingSum: 13, badgeCounts: [{ badge: 'PUNCTUAL' as const, count: 1 }, { badge: 'KIND_PATIENT' as const, count: 2 }, { badge: 'GOOD_COOK' as const, count: 1 }, { badge: 'TRUSTWORTHY' as const, count: 1 }] };
+  const stats = {
+    ratingCount: 3,
+    ratingSum: 13,
+    badgeCounts: [
+      { badge: 'PUNCTUAL' as const, count: 1 },
+      { badge: 'KIND_PATIENT' as const, count: 2 },
+      { badge: 'GOOD_COOK' as const, count: 1 },
+      { badge: 'TRUSTWORTHY' as const, count: 1 },
+    ],
+  };
 
   it('shows nothing below the threshold, or with ratings switched off', () => {
     expect(publicSummary({ ...stats, ratingCount: 2 }, DEFAULT_REVIEW_SETTINGS)).toBeNull();
@@ -78,9 +92,22 @@ describe('the ranking signal', () => {
   it('adds up to 15 points and never changes an unrated caregiver', () => {
     const ranking = new RankingService();
     const base = {
-      caregiverId: 'x', cityName: null, districtName: null, homeDistanceKm: null, nearestServiceCity: null, reach: null, gender: 'FEMALE' as const,
-      matchedOptionalSkillCount: 0, matchedLanguageCount: 0, matchedConditionCount: 0, yearsOfRelevantExperience: 0, hasVerifiedQualification: false,
-      verified: false, dayDuty: false, nightDuty: false, liveIn24h: false,
+      caregiverId: 'x',
+      cityName: null,
+      districtName: null,
+      homeDistanceKm: null,
+      nearestServiceCity: null,
+      reach: null,
+      gender: 'FEMALE' as const,
+      matchedOptionalSkillCount: 0,
+      matchedLanguageCount: 0,
+      matchedConditionCount: 0,
+      yearsOfRelevantExperience: 0,
+      hasVerifiedQualification: false,
+      verified: false,
+      dayDuty: false,
+      nightDuty: false,
+      liveIn24h: false,
     };
     const req = {} as SearchRequestDto;
     const ctx = { radiusKm: null };

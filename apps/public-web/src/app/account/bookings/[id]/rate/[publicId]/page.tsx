@@ -94,10 +94,20 @@ export default function RateCaregiverPage() {
             {review.comment && review.commentStatus !== 'NONE' && (
               <p className="text-xs text-ink/60">{t(`reviews.commentStatus.${review.commentStatus}`, { reason: review.commentRejectReason ?? '' })}</p>
             )}
-            {data.canReview && !review.hidden && <p className="text-xs text-ink/50">{t('reviews.until', { date: fmtDate(data.reviewUntil.slice(0, 10), locale) })}</p>}
+            {data.canReview && !review.hidden && (
+              <p className="text-xs text-ink/50">{t('reviews.until', { date: fmtDate(data.reviewUntil.slice(0, 10), locale) })}</p>
+            )}
             <div className="flex flex-wrap gap-3 pt-1">
               {data.canReview && !review.hidden && (
-                <Button type="button" variant="secondary" size="lg" onClick={() => { setEditing(true); setDone(null); }}>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="lg"
+                  onClick={() => {
+                    setEditing(true);
+                    setDone(null);
+                  }}
+                >
                   {t('reviews.edit')}
                 </Button>
               )}
@@ -113,7 +123,14 @@ export default function RateCaregiverPage() {
                       type="button"
                       variant="danger"
                       disabled={remove.isPending}
-                      onClick={() => remove.mutate(undefined, { onSuccess: () => { setConfirming(false); setDone('deleted'); } })}
+                      onClick={() =>
+                        remove.mutate(undefined, {
+                          onSuccess: () => {
+                            setConfirming(false);
+                            setDone('deleted');
+                          },
+                        })
+                      }
                     >
                       {t('reviews.form.deleteYes')}
                     </Button>

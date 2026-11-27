@@ -183,7 +183,14 @@ export class BillingAgentService implements OnApplicationBootstrap, OnModuleDest
       })
       .from(bookings)
       .innerJoin(bookingShifts, eq(bookingShifts.bookingId, bookings.id))
-      .where(and(inArray(bookings.status, ['CONFIRMED', 'COMPLETED']), eq(bookingShifts.status, 'COMPLETED'), gte(bookingShifts.startsAt, since), only ? inArray(bookings.id, only) : undefined))
+      .where(
+        and(
+          inArray(bookings.status, ['CONFIRMED', 'COMPLETED']),
+          eq(bookingShifts.status, 'COMPLETED'),
+          gte(bookingShifts.startsAt, since),
+          only ? inArray(bookings.id, only) : undefined,
+        ),
+      )
       .groupBy(bookings.id, bookings.reference, bookings.status, bookings.startDate);
 
     // Bookings billed in advance: what is due now for the work booked.
@@ -205,7 +212,8 @@ export class BillingAgentService implements OnApplicationBootstrap, OnModuleDest
     const leadDays = ahead.length ? (await this.billingSettings.getResolved()).advanceLeadDays : 0;
     for (const b of ahead) {
       // A draft is billed for its first period only, and only once: later months wait until it is confirmed.
-      const periods = b.status === 'DRAFT' ? ((await this.invoicesFor(b.id)) ? [] : advancePeriods(b, today, leadDays).slice(0, 1)) : advancePeriods(b, today, leadDays);
+      const periods =
+        b.status === 'DRAFT' ? ((await this.invoicesFor(b.id)) ? [] : advancePeriods(b, today, leadDays).slice(0, 1)) : advancePeriods(b, today, leadDays);
       for (const period of periods) {
         run.considered++;
         try {
@@ -240,18 +248,30 @@ export class BillingAgentService implements OnApplicationBootstrap, OnModuleDest
 
   /** Whether this booking already has an invoice that has not been voided. */
   private async invoicesFor(bookingId: string): Promise<boolean> {
-    const [row] = await this.db.select({ id: invoices.id }).from(invoices).where(and(eq(invoices.bookingId, bookingId), ne(invoices.status, 'VOID'))).limit(1);
+    const [row] = await this.db
+      .select({ id: invoices.id })
+      .from(invoices)
+      .where(and(eq(invoices.bookingId, bookingId), ne(invoices.status, 'VOID')))
+      .limit(1);
     return Boolean(row);
   }
 
-  private async consider(booking: { id: string; reference: string }, periodStart: string, periodEnd: string, basis: 'COMPLETED' | 'SCHEDULED' = 'COMPLETED'): Promise<'nothing' | 'decided' | 'staff'> {
+  private async consider(
+    booking: { id: string; reference: string },
+    periodStart: string,
+    periodEnd: string,
+    basis: 'COMPLETED' | 'SCHEDULED' = 'COMPLETED',
+  ): Promise<'nothing' | 'decided' | 'staff'> {
     const ref = { caseType: 'BOOKING' as const, caseId: booking.id };
     const advance = basis === 'SCHEDULED';
     const preview = await this.invoicesService.previewBooking(booking.id, periodStart, periodEnd, basis);
     if (preview.lines === 0) return 'nothing';
 
     if (preview.unpriced > 0 || preview.subtotalCents <= 0) {
-      const why = preview.unpriced > 0 ? `${preview.unpriced} ${advance ? '' : 'completed '}shift${preview.unpriced === 1 ? ' has' : 's have'} no client rate` : 'the amount comes to zero or less after corrections';
+      const why =
+        preview.unpriced > 0
+          ? `${preview.unpriced} ${advance ? '' : 'completed '}shift${preview.unpriced === 1 ? ' has' : 's have'} no client rate`
+          : 'the amount comes to zero or less after corrections';
       // Only say so on a case the agent is allowed to work on.
       if ((await this.automation.gate(ACTION, ref)).outcome === 'NONE') return 'nothing';
       await this.automation.setHandoverNote(ref, {
@@ -344,7 +364,9 @@ export class BillingAgentService implements OnApplicationBootstrap, OnModuleDest
     const drafts = await this.db
       .select()
       .from(payoutStatements)
-      .where(and(eq(payoutStatements.status, 'DRAFT'), caregiverIds ? inArray(payoutStatements.caregiverId, caregiverIds.length ? caregiverIds : ['']) : undefined))
+      .where(
+        and(eq(payoutStatements.status, 'DRAFT'), caregiverIds ? inArray(payoutStatements.caregiverId, caregiverIds.length ? caregiverIds : ['']) : undefined),
+      )
       .limit(500);
     const agentUser = (await this.automation.agentActor('BILLING')).userId;
     for (const draft of drafts) {
@@ -398,7 +420,9 @@ export class BillingAgentService implements OnApplicationBootstrap, OnModuleDest
     const fresh = await this.payouts.previewCaregiver(p.caregiverId, p.periodStart, p.periodEnd);
     if (fresh.lines === 0) throw new BadRequestException('This work is already on a statement');
     if (fresh.totalCents !== p.totalCents) {
-      throw new BadRequestException(`The amount has changed since this was proposed (${lkr(p.totalCents)} then, ${lkr(fresh.totalCents)} now). Make the statement by hand, or wait for a new proposal`);
+      throw new BadRequestException(
+        `The amount has changed since this was proposed (${lkr(p.totalCents)} then, ${lkr(fresh.totalCents)} now). Make the statement by hand, or wait for a new proposal`,
+      );
     }
     const who = { userId: actor.userId, email: actor.email, role: actor.role };
     const draft = await this.payouts.create({ caregiverId: p.caregiverId, periodStart: p.periodStart, periodEnd: p.periodEnd }, who);
@@ -422,7 +446,10 @@ export class BillingAgentService implements OnApplicationBootstrap, OnModuleDest
 
   private async considerApproval(draft: typeof payoutStatements.$inferSelect): Promise<'nothing' | 'decided' | 'staff'> {
     const ref = { caseType: 'PAYOUT' as const, caseId: draft.id };
-    const lines = await this.db.select({ kind: payoutLines.kind, unitPrice: payoutLines.unitPrice }).from(payoutLines).where(eq(payoutLines.statementId, draft.id));
+    const lines = await this.db
+      .select({ kind: payoutLines.kind, unitPrice: payoutLines.unitPrice })
+      .from(payoutLines)
+      .where(eq(payoutLines.statementId, draft.id));
     const totalCents = Math.round(Number(draft.total) * 100);
     if (!lines.length || totalCents <= 0) return 'nothing';
     const gate = await this.automation.gate(APPROVE_PAYOUT, ref);
@@ -430,15 +457,29 @@ export class BillingAgentService implements OnApplicationBootstrap, OnModuleDest
 
     const unpriced = lines.filter((l) => l.kind === 'SHIFT' && Number(l.unitPrice) === 0).length;
     const limitCents = await this.payoutLimitCents();
-    const blocker = unpriced ? `${unpriced} shift${unpriced === 1 ? ' has' : 's have'} no pay rate` : totalCents > limitCents ? `${lkr(totalCents)} is over the agent's limit of ${lkr(limitCents)}` : null;
+    const blocker = unpriced
+      ? `${unpriced} shift${unpriced === 1 ? ' has' : 's have'} no pay rate`
+      : totalCents > limitCents
+        ? `${lkr(totalCents)} is over the agent's limit of ${lkr(limitCents)}`
+        : null;
     if (blocker) {
       if (gate.outcome !== 'SHADOW') {
-        await this.automation.setHandoverNote(ref, { done: `Checked statement ${draft.reference}`, waiting: `Staff: ${blocker}`, next: 'Nothing more from the agent on this statement' });
+        await this.automation.setHandoverNote(ref, {
+          done: `Checked statement ${draft.reference}`,
+          waiting: `Staff: ${blocker}`,
+          next: 'Nothing more from the agent on this statement',
+        });
       }
       return 'staff';
     }
 
-    const proposal: PayoutApprovalProposal = { payoutId: draft.id, payoutReference: draft.reference, caregiverId: draft.caregiverId, lines: lines.length, totalCents };
+    const proposal: PayoutApprovalProposal = {
+      payoutId: draft.id,
+      payoutReference: draft.reference,
+      caregiverId: draft.caregiverId,
+      lines: lines.length,
+      totalCents,
+    };
     const decision = await this.automation.decide({
       action: APPROVE_PAYOUT,
       case: ref,
@@ -449,11 +490,19 @@ export class BillingAgentService implements OnApplicationBootstrap, OnModuleDest
     });
     if (!decision.decisionId) return 'nothing';
     if (decision.outcome === 'PROPOSE') {
-      await this.automation.setHandoverNote(ref, { done: `Checked statement ${draft.reference}: ${lkr(totalCents)}`, waiting: 'Staff to approve or decline the proposal', next: 'Approve the statement once that is agreed' });
+      await this.automation.setHandoverNote(ref, {
+        done: `Checked statement ${draft.reference}: ${lkr(totalCents)}`,
+        waiting: 'Staff to approve or decline the proposal',
+        next: 'Approve the statement once that is agreed',
+      });
     } else if (decision.outcome === 'EXECUTE') {
       const done = await this.automation.execute(decision.decisionId);
       if (!done.ok) {
-        await this.automation.setHandoverNote(ref, { done: `Tried to approve statement ${draft.reference}`, waiting: `Staff: ${done.error}`, next: 'Nothing more from the agent on this statement' });
+        await this.automation.setHandoverNote(ref, {
+          done: `Tried to approve statement ${draft.reference}`,
+          waiting: `Staff: ${done.error}`,
+          next: 'Nothing more from the agent on this statement',
+        });
         return 'staff';
       }
     }
@@ -468,12 +517,17 @@ export class BillingAgentService implements OnApplicationBootstrap, OnModuleDest
     if (statement.status !== 'DRAFT') throw new BadRequestException('This statement is no longer a draft');
     if (statement.unpricedLines > 0) throw new BadRequestException('A shift on this statement has no pay rate');
     const nowCents = Math.round(Number(statement.total) * 100);
-    if (nowCents !== p.totalCents) throw new BadRequestException(`The statement has changed since this was proposed (${lkr(p.totalCents)} then, ${lkr(nowCents)} now)`);
+    if (nowCents !== p.totalCents)
+      throw new BadRequestException(`The statement has changed since this was proposed (${lkr(p.totalCents)} then, ${lkr(nowCents)} now)`);
     if (nowCents > (await this.payoutLimitCents())) throw new BadRequestException("This statement is over the agent's limit. Approve it on the Payouts page");
     const approved = await this.payouts.approve(p.payoutId, { userId: actor.userId, email: actor.email, role: actor.role });
     await this.automation.setHandoverNote(
       { caseType: 'PAYOUT', caseId: p.payoutId },
-      { done: `Statement ${approved.reference} approved: ${lkr(nowCents)}`, waiting: 'Staff to pay it and mark it paid', next: 'Nothing more from the agent on this statement' },
+      {
+        done: `Statement ${approved.reference} approved: ${lkr(nowCents)}`,
+        waiting: 'Staff to pay it and mark it paid',
+        next: 'Nothing more from the agent on this statement',
+      },
     );
     return { payoutId: approved.id, reference: approved.reference, total: approved.total };
   };
@@ -519,7 +573,9 @@ export class BillingAgentService implements OnApplicationBootstrap, OnModuleDest
         await this.automation.review(
           d.id,
           agreed ? 'AGREED' : 'DIFFERED',
-          agreed ? `Scored automatically: staff drafted the same amount (${refs})` : `Scored automatically: staff drafted ${lkr(staffCents)} (${refs}); the agent would have drafted ${lkr(p.totalCents)}`,
+          agreed
+            ? `Scored automatically: staff drafted the same amount (${refs})`
+            : `Scored automatically: staff drafted ${lkr(staffCents)} (${refs}); the agent would have drafted ${lkr(p.totalCents)}`,
           made[0].createdByUserId ?? fallbackReviewer,
         );
         scored++;
@@ -557,7 +613,9 @@ export class BillingAgentService implements OnApplicationBootstrap, OnModuleDest
     if (fresh.lines === 0) throw new BadRequestException('This work has already been billed');
     if (fresh.unpriced > 0) throw new BadRequestException('A completed shift has no client rate. Set it, then bill the booking');
     if (fresh.subtotalCents !== p.subtotalCents) {
-      throw new BadRequestException(`The amount has changed since this was proposed (${lkr(p.subtotalCents)} then, ${lkr(fresh.subtotalCents)} now). Bill the booking by hand, or wait for a new proposal`);
+      throw new BadRequestException(
+        `The amount has changed since this was proposed (${lkr(p.subtotalCents)} then, ${lkr(fresh.subtotalCents)} now). Bill the booking by hand, or wait for a new proposal`,
+      );
     }
     const who = { userId: actor.userId, email: actor.email, role: actor.role };
     const draft = await this.invoicesService.create({ bookingId: p.bookingId, basis, periodStart: p.periodStart, periodEnd: p.periodEnd }, who);
@@ -584,7 +642,14 @@ export class BillingAgentService implements OnApplicationBootstrap, OnModuleDest
     const open = await this.db
       .select()
       .from(agentDecisions)
-      .where(and(eq(agentDecisions.action, ACTION), eq(agentDecisions.outcome, 'SHADOW'), isNull(agentDecisions.staffVerdict), only?.length ? inArray(agentDecisions.caseId, only) : undefined))
+      .where(
+        and(
+          eq(agentDecisions.action, ACTION),
+          eq(agentDecisions.outcome, 'SHADOW'),
+          isNull(agentDecisions.staffVerdict),
+          only?.length ? inArray(agentDecisions.caseId, only) : undefined,
+        ),
+      )
       .limit(200);
     let scored = 0;
     for (const d of open) {
@@ -605,7 +670,14 @@ export class BillingAgentService implements OnApplicationBootstrap, OnModuleDest
         })
         .from(invoiceLines)
         .innerJoin(invoices, eq(invoiceLines.invoiceId, invoices.id))
-        .where(and(eq(invoiceLines.bookingId, p.bookingId), ne(invoices.status, 'VOID'), ne(invoices.status, 'DRAFT'), gt(invoices.issuedAt, new Date(d.createdAt.getTime() - 1000))))
+        .where(
+          and(
+            eq(invoiceLines.bookingId, p.bookingId),
+            ne(invoices.status, 'VOID'),
+            ne(invoices.status, 'DRAFT'),
+            gt(invoices.issuedAt, new Date(d.createdAt.getTime() - 1000)),
+          ),
+        )
         // issued_at is kept to the second and the decision to the millisecond: allow for the rounding.
         .groupBy(invoices.id, invoices.number, invoices.issuedByUserId, invoices.bookingId, invoices.subtotal);
       if (!billed.length) continue; // still in a draft: wait for staff to issue it
@@ -615,7 +687,9 @@ export class BillingAgentService implements OnApplicationBootstrap, OnModuleDest
       await this.automation.review(
         d.id,
         agreed ? 'AGREED' : 'DIFFERED',
-        agreed ? `Scored automatically: staff billed the same amount (${numbers})` : `Scored automatically: staff billed ${lkr(staffCents)} (${numbers}); the agent would have billed ${lkr(p.subtotalCents)}`,
+        agreed
+          ? `Scored automatically: staff billed the same amount (${numbers})`
+          : `Scored automatically: staff billed ${lkr(staffCents)} (${numbers}); the agent would have billed ${lkr(p.subtotalCents)}`,
         billed[0].issuedBy ?? (await this.automation.agentActor('BILLING')).userId,
       );
       scored++;

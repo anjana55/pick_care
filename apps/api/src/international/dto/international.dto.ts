@@ -64,93 +64,171 @@ const blankToNull = ({ value }: { value: unknown }) => {
 // --- employer enquiries ----------------------------------------------------
 
 export class CreateEmployerEnquiryDto {
-  @ApiProperty() @Transform(trim) @IsString() @MinLength(2) @MaxLength(200)
+  @ApiProperty()
+  @Transform(trim)
+  @IsString()
+  @MinLength(2)
+  @MaxLength(200)
   organisationName!: string;
 
-  @ApiProperty({ enum: employerTypeValues }) @IsIn(employerTypeValues)
+  @ApiProperty({ enum: employerTypeValues })
+  @IsIn(employerTypeValues)
   organisationType!: EmployerType;
 
-  @ApiProperty({ description: 'ISO 3166-1 alpha-2' }) @IsIn(COUNTRY_CODES)
+  @ApiProperty({ description: 'ISO 3166-1 alpha-2' })
+  @IsIn(COUNTRY_CODES)
   country!: CountryCode;
 
-  @ApiProperty() @Transform(trim) @IsString() @MinLength(2) @MaxLength(150)
+  @ApiProperty()
+  @Transform(trim)
+  @IsString()
+  @MinLength(2)
+  @MaxLength(150)
   contactName!: string;
 
-  @ApiProperty() @Transform(trim) @IsEmail() @MaxLength(255)
+  @ApiProperty()
+  @Transform(trim)
+  @IsEmail()
+  @MaxLength(255)
   email!: string;
 
   @ApiPropertyOptional({ description: 'International format, e.g. +81 90 1234 5678' })
-  @IsOptional() @Transform(blankToUndefined) @IsString() @Matches(/^\+?[0-9 ()-]{6,30}$/)
+  @IsOptional()
+  @Transform(blankToUndefined)
+  @IsString()
+  @Matches(/^\+?[0-9 ()-]{6,30}$/)
   phone?: string;
 
-  @ApiPropertyOptional() @IsOptional() @Transform(blankToUndefined) @IsString() @MaxLength(255)
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(blankToUndefined)
+  @IsString()
+  @MaxLength(255)
   website?: string;
 
-  @ApiProperty({ minimum: 1, maximum: 500 }) @Type(() => Number) @IsInt() @Min(1) @Max(500)
+  @ApiProperty({ minimum: 1, maximum: 500 })
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(500)
   rolesCount!: number;
 
   @ApiProperty({ enum: careTypeValues, isArray: true })
-  @IsArray() @ArrayMinSize(1) @ArrayMaxSize(careTypeValues.length) @IsIn(careTypeValues, { each: true })
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(careTypeValues.length)
+  @IsIn(careTypeValues, { each: true })
   careSettings!: CareType[];
 
-  @ApiPropertyOptional() @IsOptional() @Transform(blankToUndefined) @IsString() @MaxLength(255)
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(blankToUndefined)
+  @IsString()
+  @MaxLength(255)
   languages?: string;
 
-  @ApiPropertyOptional() @IsOptional() @Transform(blankToUndefined) @IsString() @MaxLength(100)
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(blankToUndefined)
+  @IsString()
+  @MaxLength(100)
   startTimeframe?: string;
 
-  @ApiProperty({ enum: visaSponsorshipValues }) @IsIn(visaSponsorshipValues)
+  @ApiProperty({ enum: visaSponsorshipValues })
+  @IsIn(visaSponsorshipValues)
   visaSponsorship!: VisaSponsorship;
 
-  @ApiPropertyOptional() @IsOptional() @Transform(blankToUndefined) @IsString() @MaxLength(3000)
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(blankToUndefined)
+  @IsString()
+  @MaxLength(3000)
   message?: string;
 
   @ApiPropertyOptional({ description: 'Slug of the shared profile the enquiry was sent from' })
-  @IsOptional() @IsString() @Matches(/^[a-z0-9]{6,24}$/)
+  @IsOptional()
+  @IsString()
+  @Matches(/^[a-z0-9]{6,24}$/)
   talentSlug?: string;
 
   @ApiProperty({ description: 'Must be true: the employer agrees to be contacted and to the privacy notice' })
   @Equals(true)
   consent!: true;
 
-  @ApiPropertyOptional({ enum: LOCALES }) @IsOptional() @IsIn(LOCALES)
+  @ApiPropertyOptional({ enum: LOCALES })
+  @IsOptional()
+  @IsIn(LOCALES)
   language?: Locale;
 
   /** Honeypot. Hidden from people; bots fill every field. */
-  @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(500)
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
   website2?: string;
 }
 
 export class EmployerEnquiryQueryDto {
   @ApiPropertyOptional({ enum: [...employerEnquiryStatusValues, 'open'] })
-  @IsOptional() @IsIn([...employerEnquiryStatusValues, 'open'])
+  @IsOptional()
+  @IsIn([...employerEnquiryStatusValues, 'open'])
   status?: EmployerEnquiryStatus | 'open';
 
-  @ApiPropertyOptional() @IsOptional() @Transform(blankToUndefined) @IsString() @MaxLength(100)
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(blankToUndefined)
+  @IsString()
+  @MaxLength(100)
   search?: string;
 
-  @ApiPropertyOptional({ description: "Only this employer account's enquiries" }) @IsOptional() @IsUUID()
+  @ApiPropertyOptional({ description: "Only this employer account's enquiries" })
+  @IsOptional()
+  @IsUUID()
   employerId?: string;
 
-  @ApiPropertyOptional({ default: 1 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1)
+  @ApiPropertyOptional({ default: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
   page?: number;
 
-  @ApiPropertyOptional({ default: 25 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(100)
+  @ApiPropertyOptional({ default: 25 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
   pageSize?: number;
 }
 
 export class UpdateEmployerEnquiryDto {
-  @ApiPropertyOptional({ enum: employerEnquiryStatusValues }) @IsOptional() @IsIn(employerEnquiryStatusValues)
+  @ApiPropertyOptional({ enum: employerEnquiryStatusValues })
+  @IsOptional()
+  @IsIn(employerEnquiryStatusValues)
   status?: EmployerEnquiryStatus;
 
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @Transform(blankToNull) @ValidateIf((_, v) => v !== null) @IsString() @MaxLength(5000)
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @Transform(blankToNull)
+  @ValidateIf((_, v) => v !== null)
+  @IsString()
+  @MaxLength(5000)
   staffNote?: string | null;
 
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @ValidateIf((_, v) => v !== null) @Type(() => Number) @IsNumber({ maxDecimalPlaces: 2 }) @Min(0)
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @ValidateIf((_, v) => v !== null)
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
   placementFeeAmount?: number | null;
 
   @ApiPropertyOptional({ nullable: true, description: 'ISO 4217, e.g. USD' })
-  @IsOptional() @Transform(blankToNull) @ValidateIf((_, v) => v !== null) @Matches(/^[A-Z]{3}$/)
+  @IsOptional()
+  @Transform(blankToNull)
+  @ValidateIf((_, v) => v !== null)
+  @Matches(/^[A-Z]{3}$/)
   placementFeeCurrency?: string | null;
 }
 
@@ -161,146 +239,310 @@ export class UpdateEmployerEnquiryDto {
  * optional: only what is sent changes.
  */
 export class EditEnquiryDetailsDto {
-  @ApiPropertyOptional() @IsOptional() @Transform(trim) @IsString() @MinLength(2) @MaxLength(200)
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(trim)
+  @IsString()
+  @MinLength(2)
+  @MaxLength(200)
   organisationName?: string;
 
-  @ApiPropertyOptional({ enum: employerTypeValues }) @IsOptional() @IsIn(employerTypeValues)
+  @ApiPropertyOptional({ enum: employerTypeValues })
+  @IsOptional()
+  @IsIn(employerTypeValues)
   organisationType?: EmployerType;
 
-  @ApiPropertyOptional({ description: 'ISO 3166-1 alpha-2' }) @IsOptional() @IsIn(COUNTRY_CODES)
+  @ApiPropertyOptional({ description: 'ISO 3166-1 alpha-2' })
+  @IsOptional()
+  @IsIn(COUNTRY_CODES)
   country?: CountryCode;
 
-  @ApiPropertyOptional() @IsOptional() @Transform(trim) @IsString() @MinLength(2) @MaxLength(150)
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(trim)
+  @IsString()
+  @MinLength(2)
+  @MaxLength(150)
   contactName?: string;
 
-  @ApiPropertyOptional() @IsOptional() @Transform(trim) @IsEmail() @MaxLength(255)
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(trim)
+  @IsEmail()
+  @MaxLength(255)
   email?: string;
 
   @ApiPropertyOptional({ nullable: true })
-  @IsOptional() @Transform(blankToNull) @ValidateIf((_, v) => v !== null) @IsString() @Matches(/^\+?[0-9 ()-]{6,30}$/, { message: 'Please enter a phone number, with the country code.' })
+  @IsOptional()
+  @Transform(blankToNull)
+  @ValidateIf((_, v) => v !== null)
+  @IsString()
+  @Matches(/^\+?[0-9 ()-]{6,30}$/, { message: 'Please enter a phone number, with the country code.' })
   phone?: string | null;
 
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @Transform(blankToNull) @ValidateIf((_, v) => v !== null) @IsString() @MaxLength(255)
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @Transform(blankToNull)
+  @ValidateIf((_, v) => v !== null)
+  @IsString()
+  @MaxLength(255)
   website?: string | null;
 
-  @ApiPropertyOptional({ minimum: 1, maximum: 500 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(500)
+  @ApiPropertyOptional({ minimum: 1, maximum: 500 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(500)
   rolesCount?: number;
 
   @ApiPropertyOptional({ enum: careTypeValues, isArray: true })
-  @IsOptional() @IsArray() @ArrayMinSize(1) @ArrayMaxSize(careTypeValues.length) @IsIn(careTypeValues, { each: true })
+  @IsOptional()
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(careTypeValues.length)
+  @IsIn(careTypeValues, { each: true })
   careSettings?: CareType[];
 
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @Transform(blankToNull) @ValidateIf((_, v) => v !== null) @IsString() @MaxLength(255)
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @Transform(blankToNull)
+  @ValidateIf((_, v) => v !== null)
+  @IsString()
+  @MaxLength(255)
   languages?: string | null;
 
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @Transform(blankToNull) @ValidateIf((_, v) => v !== null) @IsString() @MaxLength(100)
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @Transform(blankToNull)
+  @ValidateIf((_, v) => v !== null)
+  @IsString()
+  @MaxLength(100)
   startTimeframe?: string | null;
 
-  @ApiPropertyOptional({ enum: visaSponsorshipValues }) @IsOptional() @IsIn(visaSponsorshipValues)
+  @ApiPropertyOptional({ enum: visaSponsorshipValues })
+  @IsOptional()
+  @IsIn(visaSponsorshipValues)
   visaSponsorship?: VisaSponsorship;
 
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @Transform(blankToNull) @ValidateIf((_, v) => v !== null) @IsString() @MaxLength(3000)
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @Transform(blankToNull)
+  @ValidateIf((_, v) => v !== null)
+  @IsString()
+  @MaxLength(3000)
   message?: string | null;
 
   /** The employer account this enquiry belongs to; null to unlink. */
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @ValidateIf((_, v) => v !== null) @IsUUID()
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @ValidateIf((_, v) => v !== null)
+  @IsUUID()
   employerId?: string | null;
 }
 
 // --- overseas readiness ----------------------------------------------------
 
 export class UpdateOverseasReadinessDto {
-  @ApiProperty() @IsBoolean()
+  @ApiProperty()
+  @IsBoolean()
   openToOverseas!: boolean;
 
-  @ApiProperty({ isArray: true }) @IsArray() @ArrayMaxSize(MAX_TARGET_COUNTRIES) @IsIn(COUNTRY_CODES, { each: true })
+  @ApiProperty({ isArray: true })
+  @IsArray()
+  @ArrayMaxSize(MAX_TARGET_COUNTRIES)
+  @IsIn(COUNTRY_CODES, { each: true })
   targetCountries!: CountryCode[];
 
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @ValidateIf((_, v) => v !== null) @IsBoolean()
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @ValidateIf((_, v) => v !== null)
+  @IsBoolean()
   passportHeld?: boolean | null;
 
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @Transform(blankToNull) @ValidateIf((_, v) => v !== null) @IsDateString({ strict: true })
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @Transform(blankToNull)
+  @ValidateIf((_, v) => v !== null)
+  @IsDateString({ strict: true })
   passportExpiry?: string | null;
 
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @Transform(blankToNull) @ValidateIf((_, v) => v !== null) @IsDateString({ strict: true })
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @Transform(blankToNull)
+  @ValidateIf((_, v) => v !== null)
+  @IsDateString({ strict: true })
   availableFrom?: string | null;
 }
 
 // --- training --------------------------------------------------------------
 
 export class TrainingProgrammeDto {
-  @ApiProperty({ enum: trainingCategoryValues }) @IsIn(trainingCategoryValues)
+  @ApiProperty({ enum: trainingCategoryValues })
+  @IsIn(trainingCategoryValues)
   category!: TrainingCategory;
 
-  @ApiProperty({ enum: trainingFormatValues }) @IsIn(trainingFormatValues)
+  @ApiProperty({ enum: trainingFormatValues })
+  @IsIn(trainingFormatValues)
   format!: TrainingFormat;
 
-  @ApiProperty() @Transform(trim) @IsString() @MinLength(2) @MaxLength(200)
+  @ApiProperty()
+  @Transform(trim)
+  @IsString()
+  @MinLength(2)
+  @MaxLength(200)
   titleEn!: string;
 
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @Transform(blankToNull) @ValidateIf((_, v) => v !== null) @IsString() @MaxLength(200)
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @Transform(blankToNull)
+  @ValidateIf((_, v) => v !== null)
+  @IsString()
+  @MaxLength(200)
   titleSi?: string | null;
 
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @Transform(blankToNull) @ValidateIf((_, v) => v !== null) @IsString() @MaxLength(200)
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @Transform(blankToNull)
+  @ValidateIf((_, v) => v !== null)
+  @IsString()
+  @MaxLength(200)
   titleTa?: string | null;
 
-  @ApiProperty() @Transform(trim) @IsString() @MinLength(2) @MaxLength(4000)
+  @ApiProperty()
+  @Transform(trim)
+  @IsString()
+  @MinLength(2)
+  @MaxLength(4000)
   descriptionEn!: string;
 
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @Transform(blankToNull) @ValidateIf((_, v) => v !== null) @IsString() @MaxLength(4000)
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @Transform(blankToNull)
+  @ValidateIf((_, v) => v !== null)
+  @IsString()
+  @MaxLength(4000)
   descriptionSi?: string | null;
 
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @Transform(blankToNull) @ValidateIf((_, v) => v !== null) @IsString() @MaxLength(4000)
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @Transform(blankToNull)
+  @ValidateIf((_, v) => v !== null)
+  @IsString()
+  @MaxLength(4000)
   descriptionTa?: string | null;
 
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @Transform(blankToNull) @ValidateIf((_, v) => v !== null) @IsString() @MaxLength(100)
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @Transform(blankToNull)
+  @ValidateIf((_, v) => v !== null)
+  @IsString()
+  @MaxLength(100)
   duration?: string | null;
 
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @ValidateIf((_, v) => v !== null) @Type(() => Number) @IsNumber({ maxDecimalPlaces: 2 }) @Min(0)
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @ValidateIf((_, v) => v !== null)
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
   feeLkr?: number | null;
 
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @Transform(blankToNull) @ValidateIf((_, v) => v !== null) @IsDateString({ strict: true })
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @Transform(blankToNull)
+  @ValidateIf((_, v) => v !== null)
+  @IsDateString({ strict: true })
   nextStartDate?: string | null;
 
-  @ApiPropertyOptional() @IsOptional() @IsBoolean()
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
   isActive?: boolean;
 
-  @ApiPropertyOptional() @IsOptional() @Type(() => Number) @IsInt() @Min(0) @Max(10_000)
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(10_000)
   sortOrder?: number;
 
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @ValidateIf((_, v) => v !== null) @Type(() => Number) @IsInt() @Min(0) @Max(100)
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @ValidateIf((_, v) => v !== null)
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(100)
   passMark?: number | null;
 }
 
 export class UpdateTrainingEnrolmentDto {
-  @ApiProperty({ enum: trainingEnrolmentStatusValues }) @IsIn(trainingEnrolmentStatusValues)
+  @ApiProperty({ enum: trainingEnrolmentStatusValues })
+  @IsIn(trainingEnrolmentStatusValues)
   status!: TrainingEnrolmentStatus;
 
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @ValidateIf((_, v) => v !== null) @Type(() => Number) @IsInt() @Min(0) @Max(100)
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @ValidateIf((_, v) => v !== null)
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(100)
   progressPercent?: number | null;
 
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @ValidateIf((_, v) => v !== null) @Type(() => Number) @IsInt() @Min(0) @Max(100)
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @ValidateIf((_, v) => v !== null)
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(100)
   score?: number | null;
 
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @Transform(blankToNull) @ValidateIf((_, v) => v !== null) @IsDateString({ strict: true })
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @Transform(blankToNull)
+  @ValidateIf((_, v) => v !== null)
+  @IsDateString({ strict: true })
   completedAt?: string | null;
 
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @Transform(blankToNull) @ValidateIf((_, v) => v !== null) @IsString() @MaxLength(500)
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @Transform(blankToNull)
+  @ValidateIf((_, v) => v !== null)
+  @IsString()
+  @MaxLength(500)
   staffNote?: string | null;
 }
 
 // --- shared profiles -------------------------------------------------------
 
 export class UpdateSharedProfileDto {
-  @ApiProperty() @Transform(trim) @IsString() @MinLength(1) @MaxLength(SHARED_PROFILE_LIMITS.firstName)
+  @ApiProperty()
+  @Transform(trim)
+  @IsString()
+  @MinLength(1)
+  @MaxLength(SHARED_PROFILE_LIMITS.firstName)
   // A first name, not a full name: letters (any script), spaces, hyphens, apostrophes and dots.
   @Matches(/^[\p{L}\p{M}][\p{L}\p{M} .'-]*$/u, { message: 'Please enter a first name using letters only.' })
   firstName!: string;
 
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @Transform(blankToNull) @ValidateIf((_, v) => v !== null) @IsString() @MaxLength(SHARED_PROFILE_LIMITS.headline)
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @Transform(blankToNull)
+  @ValidateIf((_, v) => v !== null)
+  @IsString()
+  @MaxLength(SHARED_PROFILE_LIMITS.headline)
   headline?: string | null;
 
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @Transform(blankToNull) @ValidateIf((_, v) => v !== null) @IsString() @MaxLength(SHARED_PROFILE_LIMITS.bio)
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @Transform(blankToNull)
+  @ValidateIf((_, v) => v !== null)
+  @IsString()
+  @MaxLength(SHARED_PROFILE_LIMITS.bio)
   bio?: string | null;
 }
 
@@ -309,46 +551,72 @@ export class ShareProfileDto {
   @Equals(true)
   consent!: true;
 
-  @ApiProperty({ description: 'The consent wording version the caregiver was shown' }) @IsString() @MaxLength(20)
+  @ApiProperty({ description: 'The consent wording version the caregiver was shown' })
+  @IsString()
+  @MaxLength(20)
   consentVersion!: string;
 }
 
 export class ReviewSharedProfileDto {
-  @ApiProperty({ enum: ['APPROVE', 'REJECT'] }) @IsIn(['APPROVE', 'REJECT'])
+  @ApiProperty({ enum: ['APPROVE', 'REJECT'] })
+  @IsIn(['APPROVE', 'REJECT'])
   decision!: 'APPROVE' | 'REJECT';
 
-  @ApiPropertyOptional() @IsOptional() @Transform(blankToUndefined) @IsString() @MaxLength(500)
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(blankToUndefined)
+  @IsString()
+  @MaxLength(500)
   note?: string;
 }
 
 export class SharedProfileQueryDto {
   @ApiPropertyOptional({ enum: ['PENDING_REVIEW', 'APPROVED', 'REJECTED', 'all'] })
-  @IsOptional() @IsIn(['PENDING_REVIEW', 'APPROVED', 'REJECTED', 'all'])
+  @IsOptional()
+  @IsIn(['PENDING_REVIEW', 'APPROVED', 'REJECTED', 'all'])
   status?: 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED' | 'all';
 }
 
 export class TalentQueryDto {
-  @ApiPropertyOptional({ enum: LOCALES }) @IsOptional() @IsIn(LOCALES)
+  @ApiPropertyOptional({ enum: LOCALES })
+  @IsOptional()
+  @IsIn(LOCALES)
   locale?: Locale;
 
-  @ApiPropertyOptional({ description: 'Only caregivers who list this destination' }) @IsOptional() @IsIn(COUNTRY_CODES)
+  @ApiPropertyOptional({ description: 'Only caregivers who list this destination' })
+  @IsOptional()
+  @IsIn(COUNTRY_CODES)
   country?: CountryCode;
 
-  @ApiPropertyOptional({ description: 'Only caregivers who speak this language (id from /public/meta/languages)' }) @IsOptional() @IsUUID()
+  @ApiPropertyOptional({ description: 'Only caregivers who speak this language (id from /public/meta/languages)' })
+  @IsOptional()
+  @IsUUID()
   languageId?: string;
 
   @ApiPropertyOptional({ enum: trainingCategoryValues, description: 'Only caregivers who completed a course in this category' })
-  @IsOptional() @IsIn(trainingCategoryValues)
+  @IsOptional()
+  @IsIn(trainingCategoryValues)
   training?: TrainingCategory;
 
   @ApiPropertyOptional({ description: 'Only caregivers the platform has verified' })
-  @IsOptional() @Transform(({ value }) => value === true || value === 'true' || value === '1') @IsBoolean()
+  @IsOptional()
+  @Transform(({ value }) => value === true || value === 'true' || value === '1')
+  @IsBoolean()
   verifiedOnly?: boolean;
 
-  @ApiPropertyOptional({ default: 1 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1)
+  @ApiPropertyOptional({ default: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
   page?: number;
 
-  @ApiPropertyOptional({ default: 12 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(48)
+  @ApiPropertyOptional({ default: 12 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(48)
   pageSize?: number;
 }
 
@@ -356,117 +624,221 @@ export class TalentQueryDto {
 
 /** A signed-in employer's enquiry. Organisation and contact come from the account. */
 export class EmployerAccountEnquiryDto {
-  @ApiPropertyOptional({ description: 'Where the caregivers would work, if not the account country' }) @IsOptional() @IsIn(COUNTRY_CODES)
+  @ApiPropertyOptional({ description: 'Where the caregivers would work, if not the account country' })
+  @IsOptional()
+  @IsIn(COUNTRY_CODES)
   country?: CountryCode;
 
-  @ApiProperty({ minimum: 1, maximum: 500 }) @Type(() => Number) @IsInt() @Min(1) @Max(500)
+  @ApiProperty({ minimum: 1, maximum: 500 })
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(500)
   rolesCount!: number;
 
   @ApiProperty({ enum: careTypeValues, isArray: true })
-  @IsArray() @ArrayMinSize(1) @ArrayMaxSize(careTypeValues.length) @IsIn(careTypeValues, { each: true })
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(careTypeValues.length)
+  @IsIn(careTypeValues, { each: true })
   careSettings!: CareType[];
 
-  @ApiPropertyOptional() @IsOptional() @Transform(blankToUndefined) @IsString() @MaxLength(255)
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(blankToUndefined)
+  @IsString()
+  @MaxLength(255)
   languages?: string;
 
-  @ApiPropertyOptional() @IsOptional() @Transform(blankToUndefined) @IsString() @MaxLength(100)
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(blankToUndefined)
+  @IsString()
+  @MaxLength(100)
   startTimeframe?: string;
 
-  @ApiProperty({ enum: visaSponsorshipValues }) @IsIn(visaSponsorshipValues)
+  @ApiProperty({ enum: visaSponsorshipValues })
+  @IsIn(visaSponsorshipValues)
   visaSponsorship!: VisaSponsorship;
 
-  @ApiPropertyOptional() @IsOptional() @Transform(blankToUndefined) @IsString() @MaxLength(3000)
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(blankToUndefined)
+  @IsString()
+  @MaxLength(3000)
   message?: string;
 
-  @ApiPropertyOptional() @IsOptional() @IsString() @Matches(/^[a-z0-9]{6,24}$/)
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @Matches(/^[a-z0-9]{6,24}$/)
   talentSlug?: string;
 }
 
 export class UpdateEmployerAccountDto {
-  @ApiPropertyOptional() @IsOptional() @Transform(trim) @IsString() @MinLength(2) @MaxLength(200)
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(trim)
+  @IsString()
+  @MinLength(2)
+  @MaxLength(200)
   organisationName?: string;
 
-  @ApiPropertyOptional({ enum: employerTypeValues }) @IsOptional() @IsIn(employerTypeValues)
+  @ApiPropertyOptional({ enum: employerTypeValues })
+  @IsOptional()
+  @IsIn(employerTypeValues)
   organisationType?: EmployerType;
 
-  @ApiPropertyOptional() @IsOptional() @IsIn(COUNTRY_CODES)
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsIn(COUNTRY_CODES)
   country?: CountryCode;
 
-  @ApiPropertyOptional() @IsOptional() @Transform(trim) @IsString() @MinLength(2) @MaxLength(150)
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(trim)
+  @IsString()
+  @MinLength(2)
+  @MaxLength(150)
   contactName?: string;
 
   @ApiPropertyOptional({ nullable: true })
-  @IsOptional() @Transform(blankToNull) @ValidateIf((_, v) => v !== null) @IsString() @Matches(/^\+?[0-9 ()-]{6,30}$/, { message: 'Please enter the number with its country code, e.g. +81 90 1234 5678.' })
+  @IsOptional()
+  @Transform(blankToNull)
+  @ValidateIf((_, v) => v !== null)
+  @IsString()
+  @Matches(/^\+?[0-9 ()-]{6,30}$/, { message: 'Please enter the number with its country code, e.g. +81 90 1234 5678.' })
   phone?: string | null;
 
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @Transform(blankToNull) @ValidateIf((_, v) => v !== null) @IsString() @MaxLength(255)
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @Transform(blankToNull)
+  @ValidateIf((_, v) => v !== null)
+  @IsString()
+  @MaxLength(255)
   website?: string | null;
 
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @Transform(blankToNull) @ValidateIf((_, v) => v !== null) @IsString() @MaxLength(100)
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @Transform(blankToNull)
+  @ValidateIf((_, v) => v !== null)
+  @IsString()
+  @MaxLength(100)
   companyRegistrationNumber?: string | null;
 }
 
 export class EmployerQueryDto {
-  @ApiPropertyOptional({ enum: [...employerStatusValues, 'all'] }) @IsOptional() @IsIn([...employerStatusValues, 'all'])
+  @ApiPropertyOptional({ enum: [...employerStatusValues, 'all'] })
+  @IsOptional()
+  @IsIn([...employerStatusValues, 'all'])
   status?: EmployerStatus | 'all';
 }
 
 export class ReviewEmployerDto {
-  @ApiProperty({ enum: ['VERIFY', 'REJECT', 'SUSPEND'] }) @IsIn(['VERIFY', 'REJECT', 'SUSPEND'])
+  @ApiProperty({ enum: ['VERIFY', 'REJECT', 'SUSPEND'] })
+  @IsIn(['VERIFY', 'REJECT', 'SUSPEND'])
   decision!: 'VERIFY' | 'REJECT' | 'SUSPEND';
 
-  @ApiPropertyOptional() @IsOptional() @Transform(blankToUndefined) @IsString() @MaxLength(500)
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(blankToUndefined)
+  @IsString()
+  @MaxLength(500)
   note?: string;
 }
 
 export class ProposeCandidateDto {
-  @ApiProperty() @IsUUID()
+  @ApiProperty()
+  @IsUUID()
   caregiverId!: string;
 
-  @ApiPropertyOptional() @IsOptional() @Transform(blankToUndefined) @IsString() @MaxLength(1000)
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(blankToUndefined)
+  @IsString()
+  @MaxLength(1000)
   messageToEmployer?: string;
 }
 
 export class UpdateCandidateDto {
-  @ApiPropertyOptional({ enum: candidateStatusValues }) @IsOptional() @IsIn(candidateStatusValues)
+  @ApiPropertyOptional({ enum: candidateStatusValues })
+  @IsOptional()
+  @IsIn(candidateStatusValues)
   status?: CandidateStatus;
 
-  @ApiPropertyOptional({ nullable: true, description: 'ISO date-time' }) @IsOptional() @Transform(blankToNull) @ValidateIf((_, v) => v !== null) @IsDateString()
+  @ApiPropertyOptional({ nullable: true, description: 'ISO date-time' })
+  @IsOptional()
+  @Transform(blankToNull)
+  @ValidateIf((_, v) => v !== null)
+  @IsDateString()
   interviewAt?: string | null;
 
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @Transform(blankToNull) @ValidateIf((_, v) => v !== null) @IsString() @MaxLength(1000)
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @Transform(blankToNull)
+  @ValidateIf((_, v) => v !== null)
+  @IsString()
+  @MaxLength(1000)
   messageToEmployer?: string | null;
 
-  @ApiPropertyOptional({ nullable: true }) @IsOptional() @Transform(blankToNull) @ValidateIf((_, v) => v !== null) @IsString() @MaxLength(1000)
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @Transform(blankToNull)
+  @ValidateIf((_, v) => v !== null)
+  @IsString()
+  @MaxLength(1000)
   staffNote?: string | null;
 }
 
 export class InterviewRequestDto {
-  @ApiProperty() @IsUUID()
+  @ApiProperty()
+  @IsUUID()
   enquiryId!: string;
 
-  @ApiProperty() @IsString() @Matches(/^[a-z0-9]{6,24}$/)
+  @ApiProperty()
+  @IsString()
+  @Matches(/^[a-z0-9]{6,24}$/)
   talentSlug!: string;
 
-  @ApiPropertyOptional() @IsOptional() @Transform(blankToUndefined) @IsString() @MaxLength(1000)
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(blankToUndefined)
+  @IsString()
+  @MaxLength(1000)
   message?: string;
 }
 
 export class EmployerCandidateActionDto {
-  @ApiProperty({ enum: ['REQUEST_INTERVIEW', 'SELECT', 'DECLINE'] }) @IsIn(['REQUEST_INTERVIEW', 'SELECT', 'DECLINE'])
+  @ApiProperty({ enum: ['REQUEST_INTERVIEW', 'SELECT', 'DECLINE'] })
+  @IsIn(['REQUEST_INTERVIEW', 'SELECT', 'DECLINE'])
   action!: 'REQUEST_INTERVIEW' | 'SELECT' | 'DECLINE';
 
-  @ApiPropertyOptional() @IsOptional() @Transform(blankToUndefined) @IsString() @MaxLength(1000)
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(blankToUndefined)
+  @IsString()
+  @MaxLength(1000)
   message?: string;
 }
 
 export class TalentPoolQueryDto {
-  @ApiPropertyOptional() @IsOptional() @IsIn(COUNTRY_CODES)
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsIn(COUNTRY_CODES)
   country?: CountryCode;
 
-  @ApiPropertyOptional({ description: 'Minimum readiness items done' }) @IsOptional() @Type(() => Number) @IsInt() @Min(0) @Max(10)
+  @ApiPropertyOptional({ description: 'Minimum readiness items done' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(10)
   minReady?: number;
 
-  @ApiPropertyOptional() @IsOptional() @Transform(blankToUndefined) @IsString() @MaxLength(100)
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(blankToUndefined)
+  @IsString()
+  @MaxLength(100)
   search?: string;
 }

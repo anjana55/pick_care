@@ -36,7 +36,15 @@ const shift = (onMyWay: CaregiverShift['checkIn'] extends infer C ? (C extends {
   scheduleType: 'DAY',
   area: 'Colombo',
   hasCarePlan: false,
-  checkIn: { state: 'UPCOMING', opensAt: new Date(NOW - 20 * MIN).toISOString(), checkedInAt: null, checkedOutAt: null, codeLocked: false, onMyWay, presence: null },
+  checkIn: {
+    state: 'UPCOMING',
+    opensAt: new Date(NOW - 20 * MIN).toISOString(),
+    checkedInAt: null,
+    checkedOutAt: null,
+    codeLocked: false,
+    onMyWay,
+    presence: null,
+  },
 });
 
 const deps = (over: Partial<OnMyWayDeps> = {}): OnMyWayDeps => ({
@@ -57,9 +65,12 @@ describe('On my way (caregiver)', () => {
     expect(await screen.findByText(/"On my way" opens at/)).toBeTruthy();
   });
 
-  it('explains once, then starts sharing with the share\'s own upload token', async () => {
+  it("explains once, then starts sharing with the share's own upload token", async () => {
     const calls = serveApi({
-      'POST /me/shifts/s-1/on-my-way': () => ({ status: 200, body: { shareId: 'sh-1', uploadToken: 'tok', kind: 'ON_THE_WAY', endsBy: new Date(NOW + 180 * MIN).toISOString() } }),
+      'POST /me/shifts/s-1/on-my-way': () => ({
+        status: 200,
+        body: { shareId: 'sh-1', uploadToken: 'tok', kind: 'ON_THE_WAY', endsBy: new Date(NOW + 180 * MIN).toISOString() },
+      }),
       'GET /me/shifts': () => ({ status: 200, body: [] }),
     });
     const d = deps();
@@ -70,7 +81,15 @@ describe('On my way (caregiver)', () => {
     await screen.findByRole('button', { name: en.onMyWay.start });
     expect(calls.filter((c) => c.route === 'POST /me/shifts/s-1/on-my-way')).toHaveLength(1);
     expect(d.start).toHaveBeenCalledWith(
-      expect.objectContaining({ id: 'sh-1', kind: 'TRIP', sink: 'SERVER', uploadToken: 'tok', shiftId: 's-1', endsBy: NOW + 180 * MIN, notification: { title: en.onMyWay.notificationTitle, body: en.onMyWay.notificationBody } }),
+      expect.objectContaining({
+        id: 'sh-1',
+        kind: 'TRIP',
+        sink: 'SERVER',
+        uploadToken: 'tok',
+        shiftId: 's-1',
+        endsBy: NOW + 180 * MIN,
+        notification: { title: en.onMyWay.notificationTitle, body: en.onMyWay.notificationBody },
+      }),
     );
     // The second time, no explanation.
     await fireEvent.press(screen.getByRole('button', { name: en.onMyWay.start }));
@@ -81,21 +100,37 @@ describe('On my way (caregiver)', () => {
   it('closes the share and says why when the phone may not share', async () => {
     await AsyncStorage.setItem('location.onMyWay.explained.v1', 'yes');
     const calls = serveApi({
-      'POST /me/shifts/s-1/on-my-way': () => ({ status: 200, body: { shareId: 'sh-2', uploadToken: 'tok', kind: 'ON_THE_WAY', endsBy: new Date(NOW + 180 * MIN).toISOString() } }),
+      'POST /me/shifts/s-1/on-my-way': () => ({
+        status: 200,
+        body: { shareId: 'sh-2', uploadToken: 'tok', kind: 'ON_THE_WAY', endsBy: new Date(NOW + 180 * MIN).toISOString() },
+      }),
       'POST /me/location-shares/sh-2/stop': () => ({ status: 200, body: { ok: true } }),
       'GET /me/shifts': () => ({ status: 200, body: [] }),
     });
-    await show(<OnMyWay shift={shift({ opensAt: new Date(NOW - 20 * MIN).toISOString(), shareId: null, sharingSince: null })} deps={deps({ start: jest.fn(async () => 'denied' as const) })} />);
+    await show(
+      <OnMyWay
+        shift={shift({ opensAt: new Date(NOW - 20 * MIN).toISOString(), shareId: null, sharingSince: null })}
+        deps={deps({ start: jest.fn(async () => 'denied' as const) })}
+      />,
+    );
     await fireEvent.press(await screen.findByRole('button', { name: en.onMyWay.start }));
     expect(await screen.findByText(en.onMyWay.denied)).toBeTruthy();
     expect(calls.map((c) => c.route)).toContain('POST /me/location-shares/sh-2/stop');
   });
 
   it('shows it is sharing, and stops when asked', async () => {
-    await AsyncStorage.setItem('location.session', JSON.stringify({ id: 'sh-3', kind: 'TRIP', startedAt: NOW, endsBy: NOW + 3_600_000, sink: 'SERVER', notification: { title: '', body: '' } }));
-    const calls = serveApi({ 'POST /me/location-shares/sh-3/stop': () => ({ status: 200, body: { ok: true } }), 'GET /me/shifts': () => ({ status: 200, body: [] }) });
+    await AsyncStorage.setItem(
+      'location.session',
+      JSON.stringify({ id: 'sh-3', kind: 'TRIP', startedAt: NOW, endsBy: NOW + 3_600_000, sink: 'SERVER', notification: { title: '', body: '' } }),
+    );
+    const calls = serveApi({
+      'POST /me/location-shares/sh-3/stop': () => ({ status: 200, body: { ok: true } }),
+      'GET /me/shifts': () => ({ status: 200, body: [] }),
+    });
     const d = deps();
-    await show(<OnMyWay shift={shift({ opensAt: new Date(NOW - 20 * MIN).toISOString(), shareId: 'sh-3', sharingSince: new Date(NOW).toISOString() })} deps={d} />);
+    await show(
+      <OnMyWay shift={shift({ opensAt: new Date(NOW - 20 * MIN).toISOString(), shareId: 'sh-3', sharingSince: new Date(NOW).toISOString() })} deps={d} />,
+    );
     expect(await screen.findByText(en.onMyWay.sharing)).toBeTruthy();
     await fireEvent.press(screen.getByRole('button', { name: en.onMyWay.stop }));
     await screen.findByText(en.onMyWay.sharing);
@@ -104,16 +139,31 @@ describe('On my way (caregiver)', () => {
   });
 
   it('offers to share again from a phone that is not the one sharing', async () => {
-    await show(<OnMyWay shift={shift({ opensAt: new Date(NOW - 20 * MIN).toISOString(), shareId: 'sh-elsewhere', sharingSince: new Date(NOW).toISOString() })} deps={deps({ tracking: jest.fn(async () => false) })} />);
+    await show(
+      <OnMyWay
+        shift={shift({ opensAt: new Date(NOW - 20 * MIN).toISOString(), shareId: 'sh-elsewhere', sharingSince: new Date(NOW).toISOString() })}
+        deps={deps({ tracking: jest.fn(async () => false) })}
+      />,
+    );
     expect(await screen.findByRole('button', { name: en.onMyWay.again })).toBeTruthy();
     expect(screen.getByText(en.onMyWay.notThisPhone)).toBeTruthy();
   });
 });
 
 describe('sending the points', () => {
-  const session: TrackSession = { id: 'sh-9', kind: 'TRIP', startedAt: NOW, endsBy: NOW + 3_600_000, sink: 'SERVER', uploadToken: 'secret', notification: { title: '', body: '' } };
-  const points = (n: number): TrackPoint[] => Array.from({ length: n }, (_, i) => ({ at: NOW + i * 30_000, latitude: 6.93, longitude: 79.85, accuracyM: 20, speed: null, mocked: false, battery: null }));
-  const answer = (status: number, body: object) => jest.fn(async () => new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } }));
+  const session: TrackSession = {
+    id: 'sh-9',
+    kind: 'TRIP',
+    startedAt: NOW,
+    endsBy: NOW + 3_600_000,
+    sink: 'SERVER',
+    uploadToken: 'secret',
+    notification: { title: '', body: '' },
+  };
+  const points = (n: number): TrackPoint[] =>
+    Array.from({ length: n }, (_, i) => ({ at: NOW + i * 30_000, latitude: 6.93, longitude: 79.85, accuracyM: 20, speed: null, mocked: false, battery: null }));
+  const answer = (status: number, body: object) =>
+    jest.fn(async () => new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } }));
 
   it('sends in batches of 50 with the upload token, forgetting each batch once the API has it', async () => {
     const fetch = answer(200, { accepted: 50, open: true });
@@ -131,9 +181,18 @@ describe('sending the points', () => {
 
   it('stops tracking once the share is closed, and keeps the points when offline', async () => {
     const stop = jest.fn(async () => undefined);
-    expect(await flushOutbox(session, { read: async () => points(3), forget: jest.fn(async () => undefined), stop, fetch: answer(200, { accepted: 3, open: false }) as never })).toBe('closed');
+    expect(
+      await flushOutbox(session, {
+        read: async () => points(3),
+        forget: jest.fn(async () => undefined),
+        stop,
+        fetch: answer(200, { accepted: 3, open: false }) as never,
+      }),
+    ).toBe('closed');
     expect(stop).toHaveBeenCalledTimes(1);
-    expect(await flushOutbox(session, { read: async () => points(3), forget: jest.fn(async () => undefined), stop, fetch: answer(401, {}) as never })).toBe('closed');
+    expect(await flushOutbox(session, { read: async () => points(3), forget: jest.fn(async () => undefined), stop, fetch: answer(401, {}) as never })).toBe(
+      'closed',
+    );
     const forget = jest.fn(async () => undefined);
     const offline = jest.fn(async () => {
       throw new TypeError('Network request failed');
@@ -147,7 +206,19 @@ describe('sending the points', () => {
 
 describe('on the way (client)', () => {
   const booking = (onTheWay: boolean): ClientBooking =>
-    ({ id: 'b-1', shifts: [{ id: 's-1', startsAt: new Date(NOW + 20 * MIN).toISOString(), endsAt: new Date(NOW + 300 * MIN).toISOString(), status: 'SCHEDULED', isCover: false, visit: { arrivalCode: null, checkedInAt: null, checkedOutAt: null, onTheWay } }] }) as unknown as ClientBooking;
+    ({
+      id: 'b-1',
+      shifts: [
+        {
+          id: 's-1',
+          startsAt: new Date(NOW + 20 * MIN).toISOString(),
+          endsAt: new Date(NOW + 300 * MIN).toISOString(),
+          status: 'SCHEDULED',
+          isCover: false,
+          visit: { arrivalCode: null, checkedInAt: null, checkedOutAt: null, onTheWay },
+        },
+      ],
+    }) as unknown as ClientBooking;
   const live = (over: Partial<Extract<ClientLive, { status: 'ON_THE_WAY' }>> = {}): ClientLive => ({
     status: 'ON_THE_WAY',
     shiftId: 's-1',
@@ -212,7 +283,20 @@ describe('checks during a visit (caregiver)', () => {
   const vdeps = (over: Partial<VisitChecksDeps> = {}): VisitChecksDeps => ({
     start: jest.fn(async () => 'started' as const),
     tracking: jest.fn(async () => true),
-    session: jest.fn(async () => ({ id: 'vs-1', kind: 'SHIFT', everyMinutes: 30, startedAt: NOW, endsBy: NOW + 8 * 3_600_000, sink: 'SERVER', uploadToken: 't', shiftId: 's-1', notification: { title: '', body: '' } }) as TrackSession),
+    session: jest.fn(
+      async () =>
+        ({
+          id: 'vs-1',
+          kind: 'SHIFT',
+          everyMinutes: 30,
+          startedAt: NOW,
+          endsBy: NOW + 8 * 3_600_000,
+          sink: 'SERVER',
+          uploadToken: 't',
+          shiftId: 's-1',
+          notification: { title: '', body: '' },
+        }) as TrackSession,
+    ),
     ...over,
   });
 
@@ -234,7 +318,10 @@ describe('checks during a visit (caregiver)', () => {
 
   it('offers "Share from this phone" when another phone runs them, and starts from a fresh share', async () => {
     const calls = serveApi({
-      'POST /me/shifts/s-1/presence/restart': () => ({ status: 200, body: { shareId: 'vs-2', uploadToken: 'tok2', kind: 'ON_SHIFT', everyMinutes: 30, endsBy: new Date(NOW + 8 * 3_600_000).toISOString() } }),
+      'POST /me/shifts/s-1/presence/restart': () => ({
+        status: 200,
+        body: { shareId: 'vs-2', uploadToken: 'tok2', kind: 'ON_SHIFT', everyMinutes: 30, endsBy: new Date(NOW + 8 * 3_600_000).toISOString() },
+      }),
       'GET /me/shifts': () => ({ status: 200, body: [] }),
     });
     const d = vdeps({ session: jest.fn(async () => null) });
@@ -246,7 +333,10 @@ describe('checks during a visit (caregiver)', () => {
   });
 
   it('answers "Still with the client?"', async () => {
-    const calls = serveApi({ 'POST /me/shifts/s-1/presence/reply': () => ({ status: 200, body: { ok: true } }), 'GET /me/shifts': () => ({ status: 200, body: [] }) });
+    const calls = serveApi({
+      'POST /me/shifts/s-1/presence/reply': () => ({ status: 200, body: { ok: true } }),
+      'GET /me/shifts': () => ({ status: 200, body: [] }),
+    });
     await show(<VisitChecks shift={checkedIn({ everyMinutes: 30, shareId: 'vs-1', askedAt: new Date(NOW).toISOString() })} deps={vdeps()} />);
     expect(await screen.findByText(en.visitChecks.askTitle)).toBeTruthy();
     await fireEvent.press(screen.getByRole('button', { name: en.visitChecks.outForClient }));
@@ -255,7 +345,22 @@ describe('checks during a visit (caregiver)', () => {
   });
 
   it('builds the phone session from the check-in answer', () => {
-    const session = visitSession({ shareId: 'vs-9', uploadToken: 'x', kind: 'ON_SHIFT', everyMinutes: 15, endsBy: new Date(NOW + MIN).toISOString() }, 's-1', { title: 'a', body: 'b' }, NOW);
-    expect(session).toEqual({ id: 'vs-9', kind: 'SHIFT', everyMinutes: 15, startedAt: NOW, endsBy: NOW + MIN, sink: 'SERVER', uploadToken: 'x', shiftId: 's-1', notification: { title: 'a', body: 'b' } });
+    const session = visitSession(
+      { shareId: 'vs-9', uploadToken: 'x', kind: 'ON_SHIFT', everyMinutes: 15, endsBy: new Date(NOW + MIN).toISOString() },
+      's-1',
+      { title: 'a', body: 'b' },
+      NOW,
+    );
+    expect(session).toEqual({
+      id: 'vs-9',
+      kind: 'SHIFT',
+      everyMinutes: 15,
+      startedAt: NOW,
+      endsBy: NOW + MIN,
+      sink: 'SERVER',
+      uploadToken: 'x',
+      shiftId: 's-1',
+      notification: { title: 'a', body: 'b' },
+    });
   });
 });

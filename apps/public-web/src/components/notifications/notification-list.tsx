@@ -64,7 +64,12 @@ export function NotificationList({ items, role, onOpen }: { items: NotificationI
         const goesSomewhere = item.path !== '/notifications';
         const body = (
           <>
-            <span className={cn('mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full', unread ? 'bg-brand-light text-brand-dark' : 'bg-paper text-ink/50')}>
+            <span
+              className={cn(
+                'mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full',
+                unread ? 'bg-brand-light text-brand-dark' : 'bg-paper text-ink/50',
+              )}
+            >
               <Icon className="h-4 w-4" aria-hidden />
             </span>
             <span className="min-w-0 flex-1">
@@ -84,12 +89,20 @@ export function NotificationList({ items, role, onOpen }: { items: NotificationI
         return (
           <li key={item.id} className={cn(unread && 'bg-brand-light/30')}>
             {goesSomewhere ? (
-              <Link href={webPathFor(item.path, role)} onClick={open} className="flex gap-3 p-3 hover:bg-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand">
+              <Link
+                href={webPathFor(item.path, role)}
+                onClick={open}
+                className="flex gap-3 p-3 hover:bg-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand"
+              >
                 {body}
               </Link>
             ) : (
               <div className="p-3">
-                <button type="button" onClick={open} className="flex w-full gap-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                <button
+                  type="button"
+                  onClick={open}
+                  className="flex w-full gap-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                >
                   {body}
                 </button>
                 {item.link && (

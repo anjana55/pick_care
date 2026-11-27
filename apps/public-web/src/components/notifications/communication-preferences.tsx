@@ -24,7 +24,9 @@ export function CommunicationPreferencesSection() {
 
   return (
     <section aria-labelledby="comms-heading" className="rounded-lg border border-border bg-white p-4">
-      <h2 id="comms-heading" className="text-lg font-semibold text-ink">{t('commsPrefs.title')}</h2>
+      <h2 id="comms-heading" className="text-lg font-semibold text-ink">
+        {t('commsPrefs.title')}
+      </h2>
       <p className="mb-4 text-sm text-ink/70">{t('commsPrefs.intro')}</p>
       {isLoading && <p className="text-sm text-ink/60">{t('common.loading')}</p>}
       {isError && <p className="text-sm text-red-700">{t('commsPrefs.loadError')}</p>}
@@ -54,8 +56,20 @@ export function CommunicationPreferencesSection() {
               disabled={update.isPending}
             />
           )}
-          <Switch label={t('commsPrefs.push')} help={t('commsPrefs.pushHelp')} checked={data.pushEnabled} disabled={update.isPending} onChange={(v) => save({ pushEnabled: v })} />
-          <Switch label={t('commsPrefs.reminders')} help={t('commsPrefs.remindersHelp')} checked={data.reminderMessagesEnabled} disabled={update.isPending} onChange={(v) => save({ reminderMessagesEnabled: v })} />
+          <Switch
+            label={t('commsPrefs.push')}
+            help={t('commsPrefs.pushHelp')}
+            checked={data.pushEnabled}
+            disabled={update.isPending}
+            onChange={(v) => save({ pushEnabled: v })}
+          />
+          <Switch
+            label={t('commsPrefs.reminders')}
+            help={t('commsPrefs.remindersHelp')}
+            checked={data.reminderMessagesEnabled}
+            disabled={update.isPending}
+            onChange={(v) => save({ reminderMessagesEnabled: v })}
+          />
           <p className="text-sm text-ink/70">{t('commsPrefs.alwaysSent')}</p>
           <p aria-live="polite" className="text-sm">
             {error ? <span className="text-red-700">{error}</span> : update.isSuccess ? <span className="text-green-700">{t('commsPrefs.saved')}</span> : null}
@@ -90,7 +104,15 @@ function Choices({
             key={o.value}
             className={`flex min-h-11 cursor-pointer items-center gap-2 rounded-md border px-4 text-base ${value === o.value ? 'border-brand bg-brand/10 font-semibold text-ink' : 'border-border text-ink'} ${o.disabled ? 'cursor-not-allowed opacity-50' : ''}`}
           >
-            <input type="radio" name={name} value={o.value} checked={value === o.value} disabled={disabled || o.disabled} onChange={() => onChange(o.value)} className="h-5 w-5" />
+            <input
+              type="radio"
+              name={name}
+              value={o.value}
+              checked={value === o.value}
+              disabled={disabled || o.disabled}
+              onChange={() => onChange(o.value)}
+              className="h-5 w-5"
+            />
             {o.label}
             {o.note && <span className="text-xs font-normal text-ink/60">({o.note})</span>}
           </label>
@@ -100,14 +122,34 @@ function Choices({
   );
 }
 
-function Switch({ label, help, checked, disabled, onChange }: { label: string; help: string; checked: boolean; disabled?: boolean; onChange: (v: boolean) => void }) {
+function Switch({
+  label,
+  help,
+  checked,
+  disabled,
+  onChange,
+}: {
+  label: string;
+  help: string;
+  checked: boolean;
+  disabled?: boolean;
+  onChange: (v: boolean) => void;
+}) {
   return (
     <label className="flex min-h-11 cursor-pointer items-start justify-between gap-4">
       <span>
         <span className="block text-base font-semibold text-ink">{label}</span>
         <span className="block text-sm text-ink/70">{help}</span>
       </span>
-      <input type="checkbox" role="switch" aria-checked={checked} checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} className="mt-1 h-6 w-6 shrink-0" />
+      <input
+        type="checkbox"
+        role="switch"
+        aria-checked={checked}
+        checked={checked}
+        disabled={disabled}
+        onChange={(e) => onChange(e.target.checked)}
+        className="mt-1 h-6 w-6 shrink-0"
+      />
     </label>
   );
 }

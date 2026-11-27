@@ -1,39 +1,17 @@
-import {
-  BadRequestException,
-  ConflictException,
-  HttpException,
-  HttpStatus,
-  Inject,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, HttpException, HttpStatus, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { and, eq, isNull } from 'drizzle-orm';
 import * as bcrypt from 'bcrypt';
 import { createHash, randomBytes, randomUUID as uuid, timingSafeEqual } from 'crypto';
 import { DRIZZLE, type Database } from '../database/database.module';
-import {
-  authHandoffCodes,
-  caregivers,
-  signupIdentities,
-  socialAccounts,
-  users,
-  type SocialProvider,
-} from '../database/schema';
+import { authHandoffCodes, caregivers, signupIdentities, socialAccounts, users, type SocialProvider } from '../database/schema';
 import { AuthService } from './auth.service';
 import { WhatsappSettingsService } from '../whatsapp/whatsapp-settings.service';
 import { RegisterCaregiverUnifiedDto } from './dto/register-caregiver-unified.dto';
-import {
-  generateRegistrationNumber,
-  assertUniqueContactFields,
-  selfRegisteredCaregiverValues,
-} from '../caregivers/caregiver-creation.util';
+import { generateRegistrationNumber, assertUniqueContactFields, selfRegisteredCaregiverValues } from '../caregivers/caregiver-creation.util';
 import { resolveLocationRefs } from '../common/utils/location.util';
-import {
-  assertWhatsappNumberAvailable,
-  purgeUnverifiedPhoneAccount,
-} from './phone-accounts.util';
+import { assertWhatsappNumberAvailable, purgeUnverifiedPhoneAccount } from './phone-accounts.util';
 import { normalizePhone } from '../common/utils/phone.util';
 import { SocialProviderRegistry } from './social/social-provider';
 import { parseSocialProvider } from './social/social-settings.service';
@@ -134,7 +112,6 @@ export class SocialLinkError extends HttpException {
  */
 @Injectable()
 export class SocialAuthService {
-
   constructor(
     @Inject(DRIZZLE) private readonly db: Database,
     private readonly jwtService: JwtService,
@@ -376,11 +353,7 @@ export class SocialAuthService {
 
     const [user] = await this.db.select().from(users).where(eq(users.id, userId)).limit(1);
     if (!user || !user.isActive || user.role !== ROLE_OF[side]) {
-      throw new SocialLinkError(
-        'registration_gone',
-        'This registration can no longer be completed. Please register again.',
-        HttpStatus.UNAUTHORIZED,
-      );
+      throw new SocialLinkError('registration_gone', 'This registration can no longer be completed. Please register again.', HttpStatus.UNAUTHORIZED);
     }
 
     const redirectUri = this.redirectUri(params.provider);
@@ -403,27 +376,16 @@ export class SocialAuthService {
     const [identityTaken] = await this.db
       .select({ userId: socialAccounts.userId })
       .from(socialAccounts)
-      .where(
-        and(
-          eq(socialAccounts.provider, params.provider as SocialProvider),
-          eq(socialAccounts.providerAccountId, profile.accountId),
-        ),
-      )
+      .where(and(eq(socialAccounts.provider, params.provider as SocialProvider), eq(socialAccounts.providerAccountId, profile.accountId)))
       .limit(1);
     if (identityTaken && identityTaken.userId !== user.id) {
-      throw new SocialLinkError(
-        'already_linked',
-        'That account is already linked to another user - sign in instead',
-      );
+      throw new SocialLinkError('already_linked', 'That account is already linked to another user - sign in instead');
     }
 
     const nextEmail = user.email ?? profile.email;
     const [emailTaken] = await this.db.select({ id: users.id }).from(users).where(eq(users.email, nextEmail)).limit(1);
     if (emailTaken && emailTaken.id !== user.id) {
-      throw new SocialLinkError(
-        'email_taken',
-        'An account with this email already exists - sign in instead',
-      );
+      throw new SocialLinkError('email_taken', 'An account with this email already exists - sign in instead');
     }
 
     await this.db.transaction(async (tx) => {
@@ -471,11 +433,7 @@ export class SocialAuthService {
    * account and send the callback link to a victim, signing the victim in as
    * the attacker (login CSRF).
    */
-  async loginAuthorizeUrl(
-    rawProvider: string,
-    nonce: string,
-    options: { side?: unknown; client?: unknown; challenge?: unknown } = {},
-  ): Promise<string> {
+  async loginAuthorizeUrl(rawProvider: string, nonce: string, options: { side?: unknown; client?: unknown; challenge?: unknown } = {}): Promise<string> {
     const provider = parseSocialProvider(rawProvider);
     if (typeof nonce !== 'string' || !/^[A-Za-z0-9_-]{16,128}$/.test(nonce)) {
       throw new BadRequestException('Missing or invalid sign-in nonce');
@@ -556,12 +514,7 @@ export class SocialAuthService {
     const [link] = await this.db
       .select({ userId: socialAccounts.userId })
       .from(socialAccounts)
-      .where(
-        and(
-          eq(socialAccounts.provider, params.provider as SocialProvider),
-          eq(socialAccounts.providerAccountId, profile.accountId),
-        ),
-      )
+      .where(and(eq(socialAccounts.provider, params.provider as SocialProvider), eq(socialAccounts.providerAccountId, profile.accountId)))
       .limit(1);
     if (!link) {
       throw new SocialLinkError(
@@ -575,17 +528,15 @@ export class SocialAuthService {
     // Same two conditions completeLink and the exchange enforce: the provider
     // proving who someone is does not make a disabled account signable.
     if (!user || !user.isActive || !sideOfRole(user.role)) {
-      throw new SocialLinkError(
-        'account_disabled',
-        'This account cannot be used to sign in.',
-        HttpStatus.FORBIDDEN,
-      );
+      throw new SocialLinkError('account_disabled', 'This account cannot be used to sign in.', HttpStatus.FORBIDDEN);
     }
     // And only on its own side, as the email sign-in's portal rule.
     if (sideOfRole(user.role) !== side) {
       throw new SocialLinkError(
         'wrong_portal',
-        side === 'client' ? 'That sign-in belongs to a caregiver account. Use the caregiver sign-in.' : 'That sign-in belongs to a client account. Use the client sign-in.',
+        side === 'client'
+          ? 'That sign-in belongs to a caregiver account. Use the caregiver sign-in.'
+          : 'That sign-in belongs to a client account. Use the client sign-in.',
         HttpStatus.FORBIDDEN,
       );
     }
@@ -618,11 +569,7 @@ export class SocialAuthService {
    * Same nonce (and, from the app, challenge) as a sign-in, for the same
    * reasons: the result must come back to the browser or app that asked.
    */
-  async signupAuthorizeUrl(
-    rawProvider: string,
-    nonce: string,
-    options: { side?: unknown; client?: unknown; challenge?: unknown } = {},
-  ): Promise<string> {
+  async signupAuthorizeUrl(rawProvider: string, nonce: string, options: { side?: unknown; client?: unknown; challenge?: unknown } = {}): Promise<string> {
     const provider = parseSocialProvider(rawProvider);
     if (typeof nonce !== 'string' || !/^[A-Za-z0-9_-]{16,128}$/.test(nonce)) {
       throw new BadRequestException('Missing or invalid sign-in nonce');
@@ -671,7 +618,9 @@ export class SocialAuthService {
       if (sideOfRole(user.role) !== side) {
         throw new SocialLinkError(
           'wrong_portal',
-          side === 'client' ? 'That sign-in belongs to a caregiver account. Use the caregiver sign-in.' : 'That sign-in belongs to a client account. Use the client sign-in.',
+          side === 'client'
+            ? 'That sign-in belongs to a caregiver account. Use the caregiver sign-in.'
+            : 'That sign-in belongs to a client account. Use the client sign-in.',
           HttpStatus.FORBIDDEN,
         );
       }
@@ -720,11 +669,7 @@ export class SocialAuthService {
       throw new BadRequestException('Missing sign-in code');
     }
     const codeHash = this.hashToken(code);
-    const [record] = await this.db
-      .select()
-      .from(authHandoffCodes)
-      .where(eq(authHandoffCodes.codeHash, codeHash))
-      .limit(1);
+    const [record] = await this.db.select().from(authHandoffCodes).where(eq(authHandoffCodes.codeHash, codeHash)).limit(1);
 
     // One message for every way this can fail - unknown, already spent, or
     // expired - so the callback page cannot be used to probe which is which.
@@ -783,11 +728,7 @@ export class SocialAuthService {
       // Tokens from before clients could link carry no side: they were all caregivers'.
       return { sub: payload.sub, side: parseSide(payload.side) };
     } catch {
-      throw new SocialLinkError(
-        'expired',
-        'This registration link has expired. Please register again.',
-        HttpStatus.UNAUTHORIZED,
-      );
+      throw new SocialLinkError('expired', 'This registration link has expired. Please register again.', HttpStatus.UNAUTHORIZED);
     }
   }
 

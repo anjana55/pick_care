@@ -96,7 +96,7 @@ export class PositionDto {
   @Min(0)
   accuracyM?: number;
 
-  @ApiPropertyOptional({ description: "Android said the position was simulated (a mock location)" })
+  @ApiPropertyOptional({ description: 'Android said the position was simulated (a mock location)' })
   @IsOptional()
   @IsBoolean()
   mocked?: boolean;

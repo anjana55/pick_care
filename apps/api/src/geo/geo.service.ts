@@ -1,11 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import {
-  haversineKm,
-  roundKm,
-  type GeoPoint,
-  type Locale,
-  type NearestCity,
-} from '@care-platform/shared';
+import { haversineKm, roundKm, type GeoPoint, type Locale, type NearestCity } from '@care-platform/shared';
 import { DRIZZLE, type Database } from '../database/database.module';
 import { cities, districts } from '../database/schema';
 

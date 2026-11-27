@@ -46,18 +46,27 @@ describe('location checks during a visit', () => {
     const later = visit({ ...asked, points: [...asked.points, ...away([150])], lastAt: at(150) });
     expect(presenceSteps(later, settings, at(151))).toEqual([{ step: 'flag', kind: 'AWAY_DURING_VISIT', minutes: 61 }]);
     // Answered ("gone out for the client"): nobody is told.
-    expect(presenceSteps(visit({ ...asked, points: later.points, lastAt: at(150), reply: 'OUT_FOR_CLIENT', repliedAt: at(125) }), settings, at(151))).toEqual([]);
+    expect(presenceSteps(visit({ ...asked, points: later.points, lastAt: at(150), reply: 'OUT_FOR_CLIENT', repliedAt: at(125) }), settings, at(151))).toEqual(
+      [],
+    );
     // Back at the home: nothing.
-    expect(presenceSteps(visit({ ...asked, points: [...asked.points, { at: at(150), inside: true, mocked: false }], lastAt: at(150) }), settings, at(151))).toEqual([]);
+    expect(
+      presenceSteps(visit({ ...asked, points: [...asked.points, { at: at(150), inside: true, mocked: false }], lastAt: at(150) }), settings, at(151)),
+    ).toEqual([]);
   });
 
   it('asks again about a new spell away after coming back', () => {
     const points = [...visit().points, ...away([90, 120]), { at: at(150), inside: true, mocked: false }, ...away([180, 210])];
-    expect(presenceSteps(visit({ points, lastAt: at(210), askedAt: at(122) }), settings, at(211))).toEqual([{ step: 'ask', awayChecks: 2, since: at(180).toISOString() }]);
+    expect(presenceSteps(visit({ points, lastAt: at(210), askedAt: at(122) }), settings, at(211))).toEqual([
+      { step: 'ask', awayChecks: 2, since: at(180).toISOString() },
+    ]);
   });
 
   it('cannot tell away from home without a place on the map', () => {
-    const points = [{ at: at(90), inside: null, mocked: false }, { at: at(120), inside: null, mocked: false }];
+    const points = [
+      { at: at(90), inside: null, mocked: false },
+      { at: at(120), inside: null, mocked: false },
+    ];
     expect(presenceSteps(visit({ points, lastAt: at(120) }), settings, at(121))).toEqual([]);
   });
 
@@ -71,7 +80,9 @@ describe('location checks during a visit', () => {
   it('points out a simulated position, and checks turned off while still checked in', () => {
     const mocked = visit({ points: [...visit().points, { at: at(90), inside: true, mocked: true }], lastAt: at(90) });
     expect(presenceSteps(mocked, settings, at(91))).toEqual([{ step: 'flag', kind: 'SIMULATED_LOCATION', minutes: 0 }]);
-    expect(presenceSteps(visit({ endedAt: at(65), endReason: 'STOPPED' }), settings, at(80))).toEqual([{ step: 'flag', kind: 'LOCATION_STOPPED', minutes: 15 }]);
+    expect(presenceSteps(visit({ endedAt: at(65), endReason: 'STOPPED' }), settings, at(80))).toEqual([
+      { step: 'flag', kind: 'LOCATION_STOPPED', minutes: 15 },
+    ]);
     // Ended by check-out or the shift: nothing.
     expect(presenceSteps(visit({ endedAt: at(65), endReason: 'CHECKED_OUT', checkedOutAt: at(65) }), settings, at(200))).toEqual([]);
     expect(presenceSteps(visit({ endedAt: at(65), endReason: 'STOPPED', checkedOutAt: at(66) }), settings, at(200))).toEqual([]);

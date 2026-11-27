@@ -54,7 +54,13 @@ export function BookedShifts() {
               <>
                 {s.bookingReference}
                 {s.area && ` · ${s.area}`}
-                {s.paused ? <span className="block font-medium text-danger">{t('portal.shifts.paused')}</span> : s.cantMake ? <CantMakeStatus shift={s} /> : <CheckInStatus shift={s} />}
+                {s.paused ? (
+                  <span className="block font-medium text-danger">{t('portal.shifts.paused')}</span>
+                ) : s.cantMake ? (
+                  <CantMakeStatus shift={s} />
+                ) : (
+                  <CheckInStatus shift={s} />
+                )}
               </>
             )}
             action={(s) => (

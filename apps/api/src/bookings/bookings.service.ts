@@ -63,14 +63,7 @@ import { CarePlansService } from '../care-plans/care-plans.service';
 import { buildLines } from '../billing/line-builder';
 import { draftShiftRanges } from './draft-range';
 import { planRoster } from './roster-plan';
-import {
-  AddShiftDto,
-  BookingPatternDto,
-  BookingQueryDto,
-  CreateBookingDto,
-  UpdateBookingDto,
-  UpdateShiftDto,
-} from './dto/booking.dto';
+import { AddShiftDto, BookingPatternDto, BookingQueryDto, CreateBookingDto, UpdateBookingDto, UpdateShiftDto } from './dto/booking.dto';
 import { caregiverRefCondition } from '../caregivers/caregiver-ref.util';
 
 /** Longest single booking pattern, so one form submission can't generate years of rows. */
@@ -141,7 +134,13 @@ export interface ShiftConflict {
  * the same person at the same moment cannot both succeed.
  */
 /** Back to "the client has not been asked". */
-const CLIENT_CHECK_CLEARED = { clientReviewStatus: null, clientAskedAt: null, clientAskedByUserId: null, clientAnsweredAt: null, clientReviewNote: null } as const;
+const CLIENT_CHECK_CLEARED = {
+  clientReviewStatus: null,
+  clientAskedAt: null,
+  clientAskedByUserId: null,
+  clientAnsweredAt: null,
+  clientReviewNote: null,
+} as const;
 
 @Injectable()
 export class BookingsService {
@@ -236,7 +235,9 @@ export class BookingsService {
     if (query.careRequestId) conditions.push(eq(bookings.careRequestId, query.careRequestId));
     // Bookings a client or caregiver has reported a problem on that staff have not answered yet.
     if (query.hasOpenIssues) {
-      conditions.push(sql`EXISTS (SELECT 1 FROM ${bookingIssueReports} WHERE ${bookingIssueReports.bookingId} = ${bookings.id} AND ${bookingIssueReports.status} = 'OPEN')`);
+      conditions.push(
+        sql`EXISTS (SELECT 1 FROM ${bookingIssueReports} WHERE ${bookingIssueReports.bookingId} = ${bookings.id} AND ${bookingIssueReports.status} = 'OPEN')`,
+      );
     }
     // Critical care-plan items marked Not done, or filled in at midnight unconfirmed, in the last week.
     if (query.hasCareAlerts) {
@@ -422,9 +423,7 @@ export class BookingsService {
             careAddress: patient.careAddress,
           }
         : null,
-      caregiver: booked
-        ? { ...caregiverRef(booking.caregiverId)!, primaryPhone: booked.primaryPhone }
-        : null,
+      caregiver: booked ? { ...caregiverRef(booking.caregiverId)!, primaryPhone: booked.primaryPhone } : null,
       shifts: shifts.map((s) => ({
         id: s.id,
         startsAt: new Date(s.startsAt).toISOString(),
@@ -490,7 +489,16 @@ export class BookingsService {
     const live = shifts.filter((s) => COUNTED.includes(s.status));
     const hours = Math.round(live.reduce((sum, s) => sum + shiftHours(s.startsAt, s.endsAt), 0) * 100) / 100;
     const own = live.filter((s) => (side === 'CLIENT' ? s.rateType : s.payRateType)).length;
-    const base = { shifts: live.length, hours, rateType: b.rateType, rateAmount: b.rateAmount, ownRateShifts: own, unpriced: 0, total: null as string | null, units: null as number | null };
+    const base = {
+      shifts: live.length,
+      hours,
+      rateType: b.rateType,
+      rateAmount: b.rateAmount,
+      ownRateShifts: own,
+      unpriced: 0,
+      total: null as string | null,
+      units: null as number | null,
+    };
     if (!live.length) return base;
     const { lines, unpriced } = buildLines({
       mode: side === 'CLIENT' ? 'INVOICE' : 'PAYOUT',
@@ -659,7 +667,13 @@ export class BookingsService {
   /** Serialises writes per caregiver: a second transaction for the same person waits here. */
   async lockCaregivers(db: Tx, caregiverIds: string[]) {
     const ids = [...new Set(caregiverIds)].sort();
-    if (ids.length) await db.execute(sql`SELECT id FROM caregivers WHERE id IN (${sql.join(ids.map((i) => sql`${i}`), sql`, `)}) FOR UPDATE`);
+    if (ids.length)
+      await db.execute(
+        sql`SELECT id FROM caregivers WHERE id IN (${sql.join(
+          ids.map((i) => sql`${i}`),
+          sql`, `,
+        )}) FOR UPDATE`,
+      );
   }
 
   async event(db: Tx, bookingId: string, type: BookingEventType, actor: AuthenticatedUser | null, note?: string | null) {
@@ -781,7 +795,8 @@ export class BookingsService {
     const days = (Date.parse(`${pattern.endDate}T00:00:00Z`) - Date.parse(`${booking.startDate}T00:00:00Z`)) / 86_400_000 + 1;
     if (days > MAX_BOOKING_DAYS * 3) throw new BadRequestException('A booking can run for at most three years - start a new one');
     const generated = generateShifts({ ...pattern, startDate: from, daysOfWeek: pattern.daysOfWeek as IsoWeekday[] }).filter((g) => g.startsAt > now);
-    if (generated.length > MAX_GENERATED_SHIFTS) throw new BadRequestException('A change can cover at most a year of shifts - extend the booking later instead');
+    if (generated.length > MAX_GENERATED_SHIFTS)
+      throw new BadRequestException('A change can cover at most a year of shifts - extend the booking later instead');
     return generated;
   }
 
@@ -806,11 +821,7 @@ export class BookingsService {
     const reshaping = Boolean(dto.pattern || newCaregiverId);
     if (!draft && reshaping && !dto.effectiveFrom) throw new BadRequestException('Choose the day the change starts');
 
-    const generated = !dto.pattern
-      ? null
-      : draft
-        ? this.validatePattern(dto.pattern)
-        : this.validateReschedule(booking, dto.effectiveFrom!, dto.pattern, now);
+    const generated = !dto.pattern ? null : draft ? this.validatePattern(dto.pattern) : this.validateReschedule(booking, dto.effectiveFrom!, dto.pattern, now);
     if (!draft && reshaping && !dto.pattern) this.validateReschedule(booking, dto.effectiveFrom!, null, now);
 
     const rateType = dto.rateType === undefined ? booking.rateType : dto.rateType;
@@ -824,7 +835,8 @@ export class BookingsService {
     const rate = (t: typeof rateType, a: string | null) => (t && a ? describeRate({ type: t, amount: a }) : 'none');
     const changes: string[] = [];
     if (rate(rateType, rateType ? rateAmount : null) !== rate(booking.rateType, booking.rateAmount)) changes.push(`client rate: ${rate(rateType, rateAmount)}`);
-    if (rate(payRateType, payRateType ? payRateAmount : null) !== rate(booking.payRateType, booking.payRateAmount)) changes.push(`pay rate: ${rate(payRateType, payRateAmount)}`);
+    if (rate(payRateType, payRateType ? payRateAmount : null) !== rate(booking.payRateType, booking.payRateAmount))
+      changes.push(`pay rate: ${rate(payRateType, payRateAmount)}`);
     if (dto.language && dto.language !== booking.language) changes.push(`updates in ${dto.language}`);
     const timingChanged = Boolean(dto.billingTiming) && dto.billingTiming !== booking.billingTiming;
     if (timingChanged) changes.push(dto.billingTiming === 'ADVANCE' ? 'billed in advance from now on' : 'billed after the work from now on');
@@ -863,14 +875,21 @@ export class BookingsService {
 
         if (!draft) await this.lockCaregivers(t, [newBooked, booking.caregiverId, ...existing.map((s) => s.caregiverId)]);
         // Drafts too: a draft billed in advance may already have its first invoice out.
-        await this.assertNotBilled(t, plan.drop.map((s) => s.id), draft ? [] : moved.map((m) => m.shift.id));
+        await this.assertNotBilled(
+          t,
+          plan.drop.map((s) => s.id),
+          draft ? [] : moved.map((m) => m.shift.id),
+        );
         if (plan.drop.length) {
           const ids = plan.drop.map((s) => s.id);
           if (draft) await tx.delete(bookingShifts).where(inArray(bookingShifts.id, ids));
           else await tx.update(bookingShifts).set({ status: 'CANCELLED', updatedByUserId: actor.userId, updatedAt: now }).where(inArray(bookingShifts.id, ids));
         }
         for (const m of moved) {
-          await tx.update(bookingShifts).set({ caregiverId: m.caregiverId, updatedByUserId: actor.userId, updatedAt: now }).where(eq(bookingShifts.id, m.shift.id));
+          await tx
+            .update(bookingShifts)
+            .set({ caregiverId: m.caregiverId, updatedByUserId: actor.userId, updatedAt: now })
+            .where(eq(bookingShifts.id, m.shift.id));
         }
         const added = plan.add.map((a) => ({ id: uuid(), ...a }));
         for (let i = 0; i < added.length; i += 200) {
@@ -902,7 +921,12 @@ export class BookingsService {
         if (!draft && (plan.drop.length || plan.add.length || moved.length)) {
           after.notify = {
             from: dto.effectiveFrom!,
-            caregiverIds: [newBooked, ...plan.drop.map((s) => s.caregiverId), ...moved.flatMap((m) => [m.shift.caregiverId, m.caregiverId]), ...added.map((a) => a.caregiverId)],
+            caregiverIds: [
+              newBooked,
+              ...plan.drop.map((s) => s.caregiverId),
+              ...moved.flatMap((m) => [m.shift.caregiverId, m.caregiverId]),
+              ...added.map((a) => a.caregiverId),
+            ],
           };
         }
       }
@@ -1008,9 +1032,15 @@ export class BookingsService {
       await t.execute(
         sql`SELECT id FROM caregivers WHERE id IN (SELECT caregiver_id FROM booking_shifts WHERE booking_id = ${id} AND status = 'DRAFT') ORDER BY id FOR UPDATE`,
       );
-      const drafts = (await tx.select().from(bookingShifts).where(and(eq(bookingShifts.bookingId, id), eq(bookingShifts.status, 'DRAFT')))) as ShiftRow[];
+      const drafts = (await tx
+        .select()
+        .from(bookingShifts)
+        .where(and(eq(bookingShifts.bookingId, id), eq(bookingShifts.status, 'DRAFT')))) as ShiftRow[];
       if (!drafts.length) throw new BadRequestException('Add at least one shift before confirming');
-      await this.lockCaregivers(t, drafts.map((s) => s.caregiverId));
+      await this.lockCaregivers(
+        t,
+        drafts.map((s) => s.caregiverId),
+      );
       await this.assertNoOverlap(t, drafts);
 
       const now = new Date();
@@ -1021,17 +1051,22 @@ export class BookingsService {
       if ((result as unknown as [{ affectedRows: number }])[0]?.affectedRows === 0) {
         throw new ConflictException('This booking was just changed by someone else - reload and try again');
       }
-      await tx.update(bookingShifts).set({ status: 'SCHEDULED', updatedAt: now }).where(and(eq(bookingShifts.bookingId, id), eq(bookingShifts.status, 'DRAFT')));
-      await this.event(t, id, 'CONFIRMED', actor, `${drafts.length} shifts scheduled${overridden ? `; confirmed without payment: ${opts.reason!.trim()}` : ''}`);
+      await tx
+        .update(bookingShifts)
+        .set({ status: 'SCHEDULED', updatedAt: now })
+        .where(and(eq(bookingShifts.bookingId, id), eq(bookingShifts.status, 'DRAFT')));
+      await this.event(
+        t,
+        id,
+        'CONFIRMED',
+        actor,
+        `${drafts.length} shifts scheduled${overridden ? `; confirmed without payment: ${opts.reason!.trim()}` : ''}`,
+      );
       // Staff chose to go ahead without that invoice paid: its due date passing must not pause the visits they agreed to.
       if (overridden && payment.invoice) await tx.update(bookings).set({ paymentHoldWaivedInvoiceId: payment.invoice.id }).where(eq(bookings.id, id));
 
       if (booking.careRequestId) {
-        const [req] = await tx
-          .select({ status: careRequests.status })
-          .from(careRequests)
-          .where(eq(careRequests.id, booking.careRequestId))
-          .limit(1);
+        const [req] = await tx.select({ status: careRequests.status }).from(careRequests).where(eq(careRequests.id, booking.careRequestId)).limit(1);
         if (req && (req.status === 'NEW' || req.status === 'IN_PROGRESS' || req.status === 'INTRODUCED')) {
           await tx
             .update(careRequests)
@@ -1065,7 +1100,8 @@ export class BookingsService {
       .update(bookings)
       .set(CLIENT_CHECK_CLEARED)
       .where(and(eq(bookings.id, id), eq(bookings.status, 'DRAFT'), isNotNull(bookings.clientReviewStatus)));
-    if ((result as { affectedRows: number }).affectedRows) await this.event(this.db, id, 'UPDATED', actor, "the client's check no longer applies - ask them again");
+    if ((result as { affectedRows: number }).affectedRows)
+      await this.event(this.db, id, 'UPDATED', actor, "the client's check no longer applies - ask them again");
   }
 
   /**
@@ -1080,16 +1116,32 @@ export class BookingsService {
     if (!booking.rateType || !booking.rateAmount) throw new BadRequestException("Set the client's rate first - they are asked to agree to the price");
     const [patient] = await this.db.select({ userId: patients.userId }).from(patients).where(eq(patients.id, booking.patientId)).limit(1);
     if (!patient?.userId) throw new BadRequestException('This client has no account to answer in - check the booking with them by phone');
-    const [{ n }] = await this.db.select({ n: count() }).from(bookingShifts).where(and(eq(bookingShifts.bookingId, id), eq(bookingShifts.status, 'DRAFT')));
+    const [{ n }] = await this.db
+      .select({ n: count() })
+      .from(bookingShifts)
+      .where(and(eq(bookingShifts.bookingId, id), eq(bookingShifts.status, 'DRAFT')));
     if (!n) throw new BadRequestException('Add at least one shift before asking the client');
 
     const now = new Date();
     await this.db
       .update(bookings)
-      .set({ clientReviewStatus: 'ASKED', clientAskedAt: now, clientAskedByUserId: actor.userId, clientAnsweredAt: null, clientReviewNote: null, updatedAt: now })
+      .set({
+        clientReviewStatus: 'ASKED',
+        clientAskedAt: now,
+        clientAskedByUserId: actor.userId,
+        clientAnsweredAt: null,
+        clientReviewNote: null,
+        updatedAt: now,
+      })
       .where(and(eq(bookings.id, id), eq(bookings.status, 'DRAFT')));
     const channel = await this.notifier.askClientToCheck(id);
-    await this.event(this.db, id, 'NOTE', actor, `Asked the client to check the booking${channel === 'WHATSAPP' ? ' (WhatsApp)' : channel === 'EMAIL' ? ' (email)' : ' (in their account only - no message could be sent)'}`);
+    await this.event(
+      this.db,
+      id,
+      'NOTE',
+      actor,
+      `Asked the client to check the booking${channel === 'WHATSAPP' ? ' (WhatsApp)' : channel === 'EMAIL' ? ' (email)' : ' (in their account only - no message could be sent)'}`,
+    );
     return this.findOne(id);
   }
 
@@ -1112,11 +1164,25 @@ export class BookingsService {
       this.db
         .select({ bookingId: bookingShifts.bookingId, n: count() })
         .from(bookingShifts)
-        .where(and(inArray(bookingShifts.bookingId, rows.map((r) => r.id)), eq(bookingShifts.status, 'DRAFT')))
+        .where(
+          and(
+            inArray(
+              bookingShifts.bookingId,
+              rows.map((r) => r.id),
+            ),
+            eq(bookingShifts.status, 'DRAFT'),
+          ),
+        )
         .groupBy(bookingShifts.bookingId),
-      this.publicSearch.profilesFor(rows.map((r) => r.caregiverId), locale),
+      this.publicSearch.profilesFor(
+        rows.map((r) => r.caregiverId),
+        locale,
+      ),
       // The dates the roster really covers, which a shift added or moved by hand can change.
-      draftShiftRanges(this.db, rows.map((r) => r.id)),
+      draftShiftRanges(
+        this.db,
+        rows.map((r) => r.id),
+      ),
     ]);
     // Billed in advance and accepted: the first invoice, which the client pays to have the booking confirmed.
     const firstIds = new Map<string, string>();
@@ -1221,7 +1287,9 @@ export class BookingsService {
     for (const i of refs.invoices.values()) docs.add(i.number ? `invoice ${i.number}` : 'a draft invoice');
     for (const p of refs.payouts.values()) docs.add(`pay statement ${p.reference}`);
     if (docs.size) {
-      throw new ConflictException(`Upcoming shifts of this booking are already on ${[...docs].join(', ')} - close it through Correct, so the documents are adjusted with it`);
+      throw new ConflictException(
+        `Upcoming shifts of this booking are already on ${[...docs].join(', ')} - close it through Correct, so the documents are adjusted with it`,
+      );
     }
   }
 
@@ -1356,7 +1424,9 @@ export class BookingsService {
         await this.lockCaregivers(t, [caregiverId]);
         await this.assertNoOverlap(t, [{ id: shiftId, bookingId: id, caregiverId, startsAt, endsAt, status }]);
       }
-      await tx.insert(bookingShifts).values({ id: shiftId, bookingId: id, caregiverId, startsAt, endsAt, status, note: dto.note ?? null, ...rates, updatedByUserId: actor.userId });
+      await tx
+        .insert(bookingShifts)
+        .values({ id: shiftId, bookingId: id, caregiverId, startsAt, endsAt, status, note: dto.note ?? null, ...rates, updatedByUserId: actor.userId });
       const own = [
         rates.rateType ? `client ${describeRate({ type: rates.rateType, amount: rates.rateAmount! })}` : null,
         rates.payRateType ? `pay ${describeRate({ type: rates.payRateType, amount: rates.payRateAmount! })}` : null,
@@ -1410,20 +1480,36 @@ export class BookingsService {
     const caregiverId = dto.caregiverId ? await this.liveCaregiver(dto.caregiverId) : shift.caregiverId;
     const rates = this.resolveShiftRates(booking, caregiverId, dto, shift);
     // Only times, caregiver or status can create an overlap; a rate or note change alone needs no check.
-    const timeOrHolder = startsAt.getTime() !== new Date(shift.startsAt).getTime() || endsAt.getTime() !== new Date(shift.endsAt).getTime() || caregiverId !== shift.caregiverId || status !== shift.status;
+    const timeOrHolder =
+      startsAt.getTime() !== new Date(shift.startsAt).getTime() ||
+      endsAt.getTime() !== new Date(shift.endsAt).getTime() ||
+      caregiverId !== shift.caregiverId ||
+      status !== shift.status;
     const ratesChanged =
-      rates.rateType !== shift.rateType || rates.rateAmount !== shift.rateAmount || rates.payRateType !== shift.payRateType || rates.payRateAmount !== shift.payRateAmount;
+      rates.rateType !== shift.rateType ||
+      rates.rateAmount !== shift.rateAmount ||
+      rates.payRateType !== shift.payRateType ||
+      rates.payRateAmount !== shift.payRateAmount;
     // Marking a scheduled shift done changes no money (an invoice billed in
     // advance already counts it). Anything else on a shift that is already on
     // an invoice or pay statement goes through a correction, which adjusts the
     // document with it - otherwise the bill would quietly stop matching the roster.
-    const moneyNeutral = !ratesChanged && (!timeOrHolder || (shift.status === 'SCHEDULED' && status === 'COMPLETED' && caregiverId === shift.caregiverId && startsAt.getTime() === new Date(shift.startsAt).getTime() && endsAt.getTime() === new Date(shift.endsAt).getTime()));
+    const moneyNeutral =
+      !ratesChanged &&
+      (!timeOrHolder ||
+        (shift.status === 'SCHEDULED' &&
+          status === 'COMPLETED' &&
+          caregiverId === shift.caregiverId &&
+          startsAt.getTime() === new Date(shift.startsAt).getTime() &&
+          endsAt.getTime() === new Date(shift.endsAt).getTime()));
     if (!moneyNeutral) {
       const refs = await this.billingRefs([shift.id]);
       const inv = refs.invoices.get(shift.id);
       const pay = refs.payouts.get(shift.id);
       if (inv || pay) {
-        const on = [inv ? (inv.number ? `invoice ${inv.number}` : 'a draft invoice') : null, pay ? `pay statement ${pay.reference}` : null].filter(Boolean).join(' and ');
+        const on = [inv ? (inv.number ? `invoice ${inv.number}` : 'a draft invoice') : null, pay ? `pay statement ${pay.reference}` : null]
+          .filter(Boolean)
+          .join(' and ');
         throw new ConflictException(`This shift is already on ${on} - use Correct on the booking, so the document is adjusted with it`);
       }
     }
@@ -1523,10 +1609,24 @@ export class BookingsService {
       this.db
         .select()
         .from(bookingShifts)
-        .where(and(inArray(bookingShifts.bookingId, rows.map((r) => r.id)), ne(bookingShifts.status, 'DRAFT'), gte(bookingShifts.endsAt, since)))
+        .where(
+          and(
+            inArray(
+              bookingShifts.bookingId,
+              rows.map((r) => r.id),
+            ),
+            ne(bookingShifts.status, 'DRAFT'),
+            gte(bookingShifts.endsAt, since),
+          ),
+        )
         .orderBy(asc(bookingShifts.startsAt)),
       // Everyone who has worked on each booking - covers too - and the client's rating of them.
-      this.reviewStore.entriesForClient(user.patientId, rows.map((r) => r.id), new Date(), reviewSettings.windowDays),
+      this.reviewStore.entriesForClient(
+        user.patientId,
+        rows.map((r) => r.id),
+        new Date(),
+        reviewSettings.windowDays,
+      ),
     ]);
     const reviewEntries = [...reviews.values()].flat();
     const profiles = await this.publicSearch.profilesFor([...rows.map((r) => r.caregiverId), ...reviewEntries.map((e) => e.caregiverId)], locale);
@@ -1600,7 +1700,10 @@ export class BookingsService {
       .orderBy(asc(bookingShifts.startsAt))
       .limit(200);
     // Which shifts' care plans the caregiver can open now (a day before the shift until its cut-off).
-    const withPlan = await this.carePlans.caregiverPlanShiftIds(user.caregiverId, rows.map((r) => r.id));
+    const withPlan = await this.carePlans.caregiverPlanShiftIds(
+      user.caregiverId,
+      rows.map((r) => r.id),
+    );
     const checkIns = await this.checkIns.forCaregiver(rows);
     return rows.map((r) => ({
       id: r.id,

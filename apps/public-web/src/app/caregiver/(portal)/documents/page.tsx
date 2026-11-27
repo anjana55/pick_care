@@ -146,7 +146,12 @@ export default function CaregiverDocumentsPage() {
             const done = have(item.anyOf);
             return (
               <li key={item.label} className="flex items-center gap-3 text-sm">
-                <span aria-hidden="true" className={`flex h-5 w-5 items-center justify-center rounded-full text-xs ${done ? 'bg-brand text-white' : 'border border-border text-transparent'}`}>✓</span>
+                <span
+                  aria-hidden="true"
+                  className={`flex h-5 w-5 items-center justify-center rounded-full text-xs ${done ? 'bg-brand text-white' : 'border border-border text-transparent'}`}
+                >
+                  ✓
+                </span>
                 <span className={done ? 'text-ink' : 'text-ink/70'}>{t(`portal.documents.core.${item.label}`)}</span>
                 <span className="sr-only">{done ? t('portal.documents.haveIt') : t('portal.documents.missing')}</span>
               </li>
@@ -162,7 +167,9 @@ export default function CaregiverDocumentsPage() {
             <Label htmlFor="documentType">{t('portal.documents.type')}</Label>
             <Select id="documentType" value={choice} onChange={(e) => setChoice(e.target.value as Choice)}>
               {CHOICES.map((c) => (
-                <option key={c} value={c}>{t(`portal.documents.pick.${c}`)}</option>
+                <option key={c} value={c}>
+                  {t(`portal.documents.pick.${c}`)}
+                </option>
               ))}
             </Select>
           </div>
@@ -187,7 +194,9 @@ export default function CaregiverDocumentsPage() {
               <Label htmlFor="idKind">{t('portal.documents.idKind')}</Label>
               <Select id="idKind" value={idKind} onChange={(e) => setIdKind(e.target.value as IdKind)}>
                 {ID_KINDS.map((k) => (
-                  <option key={k} value={k}>{t(`portal.documents.idKinds.${k}`)}</option>
+                  <option key={k} value={k}>
+                    {t(`portal.documents.idKinds.${k}`)}
+                  </option>
                 ))}
               </Select>
             </div>
@@ -202,14 +211,26 @@ export default function CaregiverDocumentsPage() {
           )}
         </div>
         <p className="mt-2 text-xs text-ink/50">{t('portal.documents.fileHint')}</p>
-        {error && <p role="alert" className="mt-3 text-sm text-danger">{error}</p>}
-        {notice && <p role="status" className="mt-3 text-sm text-brand-dark">{notice}</p>}
+        {error && (
+          <p role="alert" className="mt-3 text-sm text-danger">
+            {error}
+          </p>
+        )}
+        {notice && (
+          <p role="status" className="mt-3 text-sm text-brand-dark">
+            {notice}
+          </p>
+        )}
       </form>
 
       <section className="rounded-lg border border-border bg-white">
         <h2 className="border-b border-border px-5 py-3 text-sm font-semibold text-ink">{t('portal.documents.yours')}</h2>
         {isLoading && <p className="px-5 py-4 text-sm text-ink/60">{t('common.loading')}</p>}
-        {isError && <p role="alert" className="px-5 py-4 text-sm text-danger">{t('portal.loadError')}</p>}
+        {isError && (
+          <p role="alert" className="px-5 py-4 text-sm text-danger">
+            {t('portal.loadError')}
+          </p>
+        )}
         {documents && documents.length === 0 && <p className="px-5 py-4 text-sm text-ink/60">{t('portal.documents.none')}</p>}
         <ul className="divide-y divide-border">
           {documents?.map((doc) => (
@@ -224,9 +245,7 @@ export default function CaregiverDocumentsPage() {
                     {t('portal.documents.expires', { date: fmtDate(doc.expiresOn, locale) })}
                   </p>
                 )}
-                {doc.verificationStatus === 'REJECTED' && (
-                  <p className="mt-1 text-xs text-red-700">{t('portal.documents.rejectedHint')}</p>
-                )}
+                {doc.verificationStatus === 'REJECTED' && <p className="mt-1 text-xs text-red-700">{t('portal.documents.rejectedHint')}</p>}
               </div>
               <div className="flex items-center gap-3">
                 <VerificationBadge status={doc.verificationStatus} />
@@ -235,7 +254,12 @@ export default function CaregiverDocumentsPage() {
                   <span className="sr-only"> {doc.originalFilename}</span>
                 </button>
                 {isWithdrawable(doc.verificationStatus) && (
-                  <button type="button" onClick={() => onRemove(doc)} disabled={remove.isPending} className="text-sm text-danger hover:underline disabled:opacity-50">
+                  <button
+                    type="button"
+                    onClick={() => onRemove(doc)}
+                    disabled={remove.isPending}
+                    className="text-sm text-danger hover:underline disabled:opacity-50"
+                  >
                     {t('portal.documents.remove')}
                     <span className="sr-only"> {doc.originalFilename}</span>
                   </button>

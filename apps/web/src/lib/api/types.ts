@@ -4,17 +4,19 @@ import type {
   BookingAmendmentView as SharedBookingAmendmentView,
   IssueReportView as SharedIssueReportView,
 } from '@care-platform/shared';
-import type { BillingLineKind, BillingParty, BillingUnit, DiscountType, InvoiceBasis, InvoiceStatus, PaymentMethod, PaymentType, PayoutStatus } from '@care-platform/shared';
+import type {
+  BillingLineKind,
+  BillingParty,
+  BillingUnit,
+  DiscountType,
+  InvoiceBasis,
+  InvoiceStatus,
+  PaymentMethod,
+  PaymentType,
+  PayoutStatus,
+} from '@care-platform/shared';
 export type CaregiverStatus =
-  | 'DRAFT'
-  | 'REGISTERED'
-  | 'DOCUMENTS_PENDING'
-  | 'UNDER_VERIFICATION'
-  | 'VERIFIED'
-  | 'ACTIVE'
-  | 'INACTIVE'
-  | 'SUSPENDED'
-  | 'REJECTED';
+  'DRAFT' | 'REGISTERED' | 'DOCUMENTS_PENDING' | 'UNDER_VERIFICATION' | 'VERIFIED' | 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'REJECTED';
 
 /** Client status ladder - mirrors clientStatusEnum on the API. */
 export type ClientStatus = 'PENDING_REVIEW' | 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
@@ -453,13 +455,7 @@ export type CareRequestStatus = 'NEW' | 'IN_PROGRESS' | 'INTRODUCED' | 'CLOSED' 
 /** WEB: the client pressed Contact on the site. PHONE: staff logged it during a call. */
 export type CareRequestSource = 'WEB' | 'PHONE';
 export type CareRequestCloseReason =
-  | 'CLIENT_NOT_PROCEEDING'
-  | 'CLIENT_UNREACHABLE'
-  | 'CAREGIVER_UNAVAILABLE'
-  | 'CAREGIVER_DECLINED'
-  | 'NOT_A_MATCH'
-  | 'PLACED'
-  | 'OTHER';
+  'CLIENT_NOT_PROCEEDING' | 'CLIENT_UNREACHABLE' | 'CAREGIVER_UNAVAILABLE' | 'CAREGIVER_DECLINED' | 'NOT_A_MATCH' | 'PLACED' | 'OTHER';
 
 export interface StaffRef {
   id: string;
@@ -736,7 +732,15 @@ export interface BookingDetail {
   createdBy: StaffRef | null;
   confirmedBy: StaffRef | null;
   careRequest: { id: string; reference: string; status: CareRequestStatus } | null;
-  client: { id: string; fullName: string; phone: string | null; recipientName: string | null; city: string | null; district: string | null; careAddress: string | null } | null;
+  client: {
+    id: string;
+    fullName: string;
+    phone: string | null;
+    recipientName: string | null;
+    city: string | null;
+    district: string | null;
+    careAddress: string | null;
+  } | null;
   caregiver: (BookingCaregiverRef & { primaryPhone: string | null }) | null;
   shifts: BookingShift[];
   estimate: BookingEstimate;
@@ -989,7 +993,16 @@ export interface InvoiceDetail {
   tax: { available: boolean; name: string; rate: string };
   payhere: { usable: boolean };
   payments: InvoicePayment[];
-  checkouts: { id: string; amount: string; status: string; mode: string; method: string | null; paymentId: string | null; createdAt: string; updatedAt: string }[];
+  checkouts: {
+    id: string;
+    amount: string;
+    status: string;
+    mode: string;
+    method: string | null;
+    paymentId: string | null;
+    createdAt: string;
+    updatedAt: string;
+  }[];
   events: { id: string; type: string; note: string | null; createdAt: string; actor: StaffRef | null }[];
   /** Only on the response that made or refilled the draft. */
   generated?: Generated;

@@ -71,8 +71,7 @@ export default function UsersPage() {
   });
 
   const resetPasswordMutation = useMutation({
-    mutationFn: ({ id, newPassword }: { id: string; newPassword: string }) =>
-      api.post(`/users/${id}/reset-password`, { newPassword }),
+    mutationFn: ({ id, newPassword }: { id: string; newPassword: string }) => api.post(`/users/${id}/reset-password`, { newPassword }),
     onSuccess: () => {
       setResettingId(null);
       setFormError(null);
@@ -86,8 +85,7 @@ export default function UsersPage() {
       invalidate();
       setRowError(null);
     },
-    onError: (err: unknown, vars) =>
-      setRowError({ id: vars.id, message: err instanceof ApiError ? err.message : 'Something went wrong' }),
+    onError: (err: unknown, vars) => setRowError({ id: vars.id, message: err instanceof ApiError ? err.message : 'Something went wrong' }),
   });
 
   const deleteMutation = useMutation({
@@ -96,8 +94,7 @@ export default function UsersPage() {
       invalidate();
       setDeleteConfirmId(null);
     },
-    onError: (err: unknown) =>
-      setRowError({ id: deleteConfirmId ?? '', message: err instanceof ApiError ? err.message : 'Something went wrong' }),
+    onError: (err: unknown) => setRowError({ id: deleteConfirmId ?? '', message: err instanceof ApiError ? err.message : 'Something went wrong' }),
   });
 
   // Guarded above with a redirect, but avoid rendering the table for a

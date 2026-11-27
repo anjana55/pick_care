@@ -4,7 +4,10 @@ import type { ResolvedAiSettings } from './ai-settings.service';
 
 /** The model could not be reached or answered with an error. Features fall back rather than fail. */
 export class AiUnavailableError extends Error {
-  constructor(message: string, readonly detail?: string) {
+  constructor(
+    message: string,
+    readonly detail?: string,
+  ) {
     super(message);
   }
 }
@@ -51,13 +54,16 @@ export class AiProviderService {
   private readonly logger = new Logger(AiProviderService.name);
   private readonly quirks = new Map<string, Quirks>();
 
-  async chat(settings: ModelTarget, req: Omit<ChatRequest, 'temperature' | 'maxTokens'> & Partial<Pick<ChatRequest, 'temperature' | 'maxTokens'>>): Promise<ChatResult> {
+  async chat(
+    settings: ModelTarget,
+    req: Omit<ChatRequest, 'temperature' | 'maxTokens'> & Partial<Pick<ChatRequest, 'temperature' | 'maxTokens'>>,
+  ): Promise<ChatResult> {
     const key = `${settings.provider}|${settings.baseUrl}|${settings.model}`;
     let quirks = this.quirks.get(key) ?? {};
 
     // At most two parameters to learn, so at most three attempts.
     for (let attempt = 0; ; attempt++) {
-      const temperature = quirks.noTemperature ? null : (req.temperature !== undefined ? req.temperature : settings.temperature);
+      const temperature = quirks.noTemperature ? null : req.temperature !== undefined ? req.temperature : settings.temperature;
       let call: ReturnType<typeof buildRequest>;
       try {
         call = buildRequest(

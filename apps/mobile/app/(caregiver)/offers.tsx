@@ -38,7 +38,8 @@ export default function Offers() {
   const [reason, setReason] = useState<CareOfferDeclineReason | null>(null);
   const [error, setError] = useState<{ offerId: string; text: string } | null>(null);
 
-  const fail = (offerId: string) => (err: unknown) => setError({ offerId, text: err instanceof ApiError && err.message ? err.message : t('portal.offers.error') });
+  const fail = (offerId: string) => (err: unknown) =>
+    setError({ offerId, text: err instanceof ApiError && err.message ? err.message : t('portal.offers.error') });
   const waiting = offers.data?.filter((o) => o.status === 'OFFERED') ?? [];
   const earlier = offers.data?.filter((o) => o.status !== 'OFFERED') ?? [];
 
@@ -65,11 +66,16 @@ export default function Offers() {
       </View>
       {fact(t('portal.offers.where'), [o.city?.[locale], o.district?.[locale]].filter(Boolean).join(', ') || '—')}
       {o.shift
-        ? fact(t('portal.offers.cover.when'), t('portal.offers.cover.whenValue', { day: fmtDay(o.shift.startsAt, locale), from: fmtTime(o.shift.startsAt), to: fmtTime(o.shift.endsAt) }))
+        ? fact(
+            t('portal.offers.cover.when'),
+            t('portal.offers.cover.whenValue', { day: fmtDay(o.shift.startsAt, locale), from: fmtTime(o.shift.startsAt), to: fmtTime(o.shift.endsAt) }),
+          )
         : fact(t('portal.offers.starts'), o.desiredStartDate ? formatDate(o.desiredStartDate, locale) : t('portal.offers.startsOpen'))}
       {fact(
         t('portal.offers.rate'),
-        o.payRate !== null && o.rateType ? t('portal.offers.rateValue', { amount: money(o.payRate), unit: t(`portal.offers.units.${o.rateType}`) }) : t('portal.offers.rateOpen'),
+        o.payRate !== null && o.rateType
+          ? t('portal.offers.rateValue', { amount: money(o.payRate), unit: t(`portal.offers.units.${o.rateType}`) })
+          : t('portal.offers.rateOpen'),
       )}
       {o.note ? (
         <View style={[styles.note, { backgroundColor: colors.background }]}>
@@ -77,15 +83,23 @@ export default function Offers() {
           <Text style={{ fontSize: 16, lineHeight: 23, color: colors.ink }}>{o.note}</Text>
         </View>
       ) : null}
-      {o.status === 'ACCEPTED' ? <Text style={{ fontSize: 16, lineHeight: 23, color: colors.brand }}>{isCover(o) ? t('portal.offers.cover.accepted') : t('portal.offers.accepted')}</Text> : null}
-      {o.status === 'ACCEPTED' && isCover(o) ? <Button variant="secondary" icon="calendar-outline" label={t('portal.offers.cover.seeShifts')} onPress={() => router.push('/(caregiver)/shifts')} /> : null}
+      {o.status === 'ACCEPTED' ? (
+        <Text style={{ fontSize: 16, lineHeight: 23, color: colors.brand }}>
+          {isCover(o) ? t('portal.offers.cover.accepted') : t('portal.offers.accepted')}
+        </Text>
+      ) : null}
+      {o.status === 'ACCEPTED' && isCover(o) ? (
+        <Button variant="secondary" icon="calendar-outline" label={t('portal.offers.cover.seeShifts')} onPress={() => router.push('/(caregiver)/shifts')} />
+      ) : null}
       {o.status === 'OFFERED' ? (
         <>
           <View style={{ gap: 2 }}>
             <Text style={{ fontSize: 16, fontWeight: '700', color: colors.accent }}>
               {t('portal.offers.answerBy', { when: `${fmtDay(o.expiresAt, locale)}, ${fmtTime(o.expiresAt)}` })}
             </Text>
-            <Text style={{ fontSize: 14, lineHeight: 20, color: colors.muted }}>{isCover(o) ? t('portal.offers.cover.privacy') : t('portal.offers.privacy')}</Text>
+            <Text style={{ fontSize: 14, lineHeight: 20, color: colors.muted }}>
+              {isCover(o) ? t('portal.offers.cover.privacy') : t('portal.offers.privacy')}
+            </Text>
           </View>
           <FormError message={error?.offerId === o.id ? error.text : null} />
           {declining === o.id ? (
@@ -101,7 +115,10 @@ export default function Offers() {
                 label={t('portal.offers.confirmDecline')}
                 busy={answer.isPending}
                 onPress={() =>
-                  answer.mutate({ offerId: o.id, accept: false, reason: reason ?? undefined }, { onSuccess: () => (setDeclining(null), setReason(null), setError(null)), onError: fail(o.id) })
+                  answer.mutate(
+                    { offerId: o.id, accept: false, reason: reason ?? undefined },
+                    { onSuccess: () => (setDeclining(null), setReason(null), setError(null)), onError: fail(o.id) },
+                  )
                 }
               />
               <Button variant="secondary" label={t('portal.offers.back')} onPress={() => (setDeclining(null), setReason(null))} />
@@ -125,7 +142,10 @@ export default function Offers() {
 
   return (
     <Screen title={t('portal.offers.title')} subtitle={t('portal.offers.subtitle')}>
-      <ScrollView contentContainerStyle={styles.body} refreshControl={<RefreshControl refreshing={offers.isRefetching} onRefresh={() => void offers.refetch()} />}>
+      <ScrollView
+        contentContainerStyle={styles.body}
+        refreshControl={<RefreshControl refreshing={offers.isRefetching} onRefresh={() => void offers.refetch()} />}
+      >
         {offers.isError ? <FormError message={t('portal.loadError')} /> : null}
         {offers.data && offers.data.length === 0 ? <EmptyState icon="briefcase-outline" body={t('portal.offers.none')} /> : null}
         {waiting.length ? (

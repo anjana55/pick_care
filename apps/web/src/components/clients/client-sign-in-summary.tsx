@@ -19,14 +19,29 @@ function Row({ label, value, detail, ok }: { label: string; value: string; detai
 /** How a client signs in - the same rows the caregiver Sign-in tab shows. */
 export function ClientSignInSummary({ client }: { client: Client }) {
   const { t, locale } = useTranslation();
-  const state = (value: string | null, verified: boolean) => (!value ? t('caregivers.signIn.none') : verified ? t('caregivers.signIn.verified') : t('caregivers.signIn.unverified'));
+  const state = (value: string | null, verified: boolean) =>
+    !value ? t('caregivers.signIn.none') : verified ? t('caregivers.signIn.verified') : t('caregivers.signIn.unverified');
   return (
     <Card>
       <CardContent className="py-5">
         <div className="divide-y divide-border">
-          <Row label={t('caregivers.signIn.phone')} ok={Boolean(client.accountPhone && client.phoneVerifiedAt)} value={state(client.accountPhone, Boolean(client.phoneVerifiedAt))} detail={client.accountPhone} />
-          <Row label={t('caregivers.signIn.email')} ok={Boolean(client.email && client.emailVerifiedAt)} value={state(client.email, Boolean(client.emailVerifiedAt))} detail={client.email} />
-          <Row label={t('caregivers.signIn.password')} ok={Boolean(client.hasPassword)} value={client.hasPassword ? t('caregivers.signIn.set') : t('caregivers.signIn.none')} />
+          <Row
+            label={t('caregivers.signIn.phone')}
+            ok={Boolean(client.accountPhone && client.phoneVerifiedAt)}
+            value={state(client.accountPhone, Boolean(client.phoneVerifiedAt))}
+            detail={client.accountPhone}
+          />
+          <Row
+            label={t('caregivers.signIn.email')}
+            ok={Boolean(client.email && client.emailVerifiedAt)}
+            value={state(client.email, Boolean(client.emailVerifiedAt))}
+            detail={client.email}
+          />
+          <Row
+            label={t('caregivers.signIn.password')}
+            ok={Boolean(client.hasPassword)}
+            value={client.hasPassword ? t('caregivers.signIn.set') : t('caregivers.signIn.none')}
+          />
         </div>
         {!client.isActive && <p className="mt-4 text-xs text-danger">{t('passwordHelp.accountInactive')}</p>}
         {client.lastLoginAt && (

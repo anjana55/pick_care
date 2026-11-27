@@ -140,7 +140,7 @@ describe('social callback page, sign-in flow', () => {
     expect(window.sessionStorage.getItem(LOGIN_NONCE_KEY)).toBeNull();
   });
 
-  it('refuses, without spending the code, when the nonce is not this tab\'s', async () => {
+  it("refuses, without spending the code, when the nonce is not this tab's", async () => {
     window.sessionStorage.setItem(LOGIN_NONCE_KEY, 'mine');
     search = 'code=abc&flow=login&nonce=someone-elses';
     renderNode(<CaregiverSocialCallbackPage />);

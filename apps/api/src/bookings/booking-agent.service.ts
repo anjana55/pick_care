@@ -196,7 +196,15 @@ export class BookingAgentService implements OnApplicationBootstrap, OnModuleDest
         await this.db
           .select({ id: bookings.careRequestId })
           .from(bookings)
-          .where(and(inArray(bookings.careRequestId, rows.map((r) => r.requestId)), ne(bookings.status, 'CANCELLED')))
+          .where(
+            and(
+              inArray(
+                bookings.careRequestId,
+                rows.map((r) => r.requestId),
+              ),
+              ne(bookings.status, 'CANCELLED'),
+            ),
+          )
       ).map((b) => b.id),
     );
 
@@ -434,7 +442,11 @@ export class BookingAgentService implements OnApplicationBootstrap, OnModuleDest
     const confirmed = await this.bookingsService.confirm(p.bookingId, { userId: actor.userId, email: actor.email, role: actor.role });
     await this.automation.setHandoverNote(
       { caseType: 'BOOKING', caseId: p.bookingId },
-      { done: `Confirmed ${confirmed.reference} after the client accepted it; the client and the caregiver have been told`, waiting: 'Nothing', next: 'Nothing more from the booking agent on this booking' },
+      {
+        done: `Confirmed ${confirmed.reference} after the client accepted it; the client and the caregiver have been told`,
+        waiting: 'Nothing',
+        next: 'Nothing more from the booking agent on this booking',
+      },
     );
     return { bookingId: p.bookingId, bookingReference: confirmed.reference, shifts: confirmed.shifts.length };
   };
@@ -455,7 +467,15 @@ export class BookingAgentService implements OnApplicationBootstrap, OnModuleDest
       )
       .limit(500);
     if (!open.length) return 0;
-    const rows = await this.db.select().from(bookings).where(inArray(bookings.id, open.map((d) => d.caseId!)));
+    const rows = await this.db
+      .select()
+      .from(bookings)
+      .where(
+        inArray(
+          bookings.id,
+          open.map((d) => d.caseId!),
+        ),
+      );
     const agent = (await this.automation.agentActor('BOOKING')).userId;
     let scored = 0;
     for (const d of open) {
@@ -467,7 +487,11 @@ export class BookingAgentService implements OnApplicationBootstrap, OnModuleDest
       await this.automation.review(
         d.id,
         agreed ? 'AGREED' : 'DIFFERED',
-        agreed ? 'Scored automatically: staff confirmed the booking' : b.status === 'CANCELLED' ? 'Scored automatically: staff cancelled the booking instead' : 'Scored automatically: staff changed the draft instead of confirming it',
+        agreed
+          ? 'Scored automatically: staff confirmed the booking'
+          : b.status === 'CANCELLED'
+            ? 'Scored automatically: staff cancelled the booking instead'
+            : 'Scored automatically: staff changed the draft instead of confirming it',
         b.confirmedByUserId ?? agent,
       );
       scored++;
@@ -497,7 +521,15 @@ export class BookingAgentService implements OnApplicationBootstrap, OnModuleDest
     const made = await this.db
       .select()
       .from(bookings)
-      .where(and(inArray(bookings.careRequestId, open.map((d) => d.caseId!)), ne(bookings.status, 'CANCELLED')))
+      .where(
+        and(
+          inArray(
+            bookings.careRequestId,
+            open.map((d) => d.caseId!),
+          ),
+          ne(bookings.status, 'CANCELLED'),
+        ),
+      )
       .orderBy(bookings.createdAt);
     let scored = 0;
     for (const d of open) {

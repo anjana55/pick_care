@@ -41,7 +41,11 @@ export default function RequestsPage() {
   const [assigned, setAssigned] = useState('');
   const [page, setPage] = useState(1);
   // The dashboard links here with ?tab=... (e.g. open requests waiting).
-  useInitialParam('tab', TABS.map((x) => x.key), setTab);
+  useInitialParam(
+    'tab',
+    TABS.map((x) => x.key),
+    setTab,
+  );
 
   useEffect(() => {
     if (authLoading) return;
@@ -52,13 +56,13 @@ export default function RequestsPage() {
   const { data: summary } = useCareRequestSummary(allowed);
   // Also left as the trail the record pages' previous / next follow (lib/record-trail).
   const listFilters: CareRequestFilters = {
-      ...TABS.find((x) => x.key === tab)!.filter,
-      search: search.trim() || undefined,
-      assigned: (assigned || undefined) as CareRequestFilters['assigned'],
-      page,
-      pageSize: 20,
-    };
-  const { data, isLoading } = useCareRequests(listFilters, allowed,);
+    ...TABS.find((x) => x.key === tab)!.filter,
+    search: search.trim() || undefined,
+    assigned: (assigned || undefined) as CareRequestFilters['assigned'],
+    page,
+    pageSize: 20,
+  };
+  const { data, isLoading } = useCareRequests(listFilters, allowed);
   useRecordTrail('requests', careRequestListPath(listFilters), data);
 
   if (authLoading || !allowed) {
@@ -85,10 +89,7 @@ export default function RequestsPage() {
     <div>
       <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-xl font-semibold text-ink">{t('requests.title')}</h1>
-        <Link
-          href="/requests/new"
-          className="inline-flex h-9 items-center gap-2 rounded bg-brand px-4 text-sm font-medium text-white hover:bg-brand-dark"
-        >
+        <Link href="/requests/new" className="inline-flex h-9 items-center gap-2 rounded bg-brand px-4 text-sm font-medium text-white hover:bg-brand-dark">
           <PhoneCall size={16} aria-hidden />
           {t('requests.newPhoneRequest')}
         </Link>
@@ -194,7 +195,9 @@ export default function RequestsPage() {
                       </div>
                       {/* Open, and the caregiver has not been told yet - staff notify by hand. */}
                       {!r.caregiverNotifiedAt && (r.status === 'NEW' || r.status === 'IN_PROGRESS') && !r.caregiverDeleted && (
-                        <span className="mt-1 inline-block rounded bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">{t('requests.notNotified')}</span>
+                        <span className="mt-1 inline-block rounded bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
+                          {t('requests.notNotified')}
+                        </span>
                       )}
                     </>
                   ) : (

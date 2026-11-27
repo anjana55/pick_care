@@ -20,11 +20,26 @@ const defaultDeps: VisitChecksDeps = { start: startTracking, tracking: isTrackin
 
 /** The phone's session for the checks during a visit, from the share the API gave at check-in. */
 export function visitSession(share: StartedShare, shiftId: string, notification: { title: string; body: string }, now = Date.now()): TrackSession {
-  return { id: share.shareId, kind: 'SHIFT', everyMinutes: share.everyMinutes, startedAt: now, endsBy: Date.parse(share.endsBy), sink: 'SERVER', uploadToken: share.uploadToken, shiftId, notification };
+  return {
+    id: share.shareId,
+    kind: 'SHIFT',
+    everyMinutes: share.everyMinutes,
+    startedAt: now,
+    endsBy: Date.parse(share.endsBy),
+    sink: 'SERVER',
+    uploadToken: share.uploadToken,
+    shiftId,
+    notification,
+  };
 }
 
 /** Start the checks on this phone (after check-in, or "share from this phone"). The trip, if any, is replaced. */
-export async function startVisitChecks(share: StartedShare, shiftId: string, notification: { title: string; body: string }, start: typeof startTracking = startTracking): Promise<StartResult> {
+export async function startVisitChecks(
+  share: StartedShare,
+  shiftId: string,
+  notification: { title: string; body: string },
+  start: typeof startTracking = startTracking,
+): Promise<StartResult> {
   return start(visitSession(share, shiftId, notification));
 }
 

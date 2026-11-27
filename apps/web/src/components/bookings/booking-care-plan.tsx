@@ -75,7 +75,9 @@ export function BookingCarePlan({ bookingId, editable }: { bookingId: string; ed
               </p>
             )}
             {data.inForceOn > data.today && (
-              <p className="rounded border border-accent/30 bg-accent-light px-3 py-2 text-sm text-accent">{t('carePlans.plan.pendingFrom', { date: fmtDate(data.inForceOn, locale) })}</p>
+              <p className="rounded border border-accent/30 bg-accent-light px-3 py-2 text-sm text-accent">
+                {t('carePlans.plan.pendingFrom', { date: fmtDate(data.inForceOn, locale) })}
+              </p>
             )}
             {data.plan.notes && <p className="whitespace-pre-wrap rounded bg-paper px-3 py-2 text-sm text-ink">{data.plan.notes}</p>}
             <ActivityList activities={data.plan.activities} locale={locale} />
@@ -85,7 +87,8 @@ export function BookingCarePlan({ bookingId, editable }: { bookingId: string; ed
                 <ul className="mt-2 space-y-1 text-xs text-ink/60">
                   {data.plan.history.map((a) => (
                     <li key={a.id}>
-                      {pickText(a.title, locale)} — {t('carePlans.plan.ranUntil', { from: fmtDate(a.effectiveFrom, locale), to: fmtDate(a.effectiveTo!, locale) })}
+                      {pickText(a.title, locale)} —{' '}
+                      {t('carePlans.plan.ranUntil', { from: fmtDate(a.effectiveFrom, locale), to: fmtDate(a.effectiveTo!, locale) })}
                     </li>
                   ))}
                 </ul>
@@ -123,13 +126,24 @@ function ActivityList({ activities, locale }: { activities: CarePlanActivityView
   );
 }
 
-function StartPlan({ bookingId, careType, copyable }: { bookingId: string; careType: string | null; copyable: { id: string; reference: string; startDate: string }[] }) {
+function StartPlan({
+  bookingId,
+  careType,
+  copyable,
+}: {
+  bookingId: string;
+  careType: string | null;
+  copyable: { id: string; reference: string; startDate: string }[];
+}) {
   const { t, locale } = useTranslation();
   const { data: templates } = useCarePlanTemplates('ACTIVE');
   const create = useCreateCarePlan(bookingId);
   // Templates for this booking's kind of care first, then the rest.
   const sorted = useMemo(
-    () => [...(templates ?? [])].sort((a, b) => Number(b.careTypes.includes(careType as never)) - Number(a.careTypes.includes(careType as never)) || a.name.localeCompare(b.name)),
+    () =>
+      [...(templates ?? [])].sort(
+        (a, b) => Number(b.careTypes.includes(careType as never)) - Number(a.careTypes.includes(careType as never)) || a.name.localeCompare(b.name),
+      ),
     [templates, careType],
   );
   const [source, setSource] = useState('');
@@ -225,10 +239,23 @@ function EditPlan({
       </div>
       <div>
         <Label htmlFor="planNotes">{t('carePlans.plan.notes')}</Label>
-        <Textarea id="planNotes" rows={3} maxLength={2000} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t('carePlans.plan.notesPlaceholder')} />
+        <Textarea
+          id="planNotes"
+          rows={3}
+          maxLength={2000}
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder={t('carePlans.plan.notesPlaceholder')}
+        />
         <p className="mt-1 text-xs text-ink/50">{t('carePlans.plan.notesHint')}</p>
       </div>
-      <ActivityEditor value={activities} onChange={setActivities} textLocale={textLocale} onTextLocaleChange={setTextLocale} problems={touched ? problems : {}} />
+      <ActivityEditor
+        value={activities}
+        onChange={setActivities}
+        textLocale={textLocale}
+        onTextLocaleChange={setTextLocale}
+        problems={touched ? problems : {}}
+      />
       <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
         <Button disabled={update.isPending} onClick={save}>
           {update.isPending ? t('common.loading') : t('carePlans.plan.saveFrom', { date: from ? fmtDate(from, locale) : '…' })}
@@ -270,8 +297,18 @@ function SaveAsTemplate({ bookingId }: { bookingId: string }) {
   }
   return (
     <div className="flex items-center gap-2">
-      <Input className="h-8 w-56" aria-label={t('carePlans.templates.name')} placeholder={t('carePlans.templates.name')} value={name} onChange={(e) => setName(e.target.value)} />
-      <Button size="sm" disabled={name.trim().length < 2 || save.isPending} onClick={() => save.mutate(name.trim(), { onSuccess: (tpl) => setDone({ id: tpl.id, name: tpl.name }) })}>
+      <Input
+        className="h-8 w-56"
+        aria-label={t('carePlans.templates.name')}
+        placeholder={t('carePlans.templates.name')}
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
+      <Button
+        size="sm"
+        disabled={name.trim().length < 2 || save.isPending}
+        onClick={() => save.mutate(name.trim(), { onSuccess: (tpl) => setDone({ id: tpl.id, name: tpl.name }) })}
+      >
         {t('common.save')}
       </Button>
       <Button size="sm" variant="ghost" onClick={() => setOpen(false)}>

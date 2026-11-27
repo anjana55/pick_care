@@ -48,8 +48,15 @@ describe('Caregiver ratings and reviews (e2e)', () => {
     const reg = await api()
       .post('/auth/register-caregiver/unified')
       .send({
-        phone, consentAccepted: true, fullName: `Rated Caregiver ${phone}`, permanentAddress: '1 Lake Road, Kandy',
-        dateOfBirth: '1988-01-20', gender: 'FEMALE', civilStatus: 'MARRIED', emergencyContactName: 'EC', emergencyContactNumber: '0770001111',
+        phone,
+        consentAccepted: true,
+        fullName: `Rated Caregiver ${phone}`,
+        permanentAddress: '1 Lake Road, Kandy',
+        dateOfBirth: '1988-01-20',
+        gender: 'FEMALE',
+        civilStatus: 'MARRIED',
+        emergencyContactName: 'EC',
+        emergencyContactNumber: '0770001111',
         emergencyContactRelationship: 'Husband',
       })
       .expect(201);
@@ -62,7 +69,14 @@ describe('Caregiver ratings and reviews (e2e)', () => {
   async function newClient() {
     const reg = await api()
       .post('/auth/register-patient')
-      .send({ email: `review-client-${run}-${++n}@example.com`, password: 'SelfRegPass123', fullName: `Review Client ${letters(++n)}`, phone: newPhone(), consentAccepted: true, ...intake })
+      .send({
+        email: `review-client-${run}-${++n}@example.com`,
+        password: 'SelfRegPass123',
+        fullName: `Review Client ${letters(++n)}`,
+        phone: newPhone(),
+        consentAccepted: true,
+        ...intake,
+      })
       .expect(201);
     const [row] = await db.select().from(patients).where(eq(patients.id, reg.body.patientId));
     const token = jwt.sign({ sub: row.userId, role: 'PATIENT_GUARDIAN', patientId: row.id }, { secret: accessSecret, expiresIn: '10m' });
@@ -70,16 +84,34 @@ describe('Caregiver ratings and reviews (e2e)', () => {
   }
 
   /** A confirmed booking with the given shifts (hours from now; negative = in the past). */
-  async function booking(patientId: string, caregiverId: string, shifts: { from: number; hours?: number; status?: 'SCHEDULED' | 'COMPLETED' | 'MISSED' | 'CANCELLED'; caregiverId?: string }[]) {
+  async function booking(
+    patientId: string,
+    caregiverId: string,
+    shifts: { from: number; hours?: number; status?: 'SCHEDULED' | 'COMPLETED' | 'MISSED' | 'CANCELLED'; caregiverId?: string }[],
+  ) {
     const id = uuid();
     await db.insert(bookings).values({
-      id, reference: `RV${run}${String(++n).padStart(4, '0')}`.slice(0, 16), patientId, caregiverId, status: 'CONFIRMED',
-      scheduleType: 'DAY', daysOfWeek: '1,2,3,4,5', shiftStartTime: '08:00', shiftEndTime: '17:00', startDate: '2026-01-01', endDate: '2026-12-31',
+      id,
+      reference: `RV${run}${String(++n).padStart(4, '0')}`.slice(0, 16),
+      patientId,
+      caregiverId,
+      status: 'CONFIRMED',
+      scheduleType: 'DAY',
+      daysOfWeek: '1,2,3,4,5',
+      shiftStartTime: '08:00',
+      shiftEndTime: '17:00',
+      startDate: '2026-01-01',
+      endDate: '2026-12-31',
     });
     for (const s of shifts) {
       const startsAt = new Date(Date.now() + s.from * HOUR);
       await db.insert(bookingShifts).values({
-        id: uuid(), bookingId: id, caregiverId: s.caregiverId ?? caregiverId, startsAt, endsAt: new Date(startsAt.getTime() + (s.hours ?? 9) * HOUR), status: s.status ?? 'SCHEDULED',
+        id: uuid(),
+        bookingId: id,
+        caregiverId: s.caregiverId ?? caregiverId,
+        startsAt,
+        endsAt: new Date(startsAt.getTime() + (s.hours ?? 9) * HOUR),
+        status: s.status ?? 'SCHEDULED',
       });
     }
     return id;
@@ -90,7 +122,10 @@ describe('Caregiver ratings and reviews (e2e)', () => {
   const setSettings = (body: Record<string, unknown>) => api().patch('/settings/reviews').set(bearer(adminToken)).send(body);
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).overrideProvider(ThrottlerStorage).useValue(unlimitedThrottle).compile();
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+      .overrideProvider(ThrottlerStorage)
+      .useValue(unlimitedThrottle)
+      .compile();
     app = moduleRef.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
     await app.init();
@@ -104,9 +139,17 @@ describe('Caregiver ratings and reviews (e2e)', () => {
     districtId = tree.flatMap((p) => p.districts)[0].id;
     const cityId = (await api().get(`/public/meta/locations/cities?districtId=${districtId}&locale=en`).expect(200)).body[0].id;
     intake = {
-      registrantType: 'GUARDIAN', recipientName: 'Sunil Fernando', recipientRelationship: 'PARENT', recipientAge: 78, recipientGender: 'MALE',
-      preferredContactMethod: 'PHONE_CALL', districtId, cityId, careNeeds: 'Needs help with bathing, meals and medication reminders.',
-      careSchedule: 'DAY', careStart: 'WITHIN_WEEK',
+      registrantType: 'GUARDIAN',
+      recipientName: 'Sunil Fernando',
+      recipientRelationship: 'PARENT',
+      recipientAge: 78,
+      recipientGender: 'MALE',
+      preferredContactMethod: 'PHONE_CALL',
+      districtId,
+      cityId,
+      careNeeds: 'Needs help with bathing, meals and medication reminders.',
+      careSchedule: 'DAY',
+      careStart: 'WITHIN_WEEK',
     };
     await setSettings({ enabled: true, minRatingsToShow: 3, windowDays: 90 }).expect(200);
   });
@@ -151,7 +194,10 @@ describe('Caregiver ratings and reviews (e2e)', () => {
     const after = await api().get('/me/reviews/pending').set(bearer(client.token)).expect(200);
     expect(after.body.map((p: { bookingId: string }) => p.bookingId)).not.toContain(worked);
 
-    const events = await db.select().from(bookingEvents).where(and(eq(bookingEvents.bookingId, worked), eq(bookingEvents.type, 'REVIEWED')));
+    const events = await db
+      .select()
+      .from(bookingEvents)
+      .where(and(eq(bookingEvents.bookingId, worked), eq(bookingEvents.type, 'REVIEWED')));
     expect(events[0].note).toContain('5 stars');
   });
 
@@ -169,10 +215,18 @@ describe('Caregiver ratings and reviews (e2e)', () => {
     await rate(client.token, id, cg.publicId, { rating: 4, comment: 'Email me at someone@example.com please' }).expect(400);
     await rate(client.token, id, cg.publicId, { rating: 4, comment: 'Too short' }).expect(400);
     // Messages come back in the client's language.
-    const si = await api().put(`/me/bookings/${id}/reviews/${cg.publicId}?lang=si`).set(bearer(client.token)).send({ rating: 3, badges: ['PUNCTUAL'] }).expect(400);
+    const si = await api()
+      .put(`/me/bookings/${id}/reviews/${cg.publicId}?lang=si`)
+      .set(bearer(client.token))
+      .send({ rating: 3, badges: ['PUNCTUAL'] })
+      .expect(400);
     expect(si.body.message).toBe('ලාංඡන තරු 4ක් හෝ 5ක් සඳහා පමණි');
 
-    const low = await rate(client.token, id, cg.publicId, { rating: 2, improvementTags: ['TIMEKEEPING', 'HYGIENE'], comment: 'ප්‍රමාද වී පැමිණියා, නමුත් කාරුණිකයි.' }).expect(200);
+    const low = await rate(client.token, id, cg.publicId, {
+      rating: 2,
+      improvementTags: ['TIMEKEEPING', 'HYGIENE'],
+      comment: 'ප්‍රමාද වී පැමිණියා, නමුත් කාරුණිකයි.',
+    }).expect(200);
     expect(low.body.review).toMatchObject({ rating: 2, improvementTags: ['TIMEKEEPING', 'HYGIENE'], commentStatus: 'PENDING' });
     const [row] = await db.select().from(caregiverReviews).where(eq(caregiverReviews.id, low.body.review.id));
     expect(row.commentLanguage).toBe('si');
@@ -205,7 +259,11 @@ describe('Caregiver ratings and reviews (e2e)', () => {
     const ids: string[] = [];
     for (const c of clients) ids.push(await booking(c.patientId, cg.id, [{ from: -30 }]));
 
-    await rate(clients[0].token, ids[0], cg.publicId, { rating: 5, badges: ['KIND_PATIENT', 'CLEAN_TIDY'], comment: 'Wonderful with my mother every single day.' }).expect(200);
+    await rate(clients[0].token, ids[0], cg.publicId, {
+      rating: 5,
+      badges: ['KIND_PATIENT', 'CLEAN_TIDY'],
+      comment: 'Wonderful with my mother every single day.',
+    }).expect(200);
     await rate(clients[1].token, ids[1], cg.publicId, { rating: 4, badges: ['KIND_PATIENT'] }).expect(200);
 
     let profile = await api().get(`/public/caregivers/${cg.publicId}?locale=en`).expect(200);
@@ -215,7 +273,14 @@ describe('Caregiver ratings and reviews (e2e)', () => {
 
     await rate(clients[2].token, ids[2], cg.publicId, { rating: 3, improvementTags: ['COMMUNICATION'], privateNote: 'Hard to reach by phone.' }).expect(200);
     profile = await api().get(`/public/caregivers/${cg.publicId}?locale=en`).expect(200);
-    expect(profile.body.rating).toEqual({ average: 4, count: 3, topBadges: [{ badge: 'KIND_PATIENT', count: 2 }, { badge: 'CLEAN_TIDY', count: 1 }] });
+    expect(profile.body.rating).toEqual({
+      average: 4,
+      count: 3,
+      topBadges: [
+        { badge: 'KIND_PATIENT', count: 2 },
+        { badge: 'CLEAN_TIDY', count: 1 },
+      ],
+    });
 
     // The written review waits for staff.
     page = await api().get(`/public/caregivers/${cg.publicId}/reviews`).expect(200);
@@ -235,7 +300,8 @@ describe('Caregiver ratings and reviews (e2e)', () => {
     expect(item.month).toMatch(/^\d{4}-\d{2}$/);
     // Nothing that identifies the client, the booking, or the private parts.
     const text = JSON.stringify(page.body);
-    for (const leak of [clients[0].fullName, clients[0].patientId, ids[0], 'Hard to reach', 'COMMUNICATION', 'privateNote', 'improvementTags']) expect(text).not.toContain(leak);
+    for (const leak of [clients[0].fullName, clients[0].patientId, ids[0], 'Hard to reach', 'COMMUNICATION', 'privateNote', 'improvementTags'])
+      expect(text).not.toContain(leak);
 
     // The caregiver sees their own totals and approved reviews, not the private feedback.
     const own = await api().get('/me/reviews').set(bearer(cg.token)).expect(200);
@@ -304,7 +370,13 @@ describe('Caregiver ratings and reviews (e2e)', () => {
     for (let page = 1; page <= 40 && !card; page++) {
       const search = await api()
         .post('/public/search')
-        .send({ careType: 'HOME_SHIFT', location: { districtId }, desiredStartDate: new Date(Date.now() + 60 * DAY).toISOString().slice(0, 10), page, pageSize: 50 })
+        .send({
+          careType: 'HOME_SHIFT',
+          location: { districtId },
+          desiredStartDate: new Date(Date.now() + 60 * DAY).toISOString().slice(0, 10),
+          page,
+          pageSize: 50,
+        })
         .expect(200);
       card = search.body.items.find((i: { publicId: string }) => i.publicId === cg.publicId);
       if (search.body.items.length < 50) break;
@@ -328,7 +400,8 @@ describe('Caregiver ratings and reviews (e2e)', () => {
     const sweep = app.get(ReviewRequestSweepService);
     // Only this test's bookings: a shared database can hold many others from the last fortnight.
     const mine: string[] = [done, ongoing];
-    const asked = async (bookingId: string) => (await db.select().from(reviewRequests).where(eq(reviewRequests.bookingId, bookingId))).map((r) => r.stage).sort();
+    const asked = async (bookingId: string) =>
+      (await db.select().from(reviewRequests).where(eq(reviewRequests.bookingId, bookingId))).map((r) => r.stage).sort();
 
     const now = new Date();
     await sweep.run(now, 90, mine);

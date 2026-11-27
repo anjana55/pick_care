@@ -81,8 +81,8 @@ export default function RequestDetailPage() {
     <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3 print:hidden">
         <Link href="/requests" className="inline-flex items-center gap-1 text-sm text-ink/60 hover:text-ink">
-        <ChevronLeft size={16} />
-        {t('requests.back')}
+          <ChevronLeft size={16} />
+          {t('requests.back')}
         </Link>
         <RecordPager kind="requests" id={id} />
       </div>
@@ -146,7 +146,10 @@ export default function RequestDetailPage() {
               {t('requests.intake.missing', { what: request.intake.gaps.map((g) => t(`requests.intake.gaps.${g}`)).join(', ') })}
               {request.intake.asked && !request.intake.answeredAt && (
                 <span className="block text-xs text-ink/60">
-                  {t('requests.intake.asked', { what: request.intake.asked.gaps.map((g) => t(`requests.intake.gaps.${g}`)).join(', '), when: new Date(request.intake.asked.at).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' }) })}
+                  {t('requests.intake.asked', {
+                    what: request.intake.asked.gaps.map((g) => t(`requests.intake.gaps.${g}`)).join(', '),
+                    when: new Date(request.intake.asked.at).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' }),
+                  })}
                 </span>
               )}
             </p>
@@ -228,9 +231,7 @@ function AssignControl({ request }: { request: CareRequestDetail }) {
           </Button>
         )}
       </div>
-      {assign.isError && (
-        <p className="text-xs text-danger">{assign.error instanceof ApiError ? assign.error.message : t('requests.detail.saveFailed')}</p>
-      )}
+      {assign.isError && <p className="text-xs text-danger">{assign.error instanceof ApiError ? assign.error.message : t('requests.detail.saveFailed')}</p>}
     </div>
   );
 }
@@ -291,7 +292,11 @@ function ClientPanel({ request }: { request: CareRequestDetail }) {
         </Row>
         {c.registrantType === 'GUARDIAN' && (
           <Row label={t('requests.detail.careFor')}>
-            {[c.recipientName, c.recipientRelationship && opt('relationship', c.recipientRelationship), c.recipientAge && t('requests.detail.age', { age: c.recipientAge })]
+            {[
+              c.recipientName,
+              c.recipientRelationship && opt('relationship', c.recipientRelationship),
+              c.recipientAge && t('requests.detail.age', { age: c.recipientAge }),
+            ]
               .filter(Boolean)
               .join(' · ') || '—'}
           </Row>
@@ -439,7 +444,12 @@ function NotifyCaregiverRow({ request }: { request: CareRequestDetail }) {
               : t('requests.detail.notNotified')}
         </p>
         {request.canNotifyCaregiver && (
-          <Button size="sm" variant={request.caregiverNotifiedAt ? 'secondary' : 'primary'} disabled={notify.isPending} onClick={() => notify.mutate(undefined)}>
+          <Button
+            size="sm"
+            variant={request.caregiverNotifiedAt ? 'secondary' : 'primary'}
+            disabled={notify.isPending}
+            onClick={() => notify.mutate(undefined)}
+          >
             {notify.isPending
               ? t('requests.detail.notifying')
               : request.caregiverNotifiedAt
@@ -559,9 +569,7 @@ function StatusActions({ request }: { request: CareRequestDetail }) {
           </>
         )}
         {request.closeReason && request.status === 'CLOSED' && (
-          <p className="mt-4 text-sm text-ink/70">
-            {t('requests.detail.closedBecause', { reason: t(`requests.closeReason.${request.closeReason}`) })}
-          </p>
+          <p className="mt-4 text-sm text-ink/70">{t('requests.detail.closedBecause', { reason: t(`requests.closeReason.${request.closeReason}`) })}</p>
         )}
       </CardContent>
     </Card>

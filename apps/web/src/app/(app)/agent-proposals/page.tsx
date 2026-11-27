@@ -39,7 +39,8 @@ export default function AgentProposalsPage() {
         <ul className="space-y-3">
           {data.map((d) => {
             const path = d.caseType && d.caseId ? CASE_PATHS[d.caseType] : undefined;
-            const reference = [d.proposal?.bookingReference, d.proposal?.payoutReference, d.proposal?.requestReference].find((r): r is string => typeof r === 'string') ?? null;
+            const reference =
+              [d.proposal?.bookingReference, d.proposal?.payoutReference, d.proposal?.requestReference].find((r): r is string => typeof r === 'string') ?? null;
             // A proposed pay statement does not exist yet: point at the caregiver it is for.
             // A proposed job offer names its caregiver too, next to the request.
             const caregiver =

@@ -25,7 +25,10 @@ describe('Assistant page context (e2e)', () => {
   let token: string;
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).overrideProvider(ThrottlerStorage).useValue(unlimitedThrottle).compile();
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+      .overrideProvider(ThrottlerStorage)
+      .useValue(unlimitedThrottle)
+      .compile();
     app = moduleRef.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
     await app.init();
@@ -39,7 +42,11 @@ describe('Assistant page context (e2e)', () => {
   });
 
   it('names a record from the database, by the id in the path', async () => {
-    const [c] = await db.select({ id: caregivers.id, name: caregivers.fullName, reg: caregivers.registrationNumber }).from(caregivers).where(isNull(caregivers.deletedAt)).limit(1);
+    const [c] = await db
+      .select({ id: caregivers.id, name: caregivers.fullName, reg: caregivers.registrationNumber })
+      .from(caregivers)
+      .where(isNull(caregivers.deletedAt))
+      .limit(1);
     const text = await describeContext(db, { path: `/caregivers/${c.id}` });
     expect(text).toContain(c.name);
     expect(text).toContain(c.reg);
@@ -58,12 +65,18 @@ describe('Assistant page context (e2e)', () => {
 
   it('puts it in the system prompt, and leaves it out when there is none', () => {
     const base = { staffName: 'Nimal', role: 'STAFF', today: '2026-11-02', brand: 'Pick Care', actionUpdates: [] };
-    expect(assistantSystemPrompt({ ...base, pageContext: 'They are on the Bookings list.' })).toContain('Where Nimal is in the app right now (it can change between messages): They are on the Bookings list.');
+    expect(assistantSystemPrompt({ ...base, pageContext: 'They are on the Bookings list.' })).toContain(
+      'Where Nimal is in the app right now (it can change between messages): They are on the Bookings list.',
+    );
     expect(assistantSystemPrompt(base)).not.toContain('Where Nimal is');
   });
 
   it('accepts only a path as context', async () => {
-    const convo = (await request(app.getHttpServer()).post('/assistant/conversations').set({ Authorization: `Bearer ${token}` })).body;
+    const convo = (
+      await request(app.getHttpServer())
+        .post('/assistant/conversations')
+        .set({ Authorization: `Bearer ${token}` })
+    ).body;
     // Turned off in a fresh database, so a valid message is refused for that reason - after validation passed.
     const bad = await request(app.getHttpServer())
       .post(`/assistant/conversations/${convo.id ?? '00000000-0000-4000-8000-000000000000'}/messages`)

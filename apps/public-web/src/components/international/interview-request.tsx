@@ -35,7 +35,9 @@ export function InterviewRequestPanel({ slug, firstName }: { slug: string; first
   const [enquiryId, setEnquiryId] = useState('');
   const [message, setMessage] = useState('');
   const chosen = enquiryId || open[0]?.id || '';
-  const already = enquiries.find((e) => e.id === chosen)?.candidates.find((c) => c.talent?.slug === slug && c.status !== 'NOT_PROCEEDING' && c.status !== 'PROPOSED');
+  const already = enquiries
+    .find((e) => e.id === chosen)
+    ?.candidates.find((c) => c.talent?.slug === slug && c.status !== 'NOT_PROCEEDING' && c.status !== 'PROPOSED');
 
   if (!account) return null;
   if (account.status !== 'VERIFIED') {

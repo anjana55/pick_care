@@ -12,9 +12,21 @@ const fill = (t: string, v: Record<string, string>) => t.replace(/\{(\w+)\}/g, (
 // --- the client: their invoice changed ------------------------------------------------
 
 const CLIENT_HEAD: Record<Lang, { subject: string; heading: string; intro: string }> = {
-  en: { subject: 'A correction to your booking {ref}', heading: 'We corrected your booking', intro: 'We found something to put right on booking {ref} and corrected it.' },
-  si: { subject: 'ඔබගේ වෙන්කිරීම {ref} හි නිවැරදි කිරීමක්', heading: 'අපි ඔබගේ වෙන්කිරීම නිවැරදි කළෙමු', intro: 'වෙන්කිරීම {ref} හි නිවැරදි කළ යුතු දෙයක් අපට හමු වූ අතර අපි එය නිවැරදි කළෙමු.' },
-  ta: { subject: 'உங்கள் முன்பதிவு {ref} இல் ஒரு திருத்தம்', heading: 'உங்கள் முன்பதிவைத் திருத்தினோம்', intro: 'முன்பதிவு {ref} இல் சரிசெய்ய வேண்டிய ஒன்றைக் கண்டறிந்து திருத்தினோம்.' },
+  en: {
+    subject: 'A correction to your booking {ref}',
+    heading: 'We corrected your booking',
+    intro: 'We found something to put right on booking {ref} and corrected it.',
+  },
+  si: {
+    subject: 'ඔබගේ වෙන්කිරීම {ref} හි නිවැරදි කිරීමක්',
+    heading: 'අපි ඔබගේ වෙන්කිරීම නිවැරදි කළෙමු',
+    intro: 'වෙන්කිරීම {ref} හි නිවැරදි කළ යුතු දෙයක් අපට හමු වූ අතර අපි එය නිවැරදි කළෙමු.',
+  },
+  ta: {
+    subject: 'உங்கள் முன்பதிவு {ref} இல் ஒரு திருத்தம்',
+    heading: 'உங்கள் முன்பதிவைத் திருத்தினோம்',
+    intro: 'முன்பதிவு {ref} இல் சரிசெய்ய வேண்டிய ஒன்றைக் கண்டறிந்து திருத்தினோம்.',
+  },
 };
 
 const CLIENT_LINE: Record<'REPLACE' | 'OWE' | 'CREDIT', Record<Lang, string>> = {
@@ -37,7 +49,7 @@ const CLIENT_LINE: Record<'REPLACE' | 'OWE' | 'CREDIT', Record<Lang, string>> = 
 
 export function correctionClientNotice(lang: Lang, ref: string, items: { kind: 'REPLACE' | 'OWE' | 'CREDIT'; label: string; amount: string }[]) {
   const head = CLIENT_HEAD[lang] ?? CLIENT_HEAD.en;
-  const lines = items.map((i) => fill((CLIENT_LINE[i.kind][lang] ?? CLIENT_LINE[i.kind].en), { label: i.label, amount: i.amount }));
+  const lines = items.map((i) => fill(CLIENT_LINE[i.kind][lang] ?? CLIENT_LINE[i.kind].en, { label: i.label, amount: i.amount }));
   return { subject: fill(head.subject, { ref }), heading: head.heading, paragraphs: [fill(head.intro, { ref }), ...lines] };
 }
 
@@ -79,21 +91,57 @@ export function correctionCaregiverNotice(ref: string, items: { kind: 'REOPEN' |
 // --- issue reports --------------------------------------------------------------------
 
 const RECEIVED: Record<Lang, { subject: string; heading: string; body: string }> = {
-  en: { subject: 'We received your report on booking {ref}', heading: 'Thanks - we are looking into it', body: 'Our team has your report about booking {ref} and will check it against the records. We will let you know what we find.' },
-  si: { subject: 'වෙන්කිරීම {ref} පිළිබඳ ඔබගේ වාර්තාව අපට ලැබුණා', heading: 'ස්තූතියි - අපි එය සොයා බලමින් සිටිමු', body: 'වෙන්කිරීම {ref} පිළිබඳ ඔබගේ වාර්තාව අපගේ කණ්ඩායමට ලැබී ඇති අතර ඔවුන් එය වාර්තා සමඟ පරීක්ෂා කරනු ඇත. අපට හමු වන දේ අපි ඔබට දන්වන්නෙමු.' },
-  ta: { subject: 'முன்பதிவு {ref} பற்றிய உங்கள் புகாரைப் பெற்றோம்', heading: 'நன்றி - நாங்கள் இதைப் பார்க்கிறோம்', body: 'முன்பதிவு {ref} பற்றிய உங்கள் புகார் எங்கள் குழுவிடம் உள்ளது; அவர்கள் பதிவுகளுடன் ஒப்பிட்டுப் பார்ப்பார்கள். கண்டறிவதை உங்களுக்குத் தெரிவிப்போம்.' },
+  en: {
+    subject: 'We received your report on booking {ref}',
+    heading: 'Thanks - we are looking into it',
+    body: 'Our team has your report about booking {ref} and will check it against the records. We will let you know what we find.',
+  },
+  si: {
+    subject: 'වෙන්කිරීම {ref} පිළිබඳ ඔබගේ වාර්තාව අපට ලැබුණා',
+    heading: 'ස්තූතියි - අපි එය සොයා බලමින් සිටිමු',
+    body: 'වෙන්කිරීම {ref} පිළිබඳ ඔබගේ වාර්තාව අපගේ කණ්ඩායමට ලැබී ඇති අතර ඔවුන් එය වාර්තා සමඟ පරීක්ෂා කරනු ඇත. අපට හමු වන දේ අපි ඔබට දන්වන්නෙමු.',
+  },
+  ta: {
+    subject: 'முன்பதிவு {ref} பற்றிய உங்கள் புகாரைப் பெற்றோம்',
+    heading: 'நன்றி - நாங்கள் இதைப் பார்க்கிறோம்',
+    body: 'முன்பதிவு {ref} பற்றிய உங்கள் புகார் எங்கள் குழுவிடம் உள்ளது; அவர்கள் பதிவுகளுடன் ஒப்பிட்டுப் பார்ப்பார்கள். கண்டறிவதை உங்களுக்குத் தெரிவிப்போம்.',
+  },
 };
 
 const CLOSED: Record<'RESOLVED' | 'DISMISSED', Record<Lang, { subject: string; heading: string; body: string }>> = {
   RESOLVED: {
-    en: { subject: 'Your report on booking {ref} has been resolved', heading: 'We have dealt with your report', body: 'Thank you for telling us. We have looked into your report about booking {ref} and put it right.' },
-    si: { subject: 'වෙන්කිරීම {ref} පිළිබඳ ඔබගේ වාර්තාව විසඳා ඇත', heading: 'අපි ඔබගේ වාර්තාව විසඳුවෙමු', body: 'අපට දැන්වීම ගැන ස්තූතියි. වෙන්කිරීම {ref} පිළිබඳ ඔබගේ වාර්තාව අපි සොයා බලා එය නිවැරදි කළෙමු.' },
-    ta: { subject: 'முன்பதிவு {ref} பற்றிய உங்கள் புகார் தீர்க்கப்பட்டது', heading: 'உங்கள் புகாரைக் கவனித்தோம்', body: 'எங்களுக்குத் தெரிவித்ததற்கு நன்றி. முன்பதிவு {ref} பற்றிய உங்கள் புகாரைப் பார்த்துச் சரிசெய்தோம்.' },
+    en: {
+      subject: 'Your report on booking {ref} has been resolved',
+      heading: 'We have dealt with your report',
+      body: 'Thank you for telling us. We have looked into your report about booking {ref} and put it right.',
+    },
+    si: {
+      subject: 'වෙන්කිරීම {ref} පිළිබඳ ඔබගේ වාර්තාව විසඳා ඇත',
+      heading: 'අපි ඔබගේ වාර්තාව විසඳුවෙමු',
+      body: 'අපට දැන්වීම ගැන ස්තූතියි. වෙන්කිරීම {ref} පිළිබඳ ඔබගේ වාර්තාව අපි සොයා බලා එය නිවැරදි කළෙමු.',
+    },
+    ta: {
+      subject: 'முன்பதிவு {ref} பற்றிய உங்கள் புகார் தீர்க்கப்பட்டது',
+      heading: 'உங்கள் புகாரைக் கவனித்தோம்',
+      body: 'எங்களுக்குத் தெரிவித்ததற்கு நன்றி. முன்பதிவு {ref} பற்றிய உங்கள் புகாரைப் பார்த்துச் சரிசெய்தோம்.',
+    },
   },
   DISMISSED: {
-    en: { subject: 'About your report on booking {ref}', heading: 'We checked your report', body: 'Thank you for telling us. We checked your report about booking {ref} against our records and found nothing that needs changing.' },
-    si: { subject: 'වෙන්කිරීම {ref} පිළිබඳ ඔබගේ වාර්තාව ගැන', heading: 'අපි ඔබගේ වාර්තාව පරීක්ෂා කළෙමු', body: 'අපට දැන්වීම ගැන ස්තූතියි. වෙන්කිරීම {ref} පිළිබඳ ඔබගේ වාර්තාව අපි අපගේ වාර්තා සමඟ පරීක්ෂා කළ අතර වෙනස් කළ යුතු කිසිවක් හමු නොවීය.' },
-    ta: { subject: 'முன்பதிவு {ref} பற்றிய உங்கள் புகார் குறித்து', heading: 'உங்கள் புகாரைச் சரிபார்த்தோம்', body: 'எங்களுக்குத் தெரிவித்ததற்கு நன்றி. முன்பதிவு {ref} பற்றிய உங்கள் புகாரை எங்கள் பதிவுகளுடன் சரிபார்த்தோம்; மாற்ற வேண்டியது எதுவும் இல்லை.' },
+    en: {
+      subject: 'About your report on booking {ref}',
+      heading: 'We checked your report',
+      body: 'Thank you for telling us. We checked your report about booking {ref} against our records and found nothing that needs changing.',
+    },
+    si: {
+      subject: 'වෙන්කිරීම {ref} පිළිබඳ ඔබගේ වාර්තාව ගැන',
+      heading: 'අපි ඔබගේ වාර්තාව පරීක්ෂා කළෙමු',
+      body: 'අපට දැන්වීම ගැන ස්තූතියි. වෙන්කිරීම {ref} පිළිබඳ ඔබගේ වාර්තාව අපි අපගේ වාර්තා සමඟ පරීක්ෂා කළ අතර වෙනස් කළ යුතු කිසිවක් හමු නොවීය.',
+    },
+    ta: {
+      subject: 'முன்பதிவு {ref} பற்றிய உங்கள் புகார் குறித்து',
+      heading: 'உங்கள் புகாரைச் சரிபார்த்தோம்',
+      body: 'எங்களுக்குத் தெரிவித்ததற்கு நன்றி. முன்பதிவு {ref} பற்றிய உங்கள் புகாரை எங்கள் பதிவுகளுடன் சரிபார்த்தோம்; மாற்ற வேண்டியது எதுவும் இல்லை.',
+    },
   },
 };
 
@@ -109,7 +157,11 @@ export function issueNotice(kind: 'RECEIVED' | 'RESOLVED' | 'DISMISSED', lang: L
     paragraphs: [fill(pick(l).body, { ref }), ...(note ? [fill(NOTE_LABEL[l], { note })] : [])],
   }));
   const subject = fill(pick(trilingual ? 'en' : lang).subject, { ref });
-  return { subject: trilingual ? `{brand} - ${subject}` : subject, blocks, whatsappText: blocks.map((b) => `${b.heading}. ${b.paragraphs.join(' ')}`).join(' / ') };
+  return {
+    subject: trilingual ? `{brand} - ${subject}` : subject,
+    blocks,
+    whatsappText: blocks.map((b) => `${b.heading}. ${b.paragraphs.join(' ')}`).join(' / '),
+  };
 }
 
 /** For the staff alert (English, like every staff email). */

@@ -5,7 +5,16 @@ import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { Type } from 'class-transformer';
 import { ArrayMaxSize, IsArray, IsBoolean, IsIn, IsISO8601, IsNumber, IsOptional, ValidateNested } from 'class-validator';
-import { LOCATION_POINTS_BATCH_MAX, presenceReplies, type PresenceReply, type StaffPresenceDetail, type ClientLive, type PointsAccepted, type StaffLiveShare, type StartedShare } from '@care-platform/shared';
+import {
+  LOCATION_POINTS_BATCH_MAX,
+  presenceReplies,
+  type PresenceReply,
+  type StaffPresenceDetail,
+  type ClientLive,
+  type PointsAccepted,
+  type StaffLiveShare,
+  type StartedShare,
+} from '@care-platform/shared';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Public } from '../common/decorators/public.decorator';
 import { Audit } from '../common/decorators/audit.decorator';
@@ -137,7 +146,8 @@ export class LiveVisitsController {
   @Get('live')
   async live(@Query('opened') opened: string | undefined, @CurrentUser() user: AuthenticatedUser, @Req() req: Request): Promise<StaffLiveShare[]> {
     const shares = await this.shares.staffLive();
-    if (opened === '1') void this.audit.record({ userId: user.userId, action: 'VIEW_LIVE_LOCATIONS', entityType: 'LocationShare', entityId: null, ipAddress: req.ip ?? null });
+    if (opened === '1')
+      void this.audit.record({ userId: user.userId, action: 'VIEW_LIVE_LOCATIONS', entityType: 'LocationShare', entityId: null, ipAddress: req.ip ?? null });
     return shares;
   }
 

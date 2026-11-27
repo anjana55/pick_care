@@ -67,12 +67,7 @@ export class AiMatchingService {
     const [row] = await this.db
       .select()
       .from(cities)
-      .where(
-        and(
-          eq(cities.districtId, districtId),
-          or(sql`LOWER(${cities.nameEn}) = ${needle}`, eq(cities.nameSi, name), eq(cities.nameTa, name)),
-        ),
-      )
+      .where(and(eq(cities.districtId, districtId), or(sql`LOWER(${cities.nameEn}) = ${needle}`, eq(cities.nameSi, name), eq(cities.nameTa, name))))
       .limit(1);
     if (!row) return null;
     return { id: row.id, label: locale === 'si' ? row.nameSi : locale === 'ta' ? row.nameTa : row.nameEn };
@@ -87,12 +82,7 @@ export class AiMatchingService {
    * completeForPublicSearch): it reports what is still missing and defaults
    * the start date, so the site can search straight away or ask one question.
    */
-  async extract(
-    settings: ResolvedAiSettings,
-    text: string,
-    locale: Locale,
-    options: { forPublicSearch?: boolean } = {},
-  ): Promise<ExtractedRequirements> {
+  async extract(settings: ResolvedAiSettings, text: string, locale: Locale, options: { forPublicSearch?: boolean } = {}): Promise<ExtractedRequirements> {
     const catalog = await this.catalog(locale);
     const today = todayInColombo();
     const reply = await this.provider.chat(settings, {
@@ -193,8 +183,13 @@ export class AiMatchingService {
 
     const locale = resolveLocale(request.locale);
     const { page, pageSize, ...rest } = request;
-    const key = createHash('sha256').update(JSON.stringify({ rest, query, model: settings.model, at: settings.updatedAt })).digest('hex');
-    const ids = pool.ranked.map((r) => r.caregiverId).sort().join(',');
+    const key = createHash('sha256')
+      .update(JSON.stringify({ rest, query, model: settings.model, at: settings.updatedAt }))
+      .digest('hex');
+    const ids = pool.ranked
+      .map((r) => r.caregiverId)
+      .sort()
+      .join(',');
 
     let entry = this.cache.get(key);
     // A cached order is only reused while the pool is the same people - a
@@ -283,7 +278,9 @@ export class AiMatchingService {
             ? { patient: { ...request.patient, medicalConditions: requirements.patient.medicalConditions } }
             : {}),
           ...(!request.shift && requirements.shift ? { shift: requirements.shift } : {}),
-          ...(!request.caregiverGenderPreference && requirements.caregiverGenderPreference ? { caregiverGenderPreference: requirements.caregiverGenderPreference } : {}),
+          ...(!request.caregiverGenderPreference && requirements.caregiverGenderPreference
+            ? { caregiverGenderPreference: requirements.caregiverGenderPreference }
+            : {}),
           ...(!request.location && requirements.location ? { location: requirements.location } : {}),
         };
       } catch (err) {

@@ -42,9 +42,22 @@ describe('Talk to a person (e2e)', () => {
     const reg = await api()
       .post('/auth/register-patient')
       .send({
-        email: `talk-client-${run}-${++n}@example.com`, password: 'SelfRegPass123', fullName: 'Nimal Kumara Perera', phone: newPhone(), consentAccepted: true,
-        registrantType: 'GUARDIAN', recipientName: 'Sunil Fernando', recipientRelationship: 'PARENT', recipientAge: 78, recipientGender: 'MALE',
-        preferredContactMethod: 'WHATSAPP', districtId, cityId, careNeeds: 'Needs help with bathing.', careSchedule: 'DAY', careStart: 'WITHIN_WEEK',
+        email: `talk-client-${run}-${++n}@example.com`,
+        password: 'SelfRegPass123',
+        fullName: 'Nimal Kumara Perera',
+        phone: newPhone(),
+        consentAccepted: true,
+        registrantType: 'GUARDIAN',
+        recipientName: 'Sunil Fernando',
+        recipientRelationship: 'PARENT',
+        recipientAge: 78,
+        recipientGender: 'MALE',
+        preferredContactMethod: 'WHATSAPP',
+        districtId,
+        cityId,
+        careNeeds: 'Needs help with bathing.',
+        careSchedule: 'DAY',
+        careStart: 'WITHIN_WEEK',
       })
       .expect(201);
     const [p] = await db.select().from(patients).where(eq(patients.id, reg.body.patientId));
@@ -57,11 +70,26 @@ describe('Talk to a person (e2e)', () => {
     const phone = newPhone();
     const reg = await api()
       .post('/auth/register-caregiver/unified')
-      .send({ phone, consentAccepted: true, fullName: `Talk Caregiver ${phone}`, permanentAddress: '1 Lake Road', dateOfBirth: '1988-01-20', gender: 'FEMALE', civilStatus: 'MARRIED', emergencyContactName: 'EC', emergencyContactNumber: '0770001111', emergencyContactRelationship: 'Husband' })
+      .send({
+        phone,
+        consentAccepted: true,
+        fullName: `Talk Caregiver ${phone}`,
+        permanentAddress: '1 Lake Road',
+        dateOfBirth: '1988-01-20',
+        gender: 'FEMALE',
+        civilStatus: 'MARRIED',
+        emergencyContactName: 'EC',
+        emergencyContactNumber: '0770001111',
+        emergencyContactRelationship: 'Husband',
+      })
       .expect(201);
     const [cg] = await db.select().from(caregivers).where(eq(caregivers.registrationNumber, reg.body.registrationNumber));
     await db.update(caregivers).set({ status: 'ACTIVE' }).where(eq(caregivers.id, cg.id));
-    return { id: cg.id, name: cg.fullName, token: jwt.sign({ sub: cg.userId, role: 'CAREGIVER', caregiverId: cg.id }, { secret: accessSecret, expiresIn: '10m' }) };
+    return {
+      id: cg.id,
+      name: cg.fullName,
+      token: jwt.sign({ sub: cg.userId, role: 'CAREGIVER', caregiverId: cg.id }, { secret: accessSecret, expiresIn: '10m' }),
+    };
   }
 
   async function booking(patientId: string, caregiverId: string) {
@@ -70,7 +98,18 @@ describe('Talk to a person (e2e)', () => {
     const draft = await api()
       .post('/bookings')
       .set(bearer(staffToken))
-      .send({ patientId, caregiverId, scheduleType: 'DAY', daysOfWeek: [1], shiftStartTime: '08:00', shiftEndTime: '17:00', startDate: d, endDate: d, rateType: 'DAILY', rateAmount: '3500' })
+      .send({
+        patientId,
+        caregiverId,
+        scheduleType: 'DAY',
+        daysOfWeek: [1],
+        shiftStartTime: '08:00',
+        shiftEndTime: '17:00',
+        startDate: d,
+        endDate: d,
+        rateType: 'DAILY',
+        rateAmount: '3500',
+      })
       .expect(201);
     return draft.body as { id: string; reference: string; shifts: { id: string }[] };
   }
@@ -80,7 +119,10 @@ describe('Talk to a person (e2e)', () => {
   const waiting = async () => (await api().get('/talk-requests').set(bearer(staffToken)).expect(200)).body as StaffTalkRequest[];
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).overrideProvider(ThrottlerStorage).useValue(unlimitedThrottle).compile();
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+      .overrideProvider(ThrottlerStorage)
+      .useValue(unlimitedThrottle)
+      .compile();
     app = moduleRef.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
     await app.init();
@@ -100,7 +142,13 @@ describe('Talk to a person (e2e)', () => {
 
   it('a client asks about their request: the agents step back, staff are told (without the message) and see it waiting', async () => {
     const c = await client();
-    const mine = (await ask(c.token, { message: '  My father was taken to hospital, please call me  ', contact: 'CALL', about: { type: 'REQUEST', id: c.requestId } }).expect(201)).body as MyTalkRequest;
+    const mine = (
+      await ask(c.token, {
+        message: '  My father was taken to hospital, please call me  ',
+        contact: 'CALL',
+        about: { type: 'REQUEST', id: c.requestId },
+      }).expect(201)
+    ).body as MyTalkRequest;
     expect(mine).toMatchObject({ message: 'My father was taken to hospital, please call me', contact: 'CALL', status: 'OPEN', handledAt: null });
     expect((await api().get('/me/talk-to-a-person').set(bearer(c.token)).expect(200)).body.map((r: MyTalkRequest) => r.id)).toEqual([mine.id]);
 
@@ -112,7 +160,11 @@ describe('Talk to a person (e2e)', () => {
     expect(JSON.stringify(sent[0][1])).not.toMatch(/hospital|Nimal|Sunil/);
 
     const row = (await waiting()).find((r) => r.id === mine.id)!;
-    expect(row).toMatchObject({ role: 'CLIENT', person: { name: 'Nimal Kumara Perera', patientId: c.patientId }, about: { type: 'REQUEST', reference: c.reference, requestId: c.requestId } });
+    expect(row).toMatchObject({
+      role: 'CLIENT',
+      person: { name: 'Nimal Kumara Perera', patientId: c.patientId },
+      about: { type: 'REQUEST', reference: c.reference, requestId: c.requestId },
+    });
     expect((await api().get('/insights/overview').set(bearer(staffToken)).expect(200)).body.attention.peopleWaiting).toBeGreaterThanOrEqual(1);
 
     // The staff bell has it too (written in the background), and only staff can read it.
@@ -125,12 +177,17 @@ describe('Talk to a person (e2e)', () => {
     expect(notice.title).toBe('A client asked to talk to a person');
     expect(JSON.stringify(notice)).not.toMatch(/hospital/);
     expect((await api().get('/staff/notifications/summary').set(bearer(staffToken)).expect(200)).body.unread).toBeGreaterThanOrEqual(1);
-    await api().post('/staff/notifications/read').set(bearer(staffToken)).send({ ids: [notice.id] }).expect(200);
+    await api()
+      .post('/staff/notifications/read')
+      .set(bearer(staffToken))
+      .send({ ids: [notice.id] })
+      .expect(200);
     await api().get('/staff/notifications').set(bearer(c.token)).expect(403);
 
     // Staff answer it.
     await api().get('/talk-requests').set(bearer(c.token)).expect(403);
-    const done = (await api().post(`/talk-requests/${mine.id}/handled`).set(bearer(staffToken)).send({ note: ' Phoned; moved the start ' }).expect(200)).body as StaffTalkRequest;
+    const done = (await api().post(`/talk-requests/${mine.id}/handled`).set(bearer(staffToken)).send({ note: ' Phoned; moved the start ' }).expect(200))
+      .body as StaffTalkRequest;
     expect(done).toMatchObject({ status: 'HANDLED', staffNote: 'Phoned; moved the start', handledByName: expect.any(String) });
     expect((await api().get('/me/talk-to-a-person').set(bearer(c.token)).expect(200)).body[0]).toMatchObject({ status: 'HANDLED' });
     expect((await waiting()).some((r) => r.id === mine.id)).toBe(false);
@@ -139,11 +196,17 @@ describe('Talk to a person (e2e)', () => {
   it("refuses someone else's case, a message too short, and more than three waiting", async () => {
     const a = await client();
     const b = await client();
-    expect((await ask(a.token, { message: 'Help', contact: 'CALL' }).expect(400)).body.message).toEqual(['Tell us in a few words what you need (up to 1000 characters)']);
+    expect((await ask(a.token, { message: 'Help', contact: 'CALL' }).expect(400)).body.message).toEqual([
+      'Tell us in a few words what you need (up to 1000 characters)',
+    ]);
     await ask(a.token, { message: 'Please call me back', contact: 'PIGEON' }).expect(400);
-    expect((await ask(a.token, { message: 'Please call me back', contact: 'CALL', about: { type: 'REQUEST', id: b.requestId } }).expect(404)).body.message).toBe('We could not find that - choose another, or leave it blank');
+    expect(
+      (await ask(a.token, { message: 'Please call me back', contact: 'CALL', about: { type: 'REQUEST', id: b.requestId } }).expect(404)).body.message,
+    ).toBe('We could not find that - choose another, or leave it blank');
     for (let i = 0; i < 3; i++) await ask(a.token, { message: `Please call me back ${i}`, contact: 'WHATSAPP' }).expect(201);
-    expect((await ask(a.token, { message: 'Please call me back again', contact: 'WHATSAPP' }).expect(400)).body.message).toBe('We already have your messages - someone will contact you soon');
+    expect((await ask(a.token, { message: 'Please call me back again', contact: 'WHATSAPP' }).expect(400)).body.message).toBe(
+      'We already have your messages - someone will contact you soon',
+    );
     // Not linked to a case: nothing is taken over.
     expect((await caseOf('REQUEST', a.requestId)).driver).not.toBe('STAFF');
   });

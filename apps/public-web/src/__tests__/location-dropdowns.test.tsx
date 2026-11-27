@@ -30,17 +30,13 @@ jest.mock('@/lib/hooks/use-public-search', () => ({
   useLocationTree: (locale: Locale) => {
     asked.tree.push(locale);
     return {
-      data: [
-        { id: 1, name: 'Western', districts: [{ id: 1, name: NAMES[locale].district }] },
-      ],
+      data: [{ id: 1, name: 'Western', districts: [{ id: 1, name: NAMES[locale].district }] }],
     };
   },
   useCities: (districtId: number | null, locale: Locale) => {
     asked.cities.push(locale);
     return {
-      data: districtId === 1
-        ? [{ id: 340, name: NAMES[locale].city, subName: null, postcode: '10350', latitude: 6.8, longitude: 79.8 }]
-        : [],
+      data: districtId === 1 ? [{ id: 340, name: NAMES[locale].city, subName: null, postcode: '10350', latitude: 6.8, longitude: 79.8 }] : [],
     };
   },
 }));

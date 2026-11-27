@@ -26,7 +26,9 @@ export function ArrivalCodes({ bookings }: { bookings: ClientBooking[] }) {
             <h2 id={`code-${s.id}`} className="text-base font-semibold text-ink">
               {t('checkIn.client.title')}
             </h2>
-            <p className="text-sm text-ink/70">{t('checkIn.client.forVisit', { day: fmtDay(s.startsAt, locale), start: fmtTime(s.startsAt, locale), end: fmtTime(s.endsAt, locale) })}</p>
+            <p className="text-sm text-ink/70">
+              {t('checkIn.client.forVisit', { day: fmtDay(s.startsAt, locale), start: fmtTime(s.startsAt, locale), end: fmtTime(s.endsAt, locale) })}
+            </p>
             <p className="my-2 text-4xl font-semibold tabular-nums tracking-[0.3em] text-brand-dark" aria-label={s.visit!.arrivalCode!.split('').join(' ')}>
               {s.visit!.arrivalCode}
             </p>

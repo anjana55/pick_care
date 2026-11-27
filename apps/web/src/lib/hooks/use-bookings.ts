@@ -53,7 +53,11 @@ export function useBookings(filters: BookingFilters, enabled = true) {
 
 /** What a new booking starts with (Settings > Billing), so the form shows the real default instead of a guess. */
 export function useBookingDefaults() {
-  return useQuery({ queryKey: ['bookings', 'defaults'], queryFn: () => api.get<{ billingTiming: BillingTiming; advanceLeadDays: number }>('/bookings/defaults'), staleTime: 5 * 60_000 });
+  return useQuery({
+    queryKey: ['bookings', 'defaults'],
+    queryFn: () => api.get<{ billingTiming: BillingTiming; advanceLeadDays: number }>('/bookings/defaults'),
+    staleTime: 5 * 60_000,
+  });
 }
 
 export function useBookingSummary(enabled = true) {
@@ -117,10 +121,14 @@ export const useExtendBooking = (id: string) => useBookingWrite(id, (endDate: st
 export const useAddBookingNote = (id: string) => useBookingWrite(id, (note: string) => api.post<BookingDetail>(`/bookings/${id}/notes`, { note }));
 export const useUpdateBooking = (id: string) => useBookingWrite(id, (v: UpdateBookingInput) => api.patch<BookingDetail>(`/bookings/${id}`, v));
 export const useAddShift = (id: string) =>
-  useBookingWrite(id, (v: { start: string; end: string; caregiverId?: string; note?: string } & ShiftRateInput) => api.post<BookingDetail>(`/bookings/${id}/shifts`, v));
+  useBookingWrite(id, (v: { start: string; end: string; caregiverId?: string; note?: string } & ShiftRateInput) =>
+    api.post<BookingDetail>(`/bookings/${id}/shifts`, v),
+  );
 export const useUpdateShift = (id: string) =>
-  useBookingWrite(id, ({ shiftId, ...v }: { shiftId: string; start?: string; end?: string; caregiverId?: string; status?: ShiftStatus; note?: string | null } & ShiftRateInput) =>
-    api.patch<BookingDetail>(`/bookings/${id}/shifts/${shiftId}`, v),
+  useBookingWrite(
+    id,
+    ({ shiftId, ...v }: { shiftId: string; start?: string; end?: string; caregiverId?: string; status?: ShiftStatus; note?: string | null } & ShiftRateInput) =>
+      api.patch<BookingDetail>(`/bookings/${id}/shifts/${shiftId}`, v),
   );
 export const useRemoveShift = (id: string) => useBookingWrite(id, (shiftId: string) => api.delete<BookingDetail>(`/bookings/${id}/shifts/${shiftId}`));
 
@@ -169,7 +177,8 @@ export function useCloseAdjustment(bookingId: string) {
 export function useCloseIssueReport(bookingId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, status, note }: { id: string; status: 'RESOLVED' | 'DISMISSED'; note: string }) => api.post<IssueReportView>(`/booking-issues/${id}/close`, { status, note }),
+    mutationFn: ({ id, status, note }: { id: string; status: 'RESOLVED' | 'DISMISSED'; note: string }) =>
+      api.post<IssueReportView>(`/booking-issues/${id}/close`, { status, note }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bookings', 'corrections', bookingId] });
       queryClient.invalidateQueries({ queryKey: ['bookings', 'detail', bookingId] });

@@ -36,7 +36,11 @@ describe('what the phone is asked for', () => {
       for (const s of [session(), session({ kind: 'TRIP' })]) {
         const o = trackingOptions(s, platform, accuracy);
         expect(o.accuracy).toBe(accuracy.Balanced);
-        expect(o.foregroundService).toEqual({ notificationTitle: 'Checked in', notificationBody: 'Location checked every 30 min', killServiceOnDestroy: false });
+        expect(o.foregroundService).toEqual({
+          notificationTitle: 'Checked in',
+          notificationBody: 'Location checked every 30 min',
+          killServiceOnDestroy: false,
+        });
         expect(o.showsBackgroundLocationIndicator).toBe(true);
       }
     }
@@ -106,7 +110,16 @@ describe('the test summary', () => {
     const s = session();
     const points = [point(0, 90), point(30, 89), point(60, 88), point(180, 84, { accuracyM: 40, mocked: true }), point(210, 83)];
     const summary = summarise(s, points, T0 + 240 * MIN);
-    expect(summary).toMatchObject({ points: 5, minutes: 240, gaps: 1, longestGapMinutes: 120, batteryStart: 90, batteryNow: 83, mocked: 1, medianAccuracyM: 20 });
+    expect(summary).toMatchObject({
+      points: 5,
+      minutes: 240,
+      gaps: 1,
+      longestGapMinutes: 120,
+      batteryStart: 90,
+      batteryNow: 83,
+      mocked: 1,
+      medianAccuracyM: 20,
+    });
     expect(summary.batteryPerHour).toBe(2);
   });
 

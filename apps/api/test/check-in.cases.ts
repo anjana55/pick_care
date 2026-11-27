@@ -5,7 +5,23 @@ import { JwtService } from '@nestjs/jwt';
 import { ThrottlerStorage } from '@nestjs/throttler';
 import { eq, sql } from 'drizzle-orm';
 import request from 'supertest';
-import { addDays, colomboToday, isoWeekday, type BookingCareLocation, type CareLocation, type CareLocationSuggestion, type CaregiverShift, type ClientBooking, type CheckInResult, type ClientLive, type StaffLiveShare, type StaffPresenceDetail, type StartedShare, type StaffCheckIn, type TodayVisits } from '@care-platform/shared';
+import {
+  addDays,
+  colomboToday,
+  isoWeekday,
+  type BookingCareLocation,
+  type CareLocation,
+  type CareLocationSuggestion,
+  type CaregiverShift,
+  type ClientBooking,
+  type CheckInResult,
+  type ClientLive,
+  type StaffLiveShare,
+  type StaffPresenceDetail,
+  type StartedShare,
+  type StaffCheckIn,
+  type TodayVisits,
+} from '@care-platform/shared';
 import { AppModule } from '../src/app.module';
 import { DRIZZLE, type Database } from '../src/database/database.module';
 import { agentDecisions, bookingShifts, caregivers, locationNotices, locationPoints, locationShares, patients, shiftCheckins } from '../src/database/schema';
@@ -56,8 +72,16 @@ describe('Shift check-in (e2e)', () => {
     const reg = await api()
       .post('/auth/register-caregiver/unified')
       .send({
-        phone, consentAccepted: true, fullName: `Visiting Caregiver ${phone}`, permanentAddress: '1 Lake Road, Kandy', dateOfBirth: '1988-01-20', gender: 'FEMALE',
-        civilStatus: 'MARRIED', emergencyContactName: 'EC', emergencyContactNumber: '0770001111', emergencyContactRelationship: 'Husband',
+        phone,
+        consentAccepted: true,
+        fullName: `Visiting Caregiver ${phone}`,
+        permanentAddress: '1 Lake Road, Kandy',
+        dateOfBirth: '1988-01-20',
+        gender: 'FEMALE',
+        civilStatus: 'MARRIED',
+        emergencyContactName: 'EC',
+        emergencyContactNumber: '0770001111',
+        emergencyContactRelationship: 'Husband',
       })
       .expect(201);
     const [row] = await db.select().from(caregivers).where(eq(caregivers.registrationNumber, reg.body.registrationNumber));
@@ -74,7 +98,14 @@ describe('Shift check-in (e2e)', () => {
     const cg = await newCaregiver();
     const reg = await api()
       .post('/auth/register-patient')
-      .send({ email: `visit-client-${run}-${++n}@example.com`, password: 'SelfRegPass123', fullName: 'Nimal Perera', phone: newPhone('077'), consentAccepted: true, ...intake })
+      .send({
+        email: `visit-client-${run}-${++n}@example.com`,
+        password: 'SelfRegPass123',
+        fullName: 'Nimal Perera',
+        phone: newPhone('077'),
+        consentAccepted: true,
+        ...intake,
+      })
       .expect(201);
     const [patient] = await db.select().from(patients).where(eq(patients.id, reg.body.patientId));
     const clientToken = jwt.sign({ sub: patient.userId, role: 'PATIENT_GUARDIAN', patientId: patient.id }, { secret: accessSecret, expiresIn: '10m' });
@@ -82,27 +113,62 @@ describe('Shift check-in (e2e)', () => {
     const draft = await api()
       .post('/bookings')
       .set(bearer(staffToken))
-      .send({ patientId: patient.id, caregiverId: cg.id, scheduleType: 'DAY', daysOfWeek: [1, 2], shiftStartTime: '08:00', shiftEndTime: '17:00', startDate: monday, endDate: addDays(monday, 1), rateType: 'DAILY', rateAmount: '3500' })
+      .send({
+        patientId: patient.id,
+        caregiverId: cg.id,
+        scheduleType: 'DAY',
+        daysOfWeek: [1, 2],
+        shiftStartTime: '08:00',
+        shiftEndTime: '17:00',
+        startDate: monday,
+        endDate: addDays(monday, 1),
+        rateType: 'DAILY',
+        rateAmount: '3500',
+      })
       .expect(201);
     const booking = (await api().post(`/bookings/${draft.body.id}/confirm`).set(bearer(staffToken)).expect(200)).body;
     const [first, second] = booking.shifts as { id: string }[];
-    await db.update(bookingShifts).set({ startsAt: minutes(startsIn), endsAt: minutes(startsIn + 240) }).where(eq(bookingShifts.id, first.id));
-    await db.update(bookingShifts).set({ startsAt: minutes(startsIn + 1440), endsAt: minutes(startsIn + 1680) }).where(eq(bookingShifts.id, second.id));
-    return { bookingId: booking.id as string, reference: booking.reference as string, shiftId: first.id, nextShiftId: second.id, cg, clientToken, patientUserId: patient.userId };
+    await db
+      .update(bookingShifts)
+      .set({ startsAt: minutes(startsIn), endsAt: minutes(startsIn + 240) })
+      .where(eq(bookingShifts.id, first.id));
+    await db
+      .update(bookingShifts)
+      .set({ startsAt: minutes(startsIn + 1440), endsAt: minutes(startsIn + 1680) })
+      .where(eq(bookingShifts.id, second.id));
+    return {
+      bookingId: booking.id as string,
+      reference: booking.reference as string,
+      shiftId: first.id,
+      nextShiftId: second.id,
+      cg,
+      clientToken,
+      patientUserId: patient.userId,
+    };
   }
 
   const setting = (body: object, token = adminToken) => api().patch('/settings/check-in').set(bearer(token)).send(body);
-  const myShift = async (token: string, shiftId: string) => ((await api().get('/me/shifts').set(bearer(token)).expect(200)).body as CaregiverShift[]).find((s) => s.id === shiftId)!;
+  const myShift = async (token: string, shiftId: string) =>
+    ((await api().get('/me/shifts').set(bearer(token)).expect(200)).body as CaregiverShift[]).find((s) => s.id === shiftId)!;
   const clientShift = async (token: string, shiftId: string) =>
     ((await api().get('/me/bookings').set(bearer(token)).expect(200)).body as ClientBooking[]).flatMap((b) => b.shifts).find((s) => s.id === shiftId)!;
   const staffShift = async (bookingId: string, shiftId: string) =>
-    ((await api().get(`/bookings/${bookingId}`).set(bearer(staffToken)).expect(200)).body.shifts as { id: string; status: string; checkIn: StaffCheckIn | null }[]).find((s) => s.id === shiftId)!;
+    (
+      (await api().get(`/bookings/${bookingId}`).set(bearer(staffToken)).expect(200)).body.shifts as {
+        id: string;
+        status: string;
+        checkIn: StaffCheckIn | null;
+      }[]
+    ).find((s) => s.id === shiftId)!;
   const checkIn = (token: string, shiftId: string, body: object) => api().post(`/me/shifts/${shiftId}/check-in`).set(bearer(token)).send(body);
   const checkOut = (token: string, shiftId: string, body: object = {}) => api().post(`/me/shifts/${shiftId}/check-out`).set(bearer(token)).send(body);
   const wrong = (code: string) => String((Number(code) + 1) % 10_000).padStart(4, '0');
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).overrideProvider(ThrottlerStorage).useValue(unlimitedThrottle).compile();
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+      .overrideProvider(ThrottlerStorage)
+      .useValue(unlimitedThrottle)
+      .compile();
     app = moduleRef.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
     await app.init();
@@ -116,9 +182,17 @@ describe('Shift check-in (e2e)', () => {
     const districtId = tree.flatMap((p) => p.districts)[0].id;
     const cityId = (await api().get(`/public/meta/locations/cities?districtId=${districtId}&locale=en`).expect(200)).body[0].id;
     intake = {
-      registrantType: 'GUARDIAN', recipientName: 'Sunil Fernando', recipientRelationship: 'PARENT', recipientAge: 78, recipientGender: 'MALE',
-      preferredContactMethod: 'PHONE_CALL', districtId, cityId, careNeeds: 'Needs help with bathing, meals and medication reminders.',
-      careSchedule: 'DAY', careStart: 'WITHIN_WEEK',
+      registrantType: 'GUARDIAN',
+      recipientName: 'Sunil Fernando',
+      recipientRelationship: 'PARENT',
+      recipientAge: 78,
+      recipientGender: 'MALE',
+      preferredContactMethod: 'PHONE_CALL',
+      districtId,
+      cityId,
+      careNeeds: 'Needs help with bathing, meals and medication reminders.',
+      careSchedule: 'DAY',
+      careStart: 'WITHIN_WEEK',
     };
     await setting({ enabled: false, earlyMinutes: 60, lateAfterMinutes: 15, farMetres: 300 }).expect(200);
   });
@@ -171,15 +245,23 @@ describe('Shift check-in (e2e)', () => {
     const stranger = await newCaregiver();
     await checkIn(stranger.token, v.shiftId, { code }).expect(404);
     await checkOut(v.cg.token, v.shiftId).expect(400);
-    expect((await checkIn(v.cg.token, v.shiftId, { code: wrong(code) }).expect(400)).body.message).toBe('That code is not right - ask the client to read it to you again');
+    expect((await checkIn(v.cg.token, v.shiftId, { code: wrong(code) }).expect(400)).body.message).toBe(
+      'That code is not right - ask the client to read it to you again',
+    );
     expect((await staffShift(v.bookingId, v.shiftId)).checkIn).toMatchObject({ wrongCodes: 1, checkedInAt: null });
     expect(notify).not.toHaveBeenCalledWith([v.patientUserId], expect.anything(), '/bookings', expect.stringContaining('arrived'));
 
     // The right one, typed with a space, with where the phone is.
     await checkIn(v.cg.token, v.shiftId, { code: `${code.slice(0, 2)} ${code.slice(2)}`, latitude: 6.9271, longitude: 79.8612, accuracyM: 12.4 }).expect(200);
-    const seen = (await staffShift(v.bookingId, v.shiftId));
+    const seen = await staffShift(v.bookingId, v.shiftId);
     expect(seen.status).toBe('SCHEDULED');
-    expect(seen.checkIn).toMatchObject({ state: 'IN', inBy: 'CAREGIVER', inLocation: { latitude: 6.9271, longitude: 79.8612, accuracyM: 12 }, inDistanceM: null, checkedOutAt: null });
+    expect(seen.checkIn).toMatchObject({
+      state: 'IN',
+      inBy: 'CAREGIVER',
+      inLocation: { latitude: 6.9271, longitude: 79.8612, accuracyM: 12 },
+      inDistanceM: null,
+      checkedOutAt: null,
+    });
     expect(seen.checkIn!.inByName).toMatch(/Visiting Caregiver/);
     // The client is told, and their code is gone: it has done its job.
     expect(notify).toHaveBeenCalledWith([v.patientUserId], expect.any(Function), '/bookings', `arrived ${v.shiftId}`);
@@ -206,13 +288,16 @@ describe('Shift check-in (e2e)', () => {
     expect((await clientShift(v.clientToken, v.shiftId)).visit!.checkedOutAt).toBe(done.checkIn!.checkedOutAt);
   });
 
-  it('points out a check-in far from where the booking\'s earlier visits checked in, and checks in without a position', async () => {
+  it("points out a check-in far from where the booking's earlier visits checked in, and checks in without a position", async () => {
     await setting({ enabled: true }).expect(200);
     const v = await visit(5);
     const code = (id: string) => staffShift(v.bookingId, id).then((s) => s.checkIn!.arrivalCode);
     await checkIn(v.cg.token, v.shiftId, { code: await code(v.shiftId), latitude: 6.9271, longitude: 79.8612 }).expect(200);
     // The next day, about a kilometre north.
-    await db.update(bookingShifts).set({ startsAt: minutes(5), endsAt: minutes(200) }).where(eq(bookingShifts.id, v.nextShiftId));
+    await db
+      .update(bookingShifts)
+      .set({ startsAt: minutes(5), endsAt: minutes(200) })
+      .where(eq(bookingShifts.id, v.nextShiftId));
     await checkIn(v.cg.token, v.nextShiftId, { code: await code(v.nextShiftId), latitude: 6.9361, longitude: 79.8612 }).expect(200);
     const far = (await staffShift(v.bookingId, v.nextShiftId)).checkIn!;
     expect(far.inDistanceM).toBeGreaterThan(950);
@@ -229,14 +314,15 @@ describe('Shift check-in (e2e)', () => {
   describe('the place on the map (care locations)', () => {
     const places = (token: string) => api().get('/me/care-locations').set(bearer(token));
     const addPlace = (token: string, body: object) => api().post('/me/care-locations').set(bearer(token)).send(body);
-    const bookingPlace = async (bookingId: string) => (await api().get(`/bookings/${bookingId}/care-location`).set(bearer(staffToken)).expect(200)).body as BookingCareLocation;
+    const bookingPlace = async (bookingId: string) =>
+      (await api().get(`/bookings/${bookingId}/care-location`).set(bearer(staffToken)).expect(200)).body as BookingCareLocation;
     const codeFor = (bookingId: string, shiftId: string) => staffShift(bookingId, shiftId).then((s) => s.checkIn!.arrivalCode);
     // Galle Face Green, Colombo, and points about 100 m and 1 km north of it.
     const HOME = { latitude: 6.9271, longitude: 79.8452 };
     const NEAR = { latitude: 6.928, longitude: 79.8452 };
     const FAR = { latitude: 6.9361, longitude: 79.8452 };
 
-    it('lets a client keep their places, one default, inside Sri Lanka, and nobody else\'s', async () => {
+    it("lets a client keep their places, one default, inside Sri Lanka, and nobody else's", async () => {
       const v = await visit(30);
       expect((await places(v.clientToken).expect(200)).body).toEqual([]);
       // Outside Sri Lanka, no point, or a name too long: refused.
@@ -291,8 +377,16 @@ describe('Shift check-in (e2e)', () => {
       expect(first.outDistanceM).toBeLessThan(120);
 
       // The next day 400 m off, but the phone is only sure to within 200 m: not called far.
-      await db.update(bookingShifts).set({ startsAt: minutes(5), endsAt: minutes(200) }).where(eq(bookingShifts.id, v.nextShiftId));
-      await checkIn(v.cg.token, v.nextShiftId, { code: await codeFor(v.bookingId, v.nextShiftId), latitude: 6.9307, longitude: 79.8452, accuracyM: 200 }).expect(200);
+      await db
+        .update(bookingShifts)
+        .set({ startsAt: minutes(5), endsAt: minutes(200) })
+        .where(eq(bookingShifts.id, v.nextShiftId));
+      await checkIn(v.cg.token, v.nextShiftId, {
+        code: await codeFor(v.bookingId, v.nextShiftId),
+        latitude: 6.9307,
+        longitude: 79.8452,
+        accuracyM: 200,
+      }).expect(200);
       expect((await staffShift(v.bookingId, v.nextShiftId)).checkIn).toMatchObject({ inDistanceFrom: 'PIN', inFar: false });
       // The admin's "far" setting has limits.
       await setting({ farMetres: 10 }).expect(400);
@@ -318,9 +412,18 @@ describe('Shift check-in (e2e)', () => {
       expect((await places(v.clientToken).expect(200)).body).toEqual([]);
       await api().patch(`/me/care-locations/${seen.suggestion!.id}`).set(bearer(v.clientToken)).send({ isDefault: true }).expect(404);
       // Unconfirmed, it is not measured from: the next day is measured from the earlier check-in instead.
-      await db.update(bookingShifts).set({ startsAt: minutes(5), endsAt: minutes(200) }).where(eq(bookingShifts.id, v.nextShiftId));
+      await db
+        .update(bookingShifts)
+        .set({ startsAt: minutes(5), endsAt: minutes(200) })
+        .where(eq(bookingShifts.id, v.nextShiftId));
       // Staff confirm it (and it becomes the default); from now on check-ins are measured from it.
-      const confirmed = (await api().patch(`/patients/${(await db.select().from(patients).where(eq(patients.userId, v.patientUserId)))[0].id}/care-locations/${seen.suggestion!.id}`).set(bearer(staffToken)).send({ confirm: true, isDefault: true }).expect(200)).body as CareLocation;
+      const confirmed = (
+        await api()
+          .patch(`/patients/${(await db.select().from(patients).where(eq(patients.userId, v.patientUserId)))[0].id}/care-locations/${seen.suggestion!.id}`)
+          .set(bearer(staffToken))
+          .send({ confirm: true, isDefault: true })
+          .expect(200)
+      ).body as CareLocation;
       expect(confirmed).toMatchObject({ confirmed: true, isDefault: true, source: 'FROM_CHECKIN' });
       seen = await bookingPlace(v.bookingId);
       expect(seen).toMatchObject({ location: { id: confirmed.id }, suggestion: null });
@@ -346,8 +449,11 @@ describe('Shift check-in (e2e)', () => {
     const v = await visit(-20); // started twenty minutes ago
     const code = (await staffShift(v.bookingId, v.shiftId)).checkIn!.arrivalCode;
     expect((await staffShift(v.bookingId, v.shiftId)).checkIn!.state).toBe('LATE');
-    for (let i = 0; i < 4; i++) expect((await checkIn(v.cg.token, v.shiftId, { code: wrong(code) }).expect(400)).body.message).toMatch(/^That code is not right/);
-    expect((await checkIn(v.cg.token, v.shiftId, { code: wrong(code) }).expect(400)).body.message).toBe('Too many wrong codes - ask the office to check you in');
+    for (let i = 0; i < 4; i++)
+      expect((await checkIn(v.cg.token, v.shiftId, { code: wrong(code) }).expect(400)).body.message).toMatch(/^That code is not right/);
+    expect((await checkIn(v.cg.token, v.shiftId, { code: wrong(code) }).expect(400)).body.message).toBe(
+      'Too many wrong codes - ask the office to check you in',
+    );
     // Even the right code is refused now.
     expect((await checkIn(v.cg.token, v.shiftId, { code }).expect(400)).body.message).toBe('Too many wrong codes - ask the office to check you in');
     expect((await myShift(v.cg.token, v.shiftId)).checkIn).toMatchObject({ state: 'LATE', codeLocked: true });
@@ -356,7 +462,13 @@ describe('Shift check-in (e2e)', () => {
     // It shows as late on today's list and in the dashboard's count.
     const today = (await api().get('/visits/today').set(bearer(staffToken)).expect(200)).body as TodayVisits;
     const row = today.visits.find((x) => x.shiftId === v.shiftId)!;
-    expect(row).toMatchObject({ bookingReference: v.reference, shiftStatus: 'SCHEDULED', isCover: false, client: { fullName: 'Nimal Perera', recipientName: 'Sunil Fernando' }, checkIn: { state: 'LATE', codeLocked: true } });
+    expect(row).toMatchObject({
+      bookingReference: v.reference,
+      shiftStatus: 'SCHEDULED',
+      isCover: false,
+      client: { fullName: 'Nimal Perera', recipientName: 'Sunil Fernando' },
+      checkIn: { state: 'LATE', codeLocked: true },
+    });
     expect(row.minutesLate).toBeGreaterThanOrEqual(19); // the shift's start is stored to the second
     expect(row.caregiver.fullName).toMatch(/Visiting Caregiver/);
     expect(today.visits.map((x) => x.startsAt)).toEqual([...today.visits.map((x) => x.startsAt)].sort());
@@ -367,19 +479,43 @@ describe('Shift check-in (e2e)', () => {
     // Staff record it: the caregiver phoned at ten past.
     const at = minutes(-10).toISOString();
     await api().post(`/visits/${v.shiftId}/check-out`).set(bearer(staffToken)).send({}).expect(400);
-    await api().post(`/visits/${v.shiftId}/check-in`).set(bearer(staffToken)).send({ at: minutes(10).toISOString() }).expect(400);
+    await api()
+      .post(`/visits/${v.shiftId}/check-in`)
+      .set(bearer(staffToken))
+      .send({ at: minutes(10).toISOString() })
+      .expect(400);
     await api().post(`/visits/${v.shiftId}/check-in`).set(bearer(v.cg.token)).send({}).expect(403);
-    const recorded = (await api().post(`/visits/${v.shiftId}/check-in`).set(bearer(staffToken)).send({ at, note: ' Phoned from the house; the client could not find her phone ' }).expect(200)).body as StaffCheckIn;
-    expect(recorded).toMatchObject({ state: 'IN', inBy: 'STAFF', inNote: 'Phoned from the house; the client could not find her phone', checkedInAt: at, codeLocked: false, inLocation: null });
+    const recorded = (
+      await api()
+        .post(`/visits/${v.shiftId}/check-in`)
+        .set(bearer(staffToken))
+        .send({ at, note: ' Phoned from the house; the client could not find her phone ' })
+        .expect(200)
+    ).body as StaffCheckIn;
+    expect(recorded).toMatchObject({
+      state: 'IN',
+      inBy: 'STAFF',
+      inNote: 'Phoned from the house; the client could not find her phone',
+      checkedInAt: at,
+      codeLocked: false,
+      inLocation: null,
+    });
     expect(recorded.inByName).toBeTruthy();
     await api().post(`/visits/${v.shiftId}/check-in`).set(bearer(staffToken)).send({}).expect(400);
     expect((await myShift(v.cg.token, v.shiftId)).checkIn).toMatchObject({ state: 'IN', codeLocked: false });
     // No longer late.
-    expect(((await api().get('/visits/today').set(bearer(staffToken)).expect(200)).body as TodayVisits).visits.find((x) => x.shiftId === v.shiftId)).toMatchObject({ minutesLate: null, checkIn: { state: 'IN' } });
+    expect(
+      ((await api().get('/visits/today').set(bearer(staffToken)).expect(200)).body as TodayVisits).visits.find((x) => x.shiftId === v.shiftId),
+    ).toMatchObject({ minutesLate: null, checkIn: { state: 'IN' } });
 
     // Out: not before they came in; the caregiver can still do that part themselves.
-    await api().post(`/visits/${v.shiftId}/check-out`).set(bearer(staffToken)).send({ at: minutes(-15).toISOString() }).expect(400);
-    const out = (await api().post(`/visits/${v.shiftId}/check-out`).set(bearer(staffToken)).send({ note: 'Left at the usual time' }).expect(200)).body as StaffCheckIn;
+    await api()
+      .post(`/visits/${v.shiftId}/check-out`)
+      .set(bearer(staffToken))
+      .send({ at: minutes(-15).toISOString() })
+      .expect(400);
+    const out = (await api().post(`/visits/${v.shiftId}/check-out`).set(bearer(staffToken)).send({ note: 'Left at the usual time' }).expect(200))
+      .body as StaffCheckIn;
     expect(out).toMatchObject({ state: 'OUT', outBy: 'STAFF', outNote: 'Left at the usual time' });
     await api().post(`/visits/${v.shiftId}/check-out`).set(bearer(staffToken)).send({}).expect(400);
   });
@@ -392,10 +528,18 @@ describe('Shift check-in (e2e)', () => {
     expect((await clientShift(v.clientToken, v.shiftId)).visit!.arrivalCode).toBeNull();
     expect((await checkIn(v.cg.token, v.shiftId, { code }).expect(400)).body.message).toBe('This shift has ended - ask the office to record your visit');
     // Staff still can, after the fact.
-    await api().post(`/visits/${v.shiftId}/check-in`).set(bearer(staffToken)).send({ at: minutes(-295).toISOString() }).expect(200);
+    await api()
+      .post(`/visits/${v.shiftId}/check-in`)
+      .set(bearer(staffToken))
+      .send({ at: minutes(-295).toISOString() })
+      .expect(200);
 
     const w = await visit(10);
-    await api().patch(`/bookings/${w.bookingId}/shifts/${w.shiftId}`).set(bearer(staffToken)).send({ status: 'CANCELLED', note: 'The family is away' }).expect(200);
+    await api()
+      .patch(`/bookings/${w.bookingId}/shifts/${w.shiftId}`)
+      .set(bearer(staffToken))
+      .send({ status: 'CANCELLED', note: 'The family is away' })
+      .expect(200);
     await checkIn(w.cg.token, w.shiftId, { code: '0000' }).expect(400);
     await api().post(`/visits/${w.shiftId}/check-in`).set(bearer(staffToken)).send({}).expect(400);
     expect(await db.select().from(shiftCheckins).where(eq(shiftCheckins.shiftId, w.shiftId))).toHaveLength(0);
@@ -403,11 +547,23 @@ describe('Shift check-in (e2e)', () => {
   describe('Location checks during a visit', () => {
     const HOME = { latitude: 6.9271, longitude: 79.8452 };
     const AWAY = { latitude: 6.9361, longitude: 79.8452 };
-    const send = (shareId: string, token: string, points: object[]) => api().post(`/location-shares/${shareId}/points`).set('X-Share-Token', token).send({ points });
-    const presenceOn = { enabled: true, liveEnabled: true, presenceEnabled: true, presenceEveryMinutes: 30, presenceAwayPoints: 2, presenceSilentMultiplier: 2 };
+    const send = (shareId: string, token: string, points: object[]) =>
+      api().post(`/location-shares/${shareId}/points`).set('X-Share-Token', token).send({ points });
+    const presenceOn = {
+      enabled: true,
+      liveEnabled: true,
+      presenceEnabled: true,
+      presenceEveryMinutes: 30,
+      presenceAwayPoints: 2,
+      presenceSilentMultiplier: 2,
+    };
     const sweep = () => app.get(PresenceAgentService).sweep();
     const decisions = async (bookingId: string) =>
-      (await db.select().from(agentDecisions).where(eq(agentDecisions.caseId, bookingId))).map((d) => ({ action: d.action, kind: (d.proposal as { kind?: string } | null)?.kind ?? null, status: d.executedAt ? 'EXECUTED' : d.outcome }));
+      (await db.select().from(agentDecisions).where(eq(agentDecisions.caseId, bookingId))).map((d) => ({
+        action: d.action,
+        kind: (d.proposal as { kind?: string } | null)?.kind ?? null,
+        status: d.executedAt ? 'EXECUTED' : d.outcome,
+      }));
     /** Check in with the code; the answer carries the share for the phone. */
     const arrive = async (v: Awaited<ReturnType<typeof visit>>) => {
       const code = (await staffShift(v.bookingId, v.shiftId)).checkIn!.arrivalCode;
@@ -432,7 +588,8 @@ describe('Shift check-in (e2e)', () => {
       const v = await visit(5);
       expect(await arrive(v)).toEqual({ ok: true, presence: null });
       expect((await myShift(v.cg.token, v.shiftId)).checkIn!.presence).toBeNull();
-      for (const bad of [{ presenceEveryMinutes: 2 }, { presenceEveryMinutes: 200 }, { presenceAwayPoints: 0 }, { presenceSilentMultiplier: 9 }]) await setting(bad).expect(400);
+      for (const bad of [{ presenceEveryMinutes: 2 }, { presenceEveryMinutes: 200 }, { presenceAwayPoints: 0 }, { presenceSilentMultiplier: 9 }])
+        await setting(bad).expect(400);
     });
 
     it('starts at check-in, marks each check at the home or away, and stops at check-out', async () => {
@@ -449,7 +606,10 @@ describe('Shift check-in (e2e)', () => {
       expect((await send(share.shareId, share.uploadToken, [{ at: new Date().toISOString(), ...HOME }]).expect(200)).body).toMatchObject({ open: false });
       const now = again.presence!;
 
-      await send(now.shareId, now.uploadToken, [{ at: new Date(Date.now() - 60_000).toISOString(), ...HOME, accuracyM: 15 }, { at: new Date().toISOString(), ...AWAY, accuracyM: 15 }]).expect(200);
+      await send(now.shareId, now.uploadToken, [
+        { at: new Date(Date.now() - 60_000).toISOString(), ...HOME, accuracyM: 15 },
+        { at: new Date().toISOString(), ...AWAY, accuracyM: 15 },
+      ]).expect(200);
       const points = await db.select().from(locationPoints).where(eq(locationPoints.shareId, now.shareId));
       expect(points.map((p) => p.inside)).toEqual([true, false]);
       expect((await staffShift(v.bookingId, v.shiftId)).checkIn!.presence).toMatchObject({ shareId: now.shareId, open: true, everyMinutes: 30 });
@@ -477,9 +637,15 @@ describe('Shift check-in (e2e)', () => {
       await api().post('/me/care-locations').set(bearer(a.clientToken)).send(HOME).expect(201);
       const sa = (await arrive(a)).presence!;
       await backdate(sa.shareId, 90);
-      await send(sa.shareId, sa.uploadToken, [{ at: minutesAgo(62), ...HOME }, { at: minutesAgo(31), ...AWAY }, { at: minutesAgo(1), ...AWAY }]).expect(200);
+      await send(sa.shareId, sa.uploadToken, [
+        { at: minutesAgo(62), ...HOME },
+        { at: minutesAgo(31), ...AWAY },
+        { at: minutesAgo(1), ...AWAY },
+      ]).expect(200);
       await sweep();
-      expect(await decisions(a.bookingId)).toEqual(expect.arrayContaining([expect.objectContaining({ action: 'live_care.check_presence', status: 'EXECUTED' })]));
+      expect(await decisions(a.bookingId)).toEqual(
+        expect.arrayContaining([expect.objectContaining({ action: 'live_care.check_presence', status: 'EXECUTED' })]),
+      );
       expect((await myShift(a.cg.token, a.shiftId)).checkIn!.presence!.askedAt).toEqual(expect.any(String));
       // Once per spell.
       await sweep();
@@ -487,14 +653,19 @@ describe('Shift check-in (e2e)', () => {
       // The next check (a few seconds on: stored times are rounded to the second) is still away.
       await send(sa.shareId, sa.uploadToken, [{ at: new Date(Date.now() + 3000).toISOString(), ...AWAY }]).expect(200);
       await sweep();
-      expect(await decisions(a.bookingId)).toEqual(expect.arrayContaining([expect.objectContaining({ action: 'live_care.flag_visit', kind: 'AWAY_DURING_VISIT' })]));
+      expect(await decisions(a.bookingId)).toEqual(
+        expect.arrayContaining([expect.objectContaining({ action: 'live_care.flag_visit', kind: 'AWAY_DURING_VISIT' })]),
+      );
 
       // Answered ("out for the client"): nobody is told.
       const b = await visit(5);
       await api().post('/me/care-locations').set(bearer(b.clientToken)).send(HOME).expect(201);
       const sb = (await arrive(b)).presence!;
       await backdate(sb.shareId, 90);
-      await send(sb.shareId, sb.uploadToken, [{ at: minutesAgo(31), ...AWAY }, { at: minutesAgo(1), ...AWAY }]).expect(200);
+      await send(sb.shareId, sb.uploadToken, [
+        { at: minutesAgo(31), ...AWAY },
+        { at: minutesAgo(1), ...AWAY },
+      ]).expect(200);
       await sweep();
       await api().post(`/me/shifts/${b.shiftId}/presence/reply`).set(bearer(b.cg.token)).send({ reply: 'OUT_FOR_CLIENT' }).expect(200);
       await api().post(`/me/shifts/${b.shiftId}/presence/reply`).set(bearer(b.cg.token)).send({ reply: 'NOPE' }).expect(400);
@@ -511,7 +682,10 @@ describe('Shift check-in (e2e)', () => {
       const s1 = (await arrive(v)).presence!;
       await backdate(s1.shareId, 65);
       await send(s1.shareId, s1.uploadToken, [{ at: new Date().toISOString(), ...HOME, mocked: true }]).expect(200);
-      await db.update(locationShares).set({ lastAt: new Date(Date.now() - 65 * 60_000) }).where(eq(locationShares.id, s1.shareId));
+      await db
+        .update(locationShares)
+        .set({ lastAt: new Date(Date.now() - 65 * 60_000) })
+        .where(eq(locationShares.id, s1.shareId));
       await sweep();
       const kinds = (await decisions(v.bookingId)).filter((d) => d.action === 'live_care.flag_visit').map((d) => d.kind);
       expect(kinds).toEqual(expect.arrayContaining(['SIMULATED_LOCATION', 'NO_LOCATION_DURING_VISIT']));
@@ -582,14 +756,30 @@ describe('Shift check-in (e2e)', () => {
       expect((await myShift(v.cg.token, v.shiftId)).checkIn!.onMyWay).toMatchObject({ shareId: started.shareId });
       expect((await clientShift(v.clientToken, v.shiftId)).visit).toMatchObject({ onTheWay: true });
       // Before any point: on the way, nowhere yet, no ETA.
-      expect((await live(v.clientToken, v.bookingId).expect(200)).body).toMatchObject({ status: 'ON_THE_WAY', caregiverName: 'Visiting', position: null, home: HOME, eta: { minutes: null } });
+      expect((await live(v.clientToken, v.bookingId).expect(200)).body).toMatchObject({
+        status: 'ON_THE_WAY',
+        caregiverName: 'Visiting',
+        position: null,
+        home: HOME,
+        eta: { minutes: null },
+      });
 
       // Points need the share's own token, not a sign-in.
       await send(started.shareId, null, [far(60)]).expect(401);
       await send(started.shareId, 'not-it', [far(60)]).expect(401);
-      await api().post(`/location-shares/${started.shareId}/points`).set(bearer(v.cg.token)).send({ points: [far(60)] }).expect(401);
+      await api()
+        .post(`/location-shares/${started.shareId}/points`)
+        .set(bearer(v.cg.token))
+        .send({ points: [far(60)] })
+        .expect(401);
       // Kept: in order, inside Sri Lanka, possible speeds. Dropped: London, a jump to Jaffna a minute later, a repeat.
-      const first = await send(started.shareId, started.uploadToken, [far(90), { at: ago(85), latitude: 51.5, longitude: -0.12 }, { at: ago(80), latitude: 9.66, longitude: 80.02 }, nearer(30), nearer(30)]).expect(200);
+      const first = await send(started.shareId, started.uploadToken, [
+        far(90),
+        { at: ago(85), latitude: 51.5, longitude: -0.12 },
+        { at: ago(80), latitude: 9.66, longitude: 80.02 },
+        nearer(30),
+        nearer(30),
+      ]).expect(200);
       expect(first.body).toEqual({ accepted: 2, open: true });
       await send(started.shareId, started.uploadToken, new Array(51).fill(far(10))).expect(400);
 
@@ -599,7 +789,11 @@ describe('Shift check-in (e2e)', () => {
       expect(seen.eta.distanceM).toBeGreaterThan(900);
       expect(seen.stale).toBe(false);
       const staff = (await api().get('/visits/live').set(bearer(staffToken)).expect(200)).body as StaffLiveShare[];
-      expect(staff.find((s) => s.shareId === started.shareId)).toMatchObject({ kind: 'ON_THE_WAY', bookingReference: v.reference, position: { mocked: false } });
+      expect(staff.find((s) => s.shareId === started.shareId)).toMatchObject({
+        kind: 'ON_THE_WAY',
+        bookingReference: v.reference,
+        position: { mocked: false },
+      });
       expect((await staffShift(v.bookingId, v.shiftId)).checkIn!.onTheWay).toMatchObject({ shareId: started.shareId, arriving: false });
       // Nobody else sees it: another client, a caregiver.
       const other = await visit(30);
@@ -621,7 +815,7 @@ describe('Shift check-in (e2e)', () => {
       await onMyWay(v.cg.token, v.shiftId).expect(409);
     });
 
-    it("closes on \"I can't make this shift\", on stop, on a second tap, at the hard stop, and when turned off", async () => {
+    it('closes on "I can\'t make this shift", on stop, on a second tap, at the hard stop, and when turned off', async () => {
       await setting({ enabled: true, liveEnabled: true, onMyWayMinutes: 60 }).expect(200);
       const shares = app.get(LocationSharesService);
       const reason = async (id: string) => (await db.select().from(locationShares).where(eq(locationShares.id, id)))[0].endReason;
@@ -649,7 +843,10 @@ describe('Shift check-in (e2e)', () => {
       const four = (await onMyWay(c.cg.token, c.shiftId).expect(200)).body as StartedShare;
       await send(four.shareId, four.uploadToken, [far(30)]).expect(200);
       await db.insert(locationPoints).values({ shareId: four.shareId, at: new Date(Date.now() - 40 * 86_400_000), latitude: 6.95, longitude: 79.85 });
-      await db.update(locationShares).set({ endsBy: new Date(Date.now() - 1000) }).where(eq(locationShares.id, four.shareId));
+      await db
+        .update(locationShares)
+        .set({ endsBy: new Date(Date.now() - 1000) })
+        .where(eq(locationShares.id, four.shareId));
       expect((await live(c.clientToken, c.bookingId).expect(200)).body).toEqual({ status: 'NONE' });
       await shares.sweep();
       expect(await reason(four.shareId)).toBe('CAP');

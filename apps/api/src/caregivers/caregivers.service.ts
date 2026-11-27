@@ -88,7 +88,6 @@ export class CaregiversService {
     private readonly accountDeletion: AccountDeletionService,
   ) {}
 
-
   async create(dto: CreateCaregiverDto) {
     await assertUniqueContactFields(this.db, dto);
     const location = await resolveLocationRefs(this.db, dto);
@@ -187,11 +186,7 @@ export class CaregiversService {
   }
 
   /** Caregiver IDs whose availability record matches ANY of the requested shift flags. */
-  private async caregiverIdsWithAvailability(flags: {
-    dayDuty?: boolean;
-    nightDuty?: boolean;
-    liveIn24h?: boolean;
-  }): Promise<string[]> {
+  private async caregiverIdsWithAvailability(flags: { dayDuty?: boolean; nightDuty?: boolean; liveIn24h?: boolean }): Promise<string[]> {
     const activeConditions = [
       flags.dayDuty ? eq(availability.dayDuty, true) : null,
       flags.nightDuty ? eq(availability.nightDuty, true) : null,
@@ -212,13 +207,23 @@ export class CaregiversService {
    * left out. Shared with the offer-candidates search on a request, so both
    * filter the same way.
    */
-  async filterConditions(query: Pick<CaregiverQueryDto, 'search' | 'status' | 'gender' | 'skillIds' | 'languageIds' | 'locationIds' | 'districtIds' | 'dayDuty' | 'nightDuty' | 'liveIn24h'>): Promise<SQL[]> {
+  async filterConditions(
+    query: Pick<
+      CaregiverQueryDto,
+      'search' | 'status' | 'gender' | 'skillIds' | 'languageIds' | 'locationIds' | 'districtIds' | 'dayDuty' | 'nightDuty' | 'liveIn24h'
+    >,
+  ): Promise<SQL[]> {
     const conditions: SQL[] = [isNull(caregivers.deletedAt)];
 
     if (query.search) {
       const term = `%${query.search}%`;
       conditions.push(
-        or(like(caregivers.fullName, term), like(caregivers.registrationNumber, term), like(caregivers.primaryPhone, term), ...caregiverRefCondition(query.search))!,
+        or(
+          like(caregivers.fullName, term),
+          like(caregivers.registrationNumber, term),
+          like(caregivers.primaryPhone, term),
+          ...caregiverRefCondition(query.search),
+        )!,
       );
     }
     if (query.status) {
@@ -272,7 +277,10 @@ export class CaregiversService {
         .orderBy(orderFn(sortColumn))
         .limit(query.pageSize)
         .offset((query.page - 1) * query.pageSize),
-      this.db.select({ total: sql<number>`count(*)` }).from(caregivers).where(whereClause),
+      this.db
+        .select({ total: sql<number>`count(*)` })
+        .from(caregivers)
+        .where(whereClause),
     ]);
 
     const caregiverIds = rows.map((r) => r.id);
@@ -426,9 +434,7 @@ export class CaregiversService {
     if (!IDENTITY_EDITABLE_STATUSES.has(current.status)) {
       const touched = IDENTITY_FIELDS.filter((f) => dto[f] !== undefined && String(dto[f]) !== String(current[f] ?? ''));
       if (touched.length) {
-        throw new ForbiddenException(
-          'Your identity details are locked while your registration is being verified. Contact our staff to change them.',
-        );
+        throw new ForbiddenException('Your identity details are locked while your registration is being verified. Contact our staff to change them.');
       }
     }
     return this.update(id, dto);

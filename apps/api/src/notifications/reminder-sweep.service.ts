@@ -2,16 +2,7 @@ import { Inject, Injectable, Logger, OnApplicationBootstrap, OnModuleDestroy } f
 import { ConfigService } from '@nestjs/config';
 import { randomUUID as uuid } from 'crypto';
 import { and, asc, desc, eq, gte, inArray, isNotNull, isNull, lt, lte, sql } from 'drizzle-orm';
-import {
-  addDays,
-  colomboToUtc,
-  colomboToday,
-  formatLkr,
-  inQuietHours,
-  toCents,
-  toColombo,
-  type NotificationSettings,
-} from '@care-platform/shared';
+import { addDays, colomboToUtc, colomboToday, formatLkr, inQuietHours, toCents, toColombo, type NotificationSettings } from '@care-platform/shared';
 import { DRIZZLE, type Database } from '../database/database.module';
 import { bookingShifts, bookings, caregiverDocuments, caregivers, deviceTokens, invoices, patients, reminderSends, users } from '../database/schema';
 import { EmailService } from '../email/email.service';
@@ -143,7 +134,14 @@ export class ReminderSweepService implements OnApplicationBootstrap, OnModuleDes
   async invoicesDueTomorrow(now = new Date()): Promise<Candidate[]> {
     const tomorrow = addDays(colomboToday(now), 1);
     const rows = await this.db
-      .select({ id: invoices.id, number: invoices.number, total: invoices.total, amountPaid: invoices.amountPaid, dueDate: invoices.dueDate, userId: patients.userId })
+      .select({
+        id: invoices.id,
+        number: invoices.number,
+        total: invoices.total,
+        amountPaid: invoices.amountPaid,
+        dueDate: invoices.dueDate,
+        userId: patients.userId,
+      })
       .from(invoices)
       .innerJoin(patients, eq(patients.id, invoices.patientId))
       .where(and(eq(invoices.status, 'ISSUED'), eq(invoices.dueDate, tomorrow), isNotNull(patients.userId)))
@@ -156,7 +154,14 @@ export class ReminderSweepService implements OnApplicationBootstrap, OnModuleDes
         stage: 'DUE_SOON',
         line: {
           kind: 'INVOICE_DUE' as const,
-          todo: { key: `invoice:${r.id}`, kind: 'PAY_INVOICE', path: `/invoices/${r.id}`, urgent: false, dueOn: r.dueDate, params: { number: r.number ?? '', amount: formatLkr(r.owed / 100), overdue: 0 } },
+          todo: {
+            key: `invoice:${r.id}`,
+            kind: 'PAY_INVOICE',
+            path: `/invoices/${r.id}`,
+            urgent: false,
+            dueOn: r.dueDate,
+            params: { number: r.number ?? '', amount: formatLkr(r.owed / 100), overdue: 0 },
+          },
         },
       }));
   }
@@ -213,7 +218,14 @@ export class ReminderSweepService implements OnApplicationBootstrap, OnModuleDes
       stage: `TODAY:${today}`,
       line: {
         kind: 'SHIFT_TODAY' as const,
-        todo: { key: `shiftday:${today}`, kind: 'SHIFT_TODAY', path: '/shifts', urgent: true, dueOn: today, params: { time: toColombo(new Date(r.startsAt)).time, reference: r.reference } },
+        todo: {
+          key: `shiftday:${today}`,
+          kind: 'SHIFT_TODAY',
+          path: '/shifts',
+          urgent: true,
+          dueOn: today,
+          params: { time: toColombo(new Date(r.startsAt)).time, reference: r.reference },
+        },
       },
     }));
   }
@@ -265,7 +277,8 @@ export class ReminderSweepService implements OnApplicationBootstrap, OnModuleDes
       this.notices.notify([userId], (lang) => digestNotice(lines, lang), path, `reminder ${lines.map((l) => l.kind).join(',')}`, { category: 'REMINDER' });
       const byMessage = lines.filter((l) => USUAL_CHANNEL.has(l.kind));
       // Payment reminders always go; the others follow the person's "reminders by WhatsApp/email" switch.
-      if (byMessage.some((l) => ALWAYS_BY_MESSAGE.has(l.kind)) || (byMessage.length && (await this.remindersByMessage(userId)))) await this.usualChannel(userId, lines);
+      if (byMessage.some((l) => ALWAYS_BY_MESSAGE.has(l.kind)) || (byMessage.length && (await this.remindersByMessage(userId))))
+        await this.usualChannel(userId, lines);
       return true;
     } catch (err) {
       this.logger.error(`Reminder failed: ${(err as Error).message}`);
@@ -289,8 +302,16 @@ export class ReminderSweepService implements OnApplicationBootstrap, OnModuleDes
     if (!account) return;
     const client = account.role === 'PATIENT_GUARDIAN';
     const [person] = client
-      ? await this.db.select({ id: patients.id, phone: patients.phone, preferred: patients.preferredContactMethod }).from(patients).where(eq(patients.userId, userId)).limit(1)
-      : await this.db.select({ id: caregivers.id, phone: caregivers.primaryPhone, preferred: caregivers.preferredContactMethod }).from(caregivers).where(eq(caregivers.userId, userId)).limit(1);
+      ? await this.db
+          .select({ id: patients.id, phone: patients.phone, preferred: patients.preferredContactMethod })
+          .from(patients)
+          .where(eq(patients.userId, userId))
+          .limit(1)
+      : await this.db
+          .select({ id: caregivers.id, phone: caregivers.primaryPhone, preferred: caregivers.preferredContactMethod })
+          .from(caregivers)
+          .where(eq(caregivers.userId, userId))
+          .limit(1);
     const lang = await this.languageOf(userId, client ? person?.id : undefined);
     const cc = await this.whatsappSettings.getDefaultCountryCode();
     const phone = account.phone ?? normalizePhone(person?.phone ?? null, cc);
@@ -303,7 +324,9 @@ export class ReminderSweepService implements OnApplicationBootstrap, OnModuleDes
     const text = digestNotice(lines, lang);
     const label = `reminder ${lines.map((l) => l.kind.toLowerCase()).join(',')}`;
     if (channel === 'WHATSAPP') {
-      await this.whatsapp.sendUpdate(wa, phone!, lang, `${text.title}. ${text.lines.join(' ')} ${text.footer}`).catch((e) => this.logger.error(`WhatsApp ${label} failed: ${(e as Error).message}`));
+      await this.whatsapp
+        .sendUpdate(wa, phone!, lang, `${text.title}. ${text.lines.join(' ')} ${text.footer}`)
+        .catch((e) => this.logger.error(`WhatsApp ${label} failed: ${(e as Error).message}`));
     } else if (channel === 'EMAIL') {
       await this.email.sendNotificationEmail(
         account.email!,
@@ -327,7 +350,12 @@ export class ReminderSweepService implements OnApplicationBootstrap, OnModuleDes
       .limit(1);
     if (device) return device.locale;
     if (patientId) {
-      const [b] = await this.db.select({ language: bookings.language }).from(bookings).where(eq(bookings.patientId, patientId)).orderBy(desc(bookings.createdAt)).limit(1);
+      const [b] = await this.db
+        .select({ language: bookings.language })
+        .from(bookings)
+        .where(eq(bookings.patientId, patientId))
+        .orderBy(desc(bookings.createdAt))
+        .limit(1);
       if (b) return b.language;
     }
     return 'en';
@@ -340,7 +368,14 @@ export class ReminderSweepService implements OnApplicationBootstrap, OnModuleDes
     const today = colomboToday(now);
     const due = addDays(today, -OVERDUE_STAFF_DAYS);
     const rows = await this.db
-      .select({ id: invoices.id, number: invoices.number, total: invoices.total, amountPaid: invoices.amountPaid, dueDate: invoices.dueDate, billToName: invoices.billToName })
+      .select({
+        id: invoices.id,
+        number: invoices.number,
+        total: invoices.total,
+        amountPaid: invoices.amountPaid,
+        dueDate: invoices.dueDate,
+        billToName: invoices.billToName,
+      })
       .from(invoices)
       .where(and(eq(invoices.status, 'ISSUED'), lte(invoices.dueDate, due), gte(invoices.dueDate, addDays(due, -7))))
       .limit(500);
@@ -363,7 +398,10 @@ export class ReminderSweepService implements OnApplicationBootstrap, OnModuleDes
             heading: 'Invoices a week overdue',
             paragraphs: [
               'These invoices are unpaid a week after their due date. The client has had a reminder and still has them on their To do list; a call may help.',
-              ...fresh.map((r) => `${r.number ?? 'Invoice'} - ${r.billToName ?? 'client'}: ${formatLkr(r.owed / 100)} owed, due ${r.dueDate} (${-daysBetween(today, r.dueDate!)} days ago)`),
+              ...fresh.map(
+                (r) =>
+                  `${r.number ?? 'Invoice'} - ${r.billToName ?? 'client'}: ${formatLkr(r.owed / 100)} owed, due ${r.dueDate} (${-daysBetween(today, r.dueDate!)} days ago)`,
+              ),
             ],
           },
         ],
@@ -390,4 +428,3 @@ export class ReminderSweepService implements OnApplicationBootstrap, OnModuleDes
     return rows.map((r) => r.email!).filter(Boolean);
   }
 }
-

@@ -53,7 +53,10 @@ export default function CarePlanTemplatesPage() {
             role="tab"
             aria-selected={tab === k}
             onClick={() => setTab(k)}
-            className={cn('-mb-px border-b-2 px-3 py-2 text-sm font-medium', tab === k ? 'border-brand text-brand-dark' : 'border-transparent text-ink/60 hover:text-ink')}
+            className={cn(
+              '-mb-px border-b-2 px-3 py-2 text-sm font-medium',
+              tab === k ? 'border-brand text-brand-dark' : 'border-transparent text-ink/60 hover:text-ink',
+            )}
           >
             {t(`carePlans.templates.tabs.${k}`)}
           </button>

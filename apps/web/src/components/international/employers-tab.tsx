@@ -56,24 +56,29 @@ export function EmployersTab() {
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <p className="max-w-2xl text-sm text-ink/60">{t('international.employers.hint')}</p>
         <div className="flex flex-wrap gap-2">
-        {user?.role === 'ADMIN' && !adding && (
-          <Button
-            onClick={() => {
-              setNotice(null);
-              setAdding(true);
-            }}
+          {user?.role === 'ADMIN' && !adding && (
+            <Button
+              onClick={() => {
+                setNotice(null);
+                setAdding(true);
+              }}
+            >
+              <Plus size={16} aria-hidden />
+              {t('overseasAdmin.employer.add')}
+            </Button>
+          )}
+          <Select
+            className="sm:w-56"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value as (typeof FILTERS)[number])}
+            aria-label={t('international.employers.filter')}
           >
-            <Plus size={16} aria-hidden />
-            {t('overseasAdmin.employer.add')}
-          </Button>
-        )}
-        <Select className="sm:w-56" value={filter} onChange={(e) => setFilter(e.target.value as (typeof FILTERS)[number])} aria-label={t('international.employers.filter')}>
-          {FILTERS.map((f) => (
-            <option key={f} value={f}>
-              {t(`international.employers.filters.${f}`)}
-            </option>
-          ))}
-        </Select>
+            {FILTERS.map((f) => (
+              <option key={f} value={f}>
+                {t(`international.employers.filters.${f}`)}
+              </option>
+            ))}
+          </Select>
         </div>
       </div>
       {isLoading && <p className="py-8 text-center text-sm text-ink/50">{t('common.loading')}</p>}
@@ -117,11 +122,23 @@ function EmployerCard({ employer: e }: { employer: EmployerAdminRow }) {
         <div className="flex items-center gap-1">
           <span className={cn('rounded px-2 py-0.5 text-xs font-medium', STATUS_STYLES[e.status])}>{t(`international.employers.status.${e.status}`)}</span>
           {user?.role === 'ADMIN' && (
-            <Button size="sm" variant="ghost" className="p-1.5" aria-label={t('overseasAdmin.employer.edit')} title={t('overseasAdmin.employer.edit')} onClick={() => setEditing(true)}>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="p-1.5"
+              aria-label={t('overseasAdmin.employer.edit')}
+              title={t('overseasAdmin.employer.edit')}
+              onClick={() => setEditing(true)}
+            >
               <Pencil size={15} aria-hidden />
             </Button>
           )}
-          <DeleteRecordButton compact path={`/international/employers/${e.id}`} title={t('overseasAdmin.employer.deleteTitle', { name: e.organisationName })} body={t('overseasAdmin.employer.deleteBody')} />
+          <DeleteRecordButton
+            compact
+            path={`/international/employers/${e.id}`}
+            title={t('overseasAdmin.employer.deleteTitle', { name: e.organisationName })}
+            body={t('overseasAdmin.employer.deleteBody')}
+          />
         </div>
       </div>
       <dl className="mt-3 grid grid-cols-[8rem_1fr] gap-x-3 gap-y-1 text-sm">
@@ -176,7 +193,13 @@ function EmployerCard({ employer: e }: { employer: EmployerAdminRow }) {
       {e.reviewNote && <p className="mt-2 text-xs text-ink/60">{t('international.profiles.lastNote', { note: e.reviewNote })}</p>}
 
       <div className="mt-4 space-y-3 border-t border-border pt-4">
-        <Textarea rows={2} value={note} onChange={(ev) => setNote(ev.target.value)} maxLength={500} placeholder={t('international.employers.notePlaceholder')} />
+        <Textarea
+          rows={2}
+          value={note}
+          onChange={(ev) => setNote(ev.target.value)}
+          maxLength={500}
+          placeholder={t('international.employers.notePlaceholder')}
+        />
         {error && <p className="text-xs text-danger">{error}</p>}
         <div className="flex flex-wrap gap-2">
           {e.status !== 'VERIFIED' && (

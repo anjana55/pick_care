@@ -42,7 +42,9 @@ export const locationShares = mysqlTable(
     awayRepliedAt: datetime('away_replied_at'),
     /** ON_SHIFT, written when it closes: the dot strip and counts, so they outlive the points. */
     summary: json('summary').$type<{ slots: PresenceSlot[]; inside: number; away: number; none: number; mocked: number }>(),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     shiftIdx: index('location_shares_shift_idx').on(table.shiftId, table.kind),
@@ -66,7 +68,9 @@ export const locationPoints = mysqlTable(
     /** Inside the home's circle (allowing for accuracy); null with no place on the map. */
     inside: boolean('inside'),
     distanceM: int('distance_m'),
-    receivedAt: datetime('received_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    receivedAt: datetime('received_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     shareIdx: index('location_points_share_idx').on(table.shareId, table.at),
@@ -75,8 +79,14 @@ export const locationPoints = mysqlTable(
 );
 
 /** Reminders already sent about a shift (the T-60 "tap On my way", the client's "on the way"), so each goes once. */
-export const locationNotices = mysqlTable('location_notices', {
-  shiftId: varchar('shift_id', { length: 36 }).notNull(),
-  kind: mysqlEnum('kind', ['ON_MY_WAY_REMINDER', 'CLIENT_ON_THE_WAY']).notNull(),
-  sentAt: datetime('sent_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-}, (table) => ({ pk: primaryKey({ columns: [table.shiftId, table.kind] }) }));
+export const locationNotices = mysqlTable(
+  'location_notices',
+  {
+    shiftId: varchar('shift_id', { length: 36 }).notNull(),
+    kind: mysqlEnum('kind', ['ON_MY_WAY_REMINDER', 'CLIENT_ON_THE_WAY']).notNull(),
+    sentAt: datetime('sent_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => ({ pk: primaryKey({ columns: [table.shiftId, table.kind] }) }),
+);

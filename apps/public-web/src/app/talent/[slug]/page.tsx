@@ -194,8 +194,12 @@ export default function TalentProfilePage() {
                         <GraduationCap className="h-4 w-4 shrink-0 text-brand" aria-hidden />
                         <span className="font-medium">{a.title}</span>
                         {a.score && <span className="tabular-nums">{a.score}</span>}
-                        {a.cefrLevel && <span className="rounded bg-paper px-1.5 py-0.5 text-xs font-semibold text-ink/70">{t('talent.cefr', { level: a.cefrLevel })}</span>}
-                        <span className="text-xs text-ink/50">{new Intl.DateTimeFormat(locale, { month: 'short', year: 'numeric' }).format(new Date(`${a.takenOn}T00:00:00Z`))}</span>
+                        {a.cefrLevel && (
+                          <span className="rounded bg-paper px-1.5 py-0.5 text-xs font-semibold text-ink/70">{t('talent.cefr', { level: a.cefrLevel })}</span>
+                        )}
+                        <span className="text-xs text-ink/50">
+                          {new Intl.DateTimeFormat(locale, { month: 'short', year: 'numeric' }).format(new Date(`${a.takenOn}T00:00:00Z`))}
+                        </span>
                       </li>
                     ))}
                   </ul>

@@ -184,7 +184,12 @@ export class CarePlansService {
 
     const today = colomboToday();
     const from = booking.startDate > today ? booking.startDate : today;
-    let source: { id: string | null; name: string | null; notes: string | null; activities: ReturnType<typeof rowToFields>[] } = { id: null, name: null, notes: null, activities: [] };
+    let source: { id: string | null; name: string | null; notes: string | null; activities: ReturnType<typeof rowToFields>[] } = {
+      id: null,
+      name: null,
+      notes: null,
+      activities: [],
+    };
     let note = 'Care plan started blank';
 
     if (dto.templateId) {
@@ -194,7 +199,7 @@ export class CarePlansService {
       note = `Care plan from template "${t.name}"`;
     } else if (dto.fromBookingId) {
       const other = await this.bookingOrThrow(dto.fromBookingId);
-      if (other.patientId !== booking.patientId) throw new BadRequestException('Copy a plan from one of the same client\'s bookings');
+      if (other.patientId !== booking.patientId) throw new BadRequestException("Copy a plan from one of the same client's bookings");
       const otherPlan = await this.planFor(other.id);
       if (!otherPlan) throw new NotFoundException('That booking has no care plan');
       const rows = await this.planActivities([otherPlan.id]);
@@ -254,7 +259,12 @@ export class CarePlansService {
             await this.db
               .selectDistinct({ id: careActivityRecords.planActivityId })
               .from(careActivityRecords)
-              .where(inArray(careActivityRecords.planActivityId, rows.map((r) => r.id)))
+              .where(
+                inArray(
+                  careActivityRecords.planActivityId,
+                  rows.map((r) => r.id),
+                ),
+              )
           ).map((r) => r.id)
         : [],
     );
@@ -275,7 +285,10 @@ export class CarePlansService {
 
     await this.db.transaction(async (tx) => {
       for (const u of edit.update) {
-        await tx.update(carePlanActivities).set({ sortOrder: u.sortOrder, ...fieldsToColumns(u.fields) }).where(eq(carePlanActivities.id, u.id));
+        await tx
+          .update(carePlanActivities)
+          .set({ sortOrder: u.sortOrder, ...fieldsToColumns(u.fields) })
+          .where(eq(carePlanActivities.id, u.id));
       }
       for (const c of edit.close) {
         await tx.update(carePlanActivities).set({ effectiveTo: c.effectiveTo }).where(eq(carePlanActivities.id, c.id));
@@ -362,14 +375,25 @@ export class CarePlansService {
     const records: RecordRow[] = await this.db
       .select()
       .from(careActivityRecords)
-      .where(inArray(careActivityRecords.shiftId, shifts.map((s) => s.shiftId)));
+      .where(
+        inArray(
+          careActivityRecords.shiftId,
+          shifts.map((s) => s.shiftId),
+        ),
+      );
     const names = viewer === 'STAFF' ? await this.userNames(records.map((r) => r.recordedByUserId)) : new Map<string, string>();
     const byId = new Map(activities.map((a) => [a.id, a]));
 
     return shifts.map((s) => {
       const planActs = activities.filter((a) => a.planId === s.planId);
       const occ = careOccurrences(
-        planActs.map((a) => ({ ...rowToFields(a as unknown as ActivityRow), id: a.id, sortOrder: a.sortOrder, effectiveFrom: a.effectiveFrom, effectiveTo: a.effectiveTo })),
+        planActs.map((a) => ({
+          ...rowToFields(a as unknown as ActivityRow),
+          id: a.id,
+          sortOrder: a.sortOrder,
+          effectiveFrom: a.effectiveFrom,
+          effectiveTo: a.effectiveTo,
+        })),
         s,
       );
       const cutOff = careCutOff(s.endsAt);
@@ -434,7 +458,11 @@ export class CarePlansService {
     if (from > to) throw new BadRequestException('The start date must be on or before the end date');
     if (addDays(from, LOG_MAX_DAYS) < to) from = addDays(to, -LOG_MAX_DAYS);
     const shifts = await this.shiftContexts(
-      and(eq(bookingShifts.bookingId, bookingId), gte(bookingShifts.startsAt, colomboToUtc(from, '00:00')), lt(bookingShifts.startsAt, colomboToUtc(addDays(to, 1), '00:00'))),
+      and(
+        eq(bookingShifts.bookingId, bookingId),
+        gte(bookingShifts.startsAt, colomboToUtc(from, '00:00')),
+        lt(bookingShifts.startsAt, colomboToUtc(addDays(to, 1), '00:00')),
+      ),
     );
     const lists = (await this.checklists(shifts, 'STAFF', locale)).reverse();
     const items = lists.flatMap((l) => l.items.map((i) => ({ ...i, locked: l.locked })));
@@ -455,20 +483,21 @@ export class CarePlansService {
 
   // --- recording outcomes ------------------------------------------------------------------
 
-  private async upsertRecord(
-    ctx: ShiftContext,
-    dto: CareRecordDto,
-    source: Exclude<CareRecordSource, 'AUTO'>,
-    actor: AuthenticatedUser,
-  ) {
+  private async upsertRecord(ctx: ShiftContext, dto: CareRecordDto, source: Exclude<CareRecordSource, 'AUTO'>, actor: AuthenticatedUser) {
     const activities = await this.planActivities([ctx.planId]);
     const occ = careOccurrences(
-      activities.map((a) => ({ ...rowToFields(a as unknown as ActivityRow), id: a.id, sortOrder: a.sortOrder, effectiveFrom: a.effectiveFrom, effectiveTo: a.effectiveTo })),
+      activities.map((a) => ({
+        ...rowToFields(a as unknown as ActivityRow),
+        id: a.id,
+        sortOrder: a.sortOrder,
+        effectiveFrom: a.effectiveFrom,
+        effectiveTo: a.effectiveTo,
+      })),
       ctx,
     ).find((o) => o.activityId === dto.activityId && o.dueKey === dto.dueKey);
     if (!occ) throw new BadRequestException('That activity is not due on this shift');
     const activity = activities.find((a) => a.id === dto.activityId)!;
-    const reason = dto.status === 'NOT_DONE' ? (dto.reason?.trim() || null) : source === 'STAFF' ? (dto.reason?.trim() || null) : null;
+    const reason = dto.status === 'NOT_DONE' ? dto.reason?.trim() || null : source === 'STAFF' ? dto.reason?.trim() || null : null;
     const values = {
       status: dto.status,
       source,
@@ -479,7 +508,15 @@ export class CarePlansService {
     };
     await this.db
       .insert(careActivityRecords)
-      .values({ id: uuid(), planActivityId: dto.activityId, shiftId: ctx.shiftId, bookingId: ctx.bookingId, dueKey: dto.dueKey, dueDate: occ.dueDate, ...values })
+      .values({
+        id: uuid(),
+        planActivityId: dto.activityId,
+        shiftId: ctx.shiftId,
+        bookingId: ctx.bookingId,
+        dueKey: dto.dueKey,
+        dueDate: occ.dueDate,
+        ...values,
+      })
       .onDuplicateKeyUpdate({ set: values });
   }
 
@@ -513,7 +550,11 @@ export class CarePlansService {
     const now = new Date();
     const shifts = (
       await this.shiftContexts(
-        and(eq(bookings.patientId, patientId), gte(bookingShifts.startsAt, colomboToUtc(addDays(day, -1), '00:00')), lt(bookingShifts.startsAt, colomboToUtc(addDays(day, 1), '00:00'))),
+        and(
+          eq(bookings.patientId, patientId),
+          gte(bookingShifts.startsAt, colomboToUtc(addDays(day, -1), '00:00')),
+          lt(bookingShifts.startsAt, colomboToUtc(addDays(day, 1), '00:00')),
+        ),
       )
     ).filter((s) => shiftCareDate(s.startsAt) === day || (day === today && careCutOff(s.endsAt) > now));
     const [p] = await this.db.select({ reminders: patients.careRemindersEnabled }).from(patients).where(eq(patients.id, patientId)).limit(1);
@@ -587,7 +628,11 @@ export class CarePlansService {
     for (let i = 0; i < enabled.length; i += 200) {
       const shifts = (
         await this.shiftContexts(
-          and(inArray(bookings.patientId, enabled.slice(i, i + 200)), gte(bookingShifts.startsAt, colomboToUtc(addDays(today, -1), '00:00')), lt(bookingShifts.startsAt, now)),
+          and(
+            inArray(bookings.patientId, enabled.slice(i, i + 200)),
+            gte(bookingShifts.startsAt, colomboToUtc(addDays(today, -1), '00:00')),
+            lt(bookingShifts.startsAt, now),
+          ),
           2000,
         )
       ).filter((s) => careCutOff(s.endsAt) > now);

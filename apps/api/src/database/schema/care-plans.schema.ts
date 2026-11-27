@@ -56,8 +56,12 @@ export const carePlanTemplates = mysqlTable(
     status: mysqlEnum('status', carePlanTemplateStatusValues).notNull().default('ACTIVE'),
     createdByUserId: varchar('created_by_user_id', { length: 36 }),
     updatedByUserId: varchar('updated_by_user_id', { length: 36 }),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     statusIdx: index('care_plan_templates_status_idx').on(table.status, table.name),
@@ -89,8 +93,12 @@ export const carePlans = mysqlTable(
     notes: text('notes'),
     createdByUserId: varchar('created_by_user_id', { length: 36 }),
     updatedByUserId: varchar('updated_by_user_id', { length: 36 }),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     bookingUnique: uniqueIndex('care_plans_booking_unique').on(table.bookingId),
@@ -108,7 +116,9 @@ export const carePlanActivities = mysqlTable(
     effectiveTo: date('effective_to', { mode: 'string' }),
     // The earlier version this one replaced, when it came from an edit.
     replacesActivityId: varchar('replaces_activity_id', { length: 36 }),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     planIdx: index('care_plan_activities_plan_idx').on(table.planId, table.effectiveFrom),
@@ -136,7 +146,9 @@ export const careActivityRecords = mysqlTable(
     // Copied so the record still reads right if the activity's wording changes.
     isCritical: boolean('is_critical').notNull().default(false),
     recordedByUserId: varchar('recorded_by_user_id', { length: 36 }),
-    recordedAt: datetime('recorded_at', { fsp: 3 }).notNull().default(sql`CURRENT_TIMESTAMP(3)`),
+    recordedAt: datetime('recorded_at', { fsp: 3 })
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP(3)`),
   },
   (table) => ({
     occurrenceUnique: uniqueIndex('care_activity_records_occurrence_unique').on(table.planActivityId, table.shiftId, table.dueKey),
@@ -155,5 +167,7 @@ export const careShiftReviews = mysqlTable('care_shift_reviews', {
   shiftId: varchar('shift_id', { length: 36 }).primaryKey(),
   bookingId: varchar('booking_id', { length: 36 }).notNull(),
   cutOffAt: datetime('cut_off_at').notNull(),
-  finalizedAt: datetime('finalized_at', { fsp: 3 }).notNull().default(sql`CURRENT_TIMESTAMP(3)`),
+  finalizedAt: datetime('finalized_at', { fsp: 3 })
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP(3)`),
 });

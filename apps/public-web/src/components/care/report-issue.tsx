@@ -1,7 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { CAREGIVER_ISSUE_CATEGORIES, CLIENT_ISSUE_CATEGORIES, MAX_ISSUE_MESSAGE, type IssueReportCategory, type MyIssueReport, type PortalShift } from '@care-platform/shared';
+import {
+  CAREGIVER_ISSUE_CATEGORIES,
+  CLIENT_ISSUE_CATEGORIES,
+  MAX_ISSUE_MESSAGE,
+  type IssueReportCategory,
+  type MyIssueReport,
+  type PortalShift,
+} from '@care-platform/shared';
 import { useTranslation } from '@/lib/i18n';
 import { ApiError } from '@/lib/api/client';
 import { fmtDay, fmtTime } from '@/lib/colombo-time';
@@ -82,7 +89,15 @@ export function ReportIssueForm({
         <Label htmlFor={`${idp}-message`} required>
           {t('issues.tellUs')}
         </Label>
-        <Textarea id={`${idp}-message`} rows={3} maxLength={MAX_ISSUE_MESSAGE} placeholder={t(role === 'CLIENT' ? 'issues.placeholderClient' : 'issues.placeholderCaregiver')} value={message} onChange={(e) => setMessage(e.target.value)} required />
+        <Textarea
+          id={`${idp}-message`}
+          rows={3}
+          maxLength={MAX_ISSUE_MESSAGE}
+          placeholder={t(role === 'CLIENT' ? 'issues.placeholderClient' : 'issues.placeholderCaregiver')}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          required
+        />
       </div>
       {Boolean(error) && (
         <p role="alert" className="text-sm text-danger">

@@ -171,7 +171,10 @@ export function SelectField<V extends string | number>({
               autoCorrect={false}
               placeholder="…"
               placeholderTextColor={colors.muted}
-              style={[styles.filter, { borderColor: colors.border, color: colors.ink, backgroundColor: colors.surface, fontFamily: fontFamilyFor(locale, false) }]}
+              style={[
+                styles.filter,
+                { borderColor: colors.border, color: colors.ink, backgroundColor: colors.surface, fontFamily: fontFamilyFor(locale, false) },
+              ]}
             />
           ) : null}
           <FlatList
@@ -209,7 +212,15 @@ const styles = StyleSheet.create({
   tile: { flexBasis: '47%', flexGrow: 1, minHeight: 96, borderWidth: 1.5, borderRadius: 16, padding: 12, gap: 8, justifyContent: 'flex-start' },
   tileIcon: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   tileCheck: { position: 'absolute', top: 10, right: 10 },
-  select: { minHeight: 52, borderWidth: 1, borderRadius: 10, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  select: {
+    minHeight: 52,
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   sheet: { flex: 1, paddingHorizontal: 24, paddingTop: 56, paddingBottom: 32, gap: 12 },
   sheetTitle: { fontSize: 22, fontWeight: '700' },
   filter: { minHeight: 48, borderWidth: 1, borderRadius: 10, paddingHorizontal: 14, fontSize: 17 },

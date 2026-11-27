@@ -68,7 +68,9 @@ export function Button({ label, onPress, variant = 'primary', busy = false, disa
       ) : (
         <View style={styles.buttonRow}>
           {icon ? <Ionicons name={icon} size={22} color={variant === 'primary' ? colors.brandText : colors.brand} /> : null}
-          <Text style={[variant === 'primary' ? styles.primaryText : variant === 'secondary' ? styles.secondaryText : styles.linkText, styles.buttonLabel]}>{label}</Text>
+          <Text style={[variant === 'primary' ? styles.primaryText : variant === 'secondary' ? styles.secondaryText : styles.linkText, styles.buttonLabel]}>
+            {label}
+          </Text>
         </View>
       )}
     </Pressable>

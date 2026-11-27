@@ -115,9 +115,9 @@ describe('SearchRequestDto validation', () => {
     });
 
     it('coerces the id fields, which reach the API as strings on some clients', async () => {
-      await expect(
-        validate({ careType: 'HOME_SHIFT', location: { districtId: '1', cityId: '340' }, desiredStartDate: '2026-10-01' }),
-      ).resolves.toMatchObject({ location: { districtId: 1, cityId: 340 } });
+      await expect(validate({ careType: 'HOME_SHIFT', location: { districtId: '1', cityId: '340' }, desiredStartDate: '2026-10-01' })).resolves.toMatchObject({
+        location: { districtId: 1, cityId: 340 },
+      });
     });
 
     it('rejects a non-numeric district id rather than coercing it to NaN', async () => {

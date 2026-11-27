@@ -73,10 +73,17 @@ export function RecordPager({ kind, id, className }: { kind: TrailKind; id: stri
 
   if (!trail || index < 0) return null;
 
-  const button = 'inline-flex h-8 items-center gap-1 rounded border border-border bg-white px-2.5 text-sm text-ink hover:bg-paper disabled:pointer-events-none disabled:opacity-40';
+  const button =
+    'inline-flex h-8 items-center gap-1 rounded border border-border bg-white px-2.5 text-sm text-ink hover:bg-paper disabled:pointer-events-none disabled:opacity-40';
   return (
     <nav aria-label={t('recordPager.label')} className={cn('flex items-center gap-2', className)}>
-      <button type="button" className={button} disabled={!hasPrev || busy !== null} onClick={() => void go('prev')} title={`${t('recordPager.previous')} (Alt+←)`}>
+      <button
+        type="button"
+        className={button}
+        disabled={!hasPrev || busy !== null}
+        onClick={() => void go('prev')}
+        title={`${t('recordPager.previous')} (Alt+←)`}
+      >
         <ChevronLeft size={15} aria-hidden />
         <span className="hidden sm:inline">{t('recordPager.previous')}</span>
         <span className="sr-only sm:hidden">{t('recordPager.previous')}</span>

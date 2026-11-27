@@ -78,8 +78,7 @@ describe('PatientsService.update', () => {
         leftJoin: () => chain,
         orderBy: () => chain,
         limit: () => Promise.resolve(rows),
-        then: (resolve: (v: unknown) => unknown, reject?: (e: unknown) => unknown) =>
-          Promise.resolve(rows).then(resolve, reject),
+        then: (resolve: (v: unknown) => unknown, reject?: (e: unknown) => unknown) => Promise.resolve(rows).then(resolve, reject),
       };
       return chain;
     };
@@ -97,8 +96,7 @@ describe('PatientsService.update', () => {
         },
         where: () => chain,
         limit: () => Promise.resolve(rows),
-        then: (resolve: (v: unknown) => unknown, reject?: (e: unknown) => unknown) =>
-          Promise.resolve(rows).then(resolve, reject),
+        then: (resolve: (v: unknown) => unknown, reject?: (e: unknown) => unknown) => Promise.resolve(rows).then(resolve, reject),
       };
       return chain;
     };
@@ -189,9 +187,7 @@ describe('PatientsService.update', () => {
   it('rejects a number that is not usable', async () => {
     const { db, userUpdates } = stubDb();
 
-    await expect(serviceWith(db).update('pt-1', dto({ phone: 'not a number' }))).rejects.toBeInstanceOf(
-      BadRequestException,
-    );
+    await expect(serviceWith(db).update('pt-1', dto({ phone: 'not a number' }))).rejects.toBeInstanceOf(BadRequestException);
     expect(userUpdates).toHaveLength(0);
   });
 
@@ -268,10 +264,7 @@ describe('PatientsService.update', () => {
       provinces: [WESTERN],
     });
 
-    await serviceWith(db).update(
-      'pt-1',
-      dto({ districtId: 1, cityId: 340, district: 'Jaffna' } as Record<string, unknown>),
-    );
+    await serviceWith(db).update('pt-1', dto({ districtId: 1, cityId: 340, district: 'Jaffna' } as Record<string, unknown>));
 
     // A display name that contradicts the id beside it looks fine in the staff
     // UI and returns nothing wherever anything filters on the id.
@@ -311,9 +304,7 @@ describe('PatientsService.update', () => {
   it('surfaces a duplicate email as a conflict', async () => {
     const { db } = stubDb({ takenBy: { [users as unknown as string]: [{ id: 'user-9' }] } });
 
-    await expect(serviceWith(db).update('pt-1', dto({ email: 'taken@example.com' }))).rejects.toBeInstanceOf(
-      ConflictException,
-    );
+    await expect(serviceWith(db).update('pt-1', dto({ email: 'taken@example.com' }))).rejects.toBeInstanceOf(ConflictException);
   });
 });
 

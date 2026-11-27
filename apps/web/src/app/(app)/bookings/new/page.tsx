@@ -4,7 +4,18 @@ import { Suspense, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ChevronLeft } from 'lucide-react';
-import { addDays, BILLING_TIMINGS, colomboToday, generateShifts, isoToColomboLocal, MAX_GENERATED_SHIFTS, SCHEDULE_PRESETS, shiftHours, type BillingTiming, type IsoWeekday } from '@care-platform/shared';
+import {
+  addDays,
+  BILLING_TIMINGS,
+  colomboToday,
+  generateShifts,
+  isoToColomboLocal,
+  MAX_GENERATED_SHIFTS,
+  SCHEDULE_PRESETS,
+  shiftHours,
+  type BillingTiming,
+  type IsoWeekday,
+} from '@care-platform/shared';
 import { useTranslation } from '@/lib/i18n/provider';
 import { useAuth } from '@/lib/api/auth-context';
 import { ApiError } from '@/lib/api/client';
@@ -90,7 +101,12 @@ function NewBookingPage() {
   useEffect(() => {
     if (!request) return;
     if (request.caregiver)
-      setCaregiver({ id: request.caregiver.id, fullName: request.caregiver.fullName, registrationNumber: request.caregiver.registrationNumber, status: request.caregiver.status });
+      setCaregiver({
+        id: request.caregiver.id,
+        fullName: request.caregiver.fullName,
+        registrationNumber: request.caregiver.registrationNumber,
+        status: request.caregiver.status,
+      });
     setLanguage(request.language);
     const sched = request.client.careSchedule;
     if (sched === 'DAY' || sched === 'NIGHT' || sched === 'LIVE_IN_24H') pickType(sched === 'LIVE_IN_24H' ? 'LIVE_IN' : sched);
@@ -114,7 +130,14 @@ function NewBookingPage() {
   const overnight = end <= start;
 
   const patientId = request ? request.client.id : client?.id;
-  const ready = Boolean(patientId && caregiver && preview.length > 0 && preview.length <= MAX_GENERATED_SHIFTS && (!rateType || /^\d{1,8}(\.\d{1,2})?$/.test(rateAmount)) && (!payRateType || /^\d{1,8}(\.\d{1,2})?$/.test(payRateAmount)));
+  const ready = Boolean(
+    patientId &&
+    caregiver &&
+    preview.length > 0 &&
+    preview.length <= MAX_GENERATED_SHIFTS &&
+    (!rateType || /^\d{1,8}(\.\d{1,2})?$/.test(rateAmount)) &&
+    (!payRateType || /^\d{1,8}(\.\d{1,2})?$/.test(payRateAmount)),
+  );
 
   const submit = () =>
     create.mutate(
@@ -206,7 +229,10 @@ function NewBookingPage() {
                   role="radio"
                   aria-checked={scheduleType === type}
                   onClick={() => pickType(type)}
-                  className={cn('rounded border px-3 py-1.5 text-sm font-medium', scheduleType === type ? 'border-brand bg-brand text-white' : 'border-border text-ink/70 hover:bg-paper')}
+                  className={cn(
+                    'rounded border px-3 py-1.5 text-sm font-medium',
+                    scheduleType === type ? 'border-brand bg-brand text-white' : 'border-border text-ink/70 hover:bg-paper',
+                  )}
                 >
                   {t(`bookings.scheduleType.${type}`)}
                 </button>
@@ -224,7 +250,10 @@ function NewBookingPage() {
                       toggleDay(d);
                       setScheduleType('CUSTOM');
                     }}
-                    className={cn('w-14 rounded border py-1.5 text-sm', days.includes(d) ? 'border-brand bg-brand-light font-medium text-brand-dark' : 'border-border text-ink/60 hover:bg-paper')}
+                    className={cn(
+                      'w-14 rounded border py-1.5 text-sm',
+                      days.includes(d) ? 'border-brand bg-brand-light font-medium text-brand-dark' : 'border-border text-ink/60 hover:bg-paper',
+                    )}
                   >
                     {weekdayName(d)}
                   </button>
@@ -233,19 +262,45 @@ function NewBookingPage() {
             </div>
             <div className="grid gap-4 sm:grid-cols-4">
               <div>
-                <Label htmlFor="start" required>{t('bookings.new.startTime')}</Label>
-                <Input id="start" type="time" step={900} value={start} onChange={(e) => { setStart(e.target.value); setScheduleType('CUSTOM'); }} />
+                <Label htmlFor="start" required>
+                  {t('bookings.new.startTime')}
+                </Label>
+                <Input
+                  id="start"
+                  type="time"
+                  step={900}
+                  value={start}
+                  onChange={(e) => {
+                    setStart(e.target.value);
+                    setScheduleType('CUSTOM');
+                  }}
+                />
               </div>
               <div>
-                <Label htmlFor="end" required>{t('bookings.new.endTime')}</Label>
-                <Input id="end" type="time" step={900} value={end} onChange={(e) => { setEnd(e.target.value); setScheduleType('CUSTOM'); }} />
+                <Label htmlFor="end" required>
+                  {t('bookings.new.endTime')}
+                </Label>
+                <Input
+                  id="end"
+                  type="time"
+                  step={900}
+                  value={end}
+                  onChange={(e) => {
+                    setEnd(e.target.value);
+                    setScheduleType('CUSTOM');
+                  }}
+                />
               </div>
               <div>
-                <Label htmlFor="startDate" required>{t('bookings.new.startDate')}</Label>
+                <Label htmlFor="startDate" required>
+                  {t('bookings.new.startDate')}
+                </Label>
                 <Input id="startDate" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
               </div>
               <div>
-                <Label htmlFor="endDate" required>{t('bookings.new.endDate')}</Label>
+                <Label htmlFor="endDate" required>
+                  {t('bookings.new.endDate')}
+                </Label>
                 <Input id="endDate" type="date" min={startDate} value={endDate} onChange={(e) => setEndDate(e.target.value)} />
               </div>
             </div>
@@ -255,7 +310,11 @@ function NewBookingPage() {
 
             <div className="rounded border border-border bg-paper p-3" aria-live="polite">
               <p className={cn('text-sm font-medium', preview.length > MAX_GENERATED_SHIFTS || !preview.length ? 'text-danger' : 'text-ink')}>
-                {preview.length > MAX_GENERATED_SHIFTS ? t('bookings.new.tooMany') : preview.length ? t('bookings.new.willCreate', { count: preview.length }) : t('bookings.new.none')}
+                {preview.length > MAX_GENERATED_SHIFTS
+                  ? t('bookings.new.tooMany')
+                  : preview.length
+                    ? t('bookings.new.willCreate', { count: preview.length })
+                    : t('bookings.new.none')}
               </p>
               {preview.length > 0 && preview.length <= MAX_GENERATED_SHIFTS && (
                 <ul className="mt-2 grid gap-x-4 gap-y-0.5 text-xs tabular-nums text-ink/60 sm:grid-cols-2">
@@ -290,12 +349,26 @@ function NewBookingPage() {
               </Select>
             </div>
             <div>
-              <Label htmlFor="rateAmount" required={Boolean(rateType)}>{t('bookings.new.rateAmount')}</Label>
-              <Input id="rateAmount" inputMode="decimal" placeholder="3500.00" disabled={!rateType} value={rateAmount} onChange={(e) => setRateAmount(e.target.value)} />
+              <Label htmlFor="rateAmount" required={Boolean(rateType)}>
+                {t('bookings.new.rateAmount')}
+              </Label>
+              <Input
+                id="rateAmount"
+                inputMode="decimal"
+                placeholder="3500.00"
+                disabled={!rateType}
+                value={rateAmount}
+                onChange={(e) => setRateAmount(e.target.value)}
+              />
             </div>
             <div className="sm:col-span-2">
               <Label htmlFor="billingTiming">{t('bookings.billingTiming.label')}</Label>
-              <Select id="billingTiming" value={billingTiming} aria-describedby="billingTimingHint" onChange={(e) => setTimingChoice(e.target.value as BillingTiming)}>
+              <Select
+                id="billingTiming"
+                value={billingTiming}
+                aria-describedby="billingTimingHint"
+                onChange={(e) => setTimingChoice(e.target.value as BillingTiming)}
+              >
                 {BILLING_TIMINGS.map((b) => (
                   <option key={b} value={b}>
                     {t(`bookings.billingTiming.${b}`)}
@@ -307,7 +380,9 @@ function NewBookingPage() {
               </p>
             </div>
             <div>
-              <Label htmlFor="language" required>{t('requests.new.language')}</Label>
+              <Label htmlFor="language" required>
+                {t('requests.new.language')}
+              </Label>
               <Select id="language" value={language} onChange={(e) => setLanguage(e.target.value as 'en' | 'si' | 'ta')}>
                 {(['en', 'si', 'ta'] as const).map((l) => (
                   <option key={l} value={l}>
@@ -328,8 +403,17 @@ function NewBookingPage() {
               </Select>
             </div>
             <div>
-              <Label htmlFor="payRateAmount" required={Boolean(payRateType)}>{t('bookings.new.payRateAmount')}</Label>
-              <Input id="payRateAmount" inputMode="decimal" placeholder="2500.00" disabled={!payRateType} value={payRateAmount} onChange={(e) => setPayRateAmount(e.target.value)} />
+              <Label htmlFor="payRateAmount" required={Boolean(payRateType)}>
+                {t('bookings.new.payRateAmount')}
+              </Label>
+              <Input
+                id="payRateAmount"
+                inputMode="decimal"
+                placeholder="2500.00"
+                disabled={!payRateType}
+                value={payRateAmount}
+                onChange={(e) => setPayRateAmount(e.target.value)}
+              />
             </div>
             <p className="self-end text-xs text-ink/50">{t('bookings.new.payRateHint')}</p>
             <div className="sm:col-span-3">

@@ -32,11 +32,7 @@ type PatientIntakeColumns = Pick<
  * an email address. Accepts a transaction handle as well as the top-level
  * Database (same convention as resolveLocationRefs).
  */
-export async function buildPatientIntake(
-  db: Database,
-  dto: PatientProfileDto,
-  opts: { hasEmail: boolean },
-): Promise<PatientIntakeColumns> {
+export async function buildPatientIntake(db: Database, dto: PatientProfileDto, opts: { hasEmail: boolean }): Promise<PatientIntakeColumns> {
   if (dto.preferredContactMethod === 'EMAIL' && !opts.hasEmail) {
     throw new BadRequestException('Email cannot be the preferred contact method for an account without an email address');
   }

@@ -109,7 +109,14 @@ export function CaregiverDetails({
 
   return (
     <View style={{ gap: 18 }}>
-      <Field label={t('personalInfo.fields.fullName')} value={form.fullName} onChangeText={(v) => set('fullName', v)} autoComplete="name" textContentType="name" error={err('fullName')} />
+      <Field
+        label={t('personalInfo.fields.fullName')}
+        value={form.fullName}
+        onChangeText={(v) => set('fullName', v)}
+        autoComplete="name"
+        textContentType="name"
+        error={err('fullName')}
+      />
       {askPhone ? (
         <Field
           label={t('signup.phone')}
@@ -122,7 +129,15 @@ export function CaregiverDetails({
           error={err('phone')}
         />
       ) : null}
-      <DateField label={t('personalInfo.fields.dateOfBirth')} value={form.dateOfBirth} onChange={(d) => set('dateOfBirth', d)} today={today} min="1940-01-01" max={latestBirth} error={err('dateOfBirth')} />
+      <DateField
+        label={t('personalInfo.fields.dateOfBirth')}
+        value={form.dateOfBirth}
+        onChange={(d) => set('dateOfBirth', d)}
+        today={today}
+        min="1940-01-01"
+        max={latestBirth}
+        error={err('dateOfBirth')}
+      />
       <Chips
         label={t('personalInfo.fields.gender')}
         choices={GENDERS.map((g) => ({ value: g, label: t(`personalInfo.options.gender.${g}`) }))}
@@ -137,7 +152,14 @@ export function CaregiverDetails({
         onToggle={(c) => set('civilStatus', c)}
         error={err('civilStatus')}
       />
-      <Field label={t('personalInfo.fields.permanentAddress')} value={form.permanentAddress} onChangeText={(v) => set('permanentAddress', v)} multiline autoComplete="street-address" error={err('permanentAddress')} />
+      <Field
+        label={t('personalInfo.fields.permanentAddress')}
+        value={form.permanentAddress}
+        onChangeText={(v) => set('permanentAddress', v)}
+        multiline
+        autoComplete="street-address"
+        error={err('permanentAddress')}
+      />
       <SelectField
         label={t('personalInfo.fields.district')}
         choices={(districts.data ?? []).map((d) => ({ value: d.id, label: d.name }))}
@@ -153,7 +175,12 @@ export function CaregiverDetails({
         disabled={form.districtId === null}
         error={err('cityId')}
       />
-      <Field label={t('personalInfo.fields.emergencyContactName')} value={form.emergencyContactName} onChangeText={(v) => set('emergencyContactName', v)} error={err('emergencyContactName')} />
+      <Field
+        label={t('personalInfo.fields.emergencyContactName')}
+        value={form.emergencyContactName}
+        onChangeText={(v) => set('emergencyContactName', v)}
+        error={err('emergencyContactName')}
+      />
       <Field
         label={t('personalInfo.fields.emergencyContactNumber')}
         value={form.emergencyContactNumber}

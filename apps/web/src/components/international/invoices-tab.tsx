@@ -38,7 +38,12 @@ export function InvoicesTab() {
             </p>
           )}
         </div>
-        <Select className="sm:w-48" value={filter} onChange={(e) => setFilter(e.target.value as (typeof FILTERS)[number])} aria-label={t('international.invoices.filter')}>
+        <Select
+          className="sm:w-48"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value as (typeof FILTERS)[number])}
+          aria-label={t('international.invoices.filter')}
+        >
           {FILTERS.map((f) => (
             <option key={f} value={f}>
               {t(`international.invoices.filters.${f}`)}
@@ -47,7 +52,9 @@ export function InvoicesTab() {
         </Select>
       </div>
       {isLoading && <p className="py-8 text-center text-sm text-ink/50">{t('common.loading')}</p>}
-      {!isLoading && data.length === 0 && <p className="rounded-lg border border-dashed border-border bg-white py-10 text-center text-sm text-ink/50">{t('international.invoices.empty')}</p>}
+      {!isLoading && data.length === 0 && (
+        <p className="rounded-lg border border-dashed border-border bg-white py-10 text-center text-sm text-ink/50">{t('international.invoices.empty')}</p>
+      )}
       {data.length > 0 && (
         <div className="overflow-x-auto rounded-lg border border-border bg-white">
           <table className="w-full text-sm">

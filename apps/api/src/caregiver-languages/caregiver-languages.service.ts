@@ -37,9 +37,7 @@ export class CaregiverLanguagesService {
   }
 
   async remove(caregiverId: string, languageId: string) {
-    await this.db
-      .delete(caregiverLanguages)
-      .where(and(eq(caregiverLanguages.caregiverId, caregiverId), eq(caregiverLanguages.languageId, languageId)));
+    await this.db.delete(caregiverLanguages).where(and(eq(caregiverLanguages.caregiverId, caregiverId), eq(caregiverLanguages.languageId, languageId)));
     return { success: true };
   }
 }

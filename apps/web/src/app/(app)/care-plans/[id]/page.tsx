@@ -47,7 +47,8 @@ export default function CarePlanTemplatePage() {
     setActivities(data.activities.map(toDraft));
   }, [data]);
 
-  if (loading || !allowed || (!isNew && isLoading)) return <div className="flex min-h-[40vh] items-center justify-center text-sm text-ink/50">{t('common.loading')}</div>;
+  if (loading || !allowed || (!isNew && isLoading))
+    return <div className="flex min-h-[40vh] items-center justify-center text-sm text-ink/50">{t('common.loading')}</div>;
   if (!isNew && (isError || !data)) {
     return (
       <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3 text-sm text-ink/60">
@@ -117,7 +118,9 @@ export default function CarePlanTemplatePage() {
                     type="checkbox"
                     className="h-4 w-4 rounded border-border text-brand focus:ring-brand"
                     checked={careTypes.includes(ct)}
-                    onChange={(e) => setCareTypes(e.target.checked ? careTypeValues.filter((v) => v === ct || careTypes.includes(v)) : careTypes.filter((v) => v !== ct))}
+                    onChange={(e) =>
+                      setCareTypes(e.target.checked ? careTypeValues.filter((v) => v === ct || careTypes.includes(v)) : careTypes.filter((v) => v !== ct))
+                    }
                   />
                   {t(`careTypes.${ct}`)}
                 </label>
@@ -128,13 +131,23 @@ export default function CarePlanTemplatePage() {
       </Card>
 
       <h2 className="mb-2 text-base font-semibold text-ink">{t('carePlans.editor.activities')}</h2>
-      <ActivityEditor value={activities} onChange={setActivities} textLocale={textLocale} onTextLocaleChange={setTextLocale} problems={touched ? problems : {}} />
+      <ActivityEditor
+        value={activities}
+        onChange={setActivities}
+        textLocale={textLocale}
+        onTextLocaleChange={setTextLocale}
+        problems={touched ? problems : {}}
+      />
 
       <div className="sticky bottom-0 mt-6 flex items-center gap-3 border-t border-border bg-paper/95 py-3">
         <Button disabled={pending} onClick={save}>
           {pending ? t('common.loading') : isNew ? t('carePlans.templates.create') : t('common.save')}
         </Button>
-        {saved && <span role="status" className="text-sm text-brand-dark">{t('carePlans.saved')}</span>}
+        {saved && (
+          <span role="status" className="text-sm text-brand-dark">
+            {t('carePlans.saved')}
+          </span>
+        )}
         {err && (
           <span role="alert" className="text-sm text-danger">
             {err instanceof ApiError && err.message ? err.message : t('requests.detail.saveFailed')}

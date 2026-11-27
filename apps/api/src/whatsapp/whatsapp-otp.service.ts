@@ -8,8 +8,7 @@ import { deriveKey } from '../common/utils/secret-box.util';
 import type { ResolvedWhatsappSettings } from './whatsapp-settings.service';
 
 export type OtpIssueResult =
-  | { issued: true; id: string; code: string; expiresAt: Date }
-  | { issued: false; reason: 'COOLDOWN' | 'HOURLY_LIMIT'; retryAfterSeconds: number };
+  { issued: true; id: string; code: string; expiresAt: Date } | { issued: false; reason: 'COOLDOWN' | 'HOURLY_LIMIT'; retryAfterSeconds: number };
 
 @Injectable()
 export class WhatsappOtpService {
@@ -131,10 +130,7 @@ export class WhatsappOtpService {
   }
 
   throwRateLimited(retryAfterSeconds: number): never {
-    throw new HttpException(
-      `Please wait ${retryAfterSeconds} seconds before requesting another code`,
-      HttpStatus.TOO_MANY_REQUESTS,
-    );
+    throw new HttpException(`Please wait ${retryAfterSeconds} seconds before requesting another code`, HttpStatus.TOO_MANY_REQUESTS);
   }
 
   private hash(otpId: string, code: string): string {

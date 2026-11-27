@@ -16,7 +16,10 @@ import { PinPicker } from '@/components/map/pin-picker';
  */
 export default function PlacesToConfirmPage() {
   const { t, locale } = useTranslation();
-  const { data, isLoading } = useQuery({ queryKey: ['care-locations', 'suggestions'], queryFn: () => api.get<CareLocationSuggestion[]>('/care-locations/suggestions') });
+  const { data, isLoading } = useQuery({
+    queryKey: ['care-locations', 'suggestions'],
+    queryFn: () => api.get<CareLocationSuggestion[]>('/care-locations/suggestions'),
+  });
   const labels = { map: t('careLocation.map'), pin: t('careLocation.pin'), failed: t('careLocation.mapFailed') };
   return (
     <div className="mx-auto max-w-4xl">

@@ -20,7 +20,14 @@ import { Button } from '@/components/ui/button';
 import { StarPicker } from './stars';
 
 /** Toggle chips: a group of buttons that each say whether they are chosen. */
-function ChipGroup<T extends string>({ label, hint, options, chosen, onToggle, labelOf }: {
+function ChipGroup<T extends string>({
+  label,
+  hint,
+  options,
+  chosen,
+  onToggle,
+  labelOf,
+}: {
   label: string;
   hint: string;
   options: readonly T[];

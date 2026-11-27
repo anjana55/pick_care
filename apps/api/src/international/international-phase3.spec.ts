@@ -115,7 +115,9 @@ describe('placement rules', () => {
 
   it('fills the end date in, and clears it when a placement is reopened', () => {
     expect(checkPlacementChange(base, { ...base, status: 'ENDED_EARLY', endReason: 'Family emergency' }, '2027-01-10')).toEqual({ endedOn: '2027-01-10' });
-    expect(checkPlacementChange(base, { ...base, status: 'COMPLETED', contractStartOn: '2025-01-01', contractMonths: 24 }, '2027-01-10')).toEqual({ endedOn: '2027-01-01' });
+    expect(checkPlacementChange(base, { ...base, status: 'COMPLETED', contractStartOn: '2025-01-01', contractMonths: 24 }, '2027-01-10')).toEqual({
+      endedOn: '2027-01-01',
+    });
     const ended = { ...base, status: 'ENDED_EARLY', endedOn: '2027-01-10', endReason: 'x' } as typeof base;
     expect(checkPlacementChange(ended, { ...ended, status: 'DEPLOYED', arrivedOn: '2026-11-01' })).toEqual({ endedOn: null, endReason: null });
   });
@@ -198,20 +200,36 @@ describe('VacanciesService', () => {
   it('records an application and tells staff', async () => {
     const { service, writes, n } = vacancies([[VACANCY], [], [{ n: 2 }], []]);
     await service.apply('cg-1', 'VC-7K2Q9M', { message: 'I have 4 years in elder care' });
-    expect(writes).toEqual([{ op: 'insert', values: expect.objectContaining({ vacancyId: 'vac-1', caregiverId: 'cg-1', message: 'I have 4 years in elder care' }) }]);
+    expect(writes).toEqual([
+      { op: 'insert', values: expect.objectContaining({ vacancyId: 'vac-1', caregiverId: 'cg-1', message: 'I have 4 years in elder care' }) },
+    ]);
     expect(n.toStaff).toHaveBeenCalled();
   });
 
   it('lets a caregiver withdraw only their own application, and only before staff act on it', async () => {
-    await expect(vacancies([[{ id: 'app-1', caregiverId: 'someone-else', status: 'APPLIED' }]]).service.withdraw('cg-1', 'app-1')).rejects.toBeInstanceOf(NotFoundException);
-    await expect(vacancies([[{ id: 'app-1', caregiverId: 'cg-1', status: 'PUT_FORWARD' }]]).service.withdraw('cg-1', 'app-1')).rejects.toBeInstanceOf(BadRequestException);
+    await expect(vacancies([[{ id: 'app-1', caregiverId: 'someone-else', status: 'APPLIED' }]]).service.withdraw('cg-1', 'app-1')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+    await expect(vacancies([[{ id: 'app-1', caregiverId: 'cg-1', status: 'PUT_FORWARD' }]]).service.withdraw('cg-1', 'app-1')).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
   });
 
   it('puts an applicant forward as a candidate on the vacancy enquiry, without the generic "interest" email', async () => {
     const app = { id: 'app-1', vacancyId: 'vac-1', caregiverId: 'cg-1', status: 'APPLIED' };
-    const { service, candidates, writes, n } = vacancies([[app], [VACANCY], [VACANCY], [{ a: { ...app, status: 'PUT_FORWARD', createdAt: new Date() }, registrationNumber: 'CG-1', fullName: 'Nadeesha Perera' }], []]);
+    const { service, candidates, writes, n } = vacancies([
+      [app],
+      [VACANCY],
+      [VACANCY],
+      [{ a: { ...app, status: 'PUT_FORWARD', createdAt: new Date() }, registrationNumber: 'CG-1', fullName: 'Nadeesha Perera' }],
+      [],
+    ]);
     await service.updateApplication('app-1', { status: 'PUT_FORWARD', messageToEmployer: 'Strong dementia care experience' });
-    expect(candidates.propose).toHaveBeenCalledWith('enq-1', { caregiverId: 'cg-1', messageToEmployer: 'Strong dementia care experience' }, { source: 'APPLICATION', notifyCaregiver: false });
+    expect(candidates.propose).toHaveBeenCalledWith(
+      'enq-1',
+      { caregiverId: 'cg-1', messageToEmployer: 'Strong dementia care experience' },
+      { source: 'APPLICATION', notifyCaregiver: false },
+    );
     expect(writes[0].values).toEqual(expect.objectContaining({ status: 'PUT_FORWARD', candidateId: 'cand-1' }));
     await new Promise((r) => setImmediate(r));
     expect(n.toAddress).toHaveBeenCalledWith(undefined, 'application PUT_FORWARD', expect.anything());
@@ -225,11 +243,27 @@ describe('VacanciesService', () => {
 
 describe('CandidatesService and placements', () => {
   it('opens a placement when staff mark a candidate Placed', async () => {
-    const candidate = { id: 'cand-1', enquiryId: 'enq-1', caregiverId: 'cg-1', status: 'SELECTED', interviewAt: null, createdAt: new Date(), updatedAt: new Date() };
+    const candidate = {
+      id: 'cand-1',
+      enquiryId: 'enq-1',
+      caregiverId: 'cg-1',
+      status: 'SELECTED',
+      interviewAt: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
     const fake = fakeDb([[candidate], [{ c: { ...candidate, status: 'PLACED' }, registrationNumber: 'CG-1', fullName: 'N P' }]]);
     const placements = { openForCandidate: jest.fn().mockResolvedValue('pl-1') };
     const shared = { liveSlugs: jest.fn().mockResolvedValue(new Map()) };
-    const service = new CandidatesService(fake.db, shared as never, {} as never, notifier() as never, placements as never, { forCandidates: jest.fn().mockResolvedValue(new Map()) } as never, { briefForCandidates: jest.fn().mockResolvedValue(new Map()), latestForCandidates: jest.fn().mockResolvedValue(new Map()) } as never);
+    const service = new CandidatesService(
+      fake.db,
+      shared as never,
+      {} as never,
+      notifier() as never,
+      placements as never,
+      { forCandidates: jest.fn().mockResolvedValue(new Map()) } as never,
+      { briefForCandidates: jest.fn().mockResolvedValue(new Map()), latestForCandidates: jest.fn().mockResolvedValue(new Map()) } as never,
+    );
     await service.update('cand-1', { status: 'PLACED' }, 'staff-1');
     expect(placements.openForCandidate).toHaveBeenCalledWith('cand-1', 'staff-1');
   });
@@ -239,15 +273,23 @@ describe('PlacementInvoicesService', () => {
   const settings = { getResolved: jest.fn(), sellerOf: jest.fn() };
   it("never shows an employer a draft, or another employer's invoice", async () => {
     const draft = fakeDb([[{ id: 'inv-1', employerId: 'emp-1', status: 'DRAFT' }]]);
-    await expect(new PlacementInvoicesService(draft.db, settings as never, notifier() as never).getForEmployer('emp-1', 'inv-1')).rejects.toBeInstanceOf(NotFoundException);
+    await expect(new PlacementInvoicesService(draft.db, settings as never, notifier() as never).getForEmployer('emp-1', 'inv-1')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
     const other = fakeDb([[{ id: 'inv-1', employerId: 'emp-2', status: 'ISSUED' }]]);
-    await expect(new PlacementInvoicesService(other.db, settings as never, notifier() as never).getForEmployer('emp-1', 'inv-1')).rejects.toBeInstanceOf(NotFoundException);
+    await expect(new PlacementInvoicesService(other.db, settings as never, notifier() as never).getForEmployer('emp-1', 'inv-1')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
   });
 
   it('changes only drafts', async () => {
     const fake = fakeDb([[{ id: 'inv-1', status: 'ISSUED' }]]);
     await expect(
-      new PlacementInvoicesService(fake.db, settings as never, notifier() as never).update('inv-1', { currency: 'USD', amount: 100, description: 'Placement fee' }),
+      new PlacementInvoicesService(fake.db, settings as never, notifier() as never).update('inv-1', {
+        currency: 'USD',
+        amount: 100,
+        description: 'Placement fee',
+      }),
     ).rejects.toThrow(/draft/);
     expect(fake.writes).toHaveLength(0);
   });
@@ -273,7 +315,10 @@ describe('PlacementInvoicesService', () => {
 describe('phase 3 route access', () => {
   const reflector = new Reflector();
   const roles = (cls: object, method?: string) =>
-    reflector.getAllAndOverride<string[]>(ROLES_KEY, [method ? (cls as { prototype: Record<string, () => void> }).prototype[method] : (cls as never), cls as never]);
+    reflector.getAllAndOverride<string[]>(ROLES_KEY, [
+      method ? (cls as { prototype: Record<string, () => void> }).prototype[method] : (cls as never),
+      cls as never,
+    ]);
 
   it('keeps employer routes for employers and staff routes for staff', () => {
     expect(roles(EmployerPhase3Controller)).toEqual(['EMPLOYER']);
@@ -282,7 +327,8 @@ describe('phase 3 route access', () => {
   });
 
   it('opens only the vacancy board and the PayHere callback to the public', () => {
-    const isPublic = (cls: { prototype: object }, method: string) => reflector.get<boolean>(IS_PUBLIC_KEY, (cls.prototype as Record<string, () => void>)[method]);
+    const isPublic = (cls: { prototype: object }, method: string) =>
+      reflector.get<boolean>(IS_PUBLIC_KEY, (cls.prototype as Record<string, () => void>)[method]);
     expect(isPublic(PublicVacanciesController, 'list')).toBe(true);
     expect(isPublic(PublicVacanciesController, 'one')).toBe(true);
     expect(isPublic(PlacementPayhereNotifyController, 'notify')).toBe(true);

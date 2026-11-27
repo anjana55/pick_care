@@ -48,8 +48,15 @@ describe('Communication preferences (e2e)', () => {
     const reg = await api()
       .post('/auth/register-caregiver/unified')
       .send({
-        phone, consentAccepted: true, fullName: `Prefs Caregiver ${phone}`, permanentAddress: '1 Lake Road, Kandy',
-        dateOfBirth: '1988-01-20', gender: 'FEMALE', civilStatus: 'MARRIED', emergencyContactName: 'EC', emergencyContactNumber: '0770001111',
+        phone,
+        consentAccepted: true,
+        fullName: `Prefs Caregiver ${phone}`,
+        permanentAddress: '1 Lake Road, Kandy',
+        dateOfBirth: '1988-01-20',
+        gender: 'FEMALE',
+        civilStatus: 'MARRIED',
+        emergencyContactName: 'EC',
+        emergencyContactNumber: '0770001111',
         emergencyContactRelationship: 'Husband',
       })
       .expect(201);
@@ -62,22 +69,46 @@ describe('Communication preferences (e2e)', () => {
   async function newClient() {
     const reg = await api()
       .post('/auth/register-patient')
-      .send({ email: `prefs-client-${run}-${++n}@example.com`, password: 'SelfRegPass123', fullName: `Prefs Client Abson`, phone: newPhone(), consentAccepted: true, ...intake })
+      .send({
+        email: `prefs-client-${run}-${++n}@example.com`,
+        password: 'SelfRegPass123',
+        fullName: `Prefs Client Abson`,
+        phone: newPhone(),
+        consentAccepted: true,
+        ...intake,
+      })
       .expect(201);
     const [row] = await db.select().from(patients).where(eq(patients.id, reg.body.patientId));
     const token = jwt.sign({ sub: row.userId, role: 'PATIENT_GUARDIAN', patientId: row.id }, { secret: accessSecret, expiresIn: '10m' });
     return { patientId: row.id, userId: row.userId!, token };
   }
 
-  const settings: NotificationSettings = { remindersEnabled: true, quietStartHour: 21, quietEndHour: 7, dailyReminderCap: 5, retentionDays: 180 } as NotificationSettings;
+  const settings: NotificationSettings = {
+    remindersEnabled: true,
+    quietStartHour: 21,
+    quietEndHour: 7,
+    dailyReminderCap: 5,
+    retentionDays: 180,
+  } as NotificationSettings;
   const line = (kind: 'INVOICE_DUE' | 'DOCUMENT_REJECTED', userId: string): Candidate => ({
     userId,
     stage: 'TEST',
-    line: { kind, todo: { key: `${kind.toLowerCase()}:${uuid()}`, kind: kind === 'INVOICE_DUE' ? 'PAY_INVOICE' : 'DOCUMENT_REJECTED', path: '/notifications', vars: { number: 'INV-1', amount: 'LKR 1,000', date: 'tomorrow', document: 'Police clearance' } } as never },
+    line: {
+      kind,
+      todo: {
+        key: `${kind.toLowerCase()}:${uuid()}`,
+        kind: kind === 'INVOICE_DUE' ? 'PAY_INVOICE' : 'DOCUMENT_REJECTED',
+        path: '/notifications',
+        vars: { number: 'INV-1', amount: 'LKR 1,000', date: 'tomorrow', document: 'Police clearance' },
+      } as never,
+    },
   });
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).overrideProvider(ThrottlerStorage).useValue(unlimitedThrottle).compile();
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+      .overrideProvider(ThrottlerStorage)
+      .useValue(unlimitedThrottle)
+      .compile();
     app = moduleRef.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
     await app.init();
@@ -91,9 +122,17 @@ describe('Communication preferences (e2e)', () => {
     districtId = tree.flatMap((p) => p.districts)[0].id;
     const cityId = (await api().get(`/public/meta/locations/cities?districtId=${districtId}&locale=en`).expect(200)).body[0].id;
     intake = {
-      registrantType: 'GUARDIAN', recipientName: 'Sunil Fernando', recipientRelationship: 'PARENT', recipientAge: 78, recipientGender: 'MALE',
-      preferredContactMethod: 'WHATSAPP', districtId, cityId, careNeeds: 'Needs help with bathing, meals and medication reminders.',
-      careSchedule: 'DAY', careStart: 'WITHIN_WEEK',
+      registrantType: 'GUARDIAN',
+      recipientName: 'Sunil Fernando',
+      recipientRelationship: 'PARENT',
+      recipientAge: 78,
+      recipientGender: 'MALE',
+      preferredContactMethod: 'WHATSAPP',
+      districtId,
+      cityId,
+      careNeeds: 'Needs help with bathing, meals and medication reminders.',
+      careSchedule: 'DAY',
+      careStart: 'WITHIN_WEEK',
     };
   });
 
@@ -106,7 +145,15 @@ describe('Communication preferences (e2e)', () => {
   it('lets a client read and change their own preferences, and audits each change', async () => {
     const client = await newClient();
     const got = await api().get('/me/communication-preferences').set(bearer(client.token)).expect(200);
-    expect(got.body).toMatchObject({ preferredContactMethod: 'WHATSAPP', pushEnabled: true, reminderMessagesEnabled: true, hasAccount: true, hasEmail: true, hasPhone: true, appDevices: 0 });
+    expect(got.body).toMatchObject({
+      preferredContactMethod: 'WHATSAPP',
+      pushEnabled: true,
+      reminderMessagesEnabled: true,
+      hasAccount: true,
+      hasEmail: true,
+      hasPhone: true,
+      appDevices: 0,
+    });
 
     const saved = await api()
       .patch('/me/communication-preferences')
@@ -115,7 +162,12 @@ describe('Communication preferences (e2e)', () => {
       .expect(200);
     expect(saved.body).toMatchObject({ preferredContactMethod: 'EMAIL', preferredContactTime: 'MORNING', pushEnabled: false, reminderMessagesEnabled: false });
 
-    const [audit] = await db.select().from(auditLogs).where(and(eq(auditLogs.entityId, client.patientId), eq(auditLogs.action, 'UPDATE_OWN_COMMUNICATION_PREFERENCES'))).orderBy(desc(auditLogs.createdAt)).limit(1);
+    const [audit] = await db
+      .select()
+      .from(auditLogs)
+      .where(and(eq(auditLogs.entityId, client.patientId), eq(auditLogs.action, 'UPDATE_OWN_COMMUNICATION_PREFERENCES')))
+      .orderBy(desc(auditLogs.createdAt))
+      .limit(1);
     expect(audit.userId).toBe(client.userId);
     expect((audit.metadata as { changes: Record<string, unknown> }).changes).toMatchObject({
       preferredContactMethod: { from: 'WHATSAPP', to: 'EMAIL' },
@@ -139,9 +191,17 @@ describe('Communication preferences (e2e)', () => {
     const cg = await api().get(`/caregivers/${caregiver.id}/communication-preferences`).set(bearer(staffToken)).expect(200);
     expect(cg.body).toMatchObject({ preferredContactTime: null, hasAccount: true, hasEmail: false, hasPhone: true });
 
-    const changed = await api().patch(`/patients/${client.patientId}/communication-preferences`).set(bearer(staffToken)).send({ reminderMessagesEnabled: false }).expect(200);
+    const changed = await api()
+      .patch(`/patients/${client.patientId}/communication-preferences`)
+      .set(bearer(staffToken))
+      .send({ reminderMessagesEnabled: false })
+      .expect(200);
     expect(changed.body.reminderMessagesEnabled).toBe(false);
-    const [audit] = await db.select().from(auditLogs).where(and(eq(auditLogs.entityId, client.patientId), eq(auditLogs.action, 'UPDATE_COMMUNICATION_PREFERENCES'))).limit(1);
+    const [audit] = await db
+      .select()
+      .from(auditLogs)
+      .where(and(eq(auditLogs.entityId, client.patientId), eq(auditLogs.action, 'UPDATE_COMMUNICATION_PREFERENCES')))
+      .limit(1);
     expect(audit).toBeDefined();
 
     // Not for clients, caregivers or verifiers; not someone else's.
@@ -155,13 +215,20 @@ describe('Communication preferences (e2e)', () => {
   it('refuses a channel the person cannot be reached on, and turns auto notify off for phone calls', async () => {
     const caregiver = await newCaregiver();
     // Registered by WhatsApp: no email address.
-    const refused = await api().patch(`/caregivers/${caregiver.id}/communication-preferences`).set(bearer(staffToken)).send({ preferredContactMethod: 'EMAIL' }).expect(400);
+    const refused = await api()
+      .patch(`/caregivers/${caregiver.id}/communication-preferences`)
+      .set(bearer(staffToken))
+      .send({ preferredContactMethod: 'EMAIL' })
+      .expect(400);
     expect(refused.body.message).toMatch(/email address/i);
     await api().patch(`/caregivers/${caregiver.id}/communication-preferences`).set(bearer(staffToken)).send({ preferredContactTime: 'MORNING' }).expect(400);
 
     await db.update(caregivers).set({ preferredContactMethod: 'WHATSAPP', autoNotifyRequests: true }).where(eq(caregivers.id, caregiver.id));
     await api().patch('/me/communication-preferences').set(bearer(caregiver.token)).send({ preferredContactMethod: 'PHONE_CALL' }).expect(200);
-    const [row] = await db.select({ m: caregivers.preferredContactMethod, auto: caregivers.autoNotifyRequests }).from(caregivers).where(eq(caregivers.id, caregiver.id));
+    const [row] = await db
+      .select({ m: caregivers.preferredContactMethod, auto: caregivers.autoNotifyRequests })
+      .from(caregivers)
+      .where(eq(caregivers.id, caregiver.id));
     expect(row).toEqual({ m: 'PHONE_CALL', auto: false });
   });
 
@@ -184,7 +251,11 @@ describe('Communication preferences (e2e)', () => {
 
   it('sends the rating reminder to the bell only when reminder messages are off, but always the first ask', async () => {
     const client = await newClient();
-    await api().patch('/me/communication-preferences').set(bearer(client.token)).send({ preferredContactMethod: 'EMAIL', reminderMessagesEnabled: false }).expect(200);
+    await api()
+      .patch('/me/communication-preferences')
+      .set(bearer(client.token))
+      .send({ preferredContactMethod: 'EMAIL', reminderMessagesEnabled: false })
+      .expect(200);
     const email = jest.spyOn(app.get(EmailService), 'sendNotificationEmail').mockResolvedValue(undefined as never);
     const bookingId = uuid();
     const args = { patientId: client.patientId, bookingId, reference: 'CP-1', language: 'en' as const, caregiverPublicId: 'CG-TEST' };

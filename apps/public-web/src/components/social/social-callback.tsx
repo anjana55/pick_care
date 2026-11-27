@@ -166,7 +166,9 @@ function CallbackInner({ side }: { side: SocialSide }) {
           {/* Linking failed: they are signed in already, or will confirm by email - either way, back to where they came from. */}
           {!isLogin && (
             <Link href="/account/sign-in">
-              <Button variant="secondary" className="w-full">{t('socialSignIn.signInMethods')}</Button>
+              <Button variant="secondary" className="w-full">
+                {t('socialSignIn.signInMethods')}
+              </Button>
             </Link>
           )}
           <Link href="/login">
@@ -211,7 +213,9 @@ function CallbackInner({ side }: { side: SocialSide }) {
               <Button className="w-full">{t('caregiverClaim.finishCta')}</Button>
             </Link>
             <Link href="/caregiver/signup">
-              <Button variant="secondary" className="w-full">{t('caregiverSignup.backToSignup')}</Button>
+              <Button variant="secondary" className="w-full">
+                {t('caregiverSignup.backToSignup')}
+              </Button>
             </Link>
           </div>
         )}

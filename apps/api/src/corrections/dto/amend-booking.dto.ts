@@ -124,7 +124,10 @@ export class AmendBookingDto {
   @IsObject()
   invoiceActions?: Record<string, 'REPLACE' | 'CARRY'>;
 
-  @ApiPropertyOptional({ enum: ['COMPLETED', 'CANCELLED'], description: 'Also close the booking: its upcoming shifts are cancelled and any document billing them adjusted' })
+  @ApiPropertyOptional({
+    enum: ['COMPLETED', 'CANCELLED'],
+    description: 'Also close the booking: its upcoming shifts are cancelled and any document billing them adjusted',
+  })
   @IsOptional()
   @IsIn(['COMPLETED', 'CANCELLED'], { message: 'Choose how the booking is closed' })
   close?: 'COMPLETED' | 'CANCELLED';

@@ -41,7 +41,8 @@ const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const LOCAL = /^(\d{4}-\d{2}-\d{2})T([01]\d|2[0-3]):([0-5]\d)$/;
 
 export const isValidTime = (v: string) => TIME.test(v);
-export const isValidDate = (v: string) => DATE.test(v) && !Number.isNaN(Date.parse(`${v}T00:00:00Z`)) && new Date(`${v}T00:00:00Z`).toISOString().slice(0, 10) === v;
+export const isValidDate = (v: string) =>
+  DATE.test(v) && !Number.isNaN(Date.parse(`${v}T00:00:00Z`)) && new Date(`${v}T00:00:00Z`).toISOString().slice(0, 10) === v;
 
 /** 'YYYY-MM-DD' + 'HH:MM' in Colombo -> the UTC instant. */
 export function colomboToUtc(date: string, time: string): Date {

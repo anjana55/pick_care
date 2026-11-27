@@ -85,14 +85,22 @@ export function PasswordHelpCard({ path, refresh, email, hasPassword }: { path: 
 
         <div role="radiogroup" aria-label={t('passwordHelp.title')} className="grid gap-3 sm:grid-cols-2">
           {(['SEND_LINK', 'SET_PASSWORD'] as const).map((m) => (
-            <label key={m} className={cn('flex cursor-pointer gap-3 rounded border p-3 text-sm', mode === m ? 'border-brand bg-brand-light/40' : 'border-border hover:bg-paper')}>
+            <label
+              key={m}
+              className={cn(
+                'flex cursor-pointer gap-3 rounded border p-3 text-sm',
+                mode === m ? 'border-brand bg-brand-light/40' : 'border-border hover:bg-paper',
+              )}
+            >
               <input type="radio" name={`${path}-mode`} className="mt-1" checked={mode === m} onChange={() => setMode(m)} />
               <span>
                 <span className="flex items-center gap-1.5 font-medium text-ink">
                   {m === 'SEND_LINK' ? <Mail size={14} aria-hidden /> : <KeyRound size={14} aria-hidden />}
                   {t(`passwordHelp.${m === 'SEND_LINK' ? 'sendLink' : 'setPassword'}`)}
                 </span>
-                <span className="mt-0.5 block text-xs text-ink/60">{m === 'SEND_LINK' ? t('passwordHelp.sendLinkHint', { email }) : t('passwordHelp.setPasswordHint')}</span>
+                <span className="mt-0.5 block text-xs text-ink/60">
+                  {m === 'SEND_LINK' ? t('passwordHelp.sendLinkHint', { email }) : t('passwordHelp.setPasswordHint')}
+                </span>
               </span>
             </label>
           ))}
@@ -102,13 +110,23 @@ export function PasswordHelpCard({ path, refresh, email, hasPassword }: { path: 
           <div>
             <Label htmlFor={`${path}-pw`}>{t('passwordHelp.newPassword')}</Label>
             <div className="flex gap-2">
-              <Input id={`${path}-pw`} value={password} onChange={(e) => setPassword(e.target.value)} maxLength={128} autoComplete="off" spellCheck={false} className="font-mono" />
+              <Input
+                id={`${path}-pw`}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                maxLength={128}
+                autoComplete="off"
+                spellCheck={false}
+                className="font-mono"
+              />
               <Button type="button" variant="secondary" onClick={() => setPassword(generatePassword())}>
                 <RefreshCw size={14} aria-hidden className="mr-1.5" />
                 {t('passwordHelp.generate')}
               </Button>
             </div>
-            <p className={cn('mt-1 text-xs', password && password.length < MIN_LENGTH ? 'text-danger' : 'text-ink/50')}>{t('passwordHelp.rule', { n: MIN_LENGTH })}</p>
+            <p className={cn('mt-1 text-xs', password && password.length < MIN_LENGTH ? 'text-danger' : 'text-ink/50')}>
+              {t('passwordHelp.rule', { n: MIN_LENGTH })}
+            </p>
           </div>
         )}
 

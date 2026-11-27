@@ -2,7 +2,37 @@
 
 import { useMemo, useState, type ReactNode } from 'react';
 import Link from 'next/link';
-import { AlertOctagon, AlertTriangle, ArrowDownRight, ArrowRight, ArrowUpRight, CalendarClock, CheckCircle2, ClipboardList, ClipboardX, Clock3, FileWarning, Globe2, HandCoins, Inbox, Loader2, ReceiptText, RefreshCw, ShieldCheck, Star, MapPinOff, UserPlus, UserX, Wallet, type LucideIcon, Bot, Phone, BadgeCheck, Camera, MapPin } from 'lucide-react';
+import {
+  AlertOctagon,
+  AlertTriangle,
+  ArrowDownRight,
+  ArrowRight,
+  ArrowUpRight,
+  CalendarClock,
+  CheckCircle2,
+  ClipboardList,
+  ClipboardX,
+  Clock3,
+  FileWarning,
+  Globe2,
+  HandCoins,
+  Inbox,
+  Loader2,
+  ReceiptText,
+  RefreshCw,
+  ShieldCheck,
+  Star,
+  MapPinOff,
+  UserPlus,
+  UserX,
+  Wallet,
+  type LucideIcon,
+  Bot,
+  Phone,
+  BadgeCheck,
+  Camera,
+  MapPin,
+} from 'lucide-react';
 import { formatLkr, type BusinessInsights, type InsightKpi, type InsightRange, type InsightRatio } from '@care-platform/shared';
 import { useTranslation } from '@/lib/i18n/provider';
 import { useBusinessInsights } from '@/lib/hooks/use-insights';
@@ -63,7 +93,19 @@ function levelOf(r: InsightRatio, t: { good: number; watch: number }): HealthLev
 
 // --- building blocks ------------------------------------------------------------------------
 
-function Panel({ title, subtitle, action, children, className }: { title: string; subtitle?: string; action?: ReactNode; children: ReactNode; className?: string }) {
+function Panel({
+  title,
+  subtitle,
+  action,
+  children,
+  className,
+}: {
+  title: string;
+  subtitle?: string;
+  action?: ReactNode;
+  children: ReactNode;
+  className?: string;
+}) {
   return (
     <section className={cn('rounded-xl border border-border bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.03)]', className)}>
       <header className="mb-4 flex items-start justify-between gap-3">
@@ -119,7 +161,9 @@ function KpiTile({
       <div>
         <div className="text-[11px] font-medium uppercase tracking-wide text-ink/55 sm:text-xs">{label}</div>
         <div className="mt-1.5 text-xl font-bold tracking-tight text-ink sm:text-2xl">{value}</div>
-        <div className="mt-1 min-h-[20px]">{kpi ? <Delta kpi={kpi} vsLabel={vsLabel} /> : hint ? <span className="text-xs text-ink/50">{hint}</span> : null}</div>
+        <div className="mt-1 min-h-[20px]">
+          {kpi ? <Delta kpi={kpi} vsLabel={vsLabel} /> : hint ? <span className="text-xs text-ink/50">{hint}</span> : null}
+        </div>
       </div>
       {spark && spark.length > 1 && (
         <div className="mt-3">
@@ -187,9 +231,11 @@ export function BusinessDashboard() {
               aria-label={t('dashboard.refresh')}
             >
               <RefreshCw className={cn('h-3.5 w-3.5', isFetching && 'animate-spin')} aria-hidden />
-              <span className="hidden sm:inline">{t('dashboard.updatedAt', {
-                time: new Date(dataUpdatedAt).toLocaleTimeString(INTL_LOCALE[locale], { hour: '2-digit', minute: '2-digit' }),
-              })}</span>
+              <span className="hidden sm:inline">
+                {t('dashboard.updatedAt', {
+                  time: new Date(dataUpdatedAt).toLocaleTimeString(INTL_LOCALE[locale], { hour: '2-digit', minute: '2-digit' }),
+                })}
+              </span>
             </button>
           )}
           <div className="inline-flex rounded-lg border border-border bg-white p-1" role="radiogroup" aria-label={t('dashboard.range.label')}>
@@ -270,36 +316,172 @@ function DashboardBody({ data }: { data: BusinessInsights }) {
   const overseasWaiting = overseas ? overseas.new + overseas.pendingProfiles + overseas.pendingEmployers + overseas.interviewRequests : 0;
   const attention: AttentionItem[] = [
     { key: 'peopleWaiting', count: a.peopleWaiting ?? 0, label: t('dashboard.attention.peopleWaiting'), href: '/people-waiting', severity: 'act', Icon: Phone },
-    { key: 'placesToConfirm', count: a.placesToConfirm ?? 0, label: t('dashboard.attention.placesToConfirm'), href: '/bookings/places', severity: 'act', Icon: MapPin },
+    {
+      key: 'placesToConfirm',
+      count: a.placesToConfirm ?? 0,
+      label: t('dashboard.attention.placesToConfirm'),
+      href: '/bookings/places',
+      severity: 'act',
+      Icon: MapPin,
+    },
     { key: 'proposals', count: proposals?.length ?? 0, label: t('automation.proposals.attention'), href: '/agent-proposals', severity: 'act', Icon: Bot },
-    { key: 'overdue', count: a.overdueInvoices, label: t('dashboard.attention.overdueInvoices'), detail: formatLkr(a.overdueAmount), href: '/invoices?tab=overdue', severity: 'act', Icon: ReceiptText },
+    {
+      key: 'overdue',
+      count: a.overdueInvoices,
+      label: t('dashboard.attention.overdueInvoices'),
+      detail: formatLkr(a.overdueAmount),
+      href: '/invoices?tab=overdue',
+      severity: 'act',
+      Icon: ReceiptText,
+    },
     { key: 'stale', count: a.newRequestsOver24h, label: t('dashboard.attention.newRequestsOver24h'), href: '/requests?tab=open', severity: 'act', Icon: Inbox },
-    { key: 'careNotDone', count: a.careCriticalNotDone, label: t('dashboard.attention.careCriticalNotDone'), href: '/bookings?tab=care', severity: 'act', Icon: ClipboardX },
-    { key: 'pausedForPayment', count: a.pausedForPayment, label: t('dashboard.attention.pausedForPayment'), href: '/bookings?status=CONFIRMED', severity: 'act', Icon: ReceiptText },
-    { key: 'awaitingPayment', count: a.awaitingPayment, label: t('dashboard.attention.awaitingPayment'), href: '/bookings?status=DRAFT', severity: 'act', Icon: ReceiptText },
+    {
+      key: 'careNotDone',
+      count: a.careCriticalNotDone,
+      label: t('dashboard.attention.careCriticalNotDone'),
+      href: '/bookings?tab=care',
+      severity: 'act',
+      Icon: ClipboardX,
+    },
+    {
+      key: 'pausedForPayment',
+      count: a.pausedForPayment,
+      label: t('dashboard.attention.pausedForPayment'),
+      href: '/bookings?status=CONFIRMED',
+      severity: 'act',
+      Icon: ReceiptText,
+    },
+    {
+      key: 'awaitingPayment',
+      count: a.awaitingPayment,
+      label: t('dashboard.attention.awaitingPayment'),
+      href: '/bookings?status=DRAFT',
+      severity: 'act',
+      Icon: ReceiptText,
+    },
     { key: 'lateVisits', count: a.lateVisits, label: t('dashboard.attention.lateVisits'), href: '/bookings/today', severity: 'act', Icon: MapPinOff },
     { key: 'missed', count: a.missedShiftsLast7d, label: t('dashboard.attention.missedShifts'), href: '/bookings', severity: 'act', Icon: UserX },
-    { key: 'unbilled', count: a.unbilledCompletedShifts, label: t('dashboard.attention.unbilledShifts'), href: '/invoices/new', severity: 'act', Icon: FileWarning },
-    { key: 'unconfirmed', count: a.unconfirmedShiftsNext7d, label: t('dashboard.attention.unconfirmedShifts'), href: '/bookings?tab=DRAFT', severity: 'act', Icon: CalendarClock },
-    { key: 'unassigned', count: a.unassignedOpenRequests, label: t('dashboard.attention.unassignedRequests'), href: '/requests?tab=open', severity: 'watch', Icon: Inbox },
-    { key: 'payouts', count: a.payoutsAwaitingPayment, label: t('dashboard.attention.payoutsAwaiting'), detail: formatLkr(a.payoutsAwaitingAmount), href: '/payouts?tab=APPROVED', severity: 'watch', Icon: Wallet },
-    { key: 'careUnconfirmed', count: a.careCriticalUnconfirmed, label: t('dashboard.attention.careCriticalUnconfirmed'), href: '/bookings?tab=care', severity: 'watch', Icon: ClipboardList },
-    { key: 'drafts', count: a.draftBookings, label: t('dashboard.attention.draftBookings'), href: '/bookings?tab=DRAFT', severity: 'watch', Icon: CalendarClock },
-    { key: 'readyToVerify', count: a.readyToVerify ?? 0, label: t('dashboard.attention.readyToVerify'), href: '/caregivers?status=UNDER_VERIFICATION', severity: 'act', Icon: BadgeCheck },
-    { key: 'verify', count: a.caregiversAwaitingVerification, label: t('dashboard.attention.caregiversAwaiting'), href: '/caregivers?status=UNDER_VERIFICATION', severity: 'watch', Icon: ShieldCheck },
-    { key: 'photos', count: a.photosToApprove ?? 0, label: t('dashboard.attention.photosToApprove'), href: '/caregivers/photos', severity: 'watch', Icon: Camera },
-    { key: 'docs', count: a.documentsPending, label: t('dashboard.attention.documentsPending'), href: '/caregivers?status=DOCUMENTS_PENDING', severity: 'watch', Icon: FileWarning },
-    { key: 'clients', count: a.clientsPendingReview, label: t('dashboard.attention.clientsPending'), href: '/clients?status=PENDING_REVIEW', severity: 'watch', Icon: UserPlus },
-    { key: 'reviews', count: reviewCounts?.pending ?? 0, label: t('dashboard.attention.reviewsPending'), href: '/reviews?filter=pending', severity: 'watch', Icon: Star },
-    { key: 'deletions', count: deletions?.pending ?? 0, label: t('dashboard.attention.accountDeletions'), href: '/account-deletions', severity: 'watch', Icon: UserX },
+    {
+      key: 'unbilled',
+      count: a.unbilledCompletedShifts,
+      label: t('dashboard.attention.unbilledShifts'),
+      href: '/invoices/new',
+      severity: 'act',
+      Icon: FileWarning,
+    },
+    {
+      key: 'unconfirmed',
+      count: a.unconfirmedShiftsNext7d,
+      label: t('dashboard.attention.unconfirmedShifts'),
+      href: '/bookings?tab=DRAFT',
+      severity: 'act',
+      Icon: CalendarClock,
+    },
+    {
+      key: 'unassigned',
+      count: a.unassignedOpenRequests,
+      label: t('dashboard.attention.unassignedRequests'),
+      href: '/requests?tab=open',
+      severity: 'watch',
+      Icon: Inbox,
+    },
+    {
+      key: 'payouts',
+      count: a.payoutsAwaitingPayment,
+      label: t('dashboard.attention.payoutsAwaiting'),
+      detail: formatLkr(a.payoutsAwaitingAmount),
+      href: '/payouts?tab=APPROVED',
+      severity: 'watch',
+      Icon: Wallet,
+    },
+    {
+      key: 'careUnconfirmed',
+      count: a.careCriticalUnconfirmed,
+      label: t('dashboard.attention.careCriticalUnconfirmed'),
+      href: '/bookings?tab=care',
+      severity: 'watch',
+      Icon: ClipboardList,
+    },
+    {
+      key: 'drafts',
+      count: a.draftBookings,
+      label: t('dashboard.attention.draftBookings'),
+      href: '/bookings?tab=DRAFT',
+      severity: 'watch',
+      Icon: CalendarClock,
+    },
+    {
+      key: 'readyToVerify',
+      count: a.readyToVerify ?? 0,
+      label: t('dashboard.attention.readyToVerify'),
+      href: '/caregivers?status=UNDER_VERIFICATION',
+      severity: 'act',
+      Icon: BadgeCheck,
+    },
+    {
+      key: 'verify',
+      count: a.caregiversAwaitingVerification,
+      label: t('dashboard.attention.caregiversAwaiting'),
+      href: '/caregivers?status=UNDER_VERIFICATION',
+      severity: 'watch',
+      Icon: ShieldCheck,
+    },
+    {
+      key: 'photos',
+      count: a.photosToApprove ?? 0,
+      label: t('dashboard.attention.photosToApprove'),
+      href: '/caregivers/photos',
+      severity: 'watch',
+      Icon: Camera,
+    },
+    {
+      key: 'docs',
+      count: a.documentsPending,
+      label: t('dashboard.attention.documentsPending'),
+      href: '/caregivers?status=DOCUMENTS_PENDING',
+      severity: 'watch',
+      Icon: FileWarning,
+    },
+    {
+      key: 'clients',
+      count: a.clientsPendingReview,
+      label: t('dashboard.attention.clientsPending'),
+      href: '/clients?status=PENDING_REVIEW',
+      severity: 'watch',
+      Icon: UserPlus,
+    },
+    {
+      key: 'reviews',
+      count: reviewCounts?.pending ?? 0,
+      label: t('dashboard.attention.reviewsPending'),
+      href: '/reviews?filter=pending',
+      severity: 'watch',
+      Icon: Star,
+    },
+    {
+      key: 'deletions',
+      count: deletions?.pending ?? 0,
+      label: t('dashboard.attention.accountDeletions'),
+      href: '/account-deletions',
+      severity: 'watch',
+      Icon: UserX,
+    },
     { key: 'overseas', count: overseasWaiting, label: t('dashboard.attention.overseasWaiting'), href: '/international', severity: 'watch', Icon: Globe2 },
   ].filter((i) => i.count > 0) as AttentionItem[];
 
   const d = data.dials;
   const dials: { key: keyof typeof DIALS; r: InsightRatio; detail: string }[] = [
     { key: 'conversion', r: d.conversion, detail: t('dashboard.dials.conversionDetail', { n: int(d.conversion.numerator), d: int(d.conversion.denominator) }) },
-    { key: 'collection', r: d.collection, detail: t('dashboard.dials.collectionDetail', { n: compactLkr(d.collection.numerator), d: compactLkr(d.collection.denominator) }) },
-    { key: 'utilization', r: d.utilization, detail: t('dashboard.dials.utilizationDetail', { n: int(d.utilization.numerator), d: int(d.utilization.denominator) }) },
+    {
+      key: 'collection',
+      r: d.collection,
+      detail: t('dashboard.dials.collectionDetail', { n: compactLkr(d.collection.numerator), d: compactLkr(d.collection.denominator) }),
+    },
+    {
+      key: 'utilization',
+      r: d.utilization,
+      detail: t('dashboard.dials.utilizationDetail', { n: int(d.utilization.numerator), d: int(d.utilization.denominator) }),
+    },
     { key: 'attendance', r: d.attendance, detail: t('dashboard.dials.attendanceDetail', { n: int(d.attendance.numerator), d: int(d.attendance.denominator) }) },
     { key: 'margin', r: d.margin, detail: t('dashboard.dials.marginDetail', { n: compactLkr(d.margin.numerator), d: compactLkr(d.margin.denominator) }) },
   ];
@@ -313,9 +495,29 @@ function DashboardBody({ data }: { data: BusinessInsights }) {
     <>
       {/* 1. Headline numbers */}
       <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
-        <KpiTile label={t('dashboard.kpi.invoiced')} value={compactLkr(k.invoiced.value)} kpi={k.invoiced} spark={data.series.invoiced} vsLabel={vs} hint={formatLkr(k.invoiced.value)} />
-        <KpiTile label={t('dashboard.kpi.collected')} value={compactLkr(k.collected.value)} kpi={k.collected} spark={data.series.collected} vsLabel={vs} hint={formatLkr(k.collected.value)} />
-        <KpiTile label={t('dashboard.kpi.grossMargin')} value={compactLkr(k.grossMargin.value)} kpi={k.grossMargin} vsLabel={vs} hint={t('dashboard.kpi.grossMarginHint')} />
+        <KpiTile
+          label={t('dashboard.kpi.invoiced')}
+          value={compactLkr(k.invoiced.value)}
+          kpi={k.invoiced}
+          spark={data.series.invoiced}
+          vsLabel={vs}
+          hint={formatLkr(k.invoiced.value)}
+        />
+        <KpiTile
+          label={t('dashboard.kpi.collected')}
+          value={compactLkr(k.collected.value)}
+          kpi={k.collected}
+          spark={data.series.collected}
+          vsLabel={vs}
+          hint={formatLkr(k.collected.value)}
+        />
+        <KpiTile
+          label={t('dashboard.kpi.grossMargin')}
+          value={compactLkr(k.grossMargin.value)}
+          kpi={k.grossMargin}
+          vsLabel={vs}
+          hint={t('dashboard.kpi.grossMarginHint')}
+        />
         <KpiTile label={t('dashboard.kpi.careHours')} value={int(k.careHours.value)} kpi={k.careHours} spark={data.series.careHours} vsLabel={vs} />
         <KpiTile label={t('dashboard.kpi.newRequests')} value={int(k.newRequests.value)} kpi={k.newRequests} spark={data.series.requests} vsLabel={vs} />
         <KpiTile label={t('dashboard.kpi.placements')} value={int(k.placements.value)} kpi={k.placements} spark={data.series.placements} vsLabel={vs} />
@@ -617,7 +819,9 @@ function DashboardBody({ data }: { data: BusinessInsights }) {
                   <li key={c.id}>
                     <Link href={`/caregivers/${c.id}`} className="group block">
                       <div className="flex items-center gap-3">
-                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-light text-xs font-bold text-brand-dark">{i + 1}</span>
+                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-light text-xs font-bold text-brand-dark">
+                          {i + 1}
+                        </span>
                         <span className="min-w-0 flex-1 truncate text-sm text-ink group-hover:underline">{c.name}</span>
                         <span className="text-right text-xs text-ink/55">
                           <span className="text-sm font-semibold tabular-nums text-ink">{int(c.hours)}</span> {t('dashboard.top.hours')}

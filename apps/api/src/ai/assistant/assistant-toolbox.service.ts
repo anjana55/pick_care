@@ -123,7 +123,11 @@ export class AssistantToolbox {
 
   private async clientLabel(id: string): Promise<string> {
     if (!UUID.test(id)) throw new ToolInputError('client_id must be a client id - look it up with find_clients');
-    const [row] = await this.db.select({ fullName: patients.fullName, recipientName: patients.recipientName }).from(patients).where(eq(patients.id, id)).limit(1);
+    const [row] = await this.db
+      .select({ fullName: patients.fullName, recipientName: patients.recipientName })
+      .from(patients)
+      .where(eq(patients.id, id))
+      .limit(1);
     if (!row) throw new ToolInputError('That client does not exist');
     return row.recipientName && row.recipientName !== row.fullName ? `${row.fullName} (care for ${row.recipientName})` : row.fullName;
   }
@@ -157,7 +161,9 @@ export class AssistantToolbox {
               source: r.source,
               createdAt: r.createdAt,
               client: { id: r.clientId, name: r.clientName, careRecipient: r.recipientName, status: r.clientStatus, careStart: r.careStart },
-              caregiver: r.caregiverId ? { id: r.caregiverId, name: r.caregiverName, registrationNumber: r.caregiverRegistrationNumber, status: r.caregiverStatus } : null,
+              caregiver: r.caregiverId
+                ? { id: r.caregiverId, name: r.caregiverName, registrationNumber: r.caregiverRegistrationNumber, status: r.caregiverStatus }
+                : null,
               assignedTo: r.assignedTo?.fullName ?? null,
             })),
           },
@@ -200,9 +206,24 @@ export class AssistantToolbox {
               preferredContactTime: c.preferredContactTime,
             },
             caregiver: r.caregiver
-              ? { id: r.caregiver.id, name: r.caregiver.fullName, registrationNumber: r.caregiver.registrationNumber, status: r.caregiver.status, removed: r.caregiver.deleted, district: r.caregiver.district }
+              ? {
+                  id: r.caregiver.id,
+                  name: r.caregiver.fullName,
+                  registrationNumber: r.caregiver.registrationNumber,
+                  status: r.caregiver.status,
+                  removed: r.caregiver.deleted,
+                  district: r.caregiver.district,
+                }
               : null,
-            history: r.events.slice(-10).map((e) => ({ type: e.type, from: e.fromStatus, to: e.toStatus, closeReason: e.closeReason, note: e.note, at: e.createdAt, by: e.actor?.fullName ?? null })),
+            history: r.events.slice(-10).map((e) => ({
+              type: e.type,
+              from: e.fromStatus,
+              to: e.toStatus,
+              closeReason: e.closeReason,
+              note: e.note,
+              at: e.createdAt,
+              by: e.actor?.fullName ?? null,
+            })),
           },
           links: [
             { kind: 'request', id: r.id, label: r.reference },
@@ -230,7 +251,10 @@ export class AssistantToolbox {
               reference: b.reference,
               status: b.status,
               scheduleType: b.scheduleType,
-              days: String(b.daysOfWeek).split(',').map((d) => DAY_NAMES[Number(d)]).join(' '),
+              days: String(b.daysOfWeek)
+                .split(',')
+                .map((d) => DAY_NAMES[Number(d)])
+                .join(' '),
               time: `${b.shiftStartTime}-${b.shiftEndTime}`,
               from: b.startDate,
               to: b.endDate,
@@ -253,8 +277,12 @@ export class AssistantToolbox {
             reference: b.reference,
             status: b.status,
             careRequest: b.careRequest,
-            client: b.client ? { id: b.client.id, name: b.client.fullName, careRecipient: b.client.recipientName, district: b.client.district, city: b.client.city } : null,
-            caregiver: b.caregiver ? { id: b.caregiver.id, name: b.caregiver.fullName, registrationNumber: b.caregiver.registrationNumber, status: b.caregiver.status } : null,
+            client: b.client
+              ? { id: b.client.id, name: b.client.fullName, careRecipient: b.client.recipientName, district: b.client.district, city: b.client.city }
+              : null,
+            caregiver: b.caregiver
+              ? { id: b.caregiver.id, name: b.caregiver.fullName, registrationNumber: b.caregiver.registrationNumber, status: b.caregiver.status }
+              : null,
             pattern: {
               scheduleType: b.scheduleType,
               days: b.daysOfWeek.map((d: number) => DAY_NAMES[d]).join(' '),
@@ -268,7 +296,13 @@ export class AssistantToolbox {
             estimate: b.estimate,
             shiftCount: b.shifts.length,
             blockingConflicts: b.blockingConflicts,
-            nextShifts: upcoming.slice(0, 5).map((s) => ({ startsAt: s.startsAt, endsAt: s.endsAt, status: s.status, caregiver: s.caregiver?.fullName ?? null, conflicts: s.conflicts.length })),
+            nextShifts: upcoming.slice(0, 5).map((s) => ({
+              startsAt: s.startsAt,
+              endsAt: s.endsAt,
+              status: s.status,
+              caregiver: s.caregiver?.fullName ?? null,
+              conflicts: s.conflicts.length,
+            })),
             notes: b.notes,
             history: b.events.slice(-8).map((e) => ({ type: e.type, note: e.note, at: e.createdAt, by: e.actor?.fullName ?? null })),
           },
@@ -293,7 +327,14 @@ export class AssistantToolbox {
           .where(or(like(patients.fullName, like_), like(patients.recipientName, like_), like(patients.phone, like_)))
           .limit(10);
         return {
-          data: rows.map((r) => ({ id: r.id, name: r.fullName, careRecipient: r.recipientName, status: r.status, district: r.district, careSchedule: r.careSchedule })),
+          data: rows.map((r) => ({
+            id: r.id,
+            name: r.fullName,
+            careRecipient: r.recipientName,
+            status: r.status,
+            district: r.district,
+            careSchedule: r.careSchedule,
+          })),
           links: rows.slice(0, 5).map((r) => ({ kind: 'client' as const, id: r.id, label: r.fullName })),
         };
       }
@@ -302,10 +343,19 @@ export class AssistantToolbox {
         if (!term) throw new ToolInputError('Give a name, registration number or caregiver ID to search for');
         const like_ = `%${term.slice(0, 100)}%`;
         const rows = await this.db
-          .select({ id: caregivers.id, fullName: caregivers.fullName, registrationNumber: caregivers.registrationNumber, publicId: caregivers.publicId, status: caregivers.status, district: districts.nameEn })
+          .select({
+            id: caregivers.id,
+            fullName: caregivers.fullName,
+            registrationNumber: caregivers.registrationNumber,
+            publicId: caregivers.publicId,
+            status: caregivers.status,
+            district: districts.nameEn,
+          })
           .from(caregivers)
           .leftJoin(districts, eq(caregivers.districtId, districts.id))
-          .where(and(isNull(caregivers.deletedAt), or(like(caregivers.fullName, like_), like(caregivers.registrationNumber, like_), ...caregiverRefCondition(term))))
+          .where(
+            and(isNull(caregivers.deletedAt), or(like(caregivers.fullName, like_), like(caregivers.registrationNumber, like_), ...caregiverRefCondition(term))),
+          )
           .limit(10);
         return {
           data: rows.map(({ publicId, ...r }) => ({ ...r, caregiverId: caregiverRef(publicId) })),
@@ -326,7 +376,8 @@ export class AssistantToolbox {
           base.location = { districtId: d.id };
         }
         if (['DAY', 'NIGHT', 'TWENTY_FOUR_HOUR_LIVE_IN', 'FLEXIBLE'].includes(String(args.shift))) base.shift = args.shift as SearchRequest['shift'];
-        if (['MALE', 'FEMALE', 'ANY'].includes(String(args.caregiver_gender))) base.caregiverGenderPreference = args.caregiver_gender as SearchRequest['caregiverGenderPreference'];
+        if (['MALE', 'FEMALE', 'ANY'].includes(String(args.caregiver_gender)))
+          base.caregiverGenderPreference = args.caregiver_gender as SearchRequest['caregiverGenderPreference'];
         const start = str(args.start_date);
         if (start && isValidDate(start) && start >= colomboToday()) base.desiredStartDate = start;
         const result = await this.matching.suggest(base, str(args.needs) ?? '', limitOf(args.limit, 10, 5));
@@ -378,7 +429,11 @@ export class AssistantToolbox {
         return {
           args: { requestId: req.id, reference: req.reference, status: dto.status, closeReason: dto.closeReason ?? null, note: dto.note ?? null },
           summary: `Move request ${req.reference} from ${current.status} to ${status}`,
-          details: [{ label: 'Request', value: req.reference }, { label: 'New status', value: status }, ...(dto.note ? [{ label: 'Note', value: dto.note }] : [])],
+          details: [
+            { label: 'Request', value: req.reference },
+            { label: 'New status', value: status },
+            ...(dto.note ? [{ label: 'Note', value: dto.note }] : []),
+          ],
         };
       }
       case 'add_request_note': {
@@ -386,7 +441,11 @@ export class AssistantToolbox {
         const note = str(args.note);
         if (!note) throw new ToolInputError('Write the note');
         if (note.length > 2000) throw new ToolInputError('Notes must be 2000 characters or fewer');
-        return { args: { requestId: req.id, reference: req.reference, note }, summary: `Add a note to request ${req.reference}`, details: [{ label: 'Note', value: note }] };
+        return {
+          args: { requestId: req.id, reference: req.reference, note },
+          summary: `Add a note to request ${req.reference}`,
+          details: [{ label: 'Note', value: note }],
+        };
       }
       case 'assign_request': {
         const req = await this.requestByRef(args.request);
@@ -404,7 +463,11 @@ export class AssistantToolbox {
           if (!person) throw new ToolInputError('That user is not active staff - pick an id from list_staff');
           label = person.id === actor.userId ? `${person.fullName} (you)` : person.fullName;
         }
-        return { args: { requestId: req.id, reference: req.reference, userId }, summary: `Assign request ${req.reference} to ${label}`, details: [{ label: 'Assign to', value: label }] };
+        return {
+          args: { requestId: req.id, reference: req.reference, userId },
+          summary: `Assign request ${req.reference} to ${label}`,
+          details: [{ label: 'Assign to', value: label }],
+        };
       }
       case 'set_request_caregiver': {
         const req = await this.requestByRef(args.request);
@@ -413,7 +476,8 @@ export class AssistantToolbox {
         const detach = raw.toLowerCase() === 'none';
         const label = detach ? 'no caregiver' : await this.caregiverLabel(raw);
         const current = await this.requests.findOne(req.id);
-        if (!current.canChangeCaregiver) throw new ToolInputError(`${req.reference} is ${current.status}; the caregiver can only be changed while it is NEW or IN_PROGRESS`);
+        if (!current.canChangeCaregiver)
+          throw new ToolInputError(`${req.reference} is ${current.status}; the caregiver can only be changed while it is NEW or IN_PROGRESS`);
         return {
           args: { requestId: req.id, reference: req.reference, caregiverId: detach ? null : raw },
           summary: detach ? `Detach the caregiver from request ${req.reference}` : `Attach ${label} to request ${req.reference}`,
@@ -469,7 +533,10 @@ export class AssistantToolbox {
         if (!clientId) throw new ToolInputError('Give the request, or the client_id');
         if (!caregiverId) throw new ToolInputError('Give caregiver_id - the request has no caregiver attached');
         const [clientLabel, caregiverLabel] = await Promise.all([this.clientLabel(clientId), this.caregiverLabel(caregiverId)]);
-        const days = [...new Set(dto.daysOfWeek)].sort((a, b) => a - b).map((d) => DAY_NAMES[d]).join(' ');
+        const days = [...new Set(dto.daysOfWeek)]
+          .sort((a, b) => a - b)
+          .map((d) => DAY_NAMES[d])
+          .join(' ');
         return {
           args: { ...plain, caregiverId, patientId: req ? undefined : clientId, requestReference: req?.reference ?? null },
           summary: `Create a draft booking for ${clientLabel} with ${caregiverLabel}, ${dto.startDate} to ${dto.endDate}`,
@@ -489,7 +556,8 @@ export class AssistantToolbox {
         const b = await this.bookingByRef(args.booking);
         const full = await this.bookingsService.findOne(b.id);
         if (full.status !== 'DRAFT') throw new ToolInputError(`${b.reference} is ${full.status}; only a DRAFT booking can be confirmed`);
-        if (full.blockingConflicts > 0) throw new ToolInputError(`${b.reference} has ${full.blockingConflicts} clashing shift(s) - resolve them on the booking page first`);
+        if (full.blockingConflicts > 0)
+          throw new ToolInputError(`${b.reference} has ${full.blockingConflicts} clashing shift(s) - resolve them on the booking page first`);
         return {
           args: { bookingId: b.id, reference: b.reference },
           summary: `Confirm booking ${b.reference} (${full.shifts.length} shifts) and notify the client and caregiver`,
@@ -530,7 +598,11 @@ export class AssistantToolbox {
         const note = str(args.note);
         if (!note) throw new ToolInputError('Write the note');
         if (note.length > 2000) throw new ToolInputError('Notes must be 2000 characters or fewer');
-        return { args: { bookingId: b.id, reference: b.reference, note }, summary: `Add a note to booking ${b.reference}`, details: [{ label: 'Note', value: note }] };
+        return {
+          args: { bookingId: b.id, reference: b.reference, note },
+          summary: `Add a note to booking ${b.reference}`,
+          details: [{ label: 'Note', value: note }],
+        };
       }
       default:
         throw new ToolInputError(`Unknown tool ${name}`);

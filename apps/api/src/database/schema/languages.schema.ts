@@ -7,7 +7,9 @@ export const languages = mysqlTable('languages', {
   id: varchar('id', { length: 36 }).primaryKey(),
   name: varchar('name', { length: 100 }).notNull().unique(),
   code: varchar('code', { length: 10 }).unique(),
-  createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+  createdAt: datetime('created_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const caregiverLanguages = mysqlTable(
@@ -16,7 +18,9 @@ export const caregiverLanguages = mysqlTable(
     caregiverId: varchar('caregiver_id', { length: 36 }).notNull(),
     languageId: varchar('language_id', { length: 36 }).notNull(),
     proficiency: mysqlEnum('proficiency', languageProficiencyEnum).notNull().default('CONVERSATIONAL'),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.caregiverId, table.languageId] }),

@@ -48,21 +48,21 @@ const CLIENT: Record<Notice, Record<Lang, { subject: string; heading: string; bo
   },
   // A confirmed booking's schedule or caregiver changed from {date} on.
   CHANGED: {
-  en: {
-    subject: 'Your booking {ref} has changed',
-    heading: 'Your booking has changed',
-    body: 'The shifts for booking {ref} have changed from {date}. You can see the updated shifts in your {brand} account.',
-  },
-  si: {
-    subject: 'ඔබගේ වෙන්කිරීම {ref} වෙනස් කර ඇත',
-    heading: 'ඔබගේ වෙන්කිරීම වෙනස් කර ඇත',
-    body: 'වෙන්කිරීම {ref} හි වාර {date} සිට වෙනස් කර ඇත. යාවත්කාලීන වාර ඔබගේ {brand} ගිණුමෙන් බලන්න.',
-  },
-  ta: {
-    subject: 'உங்கள் முன்பதிவு {ref} மாற்றப்பட்டது',
-    heading: 'உங்கள் முன்பதிவு மாற்றப்பட்டது',
-    body: 'முன்பதிவு {ref} இன் பணிநேரங்கள் {date} முதல் மாற்றப்பட்டுள்ளன. புதுப்பிக்கப்பட்ட பணிநேரங்களை உங்கள் {brand} கணக்கில் பார்க்கலாம்.',
-  },
+    en: {
+      subject: 'Your booking {ref} has changed',
+      heading: 'Your booking has changed',
+      body: 'The shifts for booking {ref} have changed from {date}. You can see the updated shifts in your {brand} account.',
+    },
+    si: {
+      subject: 'ඔබගේ වෙන්කිරීම {ref} වෙනස් කර ඇත',
+      heading: 'ඔබගේ වෙන්කිරීම වෙනස් කර ඇත',
+      body: 'වෙන්කිරීම {ref} හි වාර {date} සිට වෙනස් කර ඇත. යාවත්කාලීන වාර ඔබගේ {brand} ගිණුමෙන් බලන්න.',
+    },
+    ta: {
+      subject: 'உங்கள் முன்பதிவு {ref} மாற்றப்பட்டது',
+      heading: 'உங்கள் முன்பதிவு மாற்றப்பட்டது',
+      body: 'முன்பதிவு {ref} இன் பணிநேரங்கள் {date} முதல் மாற்றப்பட்டுள்ளன. புதுப்பிக்கப்பட்ட பணிநேரங்களை உங்கள் {brand} கணக்கில் பார்க்கலாம்.',
+    },
   },
 };
 
@@ -70,7 +70,10 @@ const CAREGIVER: Record<Notice, Record<Lang, { heading: string; body: string }>>
   CONFIRMED: {
     en: { heading: 'You have a confirmed booking', body: 'Booking {ref} is confirmed, starting on {date}. Your shifts are in your {brand} account.' },
     si: { heading: 'ඔබට තහවුරු කළ වෙන්කිරීමක් ඇත', body: 'වෙන්කිරීම {ref} තහවුරු කර ඇත, {date} දින ආරම්භ වේ. ඔබගේ වාර ඔබගේ {brand} ගිණුමේ ඇත.' },
-    ta: { heading: 'உங்களுக்கு உறுதிசெய்யப்பட்ட முன்பதிவு உள்ளது', body: 'முன்பதிவு {ref} உறுதிசெய்யப்பட்டது, {date} அன்று தொடங்குகிறது. உங்கள் பணிநேரங்கள் உங்கள் {brand} கணக்கில் உள்ளன.' },
+    ta: {
+      heading: 'உங்களுக்கு உறுதிசெய்யப்பட்ட முன்பதிவு உள்ளது',
+      body: 'முன்பதிவு {ref} உறுதிசெய்யப்பட்டது, {date} அன்று தொடங்குகிறது. உங்கள் பணிநேரங்கள் உங்கள் {brand} கணக்கில் உள்ளன.',
+    },
   },
   CANCELLED: {
     en: { heading: 'A booking has been cancelled', body: 'Booking {ref} has been cancelled and your remaining shifts for it are cancelled too.' },
@@ -78,9 +81,15 @@ const CAREGIVER: Record<Notice, Record<Lang, { heading: string; body: string }>>
     ta: { heading: 'ஒரு முன்பதிவு ரத்து செய்யப்பட்டது', body: 'முன்பதிவு {ref} ரத்து செய்யப்பட்டது; அதற்கான உங்கள் மீதமுள்ள பணிநேரங்களும் ரத்து செய்யப்பட்டன.' },
   },
   CHANGED: {
-    en: { heading: 'A booking has changed', body: 'Your shifts for booking {ref} have changed from {date}. Check your updated shifts in your {brand} account.' },
+    en: {
+      heading: 'A booking has changed',
+      body: 'Your shifts for booking {ref} have changed from {date}. Check your updated shifts in your {brand} account.',
+    },
     si: { heading: 'වෙන්කිරීමක් වෙනස් කර ඇත', body: 'වෙන්කිරීම {ref} සඳහා ඔබගේ වාර {date} සිට වෙනස් කර ඇත. යාවත්කාලීන වාර ඔබගේ {brand} ගිණුමෙන් බලන්න.' },
-    ta: { heading: 'ஒரு முன்பதிவு மாற்றப்பட்டது', body: 'முன்பதிவு {ref} க்கான உங்கள் பணிநேரங்கள் {date} முதல் மாற்றப்பட்டுள்ளன. புதுப்பிக்கப்பட்ட பணிநேரங்களை உங்கள் {brand} கணக்கில் பார்க்கவும்.' },
+    ta: {
+      heading: 'ஒரு முன்பதிவு மாற்றப்பட்டது',
+      body: 'முன்பதிவு {ref} க்கான உங்கள் பணிநேரங்கள் {date} முதல் மாற்றப்பட்டுள்ளன. புதுப்பிக்கப்பட்ட பணிநேரங்களை உங்கள் {brand} கணக்கில் பார்க்கவும்.',
+    },
   },
 };
 

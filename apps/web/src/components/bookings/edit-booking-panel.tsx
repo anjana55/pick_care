@@ -81,7 +81,9 @@ export function EditBookingPanel({ booking, onClose }: { booking: BookingDetail;
       .filter((s) => (draft ? s.status === 'DRAFT' : s.status === 'SCHEDULED' && new Date(s.startsAt) >= fromInstant!))
       .map((s) => ({ id: s.id, caregiverId: s.caregiver?.id ?? '', startsAt: new Date(s.startsAt), endsAt: new Date(s.endsAt), ref: s }));
     const generated = patternChanged
-      ? generateShifts({ startDate: draft ? startDate : effectiveFrom, endDate, daysOfWeek: days, shiftStartTime: start, shiftEndTime: end }).filter((g) => draft || g.startsAt > now)
+      ? generateShifts({ startDate: draft ? startDate : effectiveFrom, endDate, daysOfWeek: days, shiftStartTime: start, shiftEndTime: end }).filter(
+          (g) => draft || g.startsAt > now,
+        )
       : null;
     const booked = booking.caregiver?.id ?? '';
     const plan = planRoster(existing, generated, booked, caregiver?.id ?? booked);
@@ -102,7 +104,8 @@ export function EditBookingPanel({ booking, onClose }: { booking: BookingDetail;
   const noShifts = patternChanged && preview?.generated?.length === 0;
   const rosterChanges = preview ? preview.plan.drop.length + preview.plan.add.length + preview.moved.length : 0;
   const effectiveInvalid = !draft && reshaping && (effectiveFrom < today || effectiveFrom < booking.startDate || effectiveFrom > endDate);
-  const ready = changed && days.length > 0 && endDate >= (draft ? startDate : booking.startDate) && !tooMany && !noShifts && !effectiveInvalid && !(preview?.billed.length);
+  const ready =
+    changed && days.length > 0 && endDate >= (draft ? startDate : booking.startDate) && !tooMany && !noShifts && !effectiveInvalid && !preview?.billed.length;
 
   const submit = () => {
     const v: UpdateBookingInput = {
@@ -186,7 +189,10 @@ export function EditBookingPanel({ booking, onClose }: { booking: BookingDetail;
                 role="radio"
                 aria-checked={scheduleType === type}
                 onClick={() => pickType(type)}
-                className={cn('rounded border px-3 py-1.5 text-sm font-medium', scheduleType === type ? 'border-brand bg-brand text-white' : 'border-border text-ink/70 hover:bg-paper')}
+                className={cn(
+                  'rounded border px-3 py-1.5 text-sm font-medium',
+                  scheduleType === type ? 'border-brand bg-brand text-white' : 'border-border text-ink/70 hover:bg-paper',
+                )}
               >
                 {t(`bookings.scheduleType.${type}`)}
               </button>
@@ -199,7 +205,10 @@ export function EditBookingPanel({ booking, onClose }: { booking: BookingDetail;
                 type="button"
                 aria-pressed={days.includes(d)}
                 onClick={() => toggleDay(d)}
-                className={cn('w-14 rounded border py-1.5 text-sm', days.includes(d) ? 'border-brand bg-brand-light font-medium text-brand-dark' : 'border-border text-ink/60 hover:bg-paper')}
+                className={cn(
+                  'w-14 rounded border py-1.5 text-sm',
+                  days.includes(d) ? 'border-brand bg-brand-light font-medium text-brand-dark' : 'border-border text-ink/60 hover:bg-paper',
+                )}
               >
                 {fmtWeekday(d, locale)}
               </button>
@@ -210,13 +219,31 @@ export function EditBookingPanel({ booking, onClose }: { booking: BookingDetail;
               <Label htmlFor="editStart" required>
                 {t('bookings.new.startTime')}
               </Label>
-              <Input id="editStart" type="time" step={900} value={start} onChange={(e) => { setStart(e.target.value); setScheduleType('CUSTOM'); }} />
+              <Input
+                id="editStart"
+                type="time"
+                step={900}
+                value={start}
+                onChange={(e) => {
+                  setStart(e.target.value);
+                  setScheduleType('CUSTOM');
+                }}
+              />
             </div>
             <div>
               <Label htmlFor="editEnd" required>
                 {t('bookings.new.endTime')}
               </Label>
-              <Input id="editEnd" type="time" step={900} value={end} onChange={(e) => { setEnd(e.target.value); setScheduleType('CUSTOM'); }} />
+              <Input
+                id="editEnd"
+                type="time"
+                step={900}
+                value={end}
+                onChange={(e) => {
+                  setEnd(e.target.value);
+                  setScheduleType('CUSTOM');
+                }}
+              />
             </div>
             <div>
               <Label htmlFor="editStartDate" required>
@@ -256,7 +283,13 @@ export function EditBookingPanel({ booking, onClose }: { booking: BookingDetail;
         </div>
 
         {preview && (
-          <div className={cn('rounded border p-3 text-sm', preview.billed.length || tooMany || noShifts ? 'border-danger/40 bg-danger-light/40' : 'border-border bg-paper')} aria-live="polite">
+          <div
+            className={cn(
+              'rounded border p-3 text-sm',
+              preview.billed.length || tooMany || noShifts ? 'border-danger/40 bg-danger-light/40' : 'border-border bg-paper',
+            )}
+            aria-live="polite"
+          >
             {tooMany ? (
               <p className="text-danger">{t('bookings.new.tooMany')}</p>
             ) : noShifts ? (

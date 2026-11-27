@@ -121,10 +121,17 @@ function NewInvoice() {
                     </p>
                     <p className="text-xs text-ink/50">
                       {fmtDate(booking.startDate, locale)} – {fmtDate(booking.endDate, locale)} ·{' '}
-                      {booking.rateType && booking.rateAmount ? `LKR ${booking.rateAmount} ${t(`bookings.rateUnit.${booking.rateType}`)}` : t('billing.newInvoice.noRate')}
+                      {booking.rateType && booking.rateAmount
+                        ? `LKR ${booking.rateAmount} ${t(`bookings.rateUnit.${booking.rateType}`)}`
+                        : t('billing.newInvoice.noRate')}
                     </p>
                   </div>
-                  <button type="button" className="rounded p-1 text-ink/50 hover:bg-paper hover:text-ink" onClick={() => setBookingId('')} aria-label={t('billing.newInvoice.change')}>
+                  <button
+                    type="button"
+                    className="rounded p-1 text-ink/50 hover:bg-paper hover:text-ink"
+                    onClick={() => setBookingId('')}
+                    aria-label={t('billing.newInvoice.change')}
+                  >
                     <X size={16} />
                   </button>
                 </div>
@@ -137,7 +144,12 @@ function NewInvoice() {
                   <p className="font-medium text-ink">{client.fullName}</p>
                   <p className="text-xs text-ink/50">{t('billing.newInvoice.allBookingsHint')}</p>
                 </div>
-                <button type="button" className="rounded p-1 text-ink/50 hover:bg-paper hover:text-ink" onClick={() => setPatientId('')} aria-label={t('billing.newInvoice.change')}>
+                <button
+                  type="button"
+                  className="rounded p-1 text-ink/50 hover:bg-paper hover:text-ink"
+                  onClick={() => setPatientId('')}
+                  aria-label={t('billing.newInvoice.change')}
+                >
                   <X size={16} />
                 </button>
               </div>
@@ -153,7 +165,13 @@ function NewInvoice() {
           </CardHeader>
           <CardContent className="space-y-2">
             {BASES.map((b) => (
-              <label key={b} className={cn('flex cursor-pointer gap-3 rounded border px-3 py-2', basis === b ? 'border-brand bg-brand-light/40' : 'border-border hover:bg-paper')}>
+              <label
+                key={b}
+                className={cn(
+                  'flex cursor-pointer gap-3 rounded border px-3 py-2',
+                  basis === b ? 'border-brand bg-brand-light/40' : 'border-border hover:bg-paper',
+                )}
+              >
                 <input type="radio" name="basis" className="mt-1 accent-brand" checked={basis === b} onChange={() => setBasis(b)} />
                 <span>
                   <span className="block text-sm font-medium text-ink">{t(`billing.basis.${b}.title`)}</span>
@@ -186,11 +204,15 @@ function NewInvoice() {
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
               <div>
-                <Label htmlFor="periodStart" required={basis !== 'MANUAL'}>{t('billing.newInvoice.from')}</Label>
+                <Label htmlFor="periodStart" required={basis !== 'MANUAL'}>
+                  {t('billing.newInvoice.from')}
+                </Label>
                 <Input id="periodStart" type="date" value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} />
               </div>
               <div>
-                <Label htmlFor="periodEnd" required={basis !== 'MANUAL'}>{t('billing.newInvoice.to')}</Label>
+                <Label htmlFor="periodEnd" required={basis !== 'MANUAL'}>
+                  {t('billing.newInvoice.to')}
+                </Label>
                 <Input id="periodEnd" type="date" min={periodStart} value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)} />
               </div>
               <div>
@@ -235,7 +257,14 @@ function BookingPicker({ onPick }: { onPick: (id: string) => void }) {
     <div>
       <div className="relative">
         <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink/40" />
-        <Input autoFocus className="pl-9" placeholder={t('billing.newInvoice.bookingSearch')} value={term} onChange={(e) => setTerm(e.target.value)} aria-label={t('billing.newInvoice.bookingSearch')} />
+        <Input
+          autoFocus
+          className="pl-9"
+          placeholder={t('billing.newInvoice.bookingSearch')}
+          value={term}
+          onChange={(e) => setTerm(e.target.value)}
+          aria-label={t('billing.newInvoice.bookingSearch')}
+        />
       </div>
       <ul className="mt-2 divide-y divide-border rounded border border-border">
         {isFetching && !data && <li className="px-3 py-2 text-sm text-ink/50">{t('common.loading')}</li>}

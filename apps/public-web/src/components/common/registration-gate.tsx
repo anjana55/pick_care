@@ -58,7 +58,8 @@ export function RegistrationGate({ open, onClose, reason, caregiverPublicId, ret
 
   const whatsappLogin = Boolean(whatsapp?.customer.login);
   const primary = 'flex w-full items-center justify-center gap-2 rounded-DEFAULT bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark';
-  const secondary = 'flex w-full items-center justify-center gap-2 rounded-DEFAULT border border-border px-4 py-2.5 text-sm font-medium text-ink hover:bg-paper';
+  const secondary =
+    'flex w-full items-center justify-center gap-2 rounded-DEFAULT border border-border px-4 py-2.5 text-sm font-medium text-ink hover:bg-paper';
 
   if (sessionEnded) {
     return (

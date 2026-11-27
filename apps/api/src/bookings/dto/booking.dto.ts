@@ -117,7 +117,7 @@ export class CreateBookingDto extends BookingPatternDto {
   @Matches(MONEY, { message: 'Enter the agreed rate as a number' })
   rateAmount?: string;
 
-  @ApiPropertyOptional({ enum: rateTypeEnum, description: "How the caregiver is paid - staff only, never shown to the client" })
+  @ApiPropertyOptional({ enum: rateTypeEnum, description: 'How the caregiver is paid - staff only, never shown to the client' })
   @IsOptional()
   @IsEnum(rateTypeEnum, { message: 'Choose how the caregiver is paid' })
   payRateType?: RateType;

@@ -40,7 +40,11 @@ export function ResultCard({ caregiver, onOpen }: { caregiver: PublicCaregiverSu
           {caregiver.photoUrl ? (
             <Image source={{ uri: `${config.apiUrl}${caregiver.photoUrl}` }} style={styles.photo} accessibilityIgnoresInvertColors />
           ) : (
-            <Ionicons name={caregiver.gender === 'MALE' ? 'man' : caregiver.gender === 'FEMALE' ? 'woman' : 'person'} size={30} color={caregiver.gender === 'MALE' ? colors.brand : colors.accent} />
+            <Ionicons
+              name={caregiver.gender === 'MALE' ? 'man' : caregiver.gender === 'FEMALE' ? 'woman' : 'person'}
+              size={30}
+              color={caregiver.gender === 'MALE' ? colors.brand : colors.accent}
+            />
           )}
           {caregiver.verified ? (
             <View style={[styles.tick, { backgroundColor: colors.brand, borderColor: colors.surface }]}>
@@ -77,7 +81,9 @@ export function ResultCard({ caregiver, onOpen }: { caregiver: PublicCaregiverSu
       {nearestServiceCity ? (
         <View style={styles.infoRow}>
           <Ionicons name="car-outline" size={17} color={colors.accent} />
-          <Text style={[styles.line, { color: colors.ink, flex: 1 }]}>{t('map.travelsHere', { place: nearestServiceCity.name, km: nearestServiceCity.distanceKm! })}</Text>
+          <Text style={[styles.line, { color: colors.ink, flex: 1 }]}>
+            {t('map.travelsHere', { place: nearestServiceCity.name, km: nearestServiceCity.distanceKm! })}
+          </Text>
         </View>
       ) : null}
       {caregiver.languages.length ? (
@@ -140,7 +146,17 @@ const styles = StyleSheet.create({
   top: { flexDirection: 'row', alignItems: 'flex-start', gap: 14, marginBottom: 4 },
   portrait: { width: 60, height: 60, borderRadius: 30, alignItems: 'center', justifyContent: 'center' },
   photo: { width: 60, height: 60, borderRadius: 30 },
-  tick: { position: 'absolute', right: -2, bottom: -2, width: 22, height: 22, borderRadius: 11, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
+  tick: {
+    position: 'absolute',
+    right: -2,
+    bottom: -2,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   id: { fontSize: 12, fontWeight: '600', letterSpacing: 0.5, textTransform: 'uppercase' },
   pills: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   headline: { fontSize: 17, fontWeight: '700' },
@@ -149,6 +165,13 @@ const styles = StyleSheet.create({
   skills: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 2 },
   skill: { fontSize: 13, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 12, overflow: 'hidden' },
   reason: { borderRadius: 12, padding: 12, gap: 2, marginTop: 4 },
-  openRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 10, marginTop: 4 },
+  openRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    paddingTop: 10,
+    marginTop: 4,
+  },
   open: { fontSize: 16, fontWeight: '700' },
 });

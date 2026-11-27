@@ -24,7 +24,9 @@ export default function CaregiverProfile() {
   const { data: c, isLoading, isError, error, refetch } = useCaregiverProfile(publicId ?? null, locale);
   const notFound = error instanceof ApiError && error.status === 404;
 
-  const back = <Button variant="link" label={`‹ ${t('profile.backToResults')}`} onPress={() => (router.canGoBack?.() ? router.back() : router.replace('/find'))} />;
+  const back = (
+    <Button variant="link" label={`‹ ${t('profile.backToResults')}`} onPress={() => (router.canGoBack?.() ? router.back() : router.replace('/find'))} />
+  );
 
   if (isLoading) {
     return (
@@ -89,12 +91,16 @@ export default function CaregiverProfile() {
         </Text>
         <Text style={[styles.body, { color: colors.muted }]}>{t('results.yearsExperience', { years: c.yearsExperience })}</Text>
         <RatingLine rating={c.rating} />
-        {c.hasVerifiedQualification ? <Text style={[styles.body, { color: colors.brand, fontWeight: '600' }]}>{t('results.verifiedQualification')}</Text> : null}
+        {c.hasVerifiedQualification ? (
+          <Text style={[styles.body, { color: colors.brand, fontWeight: '600' }]}>{t('results.verifiedQualification')}</Text>
+        ) : null}
 
         {c.careTypes?.length ? <Section title={t('profile.careTypes')}>{body(c.careTypes.map((ct) => t(`careTypes.${ct}`)).join(' · '))}</Section> : null}
         <Section title={`${t('profile.district')} / ${t('profile.city')}`}>{body([c.city, c.district].filter(Boolean).join(', ') || '—')}</Section>
         {c.preferredLocations.length ? <Section title={t('profile.preferredLocations')}>{body(c.preferredLocations.join(', '))}</Section> : null}
-        {c.languages.length ? <Section title={t('profile.languages')}>{body(c.languages.map((l) => `${l.name} (${l.proficiency})`).join(', '))}</Section> : null}
+        {c.languages.length ? (
+          <Section title={t('profile.languages')}>{body(c.languages.map((l) => `${l.name} (${l.proficiency})`).join(', '))}</Section>
+        ) : null}
         {availability.length ? <Section title={t('profile.availability')}>{body(availability.join(' · '))}</Section> : null}
         {c.skills.length ? (
           <Section title={t('profile.skills')}>
@@ -108,10 +114,18 @@ export default function CaregiverProfile() {
           </Section>
         ) : null}
         {c.relevantExperienceSummary.length ? (
-          <Section title={t('profile.relevantExperience')}>{c.relevantExperienceSummary.map((e, i) => <View key={i}>{body(`• ${e}`)}</View>)}</Section>
+          <Section title={t('profile.relevantExperience')}>
+            {c.relevantExperienceSummary.map((e, i) => (
+              <View key={i}>{body(`• ${e}`)}</View>
+            ))}
+          </Section>
         ) : null}
         {c.qualificationSummary.length ? (
-          <Section title={t('profile.qualifications')}>{c.qualificationSummary.map((q, i) => <View key={i}>{body(`• ${q}`)}</View>)}</Section>
+          <Section title={t('profile.qualifications')}>
+            {c.qualificationSummary.map((q, i) => (
+              <View key={i}>{body(`• ${q}`)}</View>
+            ))}
+          </Section>
         ) : null}
 
         <CaregiverActions publicId={c.publicId} />

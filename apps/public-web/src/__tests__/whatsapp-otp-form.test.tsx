@@ -16,7 +16,15 @@ function setup(props: Partial<React.ComponentProps<typeof WhatsappOtpForm>> = {}
   const onChangeNumber = jest.fn();
   render(
     renderWithProviders(
-      <WhatsappOtpForm phone="0771234567" purpose="LOGIN" codeLength={6} resendAfterSeconds={30} onVerified={onVerified} onChangeNumber={onChangeNumber} {...props} />,
+      <WhatsappOtpForm
+        phone="0771234567"
+        purpose="LOGIN"
+        codeLength={6}
+        resendAfterSeconds={30}
+        onVerified={onVerified}
+        onChangeNumber={onChangeNumber}
+        {...props}
+      />,
     ),
   );
   return { onVerified, onChangeNumber };
@@ -56,7 +64,9 @@ describe('WhatsappOtpForm', () => {
 
     fireEvent.change(codeInput(), { target: { value: '123456' } });
     fireEvent.click(verifyButton());
-    await waitFor(() => expect(post).toHaveBeenCalledWith('/auth/whatsapp/verify-otp', { phone: '0771234567', purpose: 'LOGIN', portal: 'caregiver', code: '123456' }));
+    await waitFor(() =>
+      expect(post).toHaveBeenCalledWith('/auth/whatsapp/verify-otp', { phone: '0771234567', purpose: 'LOGIN', portal: 'caregiver', code: '123456' }),
+    );
   });
 
   it('shows the server message for an invalid or expired code and does not sign in', async () => {

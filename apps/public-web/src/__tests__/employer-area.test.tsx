@@ -71,7 +71,17 @@ const account = (over: Partial<EmployerAccount> = {}): EmployerAccount => ({
   ...over,
 });
 
-const talentCard = { slug: 'abcdefgh2345', firstName: 'Nadeesha', headline: 'Home carer', photoUrl: null, yearsExperience: 8, verified: true, languages: [], completedTraining: [], targetCountries: ['JP'] };
+const talentCard = {
+  slug: 'abcdefgh2345',
+  firstName: 'Nadeesha',
+  headline: 'Home carer',
+  photoUrl: null,
+  yearsExperience: 8,
+  verified: true,
+  languages: [],
+  completedTraining: [],
+  targetCountries: ['JP'],
+};
 
 const enquiry = (over: Partial<EmployerOwnEnquiry> = {}): EmployerOwnEnquiry => ({
   id: 'enq-1',
@@ -180,9 +190,7 @@ describe('employer area', () => {
     expect(screen.getByText('Strong English')).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText('A note for our team'), { target: { value: 'Mornings JST' } });
     fireEvent.click(screen.getByRole('button', { name: 'Ask for an interview' }));
-    await waitFor(() =>
-      expect(patch).toHaveBeenCalledWith('/employer/candidates/c1?locale=en', { action: 'REQUEST_INTERVIEW', message: 'Mornings JST' }),
-    );
+    await waitFor(() => expect(patch).toHaveBeenCalledWith('/employer/candidates/c1?locale=en', { action: 'REQUEST_INTERVIEW', message: 'Mornings JST' }));
     expect(await screen.findByText('Interview requested')).toBeInTheDocument();
   });
 
@@ -196,7 +204,12 @@ describe('employer area', () => {
 
   it('says a caregiver who stopped sharing is no longer available, without showing them', async () => {
     const { default: Overview } = await import('@/app/employer/(area)/page');
-    route({ '/employer/me': account(), '/employer/enquiries': [enquiry({ candidates: [{ id: 'c1', status: 'PROPOSED', interviewAt: null, messageToEmployer: null, talent: null, interviews: [], offer: null }] })] });
+    route({
+      '/employer/me': account(),
+      '/employer/enquiries': [
+        enquiry({ candidates: [{ id: 'c1', status: 'PROPOSED', interviewAt: null, messageToEmployer: null, talent: null, interviews: [], offer: null }] }),
+      ],
+    });
     renderUi(<Overview />);
     expect(await screen.findByText('This caregiver is no longer available.')).toBeInTheDocument();
     expect(screen.queryByText('Nadeesha')).not.toBeInTheDocument();
@@ -220,7 +233,12 @@ describe('shared profile, seen by a signed-in employer', () => {
   it('offers the shortlist and an interview request on one of their open enquiries', async () => {
     const { default: Profile } = await import('@/app/talent/[slug]/page');
     params = { slug: 'abcdefgh2345' };
-    route({ '/public/talent/abcdefgh2345': profile, '/employer/me': account(), '/employer/enquiries': [enquiry({ candidates: [] })], '/employer/shortlist': [] });
+    route({
+      '/public/talent/abcdefgh2345': profile,
+      '/employer/me': account(),
+      '/employer/enquiries': [enquiry({ candidates: [] })],
+      '/employer/shortlist': [],
+    });
     put.mockResolvedValue([talentCard]);
     post.mockResolvedValue([enquiry()]);
     renderUi(<Profile />);

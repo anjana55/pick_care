@@ -55,7 +55,10 @@ describe('Sign-up with the sign-in method first (e2e)', () => {
   }
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).overrideProvider(ThrottlerStorage).useValue(unlimitedThrottle).compile();
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+      .overrideProvider(ThrottlerStorage)
+      .useValue(unlimitedThrottle)
+      .compile();
     app = moduleRef.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
     await app.init();
@@ -160,7 +163,10 @@ describe('Sign-up with the sign-in method first (e2e)', () => {
 
     it('accepts a ticket once only', async () => {
       const { body } = await whatsappTicket('client');
-      const send = () => api().post('/auth/signup/client').send({ fullName: 'Once Only', signupTicket: body.ticket, ...intake, ...agreement('client') });
+      const send = () =>
+        api()
+          .post('/auth/signup/client')
+          .send({ fullName: 'Once Only', signupTicket: body.ticket, ...intake, ...agreement('client') });
       await send().expect(201);
       const again = await send().expect(401);
       expect(again.body.code).toBe('ticket_expired');
@@ -177,7 +183,10 @@ describe('Sign-up with the sign-in method first (e2e)', () => {
 
     it('signs a returning WhatsApp user in instead of registering them twice', async () => {
       const { phone, body } = await whatsappTicket('caregiver');
-      await api().post('/auth/signup/caregiver').send({ ...caregiverFields('Returning Carer'), signupTicket: body.ticket, ...agreement('caregiver') }).expect(201);
+      await api()
+        .post('/auth/signup/caregiver')
+        .send({ ...caregiverFields('Returning Carer'), signupTicket: body.ticket, ...agreement('caregiver') })
+        .expect(201);
 
       // A while later, the cooldown passed, they "register" again with the same number.
       await db.execute(sql`UPDATE whatsapp_otps SET created_at = created_at - INTERVAL 1 HOUR`);
@@ -188,7 +197,10 @@ describe('Sign-up with the sign-in method first (e2e)', () => {
 
     it('registers a caregiver with the verified number as their only phone', async () => {
       const { normalised, body } = await whatsappTicket('caregiver');
-      const res = await api().post('/auth/signup/caregiver').send({ ...caregiverFields('WhatsApp Carer'), signupTicket: body.ticket, ...agreement('caregiver') }).expect(201);
+      const res = await api()
+        .post('/auth/signup/caregiver')
+        .send({ ...caregiverFields('WhatsApp Carer'), signupTicket: body.ticket, ...agreement('caregiver') })
+        .expect(201);
       expect(res.body).toMatchObject({ signedIn: true, method: 'WHATSAPP' });
       expect(res.body.registrationNumber).toBeDefined();
       const [user] = await db.select().from(users).where(eq(users.phone, normalised));
@@ -208,7 +220,15 @@ describe('Sign-up with the sign-in method first (e2e)', () => {
       const email = newEmail();
       const res = await api()
         .post('/auth/signup/client')
-        .send({ fullName: 'Email Client', email, password: 'correct-horse-1', phone: newPhone(), ...intake, careNeeds: 'Help with meals', ...agreement('client') })
+        .send({
+          fullName: 'Email Client',
+          email,
+          password: 'correct-horse-1',
+          phone: newPhone(),
+          ...intake,
+          careNeeds: 'Help with meals',
+          ...agreement('client'),
+        })
         .expect(201);
       expect(res.body).toMatchObject({ signedIn: false, method: 'EMAIL', email, verificationSent: true });
       expect(res.body.devVerificationUrl).toContain('/verify-email?token=');
@@ -231,16 +251,28 @@ describe('Sign-up with the sign-in method first (e2e)', () => {
     });
 
     it('needs a phone number, an email and a password', async () => {
-      await api().post('/auth/signup/client').send({ fullName: 'No Phone', email: newEmail(), password: 'correct-horse-3', ...intake, ...agreement('client') }).expect(400);
-      await api().post('/auth/signup/client').send({ fullName: 'No Password', email: newEmail(), phone: newPhone(), ...intake, ...agreement('client') }).expect(400);
+      await api()
+        .post('/auth/signup/client')
+        .send({ fullName: 'No Phone', email: newEmail(), password: 'correct-horse-3', ...intake, ...agreement('client') })
+        .expect(400);
+      await api()
+        .post('/auth/signup/client')
+        .send({ fullName: 'No Password', email: newEmail(), phone: newPhone(), ...intake, ...agreement('client') })
+        .expect(400);
     });
   });
 
   describe('the service agreement', () => {
     it('must be accepted, and in its current version', async () => {
       const base = { fullName: 'Agreement Test', email: newEmail(), password: 'correct-horse-4', phone: newPhone(), ...intake, consentAccepted: true };
-      await api().post('/auth/signup/client').send({ ...base, agreementAccepted: false, agreementVersion: agreementVersion('client') }).expect(400);
-      const stale = await api().post('/auth/signup/client').send({ ...base, agreementAccepted: true, agreementVersion: '2020-01-01' }).expect(409);
+      await api()
+        .post('/auth/signup/client')
+        .send({ ...base, agreementAccepted: false, agreementVersion: agreementVersion('client') })
+        .expect(400);
+      const stale = await api()
+        .post('/auth/signup/client')
+        .send({ ...base, agreementAccepted: true, agreementVersion: '2020-01-01' })
+        .expect(409);
       expect(stale.body.code).toBe('agreement_changed');
     });
   });
@@ -265,10 +297,16 @@ describe('Sign-up with the sign-in method first (e2e)', () => {
       expect(landing.searchParams.get('flow')).toBe('identify');
       expect(landing.searchParams.get('nonce')).toBe(n);
 
-      const identity = await api().post('/auth/signup/identity/exchange').send({ code: landing.searchParams.get('code') }).expect(200);
+      const identity = await api()
+        .post('/auth/signup/identity/exchange')
+        .send({ code: landing.searchParams.get('code') })
+        .expect(200);
       expect(identity.body).toMatchObject({ method: 'GOOGLE', side: 'client', email: googleProfile.email, name: 'Nimali Perera' });
       // The code is single use.
-      await api().post('/auth/signup/identity/exchange').send({ code: landing.searchParams.get('code') }).expect(401);
+      await api()
+        .post('/auth/signup/identity/exchange')
+        .send({ code: landing.searchParams.get('code') })
+        .expect(401);
 
       const res = await api()
         .post('/auth/signup/client')
@@ -283,7 +321,10 @@ describe('Sign-up with the sign-in method first (e2e)', () => {
 
     it('signs an already-registered identity in instead', async () => {
       const first = await googleRoundTrip('caregiver');
-      const identity = await api().post('/auth/signup/identity/exchange').send({ code: first.landing.searchParams.get('code') }).expect(200);
+      const identity = await api()
+        .post('/auth/signup/identity/exchange')
+        .send({ code: first.landing.searchParams.get('code') })
+        .expect(200);
       await api()
         .post('/auth/signup/caregiver')
         .send({ ...caregiverFields('Google Carer'), phone: newPhone(), signupTicket: identity.body.ticket, ...agreement('caregiver') })
@@ -292,19 +333,28 @@ describe('Sign-up with the sign-in method first (e2e)', () => {
       const again = await googleRoundTrip('caregiver');
       expect(again.landing.pathname).toBe('/caregiver/social/callback');
       expect(again.landing.searchParams.get('flow')).toBe('login');
-      await api().post('/auth/social/exchange').send({ code: again.landing.searchParams.get('code') }).expect(201);
+      await api()
+        .post('/auth/social/exchange')
+        .send({ code: again.landing.searchParams.get('code') })
+        .expect(201);
     });
 
     it('from the app, hands the ticket only to the verifier behind the challenge', async () => {
       const { verifier, landing } = await googleRoundTrip('client', { app: true });
       expect(landing.protocol).toBe('pickcare:');
       const code = landing.searchParams.get('code');
-      await api().post('/auth/signup/identity/exchange').send({ code, verifier: 'w'.repeat(50) }).expect(401);
+      await api()
+        .post('/auth/signup/identity/exchange')
+        .send({ code, verifier: 'w'.repeat(50) })
+        .expect(401);
       // Spent by the failed attempt.
       await api().post('/auth/signup/identity/exchange').send({ code, verifier }).expect(401);
 
       const second = await googleRoundTrip('client', { app: true });
-      await api().post('/auth/signup/identity/exchange').send({ code: second.landing.searchParams.get('code'), verifier: second.verifier }).expect(200);
+      await api()
+        .post('/auth/signup/identity/exchange')
+        .send({ code: second.landing.searchParams.get('code'), verifier: second.verifier })
+        .expect(200);
     });
 
     it('refuses an address that already has an account', async () => {
@@ -321,11 +371,27 @@ describe('Sign-up with the sign-in method first (e2e)', () => {
   });
 
   it('keeps a text size per language, changing only the languages sent', async () => {
-    await api().patch('/settings/branding').set(bearer(adminToken)).send({ textScale: { si: 85 } }).expect(200);
+    await api()
+      .patch('/settings/branding')
+      .set(bearer(adminToken))
+      .send({ textScale: { si: 85 } })
+      .expect(200);
     expect((await api().get('/branding').expect(200)).body.textScale).toEqual({ en: 100, si: 85, ta: 90 });
-    await api().patch('/settings/branding').set(bearer(adminToken)).send({ textScale: { si: 50 } }).expect(400);
-    await api().patch('/settings/branding').set(bearer(adminToken)).send({ textScale: { fr: 90 } }).expect(400);
-    await api().patch('/settings/branding').set(bearer(adminToken)).send({ textScale: { si: 90 } }).expect(200);
+    await api()
+      .patch('/settings/branding')
+      .set(bearer(adminToken))
+      .send({ textScale: { si: 50 } })
+      .expect(400);
+    await api()
+      .patch('/settings/branding')
+      .set(bearer(adminToken))
+      .send({ textScale: { fr: 90 } })
+      .expect(400);
+    await api()
+      .patch('/settings/branding')
+      .set(bearer(adminToken))
+      .send({ textScale: { si: 90 } })
+      .expect(200);
   });
 
   it('publishes the office phone number for "Call the office"', async () => {

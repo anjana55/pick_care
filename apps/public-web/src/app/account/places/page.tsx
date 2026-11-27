@@ -2,7 +2,14 @@
 
 import { useState } from 'react';
 import { LocateFixed, MapPin, Star } from 'lucide-react';
-import { CARE_LOCATIONS_MAX, CARE_LOCATION_LABEL_MAX, zoomForPrecision, type AddressSearchResult, type CareLocation, type GeoPoint } from '@care-platform/shared';
+import {
+  CARE_LOCATIONS_MAX,
+  CARE_LOCATION_LABEL_MAX,
+  zoomForPrecision,
+  type AddressSearchResult,
+  type CareLocation,
+  type GeoPoint,
+} from '@care-platform/shared';
 import { useTranslation } from '@/lib/i18n';
 import { api, ApiError } from '@/lib/api/client';
 import { useMyCareLocations, useRemoveCareLocation, useSaveCareLocation } from '@/lib/hooks/use-client-care';
@@ -86,10 +93,23 @@ export default function CarePlacesPage() {
                 }}
               />
             </div>
-            <PinPicker value={editing.point} start={editing.start} focus={focus} onChange={(point) => setEditing({ ...editing, point })} labels={labels} className="relative h-80 w-full overflow-hidden rounded border border-ink/10" />
+            <PinPicker
+              value={editing.point}
+              start={editing.start}
+              focus={focus}
+              onChange={(point) => setEditing({ ...editing, point })}
+              labels={labels}
+              className="relative h-80 w-full overflow-hidden rounded border border-ink/10"
+            />
             <div className="max-w-sm">
               <Label htmlFor="place-label">{t('account.places.label')}</Label>
-              <Input id="place-label" value={editing.label} maxLength={CARE_LOCATION_LABEL_MAX} placeholder={t('account.places.labelPlaceholder')} onChange={(e) => setEditing({ ...editing, label: e.target.value })} />
+              <Input
+                id="place-label"
+                value={editing.label}
+                maxLength={CARE_LOCATION_LABEL_MAX}
+                placeholder={t('account.places.labelPlaceholder')}
+                onChange={(e) => setEditing({ ...editing, label: e.target.value })}
+              />
             </div>
             {error && (
               <p role="alert" className="text-sm text-danger">
@@ -154,7 +174,9 @@ export default function CarePlacesPage() {
                     </Button>
                   </div>
                 </div>
-                {editing?.id !== p.id && <PinPicker value={p} labels={labels} className="relative mt-3 h-40 w-full overflow-hidden rounded border border-ink/10" />}
+                {editing?.id !== p.id && (
+                  <PinPicker value={p} labels={labels} className="relative mt-3 h-40 w-full overflow-hidden rounded border border-ink/10" />
+                )}
               </li>
             ))}
           </ul>

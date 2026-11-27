@@ -57,7 +57,11 @@ export function BrandAssetSlot({
       >
         {url ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={url} alt={k('title')} className={asset === 'appIcon' ? 'h-full w-full object-cover' : square ? 'h-16 w-16 object-contain' : 'max-h-14 max-w-[85%] object-contain'} />
+          <img
+            src={url}
+            alt={k('title')}
+            className={asset === 'appIcon' ? 'h-full w-full object-cover' : square ? 'h-16 w-16 object-contain' : 'max-h-14 max-w-[85%] object-contain'}
+          />
         ) : (
           fallback
         )}
@@ -83,7 +87,13 @@ export function BrandAssetSlot({
             {upload.isPending ? t('common.loading') : url ? t('brandingAdmin.replace') : t('brandingAdmin.upload')}
           </Button>
           {url && (
-            <Button variant="ghost" size="sm" disabled={remove.isPending} aria-label={`${t('brandingAdmin.remove')}: ${k('title')}`} onClick={() => remove.mutate(undefined, { onError: failed })}>
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={remove.isPending}
+              aria-label={`${t('brandingAdmin.remove')}: ${k('title')}`}
+              onClick={() => remove.mutate(undefined, { onError: failed })}
+            >
               <Trash2 size={14} className="mr-1.5" />
               {t('brandingAdmin.remove')}
             </Button>

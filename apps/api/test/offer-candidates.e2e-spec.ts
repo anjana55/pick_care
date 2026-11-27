@@ -40,22 +40,40 @@ describe('Offer candidates (e2e)', () => {
   const newPhone = (prefix = '072') => `${prefix}${String(run * 1000 + ++n).padStart(7, '0')}`;
   const sign = (payload: object) => app.get(JwtService).sign(payload, { secret: app.get(ConfigService).get<string>('JWT_ACCESS_SECRET')!, expiresIn: '10m' });
 
-  async function newCaregiver(name: string, opts: { gender?: 'MALE' | 'FEMALE'; district?: number; day?: boolean; night?: boolean; nursingHome?: boolean; availableFrom?: string } = {}) {
+  async function newCaregiver(
+    name: string,
+    opts: { gender?: 'MALE' | 'FEMALE'; district?: number; day?: boolean; night?: boolean; nursingHome?: boolean; availableFrom?: string } = {},
+  ) {
     const phone = newPhone();
     const reg = await api()
       .post('/auth/register-caregiver/unified')
       .send({
-        phone, consentAccepted: true, fullName: `${tag} ${name}`, permanentAddress: '1 Lake Road, Kandy',
-        dateOfBirth: '1988-01-20', gender: opts.gender ?? 'FEMALE', civilStatus: 'MARRIED', emergencyContactName: 'EC', emergencyContactNumber: '0770001111',
+        phone,
+        consentAccepted: true,
+        fullName: `${tag} ${name}`,
+        permanentAddress: '1 Lake Road, Kandy',
+        dateOfBirth: '1988-01-20',
+        gender: opts.gender ?? 'FEMALE',
+        civilStatus: 'MARRIED',
+        emergencyContactName: 'EC',
+        emergencyContactNumber: '0770001111',
         emergencyContactRelationship: 'Husband',
       })
       .expect(201);
     const [row] = await db.select().from(caregivers).where(eq(caregivers.registrationNumber, reg.body.registrationNumber));
-    await db.update(caregivers).set({ status: 'ACTIVE', districtId: opts.district ?? otherDistrictId }).where(eq(caregivers.id, row.id));
+    await db
+      .update(caregivers)
+      .set({ status: 'ACTIVE', districtId: opts.district ?? otherDistrictId })
+      .where(eq(caregivers.id, row.id));
     await db.delete(availability).where(eq(availability.caregiverId, row.id));
     await db.insert(availability).values({
-      id: uuid(), caregiverId: row.id, dayDuty: opts.day ?? false, nightDuty: opts.night ?? false, liveIn24h: false,
-      careNursingHome: opts.nursingHome ?? true, availableFrom: (opts.availableFrom ?? null) as never,
+      id: uuid(),
+      caregiverId: row.id,
+      dayDuty: opts.day ?? false,
+      nightDuty: opts.night ?? false,
+      liveIn24h: false,
+      careNursingHome: opts.nursingHome ?? true,
+      availableFrom: (opts.availableFrom ?? null) as never,
     });
     return { id: row.id, name: `${tag} ${name}`, token: sign({ sub: row.userId, role: 'CAREGIVER', caregiverId: row.id }) };
   }
@@ -63,21 +81,41 @@ describe('Offer candidates (e2e)', () => {
   async function newRequest() {
     const reg = await api()
       .post('/auth/register-patient')
-      .send({ email: `finder-client-${run}-${++n}@example.com`, password: 'SelfRegPass123', fullName: 'Nimal Kumara Perera', phone: newPhone('077'), consentAccepted: true, ...intake });
+      .send({
+        email: `finder-client-${run}-${++n}@example.com`,
+        password: 'SelfRegPass123',
+        fullName: 'Nimal Kumara Perera',
+        phone: newPhone('077'),
+        consentAccepted: true,
+        ...intake,
+      });
     if (reg.status !== 201) throw new Error(`register-patient: ${JSON.stringify(reg.body)}`);
-    const res = await api().post('/care-requests').set(bearer(staffToken)).send({ language: 'en', patientId: reg.body.patientId, careType: 'NURSING_HOME', message: 'Mother needs help' }).expect(201);
+    const res = await api()
+      .post('/care-requests')
+      .set(bearer(staffToken))
+      .send({ language: 'en', patientId: reg.body.patientId, careType: 'NURSING_HOME', message: 'Mother needs help' })
+      .expect(201);
     return res.body.id as string;
   }
 
   const find = async (requestId: string, query: Record<string, string | number | boolean> = {}) =>
-    (await api().get(`/care-requests/${requestId}/offer-candidates`).query({ search: tag, ...query }).set(bearer(staffToken)).expect(200)).body as OfferCandidatePage;
+    (
+      await api()
+        .get(`/care-requests/${requestId}/offer-candidates`)
+        .query({ search: tag, ...query })
+        .set(bearer(staffToken))
+        .expect(200)
+    ).body as OfferCandidatePage;
   const names = (p: OfferCandidatePage) => p.items.map((i) => i.fullName.replace(`${tag} `, ''));
 
   let requestId: string;
   let near: Awaited<ReturnType<typeof newCaregiver>>;
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).overrideProvider(ThrottlerStorage).useValue(unlimitedThrottle).compile();
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+      .overrideProvider(ThrottlerStorage)
+      .useValue(unlimitedThrottle)
+      .compile();
     app = moduleRef.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
     await app.init();
@@ -90,9 +128,17 @@ describe('Offer candidates (e2e)', () => {
     otherDistrictId = all[1].id;
     const cityId = (await api().get(`/public/meta/locations/cities?districtId=${districtId}&locale=en`).expect(200)).body[0].id;
     intake = {
-      registrantType: 'GUARDIAN', recipientName: 'Sunil Fernando', recipientRelationship: 'PARENT', recipientAge: 78, recipientGender: 'MALE',
-      preferredContactMethod: 'PHONE_CALL', districtId, cityId, careNeeds: 'Needs help with bathing, meals and medication reminders.',
-      careSchedule: 'DAY', careStart: 'WITHIN_WEEK',
+      registrantType: 'GUARDIAN',
+      recipientName: 'Sunil Fernando',
+      recipientRelationship: 'PARENT',
+      recipientAge: 78,
+      recipientGender: 'MALE',
+      preferredContactMethod: 'PHONE_CALL',
+      districtId,
+      cityId,
+      careNeeds: 'Needs help with bathing, meals and medication reminders.',
+      careSchedule: 'DAY',
+      careStart: 'WITHIN_WEEK',
     };
 
     near = await newCaregiver('Anula Near', { district: districtId, day: true });
@@ -108,7 +154,15 @@ describe('Offer candidates (e2e)', () => {
 
   it("prefills from the request, keeps out those who don't do the care, and puts the best match first", async () => {
     const page = await find(requestId);
-    expect(page.request).toMatchObject({ careType: 'NURSING_HOME', districtId, schedule: 'DAY', startDate: colomboToday(), genderPreference: null, waitingOffers: 0, slotsLeft: 10 });
+    expect(page.request).toMatchObject({
+      careType: 'NURSING_HOME',
+      districtId,
+      schedule: 'DAY',
+      startDate: colomboToday(),
+      genderPreference: null,
+      waitingOffers: 0,
+      slotsLeft: 10,
+    });
     expect(page.request.districtName).toBeTruthy();
     expect(names(page)).not.toContain('Chandra NoNursing');
     expect(names(page)[0]).toBe('Anula Near');

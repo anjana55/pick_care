@@ -62,8 +62,8 @@ export default function PayoutPage() {
     <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3 print:hidden">
         <Link href="/payouts" className="inline-flex items-center gap-1 text-sm text-ink/60 hover:text-ink">
-        <ChevronLeft size={16} />
-        {t('billing.payouts.back')}
+          <ChevronLeft size={16} />
+          {t('billing.payouts.back')}
         </Link>
         <RecordPager kind="payouts" id={id} />
       </div>
@@ -94,10 +94,15 @@ export default function PayoutPage() {
           </Button>
         )}
       </div>
-      {payout.status === 'VOID' && payout.voidReason && <p className="mb-4 rounded bg-ink/5 px-3 py-2 text-sm text-ink/70">{t('billing.invoice.voidedBecause', { reason: payout.voidReason })}</p>}
+      {payout.status === 'VOID' && payout.voidReason && (
+        <p className="mb-4 rounded bg-ink/5 px-3 py-2 text-sm text-ink/70">{t('billing.invoice.voidedBecause', { reason: payout.voidReason })}</p>
+      )}
       {payout.status === 'PAID' && (
         <p className="mb-4 rounded bg-brand-light px-3 py-2 text-sm text-brand-dark">
-          {t('billing.payout.paidLine', { date: fmtDate(payout.paidOn!, locale), method: howLabel({ paymentType: payout.paymentType, method: payout.paymentMethod, bankAccount: payout.bankAccount }) })}
+          {t('billing.payout.paidLine', {
+            date: fmtDate(payout.paidOn!, locale),
+            method: howLabel({ paymentType: payout.paymentType, method: payout.paymentMethod, bankAccount: payout.bankAccount }),
+          })}
           {payout.paymentReference && ` · ${payout.paymentReference}`}
         </p>
       )}
@@ -159,7 +164,14 @@ function PayoutEditor({ payout }: { payout: PayoutDetail }) {
             {t('billing.invoice.lines')} <span className="font-normal text-ink/50">({rows.length})</span>
           </CardTitle>
           {draft && (
-            <Button size="sm" variant="secondary" className="print:hidden" disabled={addShifts.isPending || dirty} onClick={() => addShifts.mutate(undefined)} title={dirty ? t('billing.invoice.saveFirst') : undefined}>
+            <Button
+              size="sm"
+              variant="secondary"
+              className="print:hidden"
+              disabled={addShifts.isPending || dirty}
+              onClick={() => addShifts.mutate(undefined)}
+              title={dirty ? t('billing.invoice.saveFirst') : undefined}
+            >
               <RefreshCw size={14} aria-hidden />
               {t('billing.payout.addShifts')}
             </Button>
@@ -220,7 +232,11 @@ function PayoutEditor({ payout }: { payout: PayoutDetail }) {
                 <Button variant="secondary" onClick={() => setMode('void')}>
                   {t('billing.invoice.void')}
                 </Button>
-                <Button disabled={dirty || pending || rows.length === 0} title={dirty ? t('billing.invoice.saveFirst') : undefined} onClick={() => approve.mutate(undefined)}>
+                <Button
+                  disabled={dirty || pending || rows.length === 0}
+                  title={dirty ? t('billing.invoice.saveFirst') : undefined}
+                  onClick={() => approve.mutate(undefined)}
+                >
                   {t('billing.payout.approve')}
                 </Button>
               </>
@@ -246,7 +262,12 @@ function PayoutEditor({ payout }: { payout: PayoutDetail }) {
           pending={pay.isPending}
           error={pay.isError ? errorText(pay.error, t('requests.detail.saveFailed')) : null}
           onCancel={() => setMode(null)}
-          onConfirm={() => pay.mutate({ paidOn, ...paymentHowBody(how), ...(reference.trim() ? { reference: reference.trim() } : {}), notify }, { onSuccess: () => setMode(null) })}
+          onConfirm={() =>
+            pay.mutate(
+              { paidOn, ...paymentHowBody(how), ...(reference.trim() ? { reference: reference.trim() } : {}), notify },
+              { onSuccess: () => setMode(null) },
+            )
+          }
         >
           <div className="mb-4 space-y-2 text-sm">
             <div className="grid grid-cols-2 gap-2">
@@ -279,7 +300,9 @@ function PayoutEditor({ payout }: { payout: PayoutDetail }) {
           onConfirm={() => reason.trim() && voidIt.mutate(reason.trim(), { onSuccess: () => setMode(null) })}
         >
           <div className="mb-4">
-            <Label htmlFor="poReason" required>{t('billing.invoice.reason')}</Label>
+            <Label htmlFor="poReason" required>
+              {t('billing.invoice.reason')}
+            </Label>
             <Input id="poReason" maxLength={500} value={reason} onChange={(e) => setReason(e.target.value)} />
           </div>
         </ConfirmDialog>

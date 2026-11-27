@@ -20,19 +20,13 @@ describe('Care Platform API (e2e)', () => {
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
     await app.init();
 
-    const adminLogin = await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({ email: 'admin@care-platform.local', password: SEED_PASSWORD });
+    const adminLogin = await request(app.getHttpServer()).post('/auth/login').send({ email: 'admin@care-platform.local', password: SEED_PASSWORD });
     adminToken = adminLogin.body.accessToken;
 
-    const staffLogin = await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({ email: 'staff@care-platform.local', password: SEED_PASSWORD });
+    const staffLogin = await request(app.getHttpServer()).post('/auth/login').send({ email: 'staff@care-platform.local', password: SEED_PASSWORD });
     staffToken = staffLogin.body.accessToken;
 
-    const verifierLogin = await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({ email: 'verifier@care-platform.local', password: SEED_PASSWORD });
+    const verifierLogin = await request(app.getHttpServer()).post('/auth/login').send({ email: 'verifier@care-platform.local', password: SEED_PASSWORD });
     verifierToken = verifierLogin.body.accessToken;
   });
 
@@ -61,10 +55,7 @@ describe('Care Platform API (e2e)', () => {
   });
 
   it('rejects invalid login credentials', async () => {
-    await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({ email: 'admin@care-platform.local', password: 'wrong-password' })
-      .expect(401);
+    await request(app.getHttpServer()).post('/auth/login').send({ email: 'admin@care-platform.local', password: 'wrong-password' }).expect(401);
   });
 
   it('creates a new caregiver', async () => {
@@ -110,10 +101,7 @@ describe('Care Platform API (e2e)', () => {
   });
 
   it('masks NIC and phone in the caregiver list', async () => {
-    const res = await request(app.getHttpServer())
-      .get('/caregivers?pageSize=50')
-      .set('Authorization', `Bearer ${adminToken}`)
-      .expect(200);
+    const res = await request(app.getHttpServer()).get('/caregivers?pageSize=50').set('Authorization', `Bearer ${adminToken}`).expect(200);
 
     const created = res.body.items.find((c: any) => c.id === caregiverId);
     expect(created).toBeDefined();
@@ -141,10 +129,7 @@ describe('Care Platform API (e2e)', () => {
   // Deleting a caregiver is for ADMIN and STAFF (staff handle removals day to
   // day); a VERIFIER only checks documents.
   it('forbids a VERIFIER from deleting a caregiver', async () => {
-    await request(app.getHttpServer())
-      .delete(`/caregivers/${caregiverId}`)
-      .set('Authorization', `Bearer ${verifierToken}`)
-      .expect(403);
+    await request(app.getHttpServer()).delete(`/caregivers/${caregiverId}`).set('Authorization', `Bearer ${verifierToken}`).expect(403);
   });
 
   it('lets STAFF delete a caregiver', async () => {
@@ -164,14 +149,8 @@ describe('Care Platform API (e2e)', () => {
         emergencyContactRelationship: 'Friend',
       })
       .expect(201);
-    await request(app.getHttpServer())
-      .delete(`/caregivers/${created.body.id}`)
-      .set('Authorization', `Bearer ${staffToken}`)
-      .expect(200);
-    await request(app.getHttpServer())
-      .get(`/caregivers/${created.body.id}`)
-      .set('Authorization', `Bearer ${adminToken}`)
-      .expect(404);
+    await request(app.getHttpServer()).delete(`/caregivers/${created.body.id}`).set('Authorization', `Bearer ${staffToken}`).expect(200);
+    await request(app.getHttpServer()).get(`/caregivers/${created.body.id}`).set('Authorization', `Bearer ${adminToken}`).expect(404);
   });
 
   it('lets STAFF create caregivers (allowed role)', async () => {
@@ -194,10 +173,7 @@ describe('Care Platform API (e2e)', () => {
   });
 
   it('assigns a skill to the caregiver and lists it', async () => {
-    const skillsRes = await request(app.getHttpServer())
-      .get('/skills')
-      .set('Authorization', `Bearer ${adminToken}`)
-      .expect(200);
+    const skillsRes = await request(app.getHttpServer()).get('/skills').set('Authorization', `Bearer ${adminToken}`).expect(200);
     const skill = skillsRes.body[0];
     expect(skill).toBeDefined();
 
@@ -207,10 +183,7 @@ describe('Care Platform API (e2e)', () => {
       .send({ skillId: skill.id, proficiency: 'ADVANCED', yearsOfExperience: 5 })
       .expect(201);
 
-    const assigned = await request(app.getHttpServer())
-      .get(`/caregivers/${caregiverId}/skills`)
-      .set('Authorization', `Bearer ${adminToken}`)
-      .expect(200);
+    const assigned = await request(app.getHttpServer()).get(`/caregivers/${caregiverId}/skills`).set('Authorization', `Bearer ${adminToken}`).expect(200);
     expect(assigned.body.some((s: any) => s.skillId === skill.id)).toBe(true);
   });
 
@@ -234,17 +207,11 @@ describe('Care Platform API (e2e)', () => {
   });
 
   it('blocks STAFF from reading restricted health information', async () => {
-    await request(app.getHttpServer())
-      .get(`/caregivers/${caregiverId}/health-information`)
-      .set('Authorization', `Bearer ${staffToken}`)
-      .expect(403);
+    await request(app.getHttpServer()).get(`/caregivers/${caregiverId}/health-information`).set('Authorization', `Bearer ${staffToken}`).expect(403);
   });
 
   it('allows ADMIN to read restricted health information', async () => {
-    await request(app.getHttpServer())
-      .get(`/caregivers/${caregiverId}/health-information`)
-      .set('Authorization', `Bearer ${adminToken}`)
-      .expect(200);
+    await request(app.getHttpServer()).get(`/caregivers/${caregiverId}/health-information`).set('Authorization', `Bearer ${adminToken}`).expect(200);
   });
 
   describe('advanced search filters', () => {
@@ -290,14 +257,8 @@ describe('Care Platform API (e2e)', () => {
       filterCaregiver2 = await makeCaregiver('2', 'MALE');
 
       // Caregiver 1: has BOTH skills, language A, location A, and night duty.
-      await request(app.getHttpServer())
-        .post(`/caregivers/${filterCaregiver1}/skills`)
-        .set('Authorization', `Bearer ${adminToken}`)
-        .send({ skillId: skillA });
-      await request(app.getHttpServer())
-        .post(`/caregivers/${filterCaregiver1}/skills`)
-        .set('Authorization', `Bearer ${adminToken}`)
-        .send({ skillId: skillB });
+      await request(app.getHttpServer()).post(`/caregivers/${filterCaregiver1}/skills`).set('Authorization', `Bearer ${adminToken}`).send({ skillId: skillA });
+      await request(app.getHttpServer()).post(`/caregivers/${filterCaregiver1}/skills`).set('Authorization', `Bearer ${adminToken}`).send({ skillId: skillB });
       await request(app.getHttpServer())
         .post(`/caregivers/${filterCaregiver1}/languages`)
         .set('Authorization', `Bearer ${adminToken}`)
@@ -312,10 +273,7 @@ describe('Care Platform API (e2e)', () => {
         .send({ nightDuty: true });
 
       // Caregiver 2: has only skill A, language B, location B, and day duty.
-      await request(app.getHttpServer())
-        .post(`/caregivers/${filterCaregiver2}/skills`)
-        .set('Authorization', `Bearer ${adminToken}`)
-        .send({ skillId: skillA });
+      await request(app.getHttpServer()).post(`/caregivers/${filterCaregiver2}/skills`).set('Authorization', `Bearer ${adminToken}`).send({ skillId: skillA });
       await request(app.getHttpServer())
         .post(`/caregivers/${filterCaregiver2}/languages`)
         .set('Authorization', `Bearer ${adminToken}`)
@@ -376,19 +334,13 @@ describe('Care Platform API (e2e)', () => {
       expect(idsOf(nightRes)).toContain(filterCaregiver1);
       expect(idsOf(nightRes)).not.toContain(filterCaregiver2);
 
-      const dayRes = await request(app.getHttpServer())
-        .get('/caregivers?dayDuty=true&pageSize=100')
-        .set('Authorization', `Bearer ${adminToken}`)
-        .expect(200);
+      const dayRes = await request(app.getHttpServer()).get('/caregivers?dayDuty=true&pageSize=100').set('Authorization', `Bearer ${adminToken}`).expect(200);
       expect(idsOf(dayRes)).toContain(filterCaregiver2);
       expect(idsOf(dayRes)).not.toContain(filterCaregiver1);
     });
 
     it('filters by gender', async () => {
-      const res = await request(app.getHttpServer())
-        .get('/caregivers?gender=FEMALE&pageSize=100')
-        .set('Authorization', `Bearer ${adminToken}`)
-        .expect(200);
+      const res = await request(app.getHttpServer()).get('/caregivers?gender=FEMALE&pageSize=100').set('Authorization', `Bearer ${adminToken}`).expect(200);
       const ids = idsOf(res);
       expect(ids).toContain(filterCaregiver1);
       expect(ids).not.toContain(filterCaregiver2);
@@ -467,10 +419,7 @@ describe('Care Platform API (e2e)', () => {
         .expect(200);
       expect(res.body.items.some((c: any) => c.id === selfCaregiverId && c.status === 'DRAFT')).toBe(true);
 
-      const dashboard = await request(app.getHttpServer())
-        .get('/caregivers/dashboard')
-        .set('Authorization', `Bearer ${adminToken}`)
-        .expect(200);
+      const dashboard = await request(app.getHttpServer()).get('/caregivers/dashboard').set('Authorization', `Bearer ${adminToken}`).expect(200);
       expect(dashboard.body.pendingRegistration).toBeGreaterThan(0);
     });
 
@@ -507,17 +456,11 @@ describe('Care Platform API (e2e)', () => {
     });
 
     it('lets the caregiver view their own full profile', async () => {
-      await request(app.getHttpServer())
-        .get(`/caregivers/${selfCaregiverId}`)
-        .set('Authorization', `Bearer ${selfAccessToken}`)
-        .expect(200);
+      await request(app.getHttpServer()).get(`/caregivers/${selfCaregiverId}`).set('Authorization', `Bearer ${selfAccessToken}`).expect(200);
     });
 
     it('blocks the caregiver from viewing another caregiver record', async () => {
-      await request(app.getHttpServer())
-        .get(`/caregivers/${caregiverId}`)
-        .set('Authorization', `Bearer ${selfAccessToken}`)
-        .expect(403);
+      await request(app.getHttpServer()).get(`/caregivers/${caregiverId}`).set('Authorization', `Bearer ${selfAccessToken}`).expect(403);
     });
 
     it('blocks the caregiver from the staff-only list and dashboard endpoints', async () => {
@@ -540,15 +483,9 @@ describe('Care Platform API (e2e)', () => {
     });
 
     it('lets the caregiver view but not write their own restricted health information; blocks other caregivers’', async () => {
-      await request(app.getHttpServer())
-        .get(`/caregivers/${selfCaregiverId}/health-information`)
-        .set('Authorization', `Bearer ${selfAccessToken}`)
-        .expect(200);
+      await request(app.getHttpServer()).get(`/caregivers/${selfCaregiverId}/health-information`).set('Authorization', `Bearer ${selfAccessToken}`).expect(200);
 
-      await request(app.getHttpServer())
-        .get(`/caregivers/${caregiverId}/health-information`)
-        .set('Authorization', `Bearer ${selfAccessToken}`)
-        .expect(403);
+      await request(app.getHttpServer()).get(`/caregivers/${caregiverId}/health-information`).set('Authorization', `Bearer ${selfAccessToken}`).expect(403);
     });
 
     it('lets the caregiver self-submit DRAFT to REGISTERED, but not skip further ahead', async () => {
@@ -568,10 +505,7 @@ describe('Care Platform API (e2e)', () => {
 
     it('responds generically to resend-verification regardless of whether the account exists', async () => {
       const known = await request(app.getHttpServer()).post('/auth/resend-verification').send({ email }).expect(201);
-      const unknown = await request(app.getHttpServer())
-        .post('/auth/resend-verification')
-        .send({ email: 'no-such-account@example.com' })
-        .expect(201);
+      const unknown = await request(app.getHttpServer()).post('/auth/resend-verification').send({ email: 'no-such-account@example.com' }).expect(201);
       expect(known.body.message).toEqual(unknown.body.message);
     });
   });

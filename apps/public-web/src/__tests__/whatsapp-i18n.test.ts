@@ -3,9 +3,7 @@ import si from '@/lib/i18n/dictionaries/si.json';
 import ta from '@/lib/i18n/dictionaries/ta.json';
 
 function keys(obj: Record<string, unknown>, prefix = ''): string[] {
-  return Object.entries(obj).flatMap(([k, v]) =>
-    v && typeof v === 'object' ? keys(v as Record<string, unknown>, `${prefix}${k}.`) : [`${prefix}${k}`],
-  );
+  return Object.entries(obj).flatMap(([k, v]) => (v && typeof v === 'object' ? keys(v as Record<string, unknown>, `${prefix}${k}.`) : [`${prefix}${k}`]));
 }
 const leaves = (d: Record<string, unknown>) => (d as { whatsapp: Record<string, unknown> }).whatsapp;
 

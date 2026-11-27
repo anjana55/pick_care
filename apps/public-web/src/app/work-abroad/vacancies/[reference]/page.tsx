@@ -112,10 +112,18 @@ function ApplyPanel({ reference, title }: { reference: string; title: string }) 
       <>
         <p className="text-ink/70">{t('vacancies.apply.signInFirst')}</p>
         <div className="mt-4 flex flex-wrap gap-2">
-          <Link href="/caregiver/login" onClick={() => rememberReturnTo(here)} className="inline-flex items-center rounded bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark">
+          <Link
+            href="/caregiver/login"
+            onClick={() => rememberReturnTo(here)}
+            className="inline-flex items-center rounded bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark"
+          >
             {t('vacancies.apply.signIn')}
           </Link>
-          <Link href="/caregiver/signup" onClick={() => rememberReturnTo(here)} className="inline-flex items-center rounded border border-border px-4 py-2 text-sm font-semibold text-ink hover:bg-paper">
+          <Link
+            href="/caregiver/signup"
+            onClick={() => rememberReturnTo(here)}
+            className="inline-flex items-center rounded border border-border px-4 py-2 text-sm font-semibold text-ink hover:bg-paper"
+          >
             {t('vacancies.apply.join')}
           </Link>
         </div>
@@ -156,7 +164,14 @@ function ApplyPanel({ reference, title }: { reference: string; title: string }) 
         </p>
       )}
       <Label htmlFor="apply-message">{t('vacancies.apply.message')}</Label>
-      <Textarea id="apply-message" rows={4} value={message} maxLength={VACANCY_LIMITS.applicationMessage} onChange={(e) => setMessage(e.target.value)} placeholder={t('vacancies.apply.messagePlaceholder')} />
+      <Textarea
+        id="apply-message"
+        rows={4}
+        value={message}
+        maxLength={VACANCY_LIMITS.applicationMessage}
+        onChange={(e) => setMessage(e.target.value)}
+        placeholder={t('vacancies.apply.messagePlaceholder')}
+      />
       <p className="mt-1 text-xs text-ink/50">{t('vacancies.apply.messageHint')}</p>
       {apply.isError && (
         <p role="alert" className="mt-2 text-sm text-danger">

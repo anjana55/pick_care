@@ -59,8 +59,15 @@ describe('AI features (e2e)', () => {
     const reg = await api()
       .post('/auth/register-caregiver/unified')
       .send({
-        phone, consentAccepted: true, fullName: `AI Caregiver ${phone}`, permanentAddress: '1 Lake Road, Kandy',
-        dateOfBirth: '1985-03-02', gender: 'FEMALE', civilStatus: 'MARRIED', emergencyContactName: 'EC', emergencyContactNumber: '0770001111',
+        phone,
+        consentAccepted: true,
+        fullName: `AI Caregiver ${phone}`,
+        permanentAddress: '1 Lake Road, Kandy',
+        dateOfBirth: '1985-03-02',
+        gender: 'FEMALE',
+        civilStatus: 'MARRIED',
+        emergencyContactName: 'EC',
+        emergencyContactNumber: '0770001111',
         emergencyContactRelationship: 'Husband',
       })
       .expect(201);
@@ -74,9 +81,21 @@ describe('AI features (e2e)', () => {
     const reg = await api()
       .post('/auth/register-patient')
       .send({
-        email: `ai-client-${run}-${++n}@example.com`, password: 'SelfRegPass123', fullName: 'AI Test Client', phone, consentAccepted: true,
-        registrantType: 'GUARDIAN', recipientName: 'Kamala Perera', recipientRelationship: 'PARENT', recipientAge: 81, recipientGender: 'FEMALE',
-        preferredContactMethod: 'PHONE_CALL', districtId, cityId, careNeeds: 'Has dementia and needs help at night with medication.', careSchedule: 'NIGHT',
+        email: `ai-client-${run}-${++n}@example.com`,
+        password: 'SelfRegPass123',
+        fullName: 'AI Test Client',
+        phone,
+        consentAccepted: true,
+        registrantType: 'GUARDIAN',
+        recipientName: 'Kamala Perera',
+        recipientRelationship: 'PARENT',
+        recipientAge: 81,
+        recipientGender: 'FEMALE',
+        preferredContactMethod: 'PHONE_CALL',
+        districtId,
+        cityId,
+        careNeeds: 'Has dementia and needs help at night with medication.',
+        careSchedule: 'NIGHT',
         careStart: 'WITHIN_WEEK',
       })
       .expect(201);
@@ -122,7 +141,9 @@ describe('AI features (e2e)', () => {
         } else if (system.includes('order a shortlist')) {
           // Re-rank: reverse the pool, with a made-up handle mixed in.
           const handles = [...(parsed.messages.at(-1)?.content ?? '').matchAll(/^(C\d+):/gm)].map((m) => m[1]);
-          out = reply({ content: JSON.stringify({ ranking: [{ id: 'C99', reason: 'ghost' }, ...handles.reverse().map((h) => ({ id: h, reason: `Good fit ${h}` }))] }) });
+          out = reply({
+            content: JSON.stringify({ ranking: [{ id: 'C99', reason: 'ghost' }, ...handles.reverse().map((h) => ({ id: h, reason: `Good fit ${h}` }))] }),
+          });
         } else if (parsed.tools?.length && system.includes('operations assistant')) {
           out = reply(assistantScript(parsed.messages));
         } else {
@@ -135,7 +156,10 @@ describe('AI features (e2e)', () => {
     await new Promise<void>((resolve) => model.listen(0, '127.0.0.1', resolve));
     modelUrl = `http://127.0.0.1:${(model.address() as AddressInfo).port}/v1`;
 
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).overrideProvider(ThrottlerStorage).useValue(unlimitedThrottle).compile();
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+      .overrideProvider(ThrottlerStorage)
+      .useValue(unlimitedThrottle)
+      .compile();
     app = moduleRef.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
     await app.init();
@@ -167,7 +191,11 @@ describe('AI features (e2e)', () => {
     await api().patch('/settings/ai').set(bearer(staffToken)).send({ enabled: true }).expect(403);
 
     // A hosted provider without a key cannot be switched on.
-    await api().patch('/settings/ai').set(bearer(adminToken)).send({ enabled: true, provider: 'OPENAI_COMPATIBLE', baseUrl: modelUrl, model: 'stand-in' }).expect(400);
+    await api()
+      .patch('/settings/ai')
+      .set(bearer(adminToken))
+      .send({ enabled: true, provider: 'OPENAI_COMPATIBLE', baseUrl: modelUrl, model: 'stand-in' })
+      .expect(400);
 
     const saved = await api()
       .patch('/settings/ai')
@@ -193,7 +221,10 @@ describe('AI features (e2e)', () => {
   });
 
   it('extracts a validated search request from free text, dropping anything it cannot stand behind', async () => {
-    const res = await api().post('/public/ai/extract').send({ query: 'My 81 year old mother has dementia, needs a female carer at night', locale: 'en' }).expect(200);
+    const res = await api()
+      .post('/public/ai/extract')
+      .send({ query: 'My 81 year old mother has dementia, needs a female carer at night', locale: 'en' })
+      .expect(200);
     const r = res.body.requirements;
     expect(r.location).toEqual({ districtId }); // unknown city dropped
     expect(r.optionalSkillIds).toEqual([skillId]);
@@ -211,7 +242,10 @@ describe('AI features (e2e)', () => {
     const a = await newCaregiver();
     const b = await newCaregiver();
     const today = colomboToday();
-    const body = { request: { careType: 'HOME_SHIFT', location: { districtId }, desiredStartDate: today, page: 1, pageSize: 50, locale: 'en' }, query: 'Night care for my father' };
+    const body = {
+      request: { careType: 'HOME_SHIFT', location: { districtId }, desiredStartDate: today, page: 1, pageSize: 50, locale: 'en' },
+      query: 'Night care for my father',
+    };
 
     const plain = await api().post('/public/search').send(body.request).expect(200);
     const res = await api().post('/public/ai/search').send(body).expect(200);
@@ -222,7 +256,10 @@ describe('AI features (e2e)', () => {
     const before = seen.length;
     const ids: string[] = res.body.items.map((i: { publicId: string }) => i.publicId);
     for (let page = 2; (page - 1) * 50 < res.body.total && page <= 40; page++) {
-      const more = await api().post('/public/ai/search').send({ ...body, request: { ...body.request, page } }).expect(200);
+      const more = await api()
+        .post('/public/ai/search')
+        .send({ ...body, request: { ...body.request, page } })
+        .expect(200);
       ids.push(...more.body.items.map((i: { publicId: string }) => i.publicId));
     }
     expect(ids).toEqual(expect.arrayContaining([a.publicId, b.publicId]));
@@ -232,7 +269,10 @@ describe('AI features (e2e)', () => {
     expect(JSON.stringify(rerank)).not.toContain(a.fullName);
 
     const calls = seen.length;
-    await api().post('/public/ai/search').send({ ...body, request: { ...body.request, page: 2, pageSize: 1 } }).expect(200);
+    await api()
+      .post('/public/ai/search')
+      .send({ ...body, request: { ...body.request, page: 2, pageSize: 1 } })
+      .expect(200);
     expect(seen.length).toBe(calls); // cached order
   });
 
@@ -253,13 +293,25 @@ describe('AI features (e2e)', () => {
 
     assistantScript = (messages) => {
       const last = messages.at(-1)!;
-      if (last.role === 'user') return { tool_calls: [{ id: 'c1', type: 'function', function: { name: 'get_request', arguments: JSON.stringify({ request: req.reference }) } }] };
+      if (last.role === 'user')
+        return { tool_calls: [{ id: 'c1', type: 'function', function: { name: 'get_request', arguments: JSON.stringify({ request: req.reference }) } }] };
       const lastCall = [...messages].reverse().find((m) => m.tool_calls)!.tool_calls![0].function.name;
       if (lastCall === 'get_request') {
         return {
           tool_calls: [
-            { id: 'c2', type: 'function', function: { name: 'update_request_status', arguments: JSON.stringify({ request: req.reference, status: 'IN_PROGRESS', note: 'Calling the family today' }) } },
-            { id: 'c3', type: 'function', function: { name: 'update_request_status', arguments: JSON.stringify({ request: req.reference, status: 'INTRODUCED' }) } },
+            {
+              id: 'c2',
+              type: 'function',
+              function: {
+                name: 'update_request_status',
+                arguments: JSON.stringify({ request: req.reference, status: 'IN_PROGRESS', note: 'Calling the family today' }),
+              },
+            },
+            {
+              id: 'c3',
+              type: 'function',
+              function: { name: 'update_request_status', arguments: JSON.stringify({ request: req.reference, status: 'INTRODUCED' }) },
+            },
           ],
         };
       }

@@ -10,7 +10,12 @@ export function CaregiverRatingsPanel({ caregiverId }: { caregiverId: string }) 
   const { t } = useTranslation();
   const { data, isLoading, isError } = useCaregiverRatings(caregiverId);
   if (isLoading) return <p className="text-sm text-ink/60">{t('common.loading')}</p>;
-  if (isError || !data) return <p role="alert" className="text-sm text-danger">{t('common.actionFailed')}</p>;
+  if (isError || !data)
+    return (
+      <p role="alert" className="text-sm text-danger">
+        {t('common.actionFailed')}
+      </p>
+    );
   if (!data.reviews.length) return <p className="text-sm text-ink/60">{t('reviews.panel.none')}</p>;
   return (
     <div className="space-y-4">
@@ -19,7 +24,9 @@ export function CaregiverRatingsPanel({ caregiverId }: { caregiverId: string }) 
           {data.summary && (
             <div className="flex flex-wrap items-center gap-3">
               <StarsInline rating={data.summary.average} />
-              <span className="font-semibold text-ink">{t('reviews.panel.summary', { average: data.summary.average.toFixed(1), count: data.summary.count })}</span>
+              <span className="font-semibold text-ink">
+                {t('reviews.panel.summary', { average: data.summary.average.toFixed(1), count: data.summary.count })}
+              </span>
               <span className="text-sm text-ink/60">{data.shownPublicly ? t('reviews.panel.shown') : t('reviews.panel.notShown')}</span>
             </div>
           )}

@@ -3,7 +3,23 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { X, LayoutDashboard, Users, HeartHandshake, Inbox, CalendarDays, Settings, ReceiptText, Wallet, Globe2, GraduationCap, Star, Megaphone, Phone, type LucideIcon } from 'lucide-react';
+import {
+  X,
+  LayoutDashboard,
+  Users,
+  HeartHandshake,
+  Inbox,
+  CalendarDays,
+  Settings,
+  ReceiptText,
+  Wallet,
+  Globe2,
+  GraduationCap,
+  Star,
+  Megaphone,
+  Phone,
+  type LucideIcon,
+} from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import type { StaffTalkRequest } from '@care-platform/shared';
 import { api } from '@/lib/api/client';
@@ -58,7 +74,12 @@ function useNavGroups(): NavGroup[] {
   const { data: deletions } = useAccountDeletionSummary(office);
   const { data: reviewCounts } = useReviewCounts(office);
   // People who asked to talk to a person and are still waiting (the same list the page shows).
-  const { data: talk } = useQuery({ queryKey: ['talk-requests', 'OPEN'], queryFn: () => api.get<StaffTalkRequest[]>('/talk-requests?status=OPEN'), enabled: office, refetchInterval: 60_000 });
+  const { data: talk } = useQuery({
+    queryKey: ['talk-requests', 'OPEN'],
+    queryFn: () => api.get<StaffTalkRequest[]>('/talk-requests?status=OPEN'),
+    enabled: office,
+    refetchInterval: 60_000,
+  });
 
   if (!office) return [{ items: [DASHBOARD, CAREGIVERS, SETTINGS] }];
 
@@ -76,7 +97,13 @@ function useNavGroups(): NavGroup[] {
         // Requests lead: they are the day's worklist.
         { href: '/requests', key: 'nav.requests', icon: Inbox, badge: requestsNew, badgeLabel: t('requests.newCount', { count: requestsNew }) },
         { href: '/bookings', key: 'nav.bookings', icon: CalendarDays, also: ['/care-plans'] },
-        { href: '/people-waiting', key: 'nav.peopleWaiting', icon: Phone, badge: talk?.length ?? 0, badgeLabel: t('peopleWaiting.count', { count: talk?.length ?? 0 }) },
+        {
+          href: '/people-waiting',
+          key: 'nav.peopleWaiting',
+          icon: Phone,
+          badge: talk?.length ?? 0,
+          badgeLabel: t('peopleWaiting.count', { count: talk?.length ?? 0 }),
+        },
       ],
     },
     {
@@ -153,7 +180,10 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
                   <Icon size={17} strokeWidth={2} />
                   <span className="flex-1">{t(item.key)}</span>
                   {item.badge !== undefined && item.badge > 0 && (
-                    <span className="min-w-[1.25rem] rounded-full bg-accent px-1.5 text-center text-xs font-semibold tabular-nums text-white" aria-label={item.badgeLabel}>
+                    <span
+                      className="min-w-[1.25rem] rounded-full bg-accent px-1.5 text-center text-xs font-semibold tabular-nums text-white"
+                      aria-label={item.badgeLabel}
+                    >
                       {item.badge}
                     </span>
                   )}
@@ -221,11 +251,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
 
       {open && (
         <div className="fixed inset-0 z-40 md:hidden">
-          <button
-            className="absolute inset-0 bg-ink/40"
-            onClick={onClose}
-            aria-label={closeLabel}
-          />
+          <button className="absolute inset-0 bg-ink/40" onClick={onClose} aria-label={closeLabel} />
           <aside className="absolute inset-y-0 left-0 flex w-64 flex-col border-r border-border bg-white shadow-xl">
             <SidebarBody onNavigate={onClose} closeLabel={closeLabel} />
           </aside>

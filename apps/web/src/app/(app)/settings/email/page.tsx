@@ -130,10 +130,18 @@ export default function EmailSettingsPage() {
 
       <div className="space-y-5">
         <Card>
-          <CardHeader><CardTitle>{t('emailAdmin.deliveryTitle')}</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>{t('emailAdmin.deliveryTitle')}</CardTitle>
+          </CardHeader>
           <CardContent>
             <label htmlFor="enabled" className="flex items-start gap-3 py-2 text-sm">
-              <input id="enabled" type="checkbox" checked={draft.enabled} onChange={(e) => set('enabled', e.target.checked)} className="mt-0.5 h-4 w-4 rounded border-border text-brand focus:ring-brand" />
+              <input
+                id="enabled"
+                type="checkbox"
+                checked={draft.enabled}
+                onChange={(e) => set('enabled', e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-border text-brand focus:ring-brand"
+              />
               <span>
                 <span className="font-medium text-ink">{t('emailAdmin.enabled')}</span>
                 <span className="block text-xs text-ink/50">{t('emailAdmin.enabledHint')}</span>
@@ -143,10 +151,14 @@ export default function EmailSettingsPage() {
         </Card>
 
         <Card>
-          <CardHeader><CardTitle>{t('emailAdmin.serverTitle')}</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>{t('emailAdmin.serverTitle')}</CardTitle>
+          </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
-              <Label htmlFor="host" required>{t('emailAdmin.host')}</Label>
+              <Label htmlFor="host" required>
+                {t('emailAdmin.host')}
+              </Label>
               <Input id="host" placeholder="smtp.example.com" autoComplete="off" value={draft.host} onChange={(e) => set('host', e.target.value)} />
               <p className="mt-1 text-xs text-ink/50">{t('emailAdmin.hostHint')}</p>
             </div>
@@ -158,8 +170,17 @@ export default function EmailSettingsPage() {
               </Select>
             </div>
             <div>
-              <Label htmlFor="port" required>{t('emailAdmin.port')}</Label>
-              <Input id="port" type="number" min={1} max={65535} value={draft.port} onChange={(e) => set('port', e.target.value === '' ? 0 : Number(e.target.value))} />
+              <Label htmlFor="port" required>
+                {t('emailAdmin.port')}
+              </Label>
+              <Input
+                id="port"
+                type="number"
+                min={1}
+                max={65535}
+                value={draft.port}
+                onChange={(e) => set('port', e.target.value === '' ? 0 : Number(e.target.value))}
+              />
             </div>
             <div>
               <Label htmlFor="username">{t('emailAdmin.username')}</Label>
@@ -180,7 +201,12 @@ export default function EmailSettingsPage() {
               <p className="mt-1 text-xs text-ink/50">{t('emailAdmin.passwordHint')}</p>
               {settings.passwordSet && draft.username.trim() && (
                 <label className="mt-2 flex items-center gap-2 text-xs text-ink/70">
-                  <input type="checkbox" checked={draft.clearPassword} onChange={(e) => setDraft({ ...draft, clearPassword: e.target.checked, password: '' })} className="h-3.5 w-3.5 rounded border-border text-brand focus:ring-brand" />
+                  <input
+                    type="checkbox"
+                    checked={draft.clearPassword}
+                    onChange={(e) => setDraft({ ...draft, clearPassword: e.target.checked, password: '' })}
+                    className="h-3.5 w-3.5 rounded border-border text-brand focus:ring-brand"
+                  />
                   {t('emailAdmin.passwordRemove')}
                 </label>
               )}
@@ -189,15 +215,25 @@ export default function EmailSettingsPage() {
         </Card>
 
         <Card>
-          <CardHeader><CardTitle>{t('emailAdmin.senderTitle')}</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>{t('emailAdmin.senderTitle')}</CardTitle>
+          </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div>
               <Label htmlFor="fromName">{t('emailAdmin.fromName')}</Label>
               <Input id="fromName" value={draft.fromName} onChange={(e) => set('fromName', e.target.value)} />
             </div>
             <div>
-              <Label htmlFor="fromAddress" required>{t('emailAdmin.fromAddress')}</Label>
-              <Input id="fromAddress" type="email" placeholder="no-reply@example.com" value={draft.fromAddress} onChange={(e) => set('fromAddress', e.target.value)} />
+              <Label htmlFor="fromAddress" required>
+                {t('emailAdmin.fromAddress')}
+              </Label>
+              <Input
+                id="fromAddress"
+                type="email"
+                placeholder="no-reply@example.com"
+                value={draft.fromAddress}
+                onChange={(e) => set('fromAddress', e.target.value)}
+              />
             </div>
             <div className="sm:col-span-2">
               <Label htmlFor="replyTo">{t('emailAdmin.replyTo')}</Label>
@@ -208,7 +244,9 @@ export default function EmailSettingsPage() {
         </Card>
 
         <Card>
-          <CardHeader><CardTitle>{t('emailAdmin.requestAlertsTitle')}</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>{t('emailAdmin.requestAlertsTitle')}</CardTitle>
+          </CardHeader>
           <CardContent>
             <Label htmlFor="requestAlertsTo">{t('emailAdmin.requestAlertsTo')}</Label>
             <Input
@@ -230,7 +268,9 @@ export default function EmailSettingsPage() {
         </div>
 
         <Card>
-          <CardHeader><CardTitle>{t('emailAdmin.testTitle')}</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>{t('emailAdmin.testTitle')}</CardTitle>
+          </CardHeader>
           <CardContent>
             <p className="mb-3 text-xs text-ink/50">{t('emailAdmin.testHint')}</p>
             <div className="flex items-end gap-3">
@@ -240,7 +280,10 @@ export default function EmailSettingsPage() {
               </div>
               <Button
                 variant="secondary"
-                onClick={() => { setTestResult(null); test.mutate(); }}
+                onClick={() => {
+                  setTestResult(null);
+                  test.mutate();
+                }}
                 disabled={test.isPending || !/^\S+@\S+\.\S+$/.test(testTo.trim()) || dirty || !savedComplete}
               >
                 {test.isPending ? t('emailAdmin.testSending') : t('emailAdmin.testSend')}

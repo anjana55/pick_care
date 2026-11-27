@@ -66,15 +66,7 @@ export { combineTurns };
  * Afterwards the same box takes more details ("she speaks Tamil") and re-runs
  * the search, so improving the matches is a sentence, not a form.
  */
-export function AiSearchPanel({
-  onSearch,
-  onUseNormalSearch,
-  onAdjustFilters,
-  onReset,
-  refined,
-  initialQuery,
-  initialRequest,
-}: AiSearchPanelProps) {
+export function AiSearchPanel({ onSearch, onUseNormalSearch, onAdjustFilters, onReset, refined, initialQuery, initialRequest }: AiSearchPanelProps) {
   const { t, locale } = useTranslation();
   const restoredTurns = initialQuery ? initialQuery.split('\n').filter(Boolean) : [];
   const [turns, setTurns] = useState<string[]>(restoredTurns);
@@ -83,17 +75,12 @@ export function AiSearchPanel({
       ? [...restoredTurns.map((text) => ({ role: 'user' as const, text })), { role: 'assistant', kind: 'results', suggestMore: false }]
       : [],
   );
-  const [current, setCurrent] = useState<ExtractedRequirements | null>(
-    initialRequest ? { requirements: initialRequest, summary: EMPTY_SUMMARY } : null,
-  );
+  const [current, setCurrent] = useState<ExtractedRequirements | null>(initialRequest ? { requirements: initialRequest, summary: EMPTY_SUMMARY } : null);
   const [draft, setDraft] = useState('');
   const replyRef = useRef<HTMLInputElement>(null);
 
   const { data: tree = [] } = useLocationTree(locale);
-  const districts = useMemo(
-    () => tree.flatMap((p) => p.districts).sort((a, b) => a.name.localeCompare(b.name, locale)),
-    [tree, locale],
-  );
+  const districts = useMemo(() => tree.flatMap((p) => p.districts).sort((a, b) => a.name.localeCompare(b.name, locale)), [tree, locale]);
 
   // A care type the visitor picked with a button. Their words may never name
   // it, so it is laid over every later extraction that did not find one.
@@ -290,13 +277,7 @@ export function AiSearchPanel({
                     )}
                   </div>
                 ) : entry.kind === 'ask-location' ? (
-                  <p>
-                    {entry.retry
-                      ? t('aiSearch.askLocationRetry')
-                      : entry.understoodNothing
-                        ? t('aiSearch.askLocationEmpty')
-                        : t('aiSearch.askLocation')}
-                  </p>
+                  <p>{entry.retry ? t('aiSearch.askLocationRetry') : entry.understoodNothing ? t('aiSearch.askLocationEmpty') : t('aiSearch.askLocation')}</p>
                 ) : (
                   <>
                     <p>
@@ -349,7 +330,9 @@ export function AiSearchPanel({
           ref={replyRef}
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          placeholder={askingCareType ? t('aiSearch.careTypeReplyPlaceholder') : askingLocation ? t('aiSearch.replyPlaceholder') : t('aiSearch.moreDetailsPlaceholder')}
+          placeholder={
+            askingCareType ? t('aiSearch.careTypeReplyPlaceholder') : askingLocation ? t('aiSearch.replyPlaceholder') : t('aiSearch.moreDetailsPlaceholder')
+          }
           maxLength={REPLY_MAX}
           autoComplete="off"
         />

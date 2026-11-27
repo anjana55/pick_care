@@ -27,7 +27,9 @@ export const notifications = mysqlTable(
     link: varchar('link', { length: 500 }),
     important: boolean('important').notNull().default(false),
     announcementId: varchar('announcement_id', { length: 36 }),
-    createdAt: datetime('created_at', { fsp: 3 }).notNull().default(sql`CURRENT_TIMESTAMP(3)`),
+    createdAt: datetime('created_at', { fsp: 3 })
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP(3)`),
     readAt: datetime('read_at'),
   },
   (t) => ({
@@ -51,7 +53,9 @@ export const reminderSends = mysqlTable(
     userId: varchar('user_id', { length: 36 }).notNull(),
     itemKey: varchar('item_key', { length: 160 }).notNull(),
     stage: varchar('stage', { length: 24 }).notNull(),
-    sentAt: datetime('sent_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    sentAt: datetime('sent_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (t) => ({
     once: uniqueIndex('reminder_sends_once').on(t.userId, t.itemKey, t.stage),
@@ -73,8 +77,12 @@ export const announcements = mysqlTable(
     createdByUserId: varchar('created_by_user_id', { length: 36 }),
     publishedAt: datetime('published_at'),
     recipients: int('recipients').notNull().default(0),
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (t) => ({
     createdIdx: index('announcements_created_idx').on(t.createdAt),
@@ -90,6 +98,10 @@ export const notificationSettings = mysqlTable('notification_settings', {
   dailyReminderCap: int('daily_reminder_cap').notNull().default(2),
   retentionDays: int('retention_days').notNull().default(180),
   updatedBy: varchar('updated_by', { length: 36 }),
-  createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+  createdAt: datetime('created_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: datetime('updated_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
 });

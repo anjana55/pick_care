@@ -33,18 +33,11 @@ export function EmptyResultsState({ onClear }: { onClear: () => void }) {
 export function ErrorState({ onRetry }: { onRetry: () => void }) {
   const { t } = useTranslation();
   return (
-    <div
-      className="flex flex-col items-center justify-center gap-3 rounded-lg border border-danger/30 bg-danger-light py-16 text-center"
-      role="alert"
-    >
+    <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-danger/30 bg-danger-light py-16 text-center" role="alert">
       <AlertTriangle className="h-8 w-8 text-danger" aria-hidden />
       <h3 className="text-lg font-semibold text-danger">{t('error.title')}</h3>
       <p className="max-w-sm text-sm text-ink/70">{t('error.subtitle')}</p>
-      <button
-        type="button"
-        onClick={onRetry}
-        className="mt-2 rounded-DEFAULT bg-danger px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-      >
+      <button type="button" onClick={onRetry} className="mt-2 rounded-DEFAULT bg-danger px-4 py-2 text-sm font-medium text-white hover:opacity-90">
         {t('error.retry')}
       </button>
     </div>

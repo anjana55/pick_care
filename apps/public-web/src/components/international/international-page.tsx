@@ -86,11 +86,17 @@ export function InternationalPage() {
               <h1 className="mt-5 text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl">{t('international.heroTitle')}</h1>
               <p className="mt-4 max-w-xl text-white/85">{t('international.heroBody')}</p>
               <div className="mt-8 flex flex-wrap gap-3">
-                <a href="#enquiry" className="inline-flex items-center gap-2 rounded bg-white px-5 py-2.5 text-sm font-semibold text-brand-dark transition-colors hover:bg-white/90">
+                <a
+                  href="#enquiry"
+                  className="inline-flex items-center gap-2 rounded bg-white px-5 py-2.5 text-sm font-semibold text-brand-dark transition-colors hover:bg-white/90"
+                >
                   {t('international.ctaEnquire')}
                   <ArrowRight className="h-4 w-4" aria-hidden />
                 </a>
-                <a href="#talent" className="inline-flex items-center rounded border border-white/40 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-white/10">
+                <a
+                  href="#talent"
+                  className="inline-flex items-center rounded border border-white/40 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+                >
                   {t('international.ctaBrowse')}
                 </a>
               </div>
@@ -220,7 +226,9 @@ export function InternationalPage() {
 
             {talentLoading && <div className="mt-8 h-40 animate-pulse rounded-lg bg-paper" aria-hidden />}
             {talent && talent.items.length === 0 && (
-              <p className="mt-8 rounded-lg border border-dashed border-border bg-white p-8 text-center text-sm text-ink/60">{t('international.talent.empty')}</p>
+              <p className="mt-8 rounded-lg border border-dashed border-border bg-white p-8 text-center text-sm text-ink/60">
+                {t('international.talent.empty')}
+              </p>
             )}
             {talent && talent.items.length > 0 && (
               <>
@@ -231,7 +239,12 @@ export function InternationalPage() {
                 </div>
                 {talent.total > talent.pageSize && (
                   <div className="mt-6 flex items-center justify-center gap-3 text-sm">
-                    <button type="button" disabled={page <= 1} onClick={() => setPage((p) => p - 1)} className="rounded-DEFAULT border border-border px-4 py-2 disabled:opacity-40">
+                    <button
+                      type="button"
+                      disabled={page <= 1}
+                      onClick={() => setPage((p) => p - 1)}
+                      className="rounded-DEFAULT border border-border px-4 py-2 disabled:opacity-40"
+                    >
                       {t('international.talent.previous')}
                     </button>
                     <span className="text-ink/60">{t('results.page', { page, totalPages: Math.ceil(talent.total / talent.pageSize) })}</span>
@@ -266,10 +279,7 @@ export function InternationalPage() {
                 </Link>
               </p>
             ) : (
-              <EmployerEnquiryForm
-                talent={asked ? { slug: asked.slug, firstName: asked.firstName } : null}
-                onClearTalent={() => setTalentSlug(null)}
-              />
+              <EmployerEnquiryForm talent={asked ? { slug: asked.slug, firstName: asked.firstName } : null} onClearTalent={() => setTalentSlug(null)} />
             )}
           </div>
         </section>
@@ -284,7 +294,9 @@ export function InternationalPage() {
                   <summary className="cursor-pointer list-none text-sm font-semibold text-ink marker:hidden">
                     <span className="flex items-center justify-between gap-4">
                       {t(`international.faq.${key}Q`)}
-                      <span aria-hidden className="text-ink/40 transition-transform group-open:rotate-45">+</span>
+                      <span aria-hidden className="text-ink/40 transition-transform group-open:rotate-45">
+                        +
+                      </span>
                     </span>
                   </summary>
                   <p className="mt-2 text-sm text-ink/70">{t(`international.faq.${key}A`)}</p>

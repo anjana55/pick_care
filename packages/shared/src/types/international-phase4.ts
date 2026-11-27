@@ -186,8 +186,16 @@ export interface InterviewUpdate extends Partial<InterviewInput> {
  * The interview as an iCalendar file, so either side can add it to their
  * calendar in one tap. Built in the browser; nothing is sent anywhere.
  */
-export function interviewIcs(i: Pick<Interview, 'id' | 'scheduledAt' | 'durationMinutes' | 'mode' | 'meetingLink' | 'location' | 'instructions'>, summary: string, now = new Date()): string {
-  const stamp = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+export function interviewIcs(
+  i: Pick<Interview, 'id' | 'scheduledAt' | 'durationMinutes' | 'mode' | 'meetingLink' | 'location' | 'instructions'>,
+  summary: string,
+  now = new Date(),
+): string {
+  const stamp = (d: Date) =>
+    d
+      .toISOString()
+      .replace(/[-:]/g, '')
+      .replace(/\.\d{3}/, '');
   const start = new Date(i.scheduledAt);
   const end = new Date(start.getTime() + i.durationMinutes * 60_000);
   // RFC 5545: commas, semicolons and backslashes escaped; newlines as \n.

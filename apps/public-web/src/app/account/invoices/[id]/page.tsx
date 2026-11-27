@@ -100,7 +100,10 @@ function InvoicePage() {
       </div>
 
       {payment === 'return' && (
-        <p role="status" className={`mb-4 flex items-center gap-2 rounded-lg px-4 py-3 text-sm print:hidden ${invoice.status === 'PAID' ? 'bg-brand-light text-brand-dark' : 'bg-white text-ink/70'}`}>
+        <p
+          role="status"
+          className={`mb-4 flex items-center gap-2 rounded-lg px-4 py-3 text-sm print:hidden ${invoice.status === 'PAID' ? 'bg-brand-light text-brand-dark' : 'bg-white text-ink/70'}`}
+        >
           {invoice.status === 'PAID' ? (
             t('invoices.pay.thanks')
           ) : (
@@ -111,7 +114,9 @@ function InvoicePage() {
           )}
         </p>
       )}
-      {payment === 'cancelled' && invoice.status === 'ISSUED' && <p className="mb-4 rounded-lg bg-white px-4 py-3 text-sm text-ink/70 print:hidden">{t('invoices.pay.cancelled')}</p>}
+      {payment === 'cancelled' && invoice.status === 'ISSUED' && (
+        <p className="mb-4 rounded-lg bg-white px-4 py-3 text-sm text-ink/70 print:hidden">{t('invoices.pay.cancelled')}</p>
+      )}
 
       {invoice.canPayOnline && (
         <section className="mb-4 rounded-lg border border-brand/30 bg-white p-4 print:hidden sm:p-5" aria-labelledby="pay-online">
@@ -155,7 +160,9 @@ function InvoicePage() {
           )}
         </section>
       )}
-      {invoice.status === 'ISSUED' && !invoice.canPayOnline && <p className="mb-4 rounded-lg bg-white px-4 py-3 text-sm text-ink/70 print:hidden">{t('invoices.pay.offline')}</p>}
+      {invoice.status === 'ISSUED' && !invoice.canPayOnline && (
+        <p className="mb-4 rounded-lg bg-white px-4 py-3 text-sm text-ink/70 print:hidden">{t('invoices.pay.offline')}</p>
+      )}
 
       <InvoiceView invoice={invoice} />
     </div>

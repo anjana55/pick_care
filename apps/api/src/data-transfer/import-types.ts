@@ -25,17 +25,7 @@ export const MAX_IMPORT_ROWS = 2000;
  *  failed        - the database refused the row at import time
  */
 export type IssueCode =
-  | 'required'
-  | 'invalid'
-  | 'tooLong'
-  | 'duplicate'
-  | 'duplicateFile'
-  | 'notFound'
-  | 'needsEmail'
-  | 'needsContact'
-  | 'fixedPhone'
-  | 'notNumber'
-  | 'failed';
+  'required' | 'invalid' | 'tooLong' | 'duplicate' | 'duplicateFile' | 'notFound' | 'needsEmail' | 'needsContact' | 'fixedPhone' | 'notNumber' | 'failed';
 
 export interface ImportIssue {
   code: IssueCode;
@@ -90,7 +80,10 @@ export class LocationMatcher {
   static async load(db: Database) {
     const [d, c] = await Promise.all([
       db.select({ id: districts.id, nameEn: districts.nameEn, nameSi: districts.nameSi, nameTa: districts.nameTa }).from(districts).orderBy(asc(districts.id)),
-      db.select({ id: cities.id, districtId: cities.districtId, nameEn: cities.nameEn, nameSi: cities.nameSi, nameTa: cities.nameTa }).from(cities).orderBy(asc(cities.id)),
+      db
+        .select({ id: cities.id, districtId: cities.districtId, nameEn: cities.nameEn, nameSi: cities.nameSi, nameTa: cities.nameTa })
+        .from(cities)
+        .orderBy(asc(cities.id)),
     ]);
     return new LocationMatcher(d, c);
   }

@@ -73,7 +73,10 @@ export function AgreementCheckbox({
           onChange={(e) => onChange(e.target.checked)}
         />
         <span>
-          <span aria-hidden="true" className="text-danger">*</span> {text.acceptLabel}
+          <span aria-hidden="true" className="text-danger">
+            *
+          </span>{' '}
+          {text.acceptLabel}
         </span>
       </label>
       <FieldError message={error} />

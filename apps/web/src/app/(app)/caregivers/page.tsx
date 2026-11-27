@@ -196,16 +196,7 @@ export default function CaregiversListPage() {
         />
       )}
 
-      {data && (
-        <ListPagination
-          page={data.page}
-          totalPages={data.totalPages}
-          total={data.total}
-          noun={t('caregivers.countNoun')}
-          onPage={setPage}
-        />
-      )}
+      {data && <ListPagination page={data.page} totalPages={data.totalPages} total={data.total} noun={t('caregivers.countNoun')} onPage={setPage} />}
     </div>
   );
 }
-

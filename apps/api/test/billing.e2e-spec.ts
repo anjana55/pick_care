@@ -55,8 +55,15 @@ describe('Invoicing and payouts (e2e)', () => {
     const reg = await api()
       .post('/auth/register-caregiver/unified')
       .send({
-        phone, consentAccepted: true, fullName: `Billed Caregiver ${phone}`, permanentAddress: '1 Lake Road, Kandy',
-        dateOfBirth: '1988-01-20', gender: 'FEMALE', civilStatus: 'MARRIED', emergencyContactName: 'EC', emergencyContactNumber: '0770001111',
+        phone,
+        consentAccepted: true,
+        fullName: `Billed Caregiver ${phone}`,
+        permanentAddress: '1 Lake Road, Kandy',
+        dateOfBirth: '1988-01-20',
+        gender: 'FEMALE',
+        civilStatus: 'MARRIED',
+        emergencyContactName: 'EC',
+        emergencyContactNumber: '0770001111',
         emergencyContactRelationship: 'Husband',
       })
       .expect(201);
@@ -69,7 +76,14 @@ describe('Invoicing and payouts (e2e)', () => {
   async function newClient() {
     const reg = await api()
       .post('/auth/register-patient')
-      .send({ email: `billing-client-${run}-${++n}@example.com`, password: 'SelfRegPass123', fullName: 'Nimal Kumara Perera', phone: newPhone(), consentAccepted: true, ...intake })
+      .send({
+        email: `billing-client-${run}-${++n}@example.com`,
+        password: 'SelfRegPass123',
+        fullName: 'Nimal Kumara Perera',
+        phone: newPhone(),
+        consentAccepted: true,
+        ...intake,
+      })
       .expect(201);
     const [row] = await db.select().from(patients).where(eq(patients.id, reg.body.patientId));
     const token = jwt.sign({ sub: row.userId, role: 'PATIENT_GUARDIAN', patientId: row.id }, { secret: accessSecret, expiresIn: '10m' });
@@ -85,8 +99,19 @@ describe('Invoicing and payouts (e2e)', () => {
       .post('/bookings')
       .set(bearer(staffToken))
       .send({
-        patientId: client.patientId, caregiverId: cg.id, scheduleType: 'DAY', daysOfWeek: [1, 2, 3, 4, 5], shiftStartTime: '08:00', shiftEndTime: '17:00',
-        startDate: monday, endDate: addDays(monday, 4), rateType: 'DAILY', rateAmount: '3500.00', payRateType: 'DAILY', payRateAmount: '2500.00', ...rates,
+        patientId: client.patientId,
+        caregiverId: cg.id,
+        scheduleType: 'DAY',
+        daysOfWeek: [1, 2, 3, 4, 5],
+        shiftStartTime: '08:00',
+        shiftEndTime: '17:00',
+        startDate: monday,
+        endDate: addDays(monday, 4),
+        rateType: 'DAILY',
+        rateAmount: '3500.00',
+        payRateType: 'DAILY',
+        payRateAmount: '2500.00',
+        ...rates,
       })
       .expect(201);
     const confirmed = await api().post(`/bookings/${created.body.id}/confirm`).set(bearer(staffToken)).expect(200);
@@ -99,7 +124,10 @@ describe('Invoicing and payouts (e2e)', () => {
   const settings = (body: Record<string, unknown>) => api().patch('/settings/billing').set(bearer(adminToken)).send(body);
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).overrideProvider(ThrottlerStorage).useValue(unlimitedThrottle).compile();
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+      .overrideProvider(ThrottlerStorage)
+      .useValue(unlimitedThrottle)
+      .compile();
     app = moduleRef.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
     await app.init();
@@ -114,9 +142,17 @@ describe('Invoicing and payouts (e2e)', () => {
     const districtId = tree.flatMap((p) => p.districts)[0].id;
     const cityId = (await api().get(`/public/meta/locations/cities?districtId=${districtId}&locale=en`).expect(200)).body[0].id;
     intake = {
-      registrantType: 'GUARDIAN', recipientName: 'Sunil Fernando', recipientRelationship: 'PARENT', recipientAge: 78, recipientGender: 'MALE',
-      preferredContactMethod: 'PHONE_CALL', districtId, cityId, careNeeds: 'Needs help with bathing, meals and medication reminders.',
-      careSchedule: 'DAY', careStart: 'WITHIN_WEEK',
+      registrantType: 'GUARDIAN',
+      recipientName: 'Sunil Fernando',
+      recipientRelationship: 'PARENT',
+      recipientAge: 78,
+      recipientGender: 'MALE',
+      preferredContactMethod: 'PHONE_CALL',
+      districtId,
+      cityId,
+      careNeeds: 'Needs help with bathing, meals and medication reminders.',
+      careSchedule: 'DAY',
+      careStart: 'WITHIN_WEEK',
     };
     // Start from a fresh install's billing settings, whatever an earlier run or a person left behind.
     await settings({ taxEnabled: false, payhereEnabled: false, clearPayhereMerchantSecret: true, payhereMerchantId: '' }).expect(200);
@@ -142,7 +178,11 @@ describe('Invoicing and payouts (e2e)', () => {
     await setShift(booking.id, s3.id, { status: 'COMPLETED' });
     const period = { periodStart: monday, periodEnd: addDays(monday, 6) };
 
-    const draft = await api().post('/invoices').set(bearer(staffToken)).send({ bookingId: booking.id, basis: 'COMPLETED', ...period }).expect(201);
+    const draft = await api()
+      .post('/invoices')
+      .set(bearer(staffToken))
+      .send({ bookingId: booking.id, basis: 'COMPLETED', ...period })
+      .expect(201);
     expect(draft.body.status).toBe('DRAFT');
     expect(draft.body.number).toBeNull();
     expect(draft.body.generated).toEqual({ added: 3, skipped: 0, unpriced: 0 });
@@ -155,12 +195,24 @@ describe('Invoicing and payouts (e2e)', () => {
     await api().get(`/me/invoices/${draft.body.id}`).set(bearer(client.token)).expect(404);
 
     // A second invoice for the same period finds nothing left to bill.
-    const again = await api().post('/invoices').set(bearer(staffToken)).send({ bookingId: booking.id, basis: 'COMPLETED', ...period }).expect(201);
+    const again = await api()
+      .post('/invoices')
+      .set(bearer(staffToken))
+      .send({ bookingId: booking.id, basis: 'COMPLETED', ...period })
+      .expect(201);
     expect(again.body.generated).toEqual({ added: 0, skipped: 3, unpriced: 0 });
     await api().delete(`/invoices/${again.body.id}`).set(bearer(staffToken)).expect(200);
 
     // Shape it: a cheaper shift, a discounted one, a charge, a credit, an invoice discount.
-    const lines = draft.body.lines.map((l: Record<string, unknown>) => ({ id: l.id, kind: l.kind, description: l.description, serviceDate: l.serviceDate, quantity: l.quantity, unit: l.unit, unitPrice: l.unitPrice }));
+    const lines = draft.body.lines.map((l: Record<string, unknown>) => ({
+      id: l.id,
+      kind: l.kind,
+      description: l.description,
+      serviceDate: l.serviceDate,
+      quantity: l.quantity,
+      unit: l.unit,
+      unitPrice: l.unitPrice,
+    }));
     lines[0].unitPrice = '3000.00';
     lines[1] = { ...lines[1], discountType: 'PERCENT', discountValue: '10' };
     const shaped = await api()
@@ -179,8 +231,16 @@ describe('Invoicing and payouts (e2e)', () => {
     expect(shaped.body.lines.map((l: { shiftId: string | null }) => l.shiftId)).toEqual([s0.id, s1.id, s3.id, null, null]);
 
     // The browser cannot invent a shift line, or make a charge negative.
-    await api().put(`/invoices/${draft.body.id}/lines`).set(bearer(staffToken)).send({ lines: [{ kind: 'SHIFT', description: 'x', quantity: '1', unit: 'DAY', unitPrice: '1' }] }).expect(400);
-    await api().put(`/invoices/${draft.body.id}/lines`).set(bearer(staffToken)).send({ lines: [{ kind: 'ITEM', description: 'x', quantity: '1', unit: 'ITEM', unitPrice: '-1' }] }).expect(400);
+    await api()
+      .put(`/invoices/${draft.body.id}/lines`)
+      .set(bearer(staffToken))
+      .send({ lines: [{ kind: 'SHIFT', description: 'x', quantity: '1', unit: 'DAY', unitPrice: '1' }] })
+      .expect(400);
+    await api()
+      .put(`/invoices/${draft.body.id}/lines`)
+      .set(bearer(staffToken))
+      .send({ lines: [{ kind: 'ITEM', description: 'x', quantity: '1', unit: 'ITEM', unitPrice: '-1' }] })
+      .expect(400);
 
     // Tax only once it is on in settings; then 18% on the taxable lines after the discount share.
     await api().patch(`/invoices/${draft.body.id}`).set(bearer(staffToken)).send({ applyTax: true }).expect(400);
@@ -215,9 +275,17 @@ describe('Invoicing and payouts (e2e)', () => {
     expect(JSON.stringify(mine.body)).not.toMatch(/shiftId|caregiverId|internal/);
 
     // Payments: part, the rest, then a refund reopens it. No paying more than is owed.
-    const pay = (body: Record<string, unknown>) => api().post(`/invoices/${draft.body.id}/payments`).set(bearer(staffToken)).send({ paymentType: 'CASH', paidOn: colomboToday(), notify: false, ...body });
+    const pay = (body: Record<string, unknown>) =>
+      api()
+        .post(`/invoices/${draft.body.id}/payments`)
+        .set(bearer(staffToken))
+        .send({ paymentType: 'CASH', paidOn: colomboToday(), notify: false, ...body });
     await pay({ amount: '99999.00' }).expect(400);
-    expect((await pay({ amount: '5000.00', reference: 'Slip 4471' }).expect(201)).body).toMatchObject({ status: 'ISSUED', amountPaid: '5000.00', balance: '6546.48' });
+    expect((await pay({ amount: '5000.00', reference: 'Slip 4471' }).expect(201)).body).toMatchObject({
+      status: 'ISSUED',
+      amountPaid: '5000.00',
+      balance: '6546.48',
+    });
     await api().post(`/invoices/${draft.body.id}/void`).set(bearer(staffToken)).send({ reason: 'Wrong client' }).expect(400);
     const paid = await pay({ amount: '6546.48', paymentType: 'CASH' }).expect(201);
     expect(paid.body).toMatchObject({ status: 'PAID', balance: '0.00' });
@@ -253,14 +321,22 @@ describe('Invoicing and payouts (e2e)', () => {
     const original = await invoice(created.body.id).expect(200);
     expect(original.body).toMatchObject({ status: 'VOID', voidReason: 'Wednesday was missed', number: issued.body.number });
     // The voided invoice no longer holds its shifts, the copy does.
-    const third = await api().post('/invoices').set(bearer(staffToken)).send({ bookingId: booking.id, basis: 'SCHEDULED', periodStart: monday, periodEnd: addDays(monday, 6) }).expect(201);
+    const third = await api()
+      .post('/invoices')
+      .set(bearer(staffToken))
+      .send({ bookingId: booking.id, basis: 'SCHEDULED', periodStart: monday, periodEnd: addDays(monday, 6) })
+      .expect(201);
     expect(third.body.generated.added).toBe(0);
   });
 
   it('takes payment through PayHere, believing only signed notifications for the exact amount', async () => {
     const { client, monday, booking } = await pastBooking(4);
     for (const s of booking.shifts.slice(0, 2)) await setShift(booking.id, s.id, { status: 'COMPLETED' });
-    const draft = await api().post('/invoices').set(bearer(staffToken)).send({ bookingId: booking.id, basis: 'COMPLETED', periodStart: monday, periodEnd: addDays(monday, 6) }).expect(201);
+    const draft = await api()
+      .post('/invoices')
+      .set(bearer(staffToken))
+      .send({ bookingId: booking.id, basis: 'COMPLETED', periodStart: monday, periodEnd: addDays(monday, 6) })
+      .expect(201);
     await api().post(`/invoices/${draft.body.id}/issue`).set(bearer(staffToken)).send({ notify: false }).expect(200);
 
     // Not offered until an admin has set it up completely.
@@ -275,7 +351,14 @@ describe('Invoicing and payouts (e2e)', () => {
     const checkout = await api().post(`/me/invoices/${draft.body.id}/payhere`).set(bearer(client.token)).send({}).expect(200);
     const f = checkout.body.fields as Record<string, string>;
     expect(checkout.body.action).toBe('https://sandbox.payhere.lk/pay/checkout');
-    expect(f).toMatchObject({ merchant_id: MERCHANT, amount: '7000.00', currency: 'LKR', first_name: 'Nimal Kumara', last_name: 'Perera', country: 'Sri Lanka' });
+    expect(f).toMatchObject({
+      merchant_id: MERCHANT,
+      amount: '7000.00',
+      currency: 'LKR',
+      first_name: 'Nimal Kumara',
+      last_name: 'Perera',
+      country: 'Sri Lanka',
+    });
     expect(f.hash).toBe(md5(`${MERCHANT}${f.order_id}7000.00LKR${md5(SECRET)}`));
     expect(JSON.stringify(checkout.body)).not.toContain(SECRET);
     // Someone else's invoice cannot be paid from this account.
@@ -289,8 +372,15 @@ describe('Invoicing and payouts (e2e)', () => {
         .post('/payments/payhere/notify')
         .type('form')
         .send({
-          merchant_id: MERCHANT, order_id: f.order_id, payment_id: paymentId, payhere_amount: amount, payhere_currency: 'LKR', status_code: status,
-          md5sig: md5(`${MERCHANT}${f.order_id}${amount}LKR${status}${md5(secret)}`), method: 'VISA', status_message: 'Successfully completed',
+          merchant_id: MERCHANT,
+          order_id: f.order_id,
+          payment_id: paymentId,
+          payhere_amount: amount,
+          payhere_currency: 'LKR',
+          status_code: status,
+          md5sig: md5(`${MERCHANT}${f.order_id}${amount}LKR${status}${md5(secret)}`),
+          method: 'VISA',
+          status_message: 'Successfully completed',
         });
 
     await notify('2', '7000.00', 'forged-secret').expect(400);
@@ -341,11 +431,24 @@ describe('Invoicing and payouts (e2e)', () => {
     expect((await api().get(`/payouts?caregiverId=${cg.id}`).set(bearer(staffToken)).expect(200)).body.items).toHaveLength(1);
 
     // A transport allowance and a deduction, then approve and pay.
-    const lines = own.body.lines.map((l: Record<string, unknown>) => ({ id: l.id, kind: l.kind, description: l.description, quantity: l.quantity, unit: l.unit, unitPrice: l.unitPrice }));
+    const lines = own.body.lines.map((l: Record<string, unknown>) => ({
+      id: l.id,
+      kind: l.kind,
+      description: l.description,
+      quantity: l.quantity,
+      unit: l.unit,
+      unitPrice: l.unitPrice,
+    }));
     const edited = await api()
       .put(`/payouts/${own.body.id}/lines`)
       .set(bearer(staffToken))
-      .send({ lines: [...lines, { kind: 'ITEM', description: 'Transport allowance', quantity: '1', unit: 'ITEM', unitPrice: '1000' }, { kind: 'ADJUSTMENT', description: 'Uniform', quantity: '1', unit: 'ITEM', unitPrice: '-300' }] })
+      .send({
+        lines: [
+          ...lines,
+          { kind: 'ITEM', description: 'Transport allowance', quantity: '1', unit: 'ITEM', unitPrice: '1000' },
+          { kind: 'ADJUSTMENT', description: 'Uniform', quantity: '1', unit: 'ITEM', unitPrice: '-300' },
+        ],
+      })
       .expect(200);
     expect(edited.body.total).toBe('5700.00');
 
@@ -353,7 +456,11 @@ describe('Invoicing and payouts (e2e)', () => {
     await api().post(`/payouts/${own.body.id}/pay`).set(bearer(staffToken)).send({ paidOn: colomboToday(), method: 'BANK_TRANSFER' }).expect(400);
     await api().post(`/payouts/${own.body.id}/approve`).set(bearer(staffToken)).expect(200);
     await api().put(`/payouts/${own.body.id}/lines`).set(bearer(staffToken)).send({ lines }).expect(400);
-    const paid = await api().post(`/payouts/${own.body.id}/pay`).set(bearer(staffToken)).send({ paidOn: colomboToday(), paymentType: 'CASH', reference: 'TRF-88', notify: false }).expect(200);
+    const paid = await api()
+      .post(`/payouts/${own.body.id}/pay`)
+      .set(bearer(staffToken))
+      .send({ paidOn: colomboToday(), paymentType: 'CASH', reference: 'TRF-88', notify: false })
+      .expect(200);
     expect(paid.body).toMatchObject({ status: 'PAID', paymentReference: 'TRF-88' });
     await api().post(`/payouts/${own.body.id}/void`).set(bearer(staffToken)).send({ reason: 'x' }).expect(400);
 
@@ -369,7 +476,11 @@ describe('Invoicing and payouts (e2e)', () => {
   it('keeps billing to staff, each client to their own invoices, and issued invoices past a client deletion', async () => {
     const { client, monday, booking } = await pastBooking(6);
     await setShift(booking.id, booking.shifts[0].id, { status: 'COMPLETED' });
-    const draft = await api().post('/invoices').set(bearer(staffToken)).send({ bookingId: booking.id, basis: 'COMPLETED', periodStart: monday, periodEnd: addDays(monday, 6) }).expect(201);
+    const draft = await api()
+      .post('/invoices')
+      .set(bearer(staffToken))
+      .send({ bookingId: booking.id, basis: 'COMPLETED', periodStart: monday, periodEnd: addDays(monday, 6) })
+      .expect(201);
 
     await api().get('/invoices').set(bearer(verifierToken)).expect(403);
     await api().get('/payouts').set(bearer(verifierToken)).expect(403);

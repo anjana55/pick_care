@@ -106,7 +106,11 @@ export async function openAdjustmentLines(
     if (!opts.bookingIds.length) return [];
     conditions.push(inArray(billingAdjustments.bookingId, opts.bookingIds));
   }
-  const rows = await db.select().from(billingAdjustments).where(and(...conditions)).orderBy(billingAdjustments.createdAt);
+  const rows = await db
+    .select()
+    .from(billingAdjustments)
+    .where(and(...conditions))
+    .orderBy(billingAdjustments.createdAt);
   if (!rows.length) return [];
   const applied = await appliedAdjustments(
     db,
@@ -133,7 +137,10 @@ export async function openAdjustmentLines(
     }
     // Too big for this document: what fits goes on it, the rest waits for the next.
     const remainder = cents + room;
-    await db.update(billingAdjustments).set({ amount: fromCents(-room) }).where(eq(billingAdjustments.id, a.id));
+    await db
+      .update(billingAdjustments)
+      .set({ amount: fromCents(-room) })
+      .where(eq(billingAdjustments.id, a.id));
     await db.insert(billingAdjustments).values({ ...a, id: uuid(), amount: fromCents(remainder), splitFromId: a.id, createdAt: undefined });
     taken.push({ ...a, amount: fromCents(-room) });
     room = 0;

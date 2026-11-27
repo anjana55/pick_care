@@ -154,8 +154,12 @@ export const patients = mysqlTable(
     careStart: mysqlEnum('care_start', careStartEnum),
     preferredCaregiverGender: mysqlEnum('preferred_caregiver_gender', caregiverGenderPreferenceEnum),
 
-    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+    createdAt: datetime('created_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: datetime('updated_at')
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     userIdx: index('patients_user_idx').on(table.userId),

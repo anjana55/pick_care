@@ -6,11 +6,7 @@ import { normalizeMeasurementId } from '@care-platform/shared';
 import { useAuth } from '@/lib/api/auth-context';
 import { useTranslation } from '@/lib/i18n/provider';
 import { ApiError } from '@/lib/api/client';
-import {
-  useAnalyticsSettings,
-  useUpdateAnalyticsSettings,
-  type AnalyticsSettings,
-} from '@/lib/hooks/use-analytics-settings';
+import { useAnalyticsSettings, useUpdateAnalyticsSettings, type AnalyticsSettings } from '@/lib/hooks/use-analytics-settings';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input, Label } from '@/components/ui/input';
@@ -92,10 +88,14 @@ export function AnalyticsSettingsSection() {
 
       <div className="space-y-5">
         <Card>
-          <CardHeader><CardTitle>{t('analyticsAdmin.propertyTitle')}</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>{t('analyticsAdmin.propertyTitle')}</CardTitle>
+          </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="measurementId" required={draft.enabled}>{t('analyticsAdmin.measurementId')}</Label>
+              <Label htmlFor="measurementId" required={draft.enabled}>
+                {t('analyticsAdmin.measurementId')}
+              </Label>
               <Input
                 id="measurementId"
                 autoComplete="off"
@@ -130,7 +130,9 @@ export function AnalyticsSettingsSection() {
         </Card>
 
         <Card>
-          <CardHeader><CardTitle>{t('analyticsAdmin.setupTitle')}</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>{t('analyticsAdmin.setupTitle')}</CardTitle>
+          </CardHeader>
           <CardContent>
             <p className="mb-2 text-sm text-ink/60">{t('analyticsAdmin.setupIntro')}</p>
             <ul className="list-inside list-disc space-y-1 text-sm text-ink/70">
@@ -142,7 +144,9 @@ export function AnalyticsSettingsSection() {
         </Card>
 
         <Card>
-          <CardHeader><CardTitle>{t('analyticsAdmin.whereTitle')}</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>{t('analyticsAdmin.whereTitle')}</CardTitle>
+          </CardHeader>
           <CardContent>
             <ul className="list-inside list-disc space-y-1 text-sm text-ink/70">
               <li>{t('analyticsAdmin.whereShown')}</li>

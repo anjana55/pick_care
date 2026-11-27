@@ -80,10 +80,7 @@ export function ClientLifecyclePanels({ client, isAdmin }: { client: Client; isA
           {CLIENT_STATUS_OPTIONS.map((s) => (
             <li
               key={s}
-              className={cn(
-                'flex items-start gap-2 rounded px-2 py-1.5 text-xs',
-                s === client.status ? 'bg-brand-light text-brand-dark' : 'text-ink/60',
-              )}
+              className={cn('flex items-start gap-2 rounded px-2 py-1.5 text-xs', s === client.status ? 'bg-brand-light text-brand-dark' : 'text-ink/60')}
             >
               <span className="w-28 shrink-0 font-medium">{t(`clients.status.${s}`)}</span>
               <span>{t(`lifecycle.client.meaning.${s}`)}</span>
@@ -102,13 +99,9 @@ export function ClientLifecyclePanels({ client, isAdmin }: { client: Client; isA
       </Panel>
 
       <Panel title={t('lifecycle.client.accessTitle')}>
-        <Row label={t('clients.detail.isActive')}>
-          {client.isActive ? t('lifecycle.client.canSignIn') : t('lifecycle.client.cannotSignIn')}
-        </Row>
+        <Row label={t('clients.detail.isActive')}>{client.isActive ? t('lifecycle.client.canSignIn') : t('lifecycle.client.cannotSignIn')}</Row>
         <Row label={t('clients.detail.whatsappNumber')}>{client.accountPhone || t('clients.detail.notLinked')}</Row>
-        <Row label={t('clients.detail.emailVerified')}>
-          {client.emailVerifiedAt ? date(client.emailVerifiedAt) : t('clients.detail.emailUnverified')}
-        </Row>
+        <Row label={t('clients.detail.emailVerified')}>{client.emailVerifiedAt ? date(client.emailVerifiedAt) : t('clients.detail.emailUnverified')}</Row>
         <Row label={t('clients.detail.lastLogin')}>{date(client.lastLoginAt)}</Row>
 
         <p className="mt-3 text-xs text-ink/50">{t('lifecycle.client.accessHint')}</p>

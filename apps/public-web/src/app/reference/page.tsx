@@ -12,13 +12,30 @@ import { Label, Textarea } from '@/components/ui/input';
 
 type State = { status: 'checking' } | { status: 'invalid' } | { status: 'ready'; check: ReferenceCheck } | { status: 'done' };
 
-function Choice<V extends string>({ name, legend, values, value, label, onChange }: { name: string; legend: string; values: readonly V[]; value: V | null; label: (v: V) => string; onChange: (v: V) => void }) {
+function Choice<V extends string>({
+  name,
+  legend,
+  values,
+  value,
+  label,
+  onChange,
+}: {
+  name: string;
+  legend: string;
+  values: readonly V[];
+  value: V | null;
+  label: (v: V) => string;
+  onChange: (v: V) => void;
+}) {
   return (
     <fieldset>
       <legend className="mb-2 text-sm font-medium text-ink">{legend}</legend>
       <div className="flex flex-wrap gap-2">
         {values.map((v) => (
-          <label key={v} className={`cursor-pointer rounded-DEFAULT border px-3 py-2 text-sm focus-within:ring-2 focus-within:ring-brand/40 ${value === v ? 'border-brand bg-brand-light text-brand-dark' : 'border-border text-ink/80'}`}>
+          <label
+            key={v}
+            className={`cursor-pointer rounded-DEFAULT border px-3 py-2 text-sm focus-within:ring-2 focus-within:ring-brand/40 ${value === v ? 'border-brand bg-brand-light text-brand-dark' : 'border-border text-ink/80'}`}
+          >
             <input type="radio" name={name} value={v} checked={value === v} onChange={() => onChange(v)} className="sr-only" />
             {label(v)}
           </label>
@@ -124,8 +141,22 @@ function ReferenceInner() {
                 />
                 {knows === 'YES' && (
                   <>
-                    <Choice name="years" legend={t('reference.years')} values={REFERENCE_YEARS} value={years} label={(v) => t(`reference.yearsOptions.${v}`)} onChange={setYears} />
-                    <Choice name="trust" legend={t('reference.trust')} values={REFERENCE_TRUST} value={trust} label={(v) => t(`reference.trustOptions.${v}`)} onChange={setTrust} />
+                    <Choice
+                      name="years"
+                      legend={t('reference.years')}
+                      values={REFERENCE_YEARS}
+                      value={years}
+                      label={(v) => t(`reference.yearsOptions.${v}`)}
+                      onChange={setYears}
+                    />
+                    <Choice
+                      name="trust"
+                      legend={t('reference.trust')}
+                      values={REFERENCE_TRUST}
+                      value={trust}
+                      label={(v) => t(`reference.trustOptions.${v}`)}
+                      onChange={setTrust}
+                    />
                   </>
                 )}
                 <div>

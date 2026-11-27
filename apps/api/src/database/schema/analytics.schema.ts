@@ -16,6 +16,10 @@ export const analyticsSettings = mysqlTable('analytics_settings', {
   measurementId: varchar('measurement_id', { length: 32 }),
 
   updatedBy: varchar('updated_by', { length: 36 }),
-  createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: datetime('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+  createdAt: datetime('created_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: datetime('updated_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
 });

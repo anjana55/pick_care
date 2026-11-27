@@ -99,9 +99,7 @@ describe('patient registration DTOs', () => {
   });
 
   it('rejects a malformed alternate phone but allows leaving it out', async () => {
-    expect(await errorsFor({ ...whatsappBody, alternatePhone: 'call me' }, RegisterPatientWhatsappDto)).toContain(
-      'Enter a valid alternate phone number',
-    );
+    expect(await errorsFor({ ...whatsappBody, alternatePhone: 'call me' }, RegisterPatientWhatsappDto)).toContain('Enter a valid alternate phone number');
     expect(await errorsFor({ ...whatsappBody, alternatePhone: '+94 11 234 5678' }, RegisterPatientWhatsappDto)).toEqual([]);
   });
 });
@@ -146,12 +144,10 @@ describe('buildPatientIntake', () => {
   });
 
   it('refuses EMAIL as the contact method for an account with no email address', async () => {
-    await expect(buildPatientIntake(stubDb(), dto({ preferredContactMethod: 'EMAIL' }), { hasEmail: false })).rejects.toThrow(
-      BadRequestException,
-    );
-    await expect(
-      buildPatientIntake(stubDb(), dto({ preferredContactMethod: 'EMAIL' }), { hasEmail: true }),
-    ).resolves.toMatchObject({ preferredContactMethod: 'EMAIL' });
+    await expect(buildPatientIntake(stubDb(), dto({ preferredContactMethod: 'EMAIL' }), { hasEmail: false })).rejects.toThrow(BadRequestException);
+    await expect(buildPatientIntake(stubDb(), dto({ preferredContactMethod: 'EMAIL' }), { hasEmail: true })).resolves.toMatchObject({
+      preferredContactMethod: 'EMAIL',
+    });
   });
 
   it('refuses a city that belongs to a different district', async () => {

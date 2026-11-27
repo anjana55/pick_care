@@ -1,7 +1,21 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { AssessmentInput, ContactAbroad, OfferInput, OfferResponse, WelfareReportInput, EmployerAccountEnquiryRequest, EmployerAccountUpdate, InterviewRequest, Locale, OverseasReadiness, SharedProfileSettings, SharedProfileUpdate, VacancyInput } from '@care-platform/shared';
+import type {
+  AssessmentInput,
+  ContactAbroad,
+  OfferInput,
+  OfferResponse,
+  WelfareReportInput,
+  EmployerAccountEnquiryRequest,
+  EmployerAccountUpdate,
+  InterviewRequest,
+  Locale,
+  OverseasReadiness,
+  SharedProfileSettings,
+  SharedProfileUpdate,
+  VacancyInput,
+} from '@care-platform/shared';
 import { employerApi, internationalApi, workAbroadApi } from '../api/international';
 import { useAuth } from '../api/auth-context';
 import { useCaregiverId } from './use-caregiver-portal';
@@ -57,7 +71,12 @@ export function useVacancyBoard(page: number, filters: VacancyFilters = {}) {
 }
 
 export function useVacancy(reference: string | null) {
-  return useQuery({ queryKey: ['international', 'vacancy', reference], queryFn: () => internationalApi.vacancy(reference!), enabled: Boolean(reference), retry: false });
+  return useQuery({
+    queryKey: ['international', 'vacancy', reference],
+    queryFn: () => internationalApi.vacancy(reference!),
+    enabled: Boolean(reference),
+    retry: false,
+  });
 }
 
 export function useSendEnquiry() {
@@ -209,7 +228,11 @@ export function useUpdateEmployerAccount() {
 
 export function useEmployerEnquiries(locale: Locale) {
   const employer = useIsEmployer();
-  return useQuery({ queryKey: ['employer', employer?.employerId, 'enquiries', locale], queryFn: () => employerApi.enquiries(locale), enabled: Boolean(employer) });
+  return useQuery({
+    queryKey: ['employer', employer?.employerId, 'enquiries', locale],
+    queryFn: () => employerApi.enquiries(locale),
+    enabled: Boolean(employer),
+  });
 }
 
 export function useCreateEmployerEnquiry() {
@@ -243,7 +266,8 @@ export function useShortlist(locale: Locale) {
   const key = ['employer', employer?.employerId, 'shortlist', locale];
   const query = useQuery({ queryKey: key, queryFn: () => employerApi.shortlist(locale), enabled: Boolean(employer) });
   const toggle = useMutation({
-    mutationFn: ({ slug, saved }: { slug: string; saved: boolean }) => (saved ? employerApi.addToShortlist(slug, locale) : employerApi.removeFromShortlist(slug, locale)),
+    mutationFn: ({ slug, saved }: { slug: string; saved: boolean }) =>
+      saved ? employerApi.addToShortlist(slug, locale) : employerApi.removeFromShortlist(slug, locale),
     onSuccess: (data) => queryClient.setQueryData(key, data),
   });
   return { ...query, toggle };
@@ -274,7 +298,11 @@ export function useCloseVacancy() {
 
 export function useEmployerPlacements(locale: Locale) {
   const employer = useIsEmployer();
-  return useQuery({ queryKey: ['employer', employer?.employerId, 'placements', locale], queryFn: () => employerApi.placements(locale), enabled: Boolean(employer) });
+  return useQuery({
+    queryKey: ['employer', employer?.employerId, 'placements', locale],
+    queryFn: () => employerApi.placements(locale),
+    enabled: Boolean(employer),
+  });
 }
 
 export function useEmployerInvoices() {
@@ -300,7 +328,12 @@ export function usePayInvoice(id: string) {
 // --- phase 4: certificates, results, interviews, offers, departure, welfare -----
 
 export function useCertificateCheck(code: string | null) {
-  return useQuery({ queryKey: ['international', 'certificate', code], queryFn: () => internationalApi.checkCertificate(code!), enabled: Boolean(code), retry: false });
+  return useQuery({
+    queryKey: ['international', 'certificate', code],
+    queryFn: () => internationalApi.checkCertificate(code!),
+    enabled: Boolean(code),
+    retry: false,
+  });
 }
 
 export function useMyAssessments() {
@@ -308,8 +341,14 @@ export function useMyAssessments() {
   const queryClient = useQueryClient();
   const key = ['portal', id, 'assessments'];
   const query = useQuery({ queryKey: key, queryFn: () => workAbroadApi.assessments(id!), enabled: Boolean(id) });
-  const add = useMutation({ mutationFn: (body: AssessmentInput) => workAbroadApi.addAssessment(id!, body), onSuccess: (data) => queryClient.setQueryData(key, data) });
-  const remove = useMutation({ mutationFn: (assessmentId: string) => workAbroadApi.removeAssessment(id!, assessmentId), onSuccess: (data) => queryClient.setQueryData(key, data) });
+  const add = useMutation({
+    mutationFn: (body: AssessmentInput) => workAbroadApi.addAssessment(id!, body),
+    onSuccess: (data) => queryClient.setQueryData(key, data),
+  });
+  const remove = useMutation({
+    mutationFn: (assessmentId: string) => workAbroadApi.removeAssessment(id!, assessmentId),
+    onSuccess: (data) => queryClient.setQueryData(key, data),
+  });
   return { ...query, add, remove };
 }
 
@@ -381,7 +420,10 @@ export function useOfferActions() {
   const employer = useIsEmployer();
   const queryClient = useQueryClient();
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['employer', employer?.employerId] });
-  const make = useMutation({ mutationFn: ({ candidateId, body }: { candidateId: string; body: OfferInput }) => employerApi.makeOffer(candidateId, body), onSuccess: refresh });
+  const make = useMutation({
+    mutationFn: ({ candidateId, body }: { candidateId: string; body: OfferInput }) => employerApi.makeOffer(candidateId, body),
+    onSuccess: refresh,
+  });
   const update = useMutation({ mutationFn: ({ id, body }: { id: string; body: OfferInput }) => employerApi.updateOffer(id, body), onSuccess: refresh });
   const withdraw = useMutation({ mutationFn: (id: string) => employerApi.withdrawOffer(id), onSuccess: refresh });
   return { make, update, withdraw };

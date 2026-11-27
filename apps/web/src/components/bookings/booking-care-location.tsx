@@ -66,7 +66,13 @@ export function BookingCareLocationPanel({ bookingId, patientId }: { bookingId: 
         <PinPicker value={editing.point} start={location ?? suggestion} focus={focus} onChange={(point) => setEditing({ ...editing, point })} labels={labels} />
         <div>
           <Label htmlFor="care-location-label">{t('careLocation.label')}</Label>
-          <Input id="care-location-label" value={editing.label} maxLength={60} placeholder={t('careLocation.labelPlaceholder')} onChange={(e) => setEditing({ ...editing, label: e.target.value })} />
+          <Input
+            id="care-location-label"
+            value={editing.label}
+            maxLength={60}
+            placeholder={t('careLocation.labelPlaceholder')}
+            onChange={(e) => setEditing({ ...editing, label: e.target.value })}
+          />
         </div>
         {error && (
           <p role="alert" className="text-sm text-danger">
@@ -132,7 +138,11 @@ export function BookingCareLocationPanel({ bookingId, patientId }: { bookingId: 
           <p className="text-accent">{t('careLocation.suggested')}</p>
           <PinPicker value={suggestion} labels={labels} className="relative h-40 w-full overflow-hidden rounded border border-ink/10" />
           <div className="flex flex-wrap gap-2">
-            <Button size="sm" onClick={() => update.mutate({ id: suggestion.id, confirm: true, isDefault: true }, { onError: fail })} disabled={update.isPending}>
+            <Button
+              size="sm"
+              onClick={() => update.mutate({ id: suggestion.id, confirm: true, isDefault: true }, { onError: fail })}
+              disabled={update.isPending}
+            >
               {t('careLocation.confirm')}
             </Button>
             <Button size="sm" variant="secondary" onClick={() => setEditing({ id: suggestion.id, point: suggestion, label: suggestion.label })}>

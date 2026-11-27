@@ -104,12 +104,8 @@ export function ClientOverview({ client }: { client: Client }) {
         <Panel title={t('clients.detail.profile')}>
           <Row label={t('personalInfo.fields.fullName')}>{client.fullName}</Row>
           <Row label={t('personalInfo.fields.permanentAddress')}>{client.permanentAddress || none}</Row>
-          <Row label={t('personalInfo.fields.dateOfBirth')}>
-            {client.dateOfBirth ? client.dateOfBirth.slice(0, 10) : none}
-          </Row>
-          <Row label={t('personalInfo.fields.gender')}>
-            {client.gender ? t(`personalInfo.options.gender.${client.gender}`) : none}
-          </Row>
+          <Row label={t('personalInfo.fields.dateOfBirth')}>{client.dateOfBirth ? client.dateOfBirth.slice(0, 10) : none}</Row>
+          <Row label={t('personalInfo.fields.gender')}>{client.gender ? t(`personalInfo.options.gender.${client.gender}`) : none}</Row>
           <Row label={t('personalInfo.fields.nic')}>{client.nic || none}</Row>
           <Row label={t('personalInfo.fields.postalCode')}>{client.postalCode || none}</Row>
         </Panel>

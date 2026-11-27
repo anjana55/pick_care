@@ -112,13 +112,24 @@ export class ShiftDropoutsService implements OnApplicationBootstrap {
     const agentOn = (await this.automation.gate('live_care.replace_caregiver')).mode !== 'MANUAL';
     await this.automation.setHandoverNote(
       { caseType: 'BOOKING', caseId: row.bookingId },
-      { done: said, waiting: agentOn ? 'The live-care agent is offering the shift as cover' : 'Staff to find cover (Find cover on Today\'s visits)', next: 'Whoever accepts takes the shift; staff if nobody does' },
+      {
+        done: said,
+        waiting: agentOn ? 'The live-care agent is offering the shift as cover' : "Staff to find cover (Find cover on Today's visits)",
+        next: 'Whoever accepts takes the shift; staff if nobody does',
+      },
     );
-    await this.tellStaff(`Can't make a shift: ${row.reference} ${when.date} ${when.time}`, [
-      `${row.fullName} (${row.registration}) said they cannot make the shift on ${when.date} at ${when.time}.`,
-      ...(clean ? [`Their note: "${clean}"`] : []),
-      agentOn ? 'The live-care agent is offering the shift to other caregivers now - the booking\'s standby first, when it has one. You will hear when someone takes it, or if nobody does.' : 'Live care is on Manual: open Find cover for this shift to offer it to other caregivers.',
-    ], row.bookingId, `cant make ${shiftId}`);
+    await this.tellStaff(
+      `Can't make a shift: ${row.reference} ${when.date} ${when.time}`,
+      [
+        `${row.fullName} (${row.registration}) said they cannot make the shift on ${when.date} at ${when.time}.`,
+        ...(clean ? [`Their note: "${clean}"`] : []),
+        agentOn
+          ? "The live-care agent is offering the shift to other caregivers now - the booking's standby first, when it has one. You will hear when someone takes it, or if nobody does."
+          : 'Live care is on Manual: open Find cover for this shift to offer it to other caregivers.',
+      ],
+      row.bookingId,
+      `cant make ${shiftId}`,
+    );
     await nudgeLiveCare(this.jobs, this.automation, shiftId);
     return { ok: true };
   }
@@ -167,7 +178,14 @@ export class ShiftDropoutsService implements OnApplicationBootstrap {
 
   async standby(bookingId: string, now = new Date()): Promise<BookingStandby> {
     const [b] = await this.db
-      .select({ id: bookings.id, standbyId: bookings.standbyCaregiverId, setBy: bookings.standbySetBy, fullName: caregivers.fullName, registrationNumber: caregivers.registrationNumber, phone: caregivers.primaryPhone })
+      .select({
+        id: bookings.id,
+        standbyId: bookings.standbyCaregiverId,
+        setBy: bookings.standbySetBy,
+        fullName: caregivers.fullName,
+        registrationNumber: caregivers.registrationNumber,
+        phone: caregivers.primaryPhone,
+      })
       .from(bookings)
       .leftJoin(caregivers, eq(caregivers.id, bookings.standbyCaregiverId))
       .where(eq(bookings.id, bookingId))
@@ -177,26 +195,41 @@ export class ShiftDropoutsService implements OnApplicationBootstrap {
     const suggestions = shiftId ? (await this.cover.forShift(shiftId, now)).suggestions.filter((s) => s.caregiverId !== b.standbyId).slice(0, 5) : [];
     return {
       bookingId,
-      standby: b.standbyId && b.registrationNumber ? { caregiverId: b.standbyId, fullName: b.fullName!, registrationNumber: b.registrationNumber, phone: b.phone } : null,
+      standby:
+        b.standbyId && b.registrationNumber
+          ? { caregiverId: b.standbyId, fullName: b.fullName!, registrationNumber: b.registrationNumber, phone: b.phone }
+          : null,
       setBy: b.standbyId ? b.setBy : null,
       suggestions,
     };
   }
 
   async setStandby(bookingId: string, caregiverId: string | null, by: { userId: string; agent: boolean }): Promise<BookingStandby> {
-    const [b] = await this.db.select({ status: bookings.status, caregiverId: bookings.caregiverId, standbyId: bookings.standbyCaregiverId }).from(bookings).where(eq(bookings.id, bookingId)).limit(1);
+    const [b] = await this.db
+      .select({ status: bookings.status, caregiverId: bookings.caregiverId, standbyId: bookings.standbyCaregiverId })
+      .from(bookings)
+      .where(eq(bookings.id, bookingId))
+      .limit(1);
     if (!b) throw new NotFoundException('Booking not found');
     if (b.status === 'CANCELLED' || b.status === 'COMPLETED') throw new BadRequestException('This booking is closed');
     let reg: string | null = null;
     if (caregiverId) {
       if (caregiverId === b.caregiverId) throw new BadRequestException('The booked caregiver cannot be their own standby');
-      const [cg] = await this.db.select({ reg: caregivers.registrationNumber, status: caregivers.status, userId: caregivers.userId, deletedAt: caregivers.deletedAt }).from(caregivers).where(eq(caregivers.id, caregiverId)).limit(1);
+      const [cg] = await this.db
+        .select({ reg: caregivers.registrationNumber, status: caregivers.status, userId: caregivers.userId, deletedAt: caregivers.deletedAt })
+        .from(caregivers)
+        .where(eq(caregivers.id, caregiverId))
+        .limit(1);
       if (!cg || cg.deletedAt) throw new BadRequestException('Caregiver not found');
-      if (!cg.userId || !(PUBLIC_CAREGIVER_STATUSES as readonly string[]).includes(cg.status)) throw new BadRequestException('This caregiver cannot be offered shifts');
+      if (!cg.userId || !(PUBLIC_CAREGIVER_STATUSES as readonly string[]).includes(cg.status))
+        throw new BadRequestException('This caregiver cannot be offered shifts');
       reg = cg.reg;
     }
     if (caregiverId === b.standbyId) return this.standby(bookingId);
-    await this.db.update(bookings).set({ standbyCaregiverId: caregiverId, standbySetBy: caregiverId ? (by.agent ? 'AGENT' : 'STAFF') : null }).where(eq(bookings.id, bookingId));
+    await this.db
+      .update(bookings)
+      .set({ standbyCaregiverId: caregiverId, standbySetBy: caregiverId ? (by.agent ? 'AGENT' : 'STAFF') : null })
+      .where(eq(bookings.id, bookingId));
     await this.db.insert(bookingEvents).values({
       id: uuid(),
       bookingId,
@@ -236,7 +269,11 @@ export class ShiftDropoutsService implements OnApplicationBootstrap {
       try {
         const ref = { caseType: 'BOOKING' as const, caseId: b.id };
         if ((await this.automation.gate(STANDBY, ref)).outcome === 'NONE') continue;
-        const [seen] = await this.db.select({ id: agentDecisions.id }).from(agentDecisions).where(and(eq(agentDecisions.action, STANDBY), eq(agentDecisions.dedupeKey, `${b.id}|standby`))).limit(1);
+        const [seen] = await this.db
+          .select({ id: agentDecisions.id })
+          .from(agentDecisions)
+          .where(and(eq(agentDecisions.action, STANDBY), eq(agentDecisions.dedupeKey, `${b.id}|standby`)))
+          .limit(1);
         if (seen) continue;
         const shiftId = await this.nextShift(b.id, now);
         if (!shiftId) continue;
@@ -247,7 +284,13 @@ export class ShiftDropoutsService implements OnApplicationBootstrap {
           action: STANDBY,
           case: ref,
           reason: `Line up ${best.registrationNumber} as standby for ${b.reference}: the best fit for its next shift (${best.reasons.slice(0, 2).join(', ') || 'matches'})`,
-          proposal: { bookingId: b.id, bookingReference: b.reference, caregiverId: best.caregiverId, registrationNumber: best.registrationNumber, reasons: best.reasons } satisfies StandbyProposal,
+          proposal: {
+            bookingId: b.id,
+            bookingReference: b.reference,
+            caregiverId: best.caregiverId,
+            registrationNumber: best.registrationNumber,
+            reasons: best.reasons,
+          } satisfies StandbyProposal,
           dedupeKey: `${b.id}|standby`,
         });
         if (!decision.decisionId) continue;
@@ -271,7 +314,11 @@ export class ShiftDropoutsService implements OnApplicationBootstrap {
     await this.setStandby(p.bookingId, p.caregiverId, { userId: actor.userId, agent: true });
     await this.automation.setHandoverNote(
       { caseType: 'BOOKING', caseId: p.bookingId },
-      { done: `Lined up ${p.registrationNumber} as standby`, waiting: 'Nothing - they are asked first if a shift needs cover', next: 'Staff can change the standby on the booking' },
+      {
+        done: `Lined up ${p.registrationNumber} as standby`,
+        waiting: 'Nothing - they are asked first if a shift needs cover',
+        next: 'Staff can change the standby on the booking',
+      },
     );
     return { standby: p.registrationNumber };
   };
@@ -281,20 +328,40 @@ export class ShiftDropoutsService implements OnApplicationBootstrap {
     const open = await this.db
       .select({ id: agentDecisions.id, caseId: agentDecisions.caseId, proposal: agentDecisions.proposal })
       .from(agentDecisions)
-      .where(and(eq(agentDecisions.action, STANDBY), eq(agentDecisions.outcome, 'SHADOW'), isNull(agentDecisions.staffVerdict), only ? inArray(agentDecisions.caseId, only.length ? only : ['-']) : undefined))
+      .where(
+        and(
+          eq(agentDecisions.action, STANDBY),
+          eq(agentDecisions.outcome, 'SHADOW'),
+          isNull(agentDecisions.staffVerdict),
+          only ? inArray(agentDecisions.caseId, only.length ? only : ['-']) : undefined,
+        ),
+      )
       .limit(300);
     if (!open.length) return 0;
     const chosen = await this.db
       .select({ id: bookings.id, standbyId: bookings.standbyCaregiverId })
       .from(bookings)
-      .where(and(inArray(bookings.id, open.map((d) => d.caseId!)), eq(bookings.standbySetBy, 'STAFF')));
+      .where(
+        and(
+          inArray(
+            bookings.id,
+            open.map((d) => d.caseId!),
+          ),
+          eq(bookings.standbySetBy, 'STAFF'),
+        ),
+      );
     const agent = (await this.automation.agentActor('BOOKING')).userId;
     let scored = 0;
     for (const d of open) {
       const c = chosen.find((x) => x.id === d.caseId);
       if (!c?.standbyId) continue;
       const same = c.standbyId === (d.proposal as StandbyProposal | null)?.caregiverId;
-      await this.automation.review(d.id, same ? 'AGREED' : 'DIFFERED', same ? 'Scored automatically: staff chose the same standby' : 'Scored automatically: staff chose another standby', agent);
+      await this.automation.review(
+        d.id,
+        same ? 'AGREED' : 'DIFFERED',
+        same ? 'Scored automatically: staff chose the same standby' : 'Scored automatically: staff chose another standby',
+        agent,
+      );
       scored++;
     }
     return scored;
@@ -307,7 +374,14 @@ export class ShiftDropoutsService implements OnApplicationBootstrap {
     try {
       await this.email.sendNotificationEmail(
         to,
-        { subject, blocks: [{ lang: 'en', heading: subject, paragraphs }], cta: { label: 'Open the booking', url: `${(this.config.get<string>('CAREGIVER_WEB_URL') ?? 'http://localhost:3000/staff').replace(/\/+$/, '')}/bookings/${bookingId}` } },
+        {
+          subject,
+          blocks: [{ lang: 'en', heading: subject, paragraphs }],
+          cta: {
+            label: 'Open the booking',
+            url: `${(this.config.get<string>('CAREGIVER_WEB_URL') ?? 'http://localhost:3000/staff').replace(/\/+$/, '')}/bookings/${bookingId}`,
+          },
+        },
         label,
       );
     } catch (err) {

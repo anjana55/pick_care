@@ -35,12 +35,7 @@ export function ConfirmDialog({
 }) {
   const { t } = useTranslation();
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-label={title}
-    >
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4" role="dialog" aria-modal="true" aria-label={title}>
       <div className="w-full max-w-sm rounded-lg border border-border bg-white p-6">
         <h3 className="mb-2 text-base font-semibold text-ink">{title}</h3>
         {message && <div className="mb-4 text-sm text-ink/60">{message}</div>}

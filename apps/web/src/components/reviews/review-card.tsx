@@ -78,7 +78,9 @@ export function StaffReviewCard({ review: r, context = 'queue' }: { review: Staf
           <p className="text-xs text-ink/50">{t('reviews.given', { date: fmtDateTime(r.updatedAt, locale) })}</p>
         </div>
         {r.comment && (
-          <span className={`whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_TONE[r.commentStatus]}`}>{t(`reviews.status.${r.commentStatus}`)}</span>
+          <span className={`whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_TONE[r.commentStatus]}`}>
+            {t(`reviews.status.${r.commentStatus}`)}
+          </span>
         )}
       </div>
 
@@ -111,10 +113,16 @@ export function StaffReviewCard({ review: r, context = 'queue' }: { review: Staf
           </p>
           {r.commentReviewedBy && r.commentReviewedAt && r.commentStatus !== 'PENDING' && (
             <p className="mt-1 text-xs text-ink/50">
-              {t('reviews.reviewedBy', { status: t(`reviews.status.${r.commentStatus}`), name: r.commentReviewedBy, date: fmtDateTime(r.commentReviewedAt, locale) })}
+              {t('reviews.reviewedBy', {
+                status: t(`reviews.status.${r.commentStatus}`),
+                name: r.commentReviewedBy,
+                date: fmtDateTime(r.commentReviewedAt, locale),
+              })}
             </p>
           )}
-          {r.commentStatus === 'REJECTED' && r.commentRejectReason && <p className="mt-1 text-xs text-ink/60">{t('reviews.rejectReason', { reason: r.commentRejectReason })}</p>}
+          {r.commentStatus === 'REJECTED' && r.commentRejectReason && (
+            <p className="mt-1 text-xs text-ink/60">{t('reviews.rejectReason', { reason: r.commentRejectReason })}</p>
+          )}
         </div>
       )}
       {r.privateNote && (

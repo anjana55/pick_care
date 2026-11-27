@@ -4,7 +4,8 @@ import { InternationalPage } from '@/components/international/international-page
 
 export const metadata: Metadata = {
   title: 'Hire caregivers from Sri Lanka',
-  description: 'Verified, trained caregivers from Sri Lanka for agencies, care homes, hospitals and families abroad. You pay a placement fee only when a caregiver starts work.',
+  description:
+    'Verified, trained caregivers from Sri Lanka for agencies, care homes, hospitals and families abroad. You pay a placement fee only when a caregiver starts work.',
 };
 
 export default function Page() {
