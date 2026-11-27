@@ -26,7 +26,7 @@ export const emailSettings = mysqlTable('email_settings', {
   secure: boolean('secure').notNull().default(false),
   username: varchar('username', { length: 255 }),
   passwordEncrypted: text('password_encrypted'),
-  fromName: varchar('from_name', { length: 128 }).notNull().default('CareLink'),
+  fromName: varchar('from_name', { length: 128 }).notNull().default('Pick Care'),
   fromAddress: varchar('from_address', { length: 255 }),
   replyTo: varchar('reply_to', { length: 255 }),
   // Where "new care request" alerts go: comma-separated addresses. Empty =

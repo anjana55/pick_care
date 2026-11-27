@@ -21,8 +21,8 @@ const EMPTY_ROW = {
   androidCertFingerprints: null,
   updatedBy: null,
 };
-const IOS_STORE = 'https://apps.apple.com/app/carelink/id1234567890';
-const PLAY_STORE = 'https://play.google.com/store/apps/details?id=com.vivantihealth.carelink';
+const IOS_STORE = 'https://apps.apple.com/app/pick-care/id1234567890';
+const PLAY_STORE = 'https://play.google.com/store/apps/details?id=lk.pickcare.app';
 
 function make(initial: Record<string, unknown> | null = null, opts: { broken?: boolean } = {}) {
   let row: Record<string, unknown> | null = initial ? { id: 'default', ...EMPTY_ROW, createdAt: new Date(), updatedAt: new Date(), ...initial } : null;
@@ -147,22 +147,22 @@ describe('mobile app version control', () => {
 
     it('publish nothing until both the package and a fingerprint are set', () => {
       expect(assetLinksFor(null)).toEqual([]);
-      expect(assetLinksFor({ packageName: 'com.vivantihealth.carelink', certFingerprints: [] })).toEqual([]);
+      expect(assetLinksFor({ packageName: 'lk.pickcare.app', certFingerprints: [] })).toEqual([]);
       expect(assetLinksFor({ packageName: null, certFingerprints: [FP] })).toEqual([]);
-      expect(assetLinksFor({ packageName: 'carelink', certFingerprints: [FP] })).toEqual([]);
-      expect(assetLinksFor({ packageName: 'com.vivantihealth.carelink', certFingerprints: [FP, 'junk'] })).toEqual([
+      expect(assetLinksFor({ packageName: 'pickcare', certFingerprints: [FP] })).toEqual([]);
+      expect(assetLinksFor({ packageName: 'lk.pickcare.app', certFingerprints: [FP, 'junk'] })).toEqual([
         {
           relation: ['delegate_permission/common.handle_all_urls'],
-          target: { namespace: 'android_app', package_name: 'com.vivantihealth.carelink', sha256_cert_fingerprints: [FP] },
+          target: { namespace: 'android_app', package_name: 'lk.pickcare.app', sha256_cert_fingerprints: [FP] },
         },
       ]);
     });
 
     it('are saved one per line, in Android form, and leave the version settings alone', async () => {
       const { service, stored } = make({ androidLatestVersion: '1.2.0' });
-      const saved = await service.update({ appLinks: { android: { packageName: 'com.vivantihealth.carelink', certFingerprints: [FP.toLowerCase(), FP] } } }, 'admin-1');
+      const saved = await service.update({ appLinks: { android: { packageName: 'lk.pickcare.app', certFingerprints: [FP.toLowerCase(), FP] } } }, 'admin-1');
       expect(stored().androidCertFingerprints).toBe(FP);
-      expect(saved.appLinks.android).toEqual({ packageName: 'com.vivantihealth.carelink', certFingerprints: [FP] });
+      expect(saved.appLinks.android).toEqual({ packageName: 'lk.pickcare.app', certFingerprints: [FP] });
       expect(saved.android.latestVersion).toBe('1.2.0');
       expect(await service.getAndroidAssetLinks()).toHaveLength(1);
 
@@ -174,7 +174,7 @@ describe('mobile app version control', () => {
     });
 
     it.each([
-      [{ packageName: 'carelink' }, /package name/],
+      [{ packageName: 'pickcare' }, /package name/],
       [{ packageName: '1com.x' }, /package name/],
       [{ certFingerprints: ['AB:CD'] }, /isn't a SHA-256 fingerprint/],
       [{ certFingerprints: Array.from({ length: 6 }, (_, i) => FP.slice(0, -2) + String(i).padStart(2, '0')) }, /at most 5/],

@@ -221,8 +221,8 @@ export class SocialAuthController {
   }
 
   private appScheme() {
-    const scheme = this.config.get<string>('MOBILE_APP_SCHEME') ?? 'carelink';
-    return /^[a-z][a-z0-9+.-]*$/.test(scheme) ? scheme : 'carelink';
+    const scheme = this.config.get<string>('MOBILE_APP_SCHEME') ?? 'pickcare';
+    return /^[a-z][a-z0-9+.-]*$/.test(scheme) ? scheme : 'pickcare';
   }
 
   private frontendUrl() {

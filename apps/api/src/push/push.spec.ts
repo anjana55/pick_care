@@ -41,7 +41,7 @@ function fakeDb(selects: unknown[][] = []) {
 }
 
 const config = (env: Record<string, string> = {}) => new ConfigService(env);
-const branding = { companyName: async () => 'Vivanti Health' };
+const branding = { companyName: async () => 'Pick Care' };
 
 /** Expo's push service: answers each send with a ticket per message from `ticket`. */
 function expo(ticket: (to: string, i: number) => unknown, receipts: Record<string, unknown> = {}) {
@@ -67,10 +67,10 @@ function service(selects: unknown[][] = [], env: Record<string, string> = {}) {
 describe('push notifications', () => {
   describe('the messages', () => {
     it('writes each phone’s push in that phone’s app language, names the company and carries the screen to open', () => {
-      const out = messagesFor([device(1, 'si'), device(2, 'en')], text, '/bookings/b-1', 'Vivanti Health');
+      const out = messagesFor([device(1, 'si'), device(2, 'en')], text, '/bookings/b-1', 'Pick Care');
       expect(out).toEqual([
-        { to: 'ExponentPushToken[t1]', title: 'Vivanti Health si', body: 'Booking BK-1 (si)', sound: 'default', channelId: 'default', data: { path: '/bookings/b-1' } },
-        { to: 'ExponentPushToken[t2]', title: 'Vivanti Health en', body: 'Booking BK-1 (en)', sound: 'default', channelId: 'default', data: { path: '/bookings/b-1' } },
+        { to: 'ExponentPushToken[t1]', title: 'Pick Care si', body: 'Booking BK-1 (si)', sound: 'default', channelId: 'default', data: { path: '/bookings/b-1' } },
+        { to: 'ExponentPushToken[t2]', title: 'Pick Care en', body: 'Booking BK-1 (en)', sound: 'default', channelId: 'default', data: { path: '/bookings/b-1' } },
       ]);
     });
 

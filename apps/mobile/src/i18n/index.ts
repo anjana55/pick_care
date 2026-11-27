@@ -26,11 +26,11 @@ export function currentLanguage(): Locale {
   return currentLocale;
 }
 
-const brandName = (Constants.expoConfig?.extra?.brandName as string | undefined) ?? 'CareLink';
+const brandName = (Constants.expoConfig?.extra?.brandName as string | undefined) ?? 'Pick Care';
 
 export const { I18nProvider, useTranslation } = createI18n(
   { en, si, ta },
-  'carelink-locale',
+  'pickcare-locale',
   { brand: brandName },
   {
     storage: AsyncStorage,

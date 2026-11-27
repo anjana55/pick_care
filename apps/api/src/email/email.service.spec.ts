@@ -11,7 +11,7 @@ function settings(over: Partial<ResolvedEmailSettings> | Error): EmailSettingsSe
     secure: false,
     username: null,
     password: null,
-    fromName: 'CareLink',
+    fromName: 'Pick Care',
     fromAddress: null,
     replyTo: null,
   requestAlertsTo: null,

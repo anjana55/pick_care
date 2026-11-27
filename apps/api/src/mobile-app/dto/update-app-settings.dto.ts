@@ -19,7 +19,7 @@ export class AppPlatformSettingsDto {
 
 /** Android app links. An empty package or list clears it; the rules are checked in the service. */
 export class AndroidAppLinksDto {
-  @ApiPropertyOptional({ example: 'com.vivantihealth.carelink' })
+  @ApiPropertyOptional({ example: 'lk.pickcare.app' })
   @IsOptional() @IsString() @MaxLength(255)
   packageName?: string;
 

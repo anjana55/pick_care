@@ -34,7 +34,7 @@ export class UpdateWhatsappSettingsDto {
   @ApiPropertyOptional({ description: 'Remove the stored access token' })
   @IsOptional() @IsBoolean() clearAccessToken?: boolean;
 
-  @ApiPropertyOptional({ example: 'carelink_otp' })
+  @ApiPropertyOptional({ example: 'pickcare_otp' })
   @IsOptional() @Matches(/^[a-z0-9_]{1,128}$/, { message: 'Template names use lowercase letters, digits and underscores' }) templateName?: string;
   @ApiPropertyOptional({ example: 'en' })
   @IsOptional() @Matches(/^[a-z]{2,3}(_[A-Z]{2})?$/, { message: 'Use a WhatsApp language code such as en, si or en_US' }) templateLanguage?: string;
@@ -42,7 +42,7 @@ export class UpdateWhatsappSettingsDto {
 
   @ApiPropertyOptional({ description: 'Send care request updates over WhatsApp (independent of WhatsApp sign-in)' })
   @IsOptional() @IsBoolean() notificationsEnabled?: boolean;
-  @ApiPropertyOptional({ example: 'carelink_update', description: 'Approved utility template with one body parameter, in en, si and ta' })
+  @ApiPropertyOptional({ example: 'pickcare_update', description: 'Approved utility template with one body parameter, in en, si and ta' })
   @IsOptional() @Matches(/^[a-z0-9_]{1,128}$/, { message: 'Template names use lowercase letters, digits and underscores' }) notificationTemplateName?: string;
 
   @ApiPropertyOptional({ minimum: 4, maximum: 8 }) @IsOptional() @IsInt() @Min(4) @Max(8) otpLength?: number;

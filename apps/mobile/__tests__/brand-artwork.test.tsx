@@ -16,7 +16,7 @@ const WITH_ART: PublicBranding = {
   logoVersion: 'aaa111',
   assets: { logo: 'aaa111', logoReverse: 'bbb222', symbol: 'ccc333', appIcon: 'ddd444' },
 };
-const API = 'https://find.caregivers.lk/api';
+const API = 'https://pickcare.lk/api';
 
 const show = (ui: React.ReactElement, branding: Partial<PublicBranding>) => {
   serveApi({ 'GET /branding': () => ({ status: 200, body: branding }) });

@@ -102,7 +102,7 @@ describe('the Notifications screen', () => {
     expect(await screen.findByText('Office closed on Poya day')).toBeTruthy();
     expect(screen.getByText(en.notifications.important)).toBeTruthy();
     await fireEvent.press(screen.getByLabelText(en.notifications.openLink));
-    expect(open).toHaveBeenCalledWith('https://find.caregivers.lk/account/bookings');
+    expect(open).toHaveBeenCalledWith('https://pickcare.lk/account/bookings');
     await fireEvent.press(screen.getByLabelText(en.notifications.loadMore));
     expect(await screen.findByText('An older one')).toBeTruthy();
     open.mockRestore();

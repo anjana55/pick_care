@@ -6,7 +6,7 @@ import type { CaregiverCheckIn, ClientVisit } from './check-in';
 /**
  * Bookings and shifts, shared by the API and both web apps.
  *
- * Time zone: CareLink serves Sri Lanka only, and Sri Lanka keeps one fixed
+ * Time zone: the platform serves Sri Lanka only, and Sri Lanka keeps one fixed
  * offset (UTC+05:30, no daylight saving). Shift instants travel as ISO-8601
  * UTC strings; everything a person types or reads is Colombo wall-clock time.
  * The helpers below are the single place that converts between the two, so the

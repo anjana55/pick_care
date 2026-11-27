@@ -9,7 +9,7 @@ import { invoiceClientNotice } from '../../billing/billing-messages';
 
 /**
  * White-label: every email says the configured company name - in the header,
- * the subject and the text - in the configured colour, and never "CareLink"
+ * the subject and the text - in the configured colour, and never "Pick Care"
  * once the deployment has been renamed. Names are escaped in HTML.
  */
 const brand = emailBrand('Golden <Years> & Care', '#1A5FB4');
@@ -26,7 +26,7 @@ describe('branded emails', () => {
     expect(m.html).toContain('Golden &lt;Years&gt; &amp; Care');
     expect(m.html).not.toContain('Golden <Years>');
     expect(m.html).toContain('#1A5FB4');
-    expect(`${m.subject} ${m.html} ${m.text}`).not.toContain('CareLink');
+    expect(`${m.subject} ${m.html} ${m.text}`).not.toContain('Pick Care');
   });
 
   it('names the brand in the subject and text of the account emails', () => {
@@ -34,8 +34,8 @@ describe('branded emails', () => {
     expect(rendered[1].text).toContain('Finish setting up your Golden <Years> & Care account');
   });
 
-  it('defaults to the shipped CareLink identity', () => {
-    expect(verificationEmail({ verificationUrl: 'u', audience: 'CAREGIVER', expiresInHours: 1 }).subject).toBe('Verify your CareLink email address');
+  it('defaults to the shipped Pick Care identity', () => {
+    expect(verificationEmail({ verificationUrl: 'u', audience: 'CAREGIVER', expiresInHours: 1 }).subject).toBe('Verify your Pick Care email address');
   });
 });
 

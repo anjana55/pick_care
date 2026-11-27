@@ -23,7 +23,7 @@ function make(env: Record<string, string | undefined> = {}, initial?: Record<str
         secure: false,
         username: null,
         passwordEncrypted: null,
-        fromName: 'CareLink',
+        fromName: 'Pick Care',
         fromAddress: null,
         replyTo: null,
         updatedBy: null,
@@ -49,7 +49,7 @@ function make(env: Record<string, string | undefined> = {}, initial?: Record<str
 
 describe('parseFromHeader', () => {
   it.each([
-    ['CareLink <no-reply@x.com>', 'CareLink', 'no-reply@x.com'],
+    ['Pick Care <no-reply@x.com>', 'Pick Care', 'no-reply@x.com'],
     ['"Care Link" <a@b.lk>', 'Care Link', 'a@b.lk'],
     ['a@b.lk', null, 'a@b.lk'],
     ['', null, null],
@@ -67,10 +67,10 @@ describe('EmailSettingsService', () => {
       SMTP_SECURE: 'true',
       SMTP_USER: 'mailer',
       SMTP_PASSWORD: 'p@ss word',
-      SMTP_FROM: 'CareLink <no-reply@example.com>',
+      SMTP_FROM: 'Pick Care <no-reply@example.com>',
     });
     const s = await service.getResolved();
-    expect(s).toMatchObject({ enabled: true, usable: true, host: 'smtp.example.com', port: 465, secure: true, username: 'mailer', password: 'p@ss word', fromName: 'CareLink', fromAddress: 'no-reply@example.com' });
+    expect(s).toMatchObject({ enabled: true, usable: true, host: 'smtp.example.com', port: 465, secure: true, username: 'mailer', password: 'p@ss word', fromName: 'Pick Care', fromAddress: 'no-reply@example.com' });
     // Stored encrypted, not in plain text.
     expect(stored().passwordEncrypted).not.toContain('p@ss');
     expect(decryptSecret(stored().passwordEncrypted as string, KEY)).toBe('p@ss word');

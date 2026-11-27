@@ -26,8 +26,8 @@ jest.mock('expo-splash-screen', () => ({
 
 jest.mock('expo-router', () => require('../test-utils/router').expoRouterMock());
 
-const LOCALE_KEY = 'carelink-locale';
-const BRANDING_KEY = 'carelink.branding';
+const LOCALE_KEY = 'pickcare-locale';
+const BRANDING_KEY = 'pickcare.branding';
 
 const GOLDEN: PublicBranding = {
   ...DEFAULT_BRANDING,
@@ -84,7 +84,7 @@ describe('launch', () => {
   it('starts in English, under the build’s brand name, with no saved language and no signal', async () => {
     await render(<RootLayout />);
     expect(await screen.findByText(en.welcome.headline)).toBeTruthy();
-    expect(screen.getByText('CareLink')).toBeTruthy();
+    expect(screen.getByText('Pick Care')).toBeTruthy();
   });
 
   it('takes the name, colours and languages from the deployment’s branding', async () => {

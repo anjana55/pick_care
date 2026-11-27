@@ -19,7 +19,7 @@ describe('caregiverRefSearchPrefix', () => {
     ['abcd1234ef56', 'abcd1234-ef56'],
     [PUBLIC_ID, PUBLIC_ID],
     [PUBLIC_ID.toUpperCase(), PUBLIC_ID],
-    [`https://find.caregivers.lk/caregivers/${PUBLIC_ID}?from=search`, PUBLIC_ID],
+    [`https://pickcare.lk/caregivers/${PUBLIC_ID}?from=search`, PUBLIC_ID],
   ])('reads %p as an ID prefix', (input, expected) => {
     expect(caregiverRefSearchPrefix(input)).toBe(expected);
   });

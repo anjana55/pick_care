@@ -3,7 +3,7 @@ import type { CareRequestLanguage } from '../database/schema';
 /**
  * What billing notices say, in English, Sinhala and Tamil. Like the booking
  * notices they carry only a reference, an amount and a date - the invoice
- * itself is read in the CareLink account. Sinhala and Tamil are
+ * itself is read in the Pick Care account. Sinhala and Tamil are
  * machine-drafted and want a native speaker's review.
  */
 type Lang = CareRequestLanguage;

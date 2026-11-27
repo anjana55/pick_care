@@ -49,7 +49,7 @@ describe('white-label branding on the public site', () => {
     renderWith({ ...GOLDEN, defaultLocale: 'en' }, <Probe />);
     expect(await screen.findByText('I have a code from the Golden Years Care office')).toBeInTheDocument();
     expect(document.body.textContent).not.toContain('{brand}');
-    expect(document.body.textContent).not.toContain('CareLink');
+    expect(document.body.textContent).not.toContain('Pick Care');
   });
 
   it('starts in the default language, and ignores a stored language that is no longer offered', async () => {

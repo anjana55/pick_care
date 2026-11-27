@@ -6,7 +6,7 @@ import { BrandingSettingsService, parseTextScale, inspectLogo } from './branding
 /**
  * White-label branding (Settings > Branding).
  *
- * Under test: an untouched deployment keeps the CareLink identity, colours an
+ * Under test: an untouched deployment keeps the Pick Care identity, colours an
  * operator picks must be readable with white text, the language set always
  * contains the default, and a logo is accepted by what its bytes are - an SVG
  * that could run script on the API's origin never is.
@@ -21,11 +21,11 @@ function make(initial: Record<string, unknown> = {}) {
   let row: Record<string, unknown> | null = Object.keys(initial).length
     ? {
         id: 'default',
-        companyName: 'CareLink',
-        shortName: 'CL',
+        companyName: 'Pick Care',
+        shortName: 'PC',
         tagline: null,
-        primaryColor: '#5F6952',
-        accentColor: '#2F7A84',
+        primaryColor: '#0F5C5C',
+        accentColor: '#BA5942',
         logoKey: null,
         logoMimeType: null,
         logoVersion: null,
@@ -43,11 +43,11 @@ function make(initial: Record<string, unknown> = {}) {
     insert: () => ({
       values: (v: Record<string, unknown>) => {
         row = {
-          companyName: 'CareLink',
-          shortName: 'CL',
+          companyName: 'Pick Care',
+          shortName: 'PC',
           tagline: null,
-          primaryColor: '#5F6952',
-          accentColor: '#2F7A84',
+          primaryColor: '#0F5C5C',
+          accentColor: '#BA5942',
           logoKey: null,
           logoMimeType: null,
           logoVersion: null,
@@ -73,15 +73,15 @@ function make(initial: Record<string, unknown> = {}) {
 }
 
 describe('BrandingSettingsService', () => {
-  it('starts as the shipped CareLink identity with every language on', async () => {
+  it('starts as the shipped Pick Care identity with every language on', async () => {
     const { service } = make();
     expect(await service.getPublic()).toEqual({
-      companyName: 'CareLink',
-      shortName: 'CL',
+      companyName: 'Pick Care',
+      shortName: 'PC',
       tagline: null,
       officePhone: null,
-      primaryColor: '#5F6952',
-      accentColor: '#2F7A84',
+      primaryColor: '#0F5C5C',
+      accentColor: '#BA5942',
       logoVersion: null,
       assets: { logo: null, logoReverse: null, symbol: null, appIcon: null },
       defaultLocale: 'en',
@@ -97,7 +97,7 @@ describe('BrandingSettingsService', () => {
   });
 
   it('saves a new identity and fills a blank short name from the company name', async () => {
-    const { service } = make({ companyName: 'CareLink' });
+    const { service } = make({ companyName: 'Pick Care' });
     const out = await service.update(
       { companyName: '  Golden Years Care ', shortName: '', tagline: 'Care close to home', primaryColor: '#1a5fb4', accentColor: '#8F3B76' },
       'admin-1',
@@ -110,13 +110,13 @@ describe('BrandingSettingsService', () => {
     ['primaryColor', '#F4B400'],
     ['accentColor', '#9AD0F5'],
   ])('refuses a %s too light for white text', async (field, color) => {
-    const { service, stored } = make({ companyName: 'CareLink' });
+    const { service, stored } = make({ companyName: 'Pick Care' });
     await expect(service.update({ [field]: color }, 'admin-1')).rejects.toThrow(/too light for white text/);
     expect(stored()[field]).not.toBe(color);
   });
 
   it('keeps the default language among those offered', async () => {
-    const { service } = make({ companyName: 'CareLink' });
+    const { service } = make({ companyName: 'Pick Care' });
     expect((await service.update({ defaultLocale: 'si', enabledLocales: ['si', 'en'] }, 'a')).enabledLocales).toEqual(['en', 'si']);
     // Changing only the default switches that language on rather than failing.
     expect((await service.update({ defaultLocale: 'ta' }, 'a')).enabledLocales).toEqual(['en', 'si', 'ta']);
@@ -124,7 +124,7 @@ describe('BrandingSettingsService', () => {
   });
 
   it('stores a logo under a new version and deletes the one it replaces', async () => {
-    const { service, files, storage } = make({ companyName: 'CareLink' });
+    const { service, files, storage } = make({ companyName: 'Pick Care' });
     const first = await service.setLogo({ buffer: await png(300, 60) }, 'a');
     expect(first.logoMimeType).toBe('image/png');
     expect(first.logoVersion).toMatch(/^[0-9a-f]{12}$/);
@@ -174,7 +174,7 @@ describe('inspectLogo', () => {
     const wide = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 92" width="448" height="92"><rect width="448" height="92" fill="#0D4447"/></svg>');
 
     it('keeps each asset apart: the reverse logo, symbol and app icon have their own versions', async () => {
-      const { service, files } = make({ companyName: 'CareLink' });
+      const { service, files } = make({ companyName: 'Pick Care' });
       await service.setLogo({ buffer: wide }, 'a');
       const out = await service.setAsset('symbol', { buffer: square }, 'a');
       expect(out.assets.symbol).toMatch(/^[0-9a-f]{12}$/);
@@ -191,7 +191,7 @@ describe('inspectLogo', () => {
     });
 
     it('wants the symbol and app icon square, and the app icon big enough for the stores', async () => {
-      const { service, files } = make({ companyName: 'CareLink' });
+      const { service, files } = make({ companyName: 'Pick Care' });
       await expect(service.setAsset('symbol', { buffer: wide }, 'a')).rejects.toThrow('This picture must be square (this one is 448 × 92).');
       await expect(service.setAsset('appIcon', { buffer: await png(512, 512) }, 'a')).rejects.toThrow(/at least 1024 × 1024 pixels, or an SVG/);
       await expect(service.setAsset('appIcon', { buffer: PNG }, 'a')).rejects.toThrow(/could not be read/);
@@ -204,7 +204,7 @@ describe('inspectLogo', () => {
     });
 
     it('renders any of them as a crisp PNG of a listed size, for the app', async () => {
-      const { service } = make({ companyName: 'CareLink' });
+      const { service } = make({ companyName: 'Pick Care' });
       await service.setLogo({ buffer: wide }, 'a');
       const { buffer } = await service.getAssetPng('logo', 512);
       const meta = await sharp(buffer).metadata();

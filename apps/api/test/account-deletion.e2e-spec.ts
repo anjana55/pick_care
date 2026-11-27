@@ -131,7 +131,7 @@ describe('Account deletion (e2e)', () => {
     adminToken = (await login('admin@care-platform.local')).body.accessToken;
     expect(staffToken && verifierToken && adminToken).toBeTruthy();
     // Staff alerts: a fixed list, and the email captured rather than sent.
-    jest.spyOn(app.get(EmailSettingsService), 'staffAlertRecipients').mockResolvedValue(['ops@vivanti.example']);
+    jest.spyOn(app.get(EmailSettingsService), 'staffAlertRecipients').mockResolvedValue(['ops@pickcare.example']);
     jest.spyOn(app.get(EmailService), 'sendNotificationEmail').mockImplementation(async (to, params) => {
       mails.push({
         to: [to].flat(),
@@ -450,7 +450,7 @@ describe('Account deletion (e2e)', () => {
       await ask(cg.token).expect(200);
 
       const mail = await mailAbout(cg.registrationNumber);
-      expect(mail.to).toEqual(['ops@vivanti.example']);
+      expect(mail.to).toEqual(['ops@pickcare.example']);
       expect(mail.subject).toMatch(/^Account deleted by a caregiver: Nimali Silva/);
       expect(mail.text).toContain(`(${cg.registrationNumber}) deleted their account`);
       expect(mail.text).toContain('no longer appear in search');

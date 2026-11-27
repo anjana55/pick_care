@@ -34,13 +34,13 @@ function phone(answer: (url: string) => { type: string; url?: string }): SocialD
       opened.push({ url, redirect });
       return answer(url);
     },
-    redirectUrl: 'carelink://auth/callback',
+    redirectUrl: 'pickcare://auth/callback',
   };
 }
 /** The API's redirect back to the app after a sign-in, echoing the attempt's nonce. */
 const backToApp = (loginUrl: string, params: Record<string, string>) => {
   const nonce = new URL(loginUrl).searchParams.get('nonce')!;
-  return { type: 'success', url: `carelink://auth/callback?${new URLSearchParams({ flow: 'login', nonce, ...params })}` };
+  return { type: 'success', url: `pickcare://auth/callback?${new URLSearchParams({ flow: 'login', nonce, ...params })}` };
 };
 const LOGIN_URL = 'GET /auth/social/google/login-url';
 
@@ -62,7 +62,7 @@ describe('signing in with a provider', () => {
     expect(start.query.nonce).toMatch(/^[0-9a-f]{32}$/);
     expect(start.query.challenge).toMatch(/^[A-Za-z0-9_-]{43}$/);
     expect(start.headers.Authorization).toBeUndefined();
-    expect(deps.opened[0].redirect).toBe('carelink://auth/callback');
+    expect(deps.opened[0].redirect).toBe('pickcare://auth/callback');
 
     const exchange = calls.find((c) => c.route === 'POST /auth/social/exchange')!;
     expect(exchange.body.code).toBe('c0de');
@@ -81,7 +81,7 @@ describe('signing in with a provider', () => {
     expect(await signInWithProvider('GOOGLE', 'caregiver', phone((u) => backToApp(u, { error: 'not_registered' })))).toEqual({ error: 'not_registered' });
 
     // A result for another attempt (its nonce isn't this one's).
-    const stranger = { type: 'success', url: 'carelink://auth/callback?flow=login&nonce=someone-else&code=c0de' };
+    const stranger = { type: 'success', url: 'pickcare://auth/callback?flow=login&nonce=someone-else&code=c0de' };
     expect(await signInWithProvider('GOOGLE', 'caregiver', phone(() => stranger))).toEqual({ error: 'state_mismatch' });
     expect(calls.some((c) => c.route === 'POST /auth/social/exchange')).toBe(false);
   });

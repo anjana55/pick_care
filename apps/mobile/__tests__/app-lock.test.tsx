@@ -72,7 +72,7 @@ describe('face / fingerprint unlock', () => {
     await show();
     await fireEvent.press(await screen.findByText('sign in'));
 
-    expect(await screen.findByText('Open CareLink with your fingerprint?')).toBeTruthy();
+    expect(await screen.findByText('Open Pick Care with your fingerprint?')).toBeTruthy();
     await fireEvent.press(screen.getByRole('button', { name: en.appLock.offerYes }));
     expect(auth.authenticateAsync).toHaveBeenCalledWith(expect.objectContaining({ promptMessage: en.appLock.confirmPrompt, disableDeviceFallback: false }));
     expect(screen.queryByTestId('app-lock-offer')).toBeNull();
@@ -105,7 +105,7 @@ describe('face / fingerprint unlock', () => {
     await show();
 
     expect(await screen.findByTestId('app-lock')).toBeTruthy();
-    expect(screen.getByText('CareLink is locked')).toBeTruthy();
+    expect(screen.getByText('Pick Care is locked')).toBeTruthy();
     expect(auth.authenticateAsync).toHaveBeenCalledTimes(1);
     expect(await screen.findByText(en.appLock.notUnlocked)).toBeTruthy();
     // The screens underneath are hidden from screen readers while locked.

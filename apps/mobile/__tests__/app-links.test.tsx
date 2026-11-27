@@ -14,7 +14,7 @@ import { afterSignIn, caregiverOnly } from '../src/auth/sides';
  */
 jest.mock('@expo/vector-icons/Ionicons', () => Object.assign(() => null, { glyphMap: {} }));
 
-const SITE = 'find.caregivers.lk';
+const SITE = 'pickcare.lk';
 const page = (name: string) => () => <Text>{name}</Text>;
 const INVOICE_ID = '0f8fad5b-d9cb-469f-a165-70867728950e';
 
@@ -87,7 +87,7 @@ describe('which links open the app', () => {
   });
 
   it("leaves the app's own addresses, and other sites', as they came", () => {
-    const callback = 'carelink://auth/callback?flow=login&nonce=n&code=c';
+    const callback = 'pickcare://auth/callback?flow=login&nonce=n&code=c';
     expect(routeForIncoming(callback, SITE)).toBe(callback);
     expect(routeForIncoming('/bookings', SITE)).toBe('/bookings');
     expect(routeForIncoming(`http://${SITE}/account/bookings`, SITE)).toBe(`http://${SITE}/account/bookings`);
@@ -109,7 +109,7 @@ describe('opening the app from a link', () => {
   });
 
   it('passes the sign-in return through untouched', () => {
-    expect(redirectSystemPath({ path: 'carelink://auth/callback?flow=login', initial: false })).toBe('carelink://auth/callback?flow=login');
+    expect(redirectSystemPath({ path: 'pickcare://auth/callback?flow=login', initial: false })).toBe('pickcare://auth/callback?flow=login');
   });
 
   it('never crashes over an address it cannot read', () => {

@@ -57,7 +57,7 @@ describe('Assistant page context (e2e)', () => {
   });
 
   it('puts it in the system prompt, and leaves it out when there is none', () => {
-    const base = { staffName: 'Nimal', role: 'STAFF', today: '2026-11-02', brand: 'Vivanti Health', actionUpdates: [] };
+    const base = { staffName: 'Nimal', role: 'STAFF', today: '2026-11-02', brand: 'Pick Care', actionUpdates: [] };
     expect(assistantSystemPrompt({ ...base, pageContext: 'They are on the Bookings list.' })).toContain('Where Nimal is in the app right now (it can change between messages): They are on the Bookings list.');
     expect(assistantSystemPrompt(base)).not.toContain('Where Nimal is');
   });

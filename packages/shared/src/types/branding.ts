@@ -8,10 +8,10 @@ import { LOCALES, DEFAULT_LOCALE, type Locale } from './locale';
  * accepts it and the page that renders it.
  */
 
-export const DEFAULT_COMPANY_NAME = 'CareLink';
-export const DEFAULT_SHORT_NAME = 'CL';
-export const DEFAULT_PRIMARY_COLOR = '#5F6952';
-export const DEFAULT_ACCENT_COLOR = '#2F7A84';
+export const DEFAULT_COMPANY_NAME = 'Pick Care';
+export const DEFAULT_SHORT_NAME = 'PC';
+export const DEFAULT_PRIMARY_COLOR = '#0F5C5C';
+export const DEFAULT_ACCENT_COLOR = '#BA5942';
 
 /** WCAG AA for normal text. Buttons put white text on both colours, and both are used as text on white. */
 export const MIN_BRAND_CONTRAST = 4.5;
@@ -148,7 +148,7 @@ export function brandingAssetUrl(
 }
 
 /**
- * "Golden Years Care" -> "GY", "CareLink" -> "CL", "Nurse" -> "NU". Used when
+ * "Golden Years Care" -> "GY", "Pick Care" -> "PC", "Nurse" -> "NU". Used when
  * an operator leaves the short name blank.
  */
 export function initialsOf(name: string): string {
@@ -236,34 +236,12 @@ export interface BrandPalette {
   border: string;
 }
 
-/**
- * The hand-tuned palette the product shipped with (see the tailwind configs).
- * The default colours return it exactly, so an operator who never touches
- * Settings > Branding sees no change at all.
- */
-const SHIPPED_PALETTE: BrandPalette = {
-  brand: '#5F6952',
-  brandDark: '#4F5745',
-  brandLight: '#E4E8DE',
-  accent: '#2F7A84',
-  accentDark: '#2A6B74',
-  accentLight: '#DCE8EA',
-  paper: '#F6F8F2',
-  border: '#DCE0D6',
-};
-
 /** Every shade the UI uses, derived from the two colours an operator picks. */
 export function derivePalette(primary: string, accent: string): BrandPalette {
   const p = isHexColor(primary) ? primary.toUpperCase() : DEFAULT_PRIMARY_COLOR;
   const a = isHexColor(accent) ? accent.toUpperCase() : DEFAULT_ACCENT_COLOR;
-  const brandPart =
-    p === DEFAULT_PRIMARY_COLOR
-      ? { brand: SHIPPED_PALETTE.brand, brandDark: SHIPPED_PALETTE.brandDark, brandLight: SHIPPED_PALETTE.brandLight, paper: SHIPPED_PALETTE.paper, border: SHIPPED_PALETTE.border }
-      : { brand: p, brandDark: mix(p, '#000000', 0.17), brandLight: mix(p, '#FFFFFF', 0.83), paper: mix(p, '#FFFFFF', 0.945), border: mix(p, '#FFFFFF', 0.78) };
-  const accentPart =
-    a === DEFAULT_ACCENT_COLOR
-      ? { accent: SHIPPED_PALETTE.accent, accentDark: SHIPPED_PALETTE.accentDark, accentLight: SHIPPED_PALETTE.accentLight }
-      : { accent: a, accentDark: mix(a, '#000000', 0.12), accentLight: mix(a, '#FFFFFF', 0.83) };
+  const brandPart = { brand: p, brandDark: mix(p, '#000000', 0.17), brandLight: mix(p, '#FFFFFF', 0.83), paper: mix(p, '#FFFFFF', 0.945), border: mix(p, '#FFFFFF', 0.78) };
+  const accentPart = { accent: a, accentDark: mix(a, '#000000', 0.12), accentLight: mix(a, '#FFFFFF', 0.83) };
   return { ...brandPart, ...accentPart };
 }
 
@@ -289,7 +267,7 @@ export function paletteCssVars(palette: BrandPalette): Record<string, string> {
   return out;
 }
 
-/** `:root { --color-brand: 95 105 82; ... }` for a server-rendered <style>. */
+/** `:root { --color-brand: 15 92 92; ... }` for a server-rendered <style>. */
 export function paletteCss(palette: BrandPalette): string {
   const body = Object.entries(paletteCssVars(palette))
     .map(([k, v]) => `${k}:${v}`)

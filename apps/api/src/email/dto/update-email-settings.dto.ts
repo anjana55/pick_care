@@ -30,7 +30,7 @@ export class UpdateEmailSettingsDto {
   @ApiPropertyOptional({ description: 'Remove the stored password' })
   @IsOptional() @IsBoolean() clearPassword?: boolean;
 
-  @ApiPropertyOptional({ example: 'CareLink' })
+  @ApiPropertyOptional({ example: 'Pick Care' })
   @IsOptional() @IsString() @MaxLength(128)
   @Matches(/^[^<>"\r\n]*$/, { message: 'The sender name cannot contain < > " or line breaks' })
   fromName?: string;

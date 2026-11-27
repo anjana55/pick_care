@@ -24,7 +24,7 @@ export interface PaymentDetails {
   paymentType: PaymentType;
   method: PaymentMethod | null;
   bankAccountId: string | null;
-  /** "bank transfer · Commercial Bank - 1234 (CareLink)" - for the document's history. */
+  /** "bank transfer · Commercial Bank - 1234 (Pick Care)" - for the document's history. */
   note: string;
 }
 

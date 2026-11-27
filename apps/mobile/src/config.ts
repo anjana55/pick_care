@@ -6,14 +6,14 @@ import Constants from 'expo-constants';
  */
 const extra = (Constants.expoConfig?.extra ?? {}) as { apiUrl?: string; brandName?: string; appLinkHost?: string };
 
-const apiUrl = (extra.apiUrl ?? 'https://find.caregivers.lk/api').replace(/\/+$/, '');
+const apiUrl = (extra.apiUrl ?? 'https://pickcare.lk/api').replace(/\/+$/, '');
 
 export const config = {
   apiUrl,
   /** The public website: the API sits under its /api, so the site is the API address without it. */
   siteUrl: apiUrl.replace(/\/api$/, ''),
   /** The name to show before the deployment's own branding has loaded. */
-  brandName: extra.brandName ?? 'CareLink',
+  brandName: extra.brandName ?? 'Pick Care',
   /** The website whose links open the app (app links). Not the API's host: that can be a dev server. */
   appLinkHost: extra.appLinkHost ?? null,
 };

@@ -2,13 +2,13 @@
 
 The app is built in the cloud with **EAS** (Expo Application Services):
 `eas.json` has the three build profiles, `app.config.ts` everything the
-stores bake in. This guide is for setting it up once, under **Vivanti
-Health's** accounts, and then building, testing and updating.
+stores bake in. This guide is for setting it up once, under **Pick
+Care's** accounts, and then building, testing and updating.
 
 | Profile | Who it's for | What you get |
 |---|---|---|
 | `development` | Developers | A "development build": your own Expo Go with the app's native code (push, etc.). Loads the JavaScript from `npx expo start`. |
-| `preview` | Testers inside Vivanti Health | An installable test app: an APK on Android, an internal build on iPhone. |
+| `preview` | Testers inside Pick Care | An installable test app: an APK on Android, an internal build on iPhone. |
 | `production` | Everyone | The store build. The build number goes up automatically. |
 
 Each profile has its own **update channel** of the same name, so an
@@ -21,11 +21,11 @@ over-the-air update sent to `preview` only reaches preview builds.
 Do these on your own computer, in this repo, from `apps/mobile`. You need
 Node.js and this repo installed (`npm install` at the repo root).
 
-### 1. An Expo account for Vivanti Health
+### 1. An Expo account for Pick Care
 
 1. Sign up at **expo.dev**.
-2. Create an **organization** named after Vivanti Health (for example
-   `vivanti-health`) and make it the owner of the app. Add developers as
+2. Create an **organization** named after Pick Care (for example
+   `pick-care`) and make it the owner of the app. Add developers as
    members, so the app never belongs to one person's login.
 3. Install the command-line tool and sign in:
 
@@ -38,15 +38,20 @@ Node.js and this repo installed (`npm install` at the repo root).
 
 ```bash
 cd apps/mobile
-EXPO_OWNER=vivanti-health eas init
+EXPO_OWNER=pick-care eas init
 ```
 
-`eas init` creates the **CareLink** project and prints its **project id**
+If an Expo project was already created under the old `carelink` slug, rename
+its slug to `pickcare` in the project's settings on expo.dev (or create a new
+project here and use its id): the slug in `app.config.ts` must match the
+project, or EAS refuses to build.
+
+`eas init` creates the **Pick Care** project (slug `pickcare`) and prints its **project id**
 (a long code like `1a2b3c4d-…`). It can't write it into `app.config.ts`
-itself, so open `app.config.ts` and fill in the `carelink` brand:
+itself, so open `app.config.ts` and fill in the `pickcare` brand:
 
 ```ts
-owner: 'vivanti-health',
+owner: 'pick-care',
 easProjectId: '1a2b3c4d-…',
 ```
 
@@ -59,12 +64,12 @@ Android push goes through Google's Firebase. Expo sends the messages, but the
 app needs a Firebase project to receive them.
 
 1. Go to **console.firebase.google.com** and create a project, for example
-   "CareLink", under a Vivanti Health Google account.
+   "Pick Care", under a Pick Care Google account.
 2. **Add an Android app** with the package name
-   `com.vivantihealth.carelink`, the bundle id in `app.config.ts`.
+   `lk.pickcare.app`, the bundle id in `app.config.ts`.
 3. Download **google-services.json**. Don't commit it.
 4. Give it to EAS as a secret file variable:
-   1. On **expo.dev**, open the CareLink project and go to **Environment
+   1. On **expo.dev**, open the Pick Care project and go to **Environment
       variables**. Click **Add variable**.
    2. Set the name to `GOOGLE_SERVICES_JSON`.
    3. Choose the **File** type, and upload `google-services.json`.
@@ -84,7 +89,7 @@ app needs a Firebase project to receive them.
 
 ### 4. iPhone: Apple Developer account
 
-iPhone builds need Vivanti Health's **Apple Developer Program** membership.
+iPhone builds need Pick Care's **Apple Developer Program** membership.
 That needs a D-U-N-S number, so start early. Once you have it:
 
 - The first `eas build --platform ios` asks you to sign in to Apple. Follow
@@ -104,7 +109,7 @@ the app instead of the browser. Android allows this only when the website
 vouches for the app, with the app's package name and the **SHA-256
 fingerprint of the certificate it is signed with**. The app already asks
 for these links (`APP_LINK_PATHS` in `app.config.ts`); the website
-publishes its side at `https://find.caregivers.lk/.well-known/assetlinks.json`
+publishes its side at `https://pickcare.lk/.well-known/assetlinks.json`
 from what you enter in the staff app.
 
 1. Get the fingerprints:
@@ -118,16 +123,16 @@ from what you enter in the staff app.
      signs store installs with this one) and the **Upload key
      certificate**.
 2. In the staff app, go to **Settings › Mobile app › App links (Android)**.
-   Enter the package name `com.vivantihealth.carelink` and paste the
+   Enter the package name `lk.pickcare.app` and paste the
    fingerprints, one per line (with or without colons). Save.
-3. Check it: open `https://find.caregivers.lk/.well-known/assetlinks.json`
+3. Check it: open `https://pickcare.lk/.well-known/assetlinks.json`
    in a browser. It should show the package and the fingerprints.
 4. Install a build made after this was set up (the links are part of the
    app, so an older build doesn't have them). Android checks the website
    when the app is installed. To check a phone, connect it and run
-   `adb shell pm get-app-links com.vivantihealth.carelink`: the website
+   `adb shell pm get-app-links lk.pickcare.app`: the website
    should show as `verified`. If it isn't, re-check the fingerprint and run
-   `adb shell pm verify-app-links --re-verify com.vivantihealth.carelink`.
+   `adb shell pm verify-app-links --re-verify lk.pickcare.app`.
 
 Until this is done, nothing breaks: links simply open in the browser.
 Links to sign in, confirm an email, reset a password, register or delete
@@ -136,7 +141,7 @@ an account always stay on the website.
 ### 6. The brand's icon and splash screen
 
 The app is white-labelled: its name in the stores is set per brand in
-`app.config.ts` (CareLink), and everything inside it - logos, colours, the
+`app.config.ts` (Pick Care), and everything inside it - logos, colours, the
 company name - comes live from **Settings › Branding** in the staff app.
 
 Three things can't come live, because the phone shows them before the app
@@ -154,7 +159,7 @@ screen**. They are made from the same Settings › Branding artwork:
    npm run brand:assets
    ```
 
-   This writes `assets/brand/carelink/` (`icon.png`, `adaptive-icon.png`,
+   This writes `assets/brand/pickcare/` (`icon.png`, `adaptive-icon.png`,
    `splash-icon.png`). Those files aren't committed: each build takes the
    artwork from the deployment, so it always matches what the admin uploaded.
 
@@ -179,7 +184,7 @@ npm run start:dev-client          # or: npx expo start --dev-client
 
 (`npm run start`, and `npx expo start --go`, still open Expo Go as before.)
 
-Then open the CareLink development app instead of Expo Go and scan the QR
+Then open the Pick Care development app instead of Expo Go and scan the QR
 code. Push notifications work in this build; they don't in Expo Go.
 
 ### A test build (preview)
@@ -280,17 +285,17 @@ Do the one-time setup above first (steps 1 to 6). Then, per store:
 ### Google Play (Android)
 
 1. **Developer account.** Sign up at **play.google.com/console** as an
-   **organization** (Vivanti Health), which needs a D-U-N-S number. New
+   **organization** (Pick Care), which needs a D-U-N-S number. New
    *personal* accounts must first run a closed test with at least 12 testers
    for 14 days before they can publish; check Play Console Help for the rule
    that applies to your account when you sign up.
-2. **Create the app** in Play Console (**Create app**): name **CareLink**,
+2. **Create the app** in Play Console (**Create app**): name **Pick Care**,
    app, free. The package name is set by the first upload:
-   `com.vivantihealth.carelink`.
+   `lk.pickcare.app`.
 3. **Let EAS upload for you.** In Google Cloud, create a **service account**
    with access to the Play Console account, download its **JSON key**, and add
    it on **expo.dev** › the project › **Credentials › Android ›
-   com.vivantihealth.carelink › Service credentials › Add a Google service
+   lk.pickcare.app › Service credentials › Add a Google service
    account key**.
 4. **Build and upload:**
 
@@ -302,10 +307,10 @@ Do the one-time setup above first (steps 1 to 6). Then, per store:
    The build goes to the **Internal testing** track. Add yourself and staff
    as testers and try it on real phones.
 5. **Fill in the store listing** in Play Console: short and full description,
-   screenshots (phone), the 512 × 512 icon (`assets/brand/carelink/icon.png`
+   screenshots (phone), the 512 × 512 icon (`assets/brand/pickcare/icon.png`
    scaled down), a 1024 × 500 feature graphic, the privacy policy link,
    **Data safety**, the content rating questionnaire, target audience, and
-   the **account deletion** link: `https://find.caregivers.lk/delete-account`.
+   the **account deletion** link: `https://pickcare.lk/delete-account`.
 6. **App signing.** Once uploaded, copy the **app signing key** SHA-256 from
    **Test and release › App integrity › Play app signing** into
    **Settings › Mobile app › App links** (step 5), so links open the app.
@@ -316,14 +321,14 @@ Do the one-time setup above first (steps 1 to 6). Then, per store:
 
 ### App Store (iPhone)
 
-Waiting on Vivanti Health's **Apple Developer Program** membership (step 4).
+Waiting on Pick Care's **Apple Developer Program** membership (step 4).
 Two things must also be in place before Apple will accept the app:
 **Sign in with Apple** - Apple's review guidelines (4.8) ask apps that offer
 Google, Microsoft or Facebook sign-in to also offer it or an equivalent
 private option; that is plan phase 4c - and the app's privacy answers. Then:
 
-1. In **App Store Connect**, create the app: name **CareLink**, bundle id
-   `com.vivantihealth.carelink`.
+1. In **App Store Connect**, create the app: name **Pick Care**, bundle id
+   `lk.pickcare.app`.
 2. Build and upload:
 
    ```bash
@@ -340,7 +345,7 @@ private option; that is plan phase 4c - and the app's privacy answers. Then:
 
 ## Checklist before the first store release
 
-- [ ] Bundle id `com.vivantihealth.carelink` confirmed. It can't change once published.
+- [ ] Bundle id `lk.pickcare.app` confirmed. It can't change once published.
 - [ ] Project id and owner filled in `app.config.ts`.
 - [ ] Firebase set up (steps 3.1 to 3.5) and a push received on an Android development build.
 - [ ] Apple push key created and a push received on an iPhone development build.

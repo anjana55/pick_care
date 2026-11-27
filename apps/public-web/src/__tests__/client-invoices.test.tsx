@@ -50,7 +50,7 @@ const invoice = (over: Partial<ClientInvoice> = {}): ClientInvoice => ({
   periodStart: '2026-09-01',
   periodEnd: '2026-09-30',
   bookingReference: 'BK-7KX2PQ',
-  seller: { name: 'CareLink (Pvt) Ltd', address: '12 Galle Road, Colombo 03', phone: '0112000000', email: 'billing@carelink.lk', registrationNumber: 'PV 12345', taxRegistrationNumber: null },
+  seller: { name: 'Pick Care (Pvt) Ltd', address: '12 Galle Road, Colombo 03', phone: '0112000000', email: 'billing@carelink.lk', registrationNumber: 'PV 12345', taxRegistrationNumber: null },
   billTo: { name: 'Amali Perera', address: 'Dehiwala', phone: '0771234567', email: 'amali@example.com' },
   lines: [
     { description: 'Care shift 08:00–20:00 (BK-7KX2PQ)', serviceDate: '2026-09-01', quantity: '1.00', unit: 'DAY', unitPrice: '3500.00', discount: '0.00', amount: '3500.00' },
@@ -66,7 +66,7 @@ const invoice = (over: Partial<ClientInvoice> = {}): ClientInvoice => ({
   amountPaid: '0.00',
   balance: '3000.00',
   overdue: false,
-  notes: 'Thank you for choosing CareLink.',
+  notes: 'Thank you for choosing Pick Care.',
   footer: 'Bank: Sampath Bank, A/C 0000',
   payments: [],
   canPayOnline: true,
@@ -106,7 +106,7 @@ describe('client invoices', () => {
     get.mockResolvedValue(invoice());
     renderUi(<InvoicePage />);
     expect(await screen.findByText('INV-000042')).toBeInTheDocument();
-    expect(screen.getByText('CareLink (Pvt) Ltd')).toBeInTheDocument();
+    expect(screen.getByText('Pick Care (Pvt) Ltd')).toBeInTheDocument();
     const table = within(screen.getByRole('table'));
     expect(table.getByText('Late start')).toBeInTheDocument();
     expect(table.getAllByText('-500.00')).toHaveLength(2); // the price and the amount

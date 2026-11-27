@@ -170,7 +170,7 @@ describe('registering a client in the app', () => {
 describe('registering a caregiver in the app', () => {
   it('after email and password, asks the phone once, and says to check the inbox', async () => {
     const calls = commonRoutes('caregiver', {
-      'GET /branding': () => ({ status: 200, body: { companyName: 'CareLink', officePhone: '011 234 5678' } }),
+      'GET /branding': () => ({ status: 200, body: { companyName: 'Pick Care', officePhone: '011 234 5678' } }),
       'POST /auth/signup/caregiver': () => ({ status: 201, body: { signedIn: false, method: 'EMAIL', email: 'nadeesha@example.com', verificationSent: true, registrationNumber: 'CG-1' } }),
     });
     mockRouter.params = { role: 'caregiver' };
@@ -217,7 +217,7 @@ describe('registering a caregiver in the app', () => {
 });
 
 describe('calling the office instead (clients and caregivers)', () => {
-  const OFFICE = { 'GET /branding': () => ({ status: 200, body: { companyName: 'CareLink', officePhone: '011 234 5678' } }) };
+  const OFFICE = { 'GET /branding': () => ({ status: 200, body: { companyName: 'Pick Care', officePhone: '011 234 5678' } }) };
   const cta = en.signup.callOffice.cta.replace('{phone}', '011 234 5678');
 
   /** The choices in step 1, top to bottom, by one button each. */
@@ -239,7 +239,7 @@ describe('calling the office instead (clients and caregivers)', () => {
   it.each(['client', 'caregiver'] as const)('is the 3rd choice for a %s: after WhatsApp and the providers, before email', async (side) => {
     commonRoutes(side, { ...OFFICE, 'GET /auth/signup/methods': () => ({ status: 200, body: { ...METHODS, providers: { GOOGLE: true, MICROSOFT: false, FACEBOOK: true } } }) });
     // Stand-ins for the phone's sign-in browser, so the provider buttons show.
-    const deps = { randomBytes: () => new Uint8Array(16), sha256Base64: async () => 'x', openAuthSession: async () => ({ type: 'cancel' as const }), redirectUrl: 'carelink://auth/callback' };
+    const deps = { randomBytes: () => new Uint8Array(16), sha256Base64: async () => 'x', openAuthSession: async () => ({ type: 'cancel' as const }), redirectUrl: 'pickcare://auth/callback' };
     await show(<MethodStep side={side} onChosen={jest.fn()} onSignedIn={jest.fn()} deps={deps} />);
     await screen.findByRole('button', { name: cta });
     const [whatsapp, google, facebook, call, email] = order([en.signup.whatsapp, en.signup.providers.GOOGLE, en.signup.providers.FACEBOOK, cta, en.signup.email]);
@@ -260,7 +260,7 @@ describe('calling the office instead (clients and caregivers)', () => {
   });
 
   it.each(['client', 'caregiver'] as const)('is left out for a %s when there is no office number', async (side) => {
-    commonRoutes(side, { 'GET /branding': () => ({ status: 200, body: { companyName: 'CareLink', officePhone: null } }) });
+    commonRoutes(side, { 'GET /branding': () => ({ status: 200, body: { companyName: 'Pick Care', officePhone: null } }) });
     mockRouter.params = { role: side };
     await show(<Register />);
     await screen.findByRole('button', { name: en.signup.whatsapp });

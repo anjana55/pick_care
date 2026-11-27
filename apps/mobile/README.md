@@ -5,8 +5,8 @@ React Native 0.88) inside this repo's npm workspace. It shares types, value
 lists and the i18n engine with the web apps through `@care-platform/shared`.
 
 The plan, decisions and phases are in the Pick Care project docs:
-`claude/mobile-app-plan.md`. The built-in brand in `app.config.ts` is still
-`carelink` (store name CareLink); see BUILDING.md to set up a brand.
+`claude/mobile-app-plan.md`. The built-in brand in `app.config.ts` is
+`pickcare` (store name Pick Care); see BUILDING.md to set up a brand.
 
 ## Run it
 
@@ -69,8 +69,8 @@ npx expo-doctor        # Expo's own health checks (needs internet)
   SDK moves, move all three together (PRs #45 and #49 show how).
 - **One app, many brands.** `app.config.ts` picks the name, store identifiers
   and API from `BRAND`. Colours and the logo come from the API at runtime
-  (Settings > Branding). The bundle identifier `com.vivantihealth.carelink` is
-  provisional until the store accounts exist - it can't change after release.
+  (Settings > Branding). The bundle identifier `lk.pickcare.app` can't change
+  once the app is published.
 - **Native folders aren't committed.** `ios/` and `android/` are generated from
   `app.config.ts` (`npx expo prebuild`, or EAS Build in the cloud).
 - **Translations are reused, not invented.** Strings come from the public

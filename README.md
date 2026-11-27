@@ -6,8 +6,8 @@ verified and work shifts; staff run requests, bookings, care plans, invoicing an
 payouts, with optional AI agents doing parts of the work under a manual fallback.
 
 The product is **white-labelled**: the name, logo, colours and languages come from
-**Settings > Branding**, so one codebase serves several brands. The built-in
-default brand in the code is still called *CareLink* (the project's earlier name).
+**Settings > Branding**, so one codebase serves several brands. Out of the box
+it is branded Pick Care (the project was earlier called CareLink).
 
 Everything is available in **English, Sinhala and Tamil**.
 

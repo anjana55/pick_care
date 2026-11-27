@@ -10,7 +10,7 @@ import { payhereModeEnum } from '../../database/schema';
  * service, where the stored values are known.
  */
 export class UpdateBillingSettingsDto {
-  @ApiPropertyOptional({ example: 'CareLink (Pvt) Ltd' })
+  @ApiPropertyOptional({ example: 'Pick Care (Pvt) Ltd' })
   @IsOptional() @IsString() @MaxLength(200)
   businessName?: string;
 
@@ -97,7 +97,7 @@ export class UpdateBillingSettingsDto {
   @IsOptional() @IsBoolean()
   clearPayhereMerchantSecret?: boolean;
 
-  @ApiPropertyOptional({ example: 'https://find.caregivers.lk/api', description: 'Empty = PUBLIC_WEB_URL + /api' })
+  @ApiPropertyOptional({ example: 'https://pickcare.lk/api', description: 'Empty = PUBLIC_WEB_URL + /api' })
   @IsOptional() @IsString() @MaxLength(255)
   @Matches(/^$|^https?:\/\/[^\s]+$/, { message: 'Enter the API address starting with https://' })
   payhereNotifyBaseUrl?: string;

@@ -32,8 +32,8 @@ jest.mock('../src/care/PayhereSheet', () => ({
 }));
 
 const INV = '0a1b2c3d-1111-4222-8333-444455556666';
-const RETURN = `https://find.caregivers.lk/account/invoices/${INV}?payment=return`;
-const CANCEL = `https://find.caregivers.lk/account/invoices/${INV}?payment=cancelled`;
+const RETURN = `https://pickcare.lk/account/invoices/${INV}?payment=return`;
+const CANCEL = `https://pickcare.lk/account/invoices/${INV}?payment=cancelled`;
 const CHECKOUT = {
   action: 'https://sandbox.payhere.lk/pay/checkout',
   fields: { merchant_id: '1211149', order_id: 'o-1', amount: '12500.00', currency: 'LKR', return_url: RETURN, cancel_url: CANCEL, hash: 'ABC', items: 'Invoice INV-7 "Nov"' },
@@ -48,7 +48,7 @@ const invoice = (over: Partial<ClientInvoice> = {}): ClientInvoice => ({
   periodStart: '2026-10-01',
   periodEnd: '2026-10-31',
   bookingReference: 'BK-7Q2',
-  seller: { name: 'Vivanti Health', address: 'Colombo 3', phone: '0112345678', email: 'billing@vivanti.lk', registrationNumber: 'PV 1234', taxRegistrationNumber: null } as never,
+  seller: { name: 'Pick Care', address: 'Colombo 3', phone: '0112345678', email: 'billing@pickcare.lk', registrationNumber: 'PV 1234', taxRegistrationNumber: null } as never,
   billTo: { name: 'Amaya Perera', address: null, phone: '+94771234567', email: 'amaya@example.lk' },
   lines: [{ description: 'Day care', serviceDate: null, quantity: '5', unit: 'DAY', unitPrice: '2500.00', discount: '0', amount: '12500.00' } as never],
   subtotal: '12500.00',
@@ -117,7 +117,7 @@ describe('paying an invoice with PayHere', () => {
     expect(calls.find((c) => c.route === `POST /me/invoices/${INV}/payhere`)!.body).toEqual({});
     expect(mockWebView.props!.source.html).toContain('action="https://sandbox.payhere.lk/pay/checkout"');
     // From the website's domain, which PayHere has on record for the merchant.
-    expect(mockWebView.props!.source.baseUrl).toBe('https://find.caregivers.lk');
+    expect(mockWebView.props!.source.baseUrl).toBe('https://pickcare.lk');
 
     // PayHere's own pages load; then it sends the person back.
     expect(mockWebView.props!.onShouldStartLoadWithRequest({ url: 'https://sandbox.payhere.lk/pay/o-1' })).toBe(true);
@@ -196,7 +196,7 @@ describe('paying an invoice with PayHere', () => {
     mockRouter.params = { id: INV };
     await show(<InvoiceScreen />);
     await fireEvent.press(await screen.findByRole('button', { name: en.invoices.pay.button }));
-    expect(open).toHaveBeenCalledWith(`https://find.caregivers.lk/account/invoices/${INV}`);
+    expect(open).toHaveBeenCalledWith(`https://pickcare.lk/account/invoices/${INV}`);
     expect(calls.some((c) => c.route.includes('payhere'))).toBe(false);
   });
 

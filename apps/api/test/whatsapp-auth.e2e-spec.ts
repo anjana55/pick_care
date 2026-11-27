@@ -207,9 +207,9 @@ describe('WhatsApp authentication (e2e)', () => {
     });
 
     it('keeps the stored token when a later update omits it, and removes it on request', async () => {
-      const kept = await setSettings({ templateName: 'carelink_otp_v2' }).expect(200);
+      const kept = await setSettings({ templateName: 'pickcare_otp_v2' }).expect(200);
       expect(kept.body.accessTokenSet).toBe(true);
-      const cleared = await setSettings({ clearAccessToken: true, templateName: 'carelink_otp' }).expect(200);
+      const cleared = await setSettings({ clearAccessToken: true, templateName: 'pickcare_otp' }).expect(200);
       expect(cleared.body.accessTokenSet).toBe(false);
       expect(cleared.body.accessTokenHint).toBeNull();
     });

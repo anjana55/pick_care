@@ -18,7 +18,7 @@ export interface LiveMapPoint extends GeoPoint {
 
 function brandColor(): string {
   const value = typeof window === 'undefined' ? '' : getComputedStyle(document.documentElement).getPropertyValue('--color-brand').trim();
-  return `rgb(${value || '95 105 82'})`;
+  return `rgb(${value || '15 92 92'})`;
 }
 
 /**

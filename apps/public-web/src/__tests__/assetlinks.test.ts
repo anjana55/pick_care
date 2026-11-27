@@ -12,7 +12,7 @@ import { GET } from '@/app/.well-known/assetlinks.json/route';
 const FP = '14:6D:E9:83:C5:73:06:50:D8:EE:B9:95:2F:34:FC:64:16:A0:83:42:E6:1D:BE:A8:8A:04:96:B2:3F:CF:44:E5';
 const STATEMENT = {
   relation: ['delegate_permission/common.handle_all_urls'],
-  target: { namespace: 'android_app', package_name: 'com.vivantihealth.carelink', sha256_cert_fingerprints: [FP] },
+  target: { namespace: 'android_app', package_name: 'lk.pickcare.app', sha256_cert_fingerprints: [FP] },
 };
 const realFetch = global.fetch;
 const answer = (impl: () => Promise<Response>) => {
