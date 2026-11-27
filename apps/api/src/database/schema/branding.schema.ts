@@ -6,8 +6,8 @@ export const brandingLocaleEnum = ['en', 'si', 'ta'] as const;
 /**
  * Admin-managed white-label branding (Settings > Branding) - a single row,
  * id 'default', like the email, WhatsApp and billing settings. The defaults
- * are the CareLink identity the product shipped with, so a deployment that
- * never opens the page looks exactly as it did.
+ * are the Pick Care identity the product ships with (migration 0061 moved
+ * untouched rows over from the earlier CareLink defaults).
  *
  * The logo file itself lives in the storage service under `logo_key`;
  * `logo_version` changes with every upload so browsers can cache the image
@@ -16,13 +16,13 @@ export const brandingLocaleEnum = ['en', 'si', 'ta'] as const;
  */
 export const brandingSettings = mysqlTable('branding_settings', {
   id: varchar('id', { length: 36 }).primaryKey(),
-  companyName: varchar('company_name', { length: 120 }).notNull().default('CareLink'),
-  shortName: varchar('short_name', { length: 4 }).notNull().default('CL'),
+  companyName: varchar('company_name', { length: 120 }).notNull().default('Pick Care'),
+  shortName: varchar('short_name', { length: 4 }).notNull().default('PC'),
   tagline: varchar('tagline', { length: 160 }),
   // Shown on "Call the office" buttons (registration first of all). Null hides them.
   officePhone: varchar('office_phone', { length: 32 }),
-  primaryColor: varchar('primary_color', { length: 7 }).notNull().default('#5F6952'),
-  accentColor: varchar('accent_color', { length: 7 }).notNull().default('#2F7A84'),
+  primaryColor: varchar('primary_color', { length: 7 }).notNull().default('#0F5C5C'),
+  accentColor: varchar('accent_color', { length: 7 }).notNull().default('#BA5942'),
 
   logoKey: varchar('logo_key', { length: 255 }),
   logoMimeType: varchar('logo_mime_type', { length: 40 }),

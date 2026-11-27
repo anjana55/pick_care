@@ -82,9 +82,9 @@ it('lets someone with a staff-issued code skip sending one', async () => {
   post.mockRejectedValue(new ApiError(401, 'This code is invalid or has expired. Request a new one and try again.'));
   renderPage();
   fireEvent.change(screen.getByLabelText(/Registration number/), { target: { value: 'CG-2026-123456' } });
-  fireEvent.click(screen.getByRole('button', { name: 'I have a code from the CareLink office' }));
+  fireEvent.click(screen.getByRole('button', { name: 'I have a code from the Pick Care office' }));
 
-  await screen.findByText('Enter the code the CareLink office gave you.');
+  await screen.findByText('Enter the code the Pick Care office gave you.');
   expect(post).not.toHaveBeenCalled();
 
   fireEvent.change(screen.getByLabelText(/^Code/), { target: { value: 'ABCD-EFGH' } });
@@ -104,7 +104,7 @@ it('asks for the registration number before doing anything', () => {
 // the code was submitted, with a misleading "Enter your registration number".
 it.each([
   ['Send me a code'],
-  ['I have a code from the CareLink office'],
+  ['I have a code from the Pick Care office'],
 ])('stops on step one when the number is not a registration number (%s)', (button) => {
   renderPage();
   fireEvent.change(screen.getByLabelText(/Registration number/), {
@@ -119,7 +119,7 @@ it.each([
 it('accepts the ways people retype a registration number', async () => {
   renderPage();
   fireEvent.change(screen.getByLabelText(/Registration number/), { target: { value: ' cg 2026\u2013123456 ' } });
-  fireEvent.click(screen.getByRole('button', { name: 'I have a code from the CareLink office' }));
+  fireEvent.click(screen.getByRole('button', { name: 'I have a code from the Pick Care office' }));
   await screen.findByLabelText(/^Code/);
   expect(screen.getByText(/Registration number: CG-2026-123456/)).toBeInTheDocument();
 });

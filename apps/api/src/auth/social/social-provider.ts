@@ -46,7 +46,7 @@ export interface CredentialCheck {
 }
 
 /** A deliberately invalid code: the provider must reject it, and *how* it rejects tells us about the client. */
-const PROBE_CODE = 'carelink-credential-check';
+const PROBE_CODE = 'pickcare-credential-check';
 
 async function rawPost(url: string, body: Record<string, string>): Promise<{ status: number; json: any }> {
   const res = await fetch(url, {

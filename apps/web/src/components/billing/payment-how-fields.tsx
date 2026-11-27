@@ -26,7 +26,7 @@ export function paymentHowBody(v: PaymentHow) {
   };
 }
 
-/** "Bank · Cheque · Commercial Bank - 1234 (CareLink)" - how a recorded payment reads. */
+/** "Bank · Cheque · Commercial Bank - 1234 (Pick Care)" - how a recorded payment reads. */
 export function usePaymentHowLabel() {
   const { t } = useTranslation();
   return (p: { paymentType: PaymentType | null; method: PaymentMethod | null; bankAccount?: string | null }) =>

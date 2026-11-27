@@ -7,8 +7,8 @@ import { AppProviders, serveApi } from '../test-utils/app';
 import { tokensFor } from '../test-utils/helpers';
 import { tokenStore } from '@/api';
 
-const IOS_STORE = 'https://apps.apple.com/app/carelink/id1234567890';
-const PLAY_STORE = 'https://play.google.com/store/apps/details?id=com.vivantihealth.carelink';
+const IOS_STORE = 'https://apps.apple.com/app/pick-care/id1234567890';
+const PLAY_STORE = 'https://play.google.com/store/apps/details?id=lk.pickcare.app';
 
 const config = (ios: { minimumVersion?: string; latestVersion?: string; storeUrl?: string | null }) => ({
   ios: { minimumVersion: null, latestVersion: null, storeUrl: IOS_STORE, ...ios },
@@ -30,7 +30,7 @@ async function openApp(version: string, answer: () => { status: number; body?: u
 
 beforeEach(() => AsyncStorage.clear());
 
-const brand = (s: string) => s.replace('{brand}', 'CareLink');
+const brand = (s: string) => s.replace('{brand}', 'Pick Care');
 
 describe('the update check', () => {
   it('stops a build below the minimum, and sends the person to the store', async () => {

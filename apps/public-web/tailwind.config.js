@@ -11,23 +11,22 @@ module.exports = {
       // channels so opacity modifiers such as `border-brand/30` keep working.
       //
       // The fallbacks below - and the values an untouched deployment gets - are
-      // the CareLink palette drawn from the reference site (caregivers.lk): a
-      // muted olive primary and a teal secondary, darkened from the site's own
-      // hexes (#757E6A / #65ABB4, which fail WCAG AA as text) to accessible
-      // points. Settings > Branding refuses colours that fail AA with white text.
+      // the Pick Care palette: deep teal primary #0F5C5C and terracotta accent
+      // #BA5942, with the other shades derived by `derivePalette`. Settings >
+      // Branding refuses colours that fail WCAG AA with white text.
       colors: {
-        paper: 'rgb(var(--color-paper, 246 248 242) / <alpha-value>)', // #F6F8F2, 9.89:1 with ink
+        paper: 'rgb(var(--color-paper, 242 246 246) / <alpha-value>)', // #F2F6F6, 9.72:1 with ink
         ink: '#374046', //    10.58:1 on white
-        border: 'rgb(var(--color-border, 220 224 214) / <alpha-value>)', // #DCE0D6, decorative hairline
+        border: 'rgb(var(--color-border, 202 219 219) / <alpha-value>)', // #CADBDB, decorative hairline
         brand: {
-          DEFAULT: 'rgb(var(--color-brand, 95 105 82) / <alpha-value>)', // #5F6952 olive, 5.79:1 with white text
-          dark: 'rgb(var(--color-brand-dark, 79 87 69) / <alpha-value>)', // #4F5745, 7.55:1
-          light: 'rgb(var(--color-brand-light, 228 232 222) / <alpha-value>)', // #E4E8DE, tint behind brand content
+          DEFAULT: 'rgb(var(--color-brand, 15 92 92) / <alpha-value>)', // #0F5C5C teal, 7.76:1 with white text
+          dark: 'rgb(var(--color-brand-dark, 12 76 76) / <alpha-value>)', // #0C4C4C, 9.75:1
+          light: 'rgb(var(--color-brand-light, 214 227 227) / <alpha-value>)', // #D6E3E3, tint behind brand content
         },
         accent: {
-          DEFAULT: 'rgb(var(--color-accent, 47 122 132) / <alpha-value>)', // #2F7A84 teal, 4.96:1 with white text
-          dark: 'rgb(var(--color-accent-dark, 42 107 116) / <alpha-value>)', // #2A6B74, 6.08:1
-          light: 'rgb(var(--color-accent-light, 220 232 234) / <alpha-value>)', // #DCE8EA, tint behind accent content
+          DEFAULT: 'rgb(var(--color-accent, 186 89 66) / <alpha-value>)', // #BA5942 terracotta, 4.57:1 with white text
+          dark: 'rgb(var(--color-accent-dark, 164 78 58) / <alpha-value>)', // #A44E3A, 5.63:1
+          light: 'rgb(var(--color-accent-light, 243 227 223) / <alpha-value>)', // #F3E3DF, tint behind accent content
         },
         danger: {
           DEFAULT: '#A6402F', // 6.18:1 with white text
@@ -46,7 +45,7 @@ module.exports = {
       // Focus rings are used on every interactive control across both apps, so
       // they take the brand colour unless a component overrides them.
       ringColor: {
-        DEFAULT: 'rgb(var(--color-brand, 95 105 82) / <alpha-value>)',
+        DEFAULT: 'rgb(var(--color-brand, 15 92 92) / <alpha-value>)',
       },
     },
   },

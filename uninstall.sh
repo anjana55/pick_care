@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# uninstall.sh - tears down a CareLink deployment created by setup.sh.
+# uninstall.sh - tears down a Pick Care deployment created by setup.sh.
 #
 # Two modes, and the difference is whether any data is destroyed:
 #
@@ -76,7 +76,7 @@ usage() {
 Usage: $0 [--purge] [-y|--yes] [--dry-run]
        $0 --factory-reset [--include-settings] [--no-backup] [-y|--yes] [--dry-run]
 
-Removes the CareLink deployment created by setup.sh.
+Removes the Pick Care deployment created by setup.sh.
 
   (no options)   Stop and remove containers + network. Data volumes, the
                  TLS certificate, Docker images and $ENV_FILE are all

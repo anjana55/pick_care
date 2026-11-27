@@ -65,7 +65,7 @@ export async function confirmOwner(promptMessage: string, cancelLabel: string): 
  */
 export type LockChoice = 'on' | 'off';
 
-const keyFor = (userId: string) => `carelink.appLock.${userId.replace(/[^A-Za-z0-9._-]/g, '_')}`;
+const keyFor = (userId: string) => `pickcare.appLock.${userId.replace(/[^A-Za-z0-9._-]/g, '_')}`;
 
 export async function readLockChoice(userId: string): Promise<LockChoice | null> {
   try {

@@ -54,16 +54,16 @@ describe('Android app links (e2e)', () => {
 
   it('vouches for no app until both the package and a fingerprint are set', async () => {
     expect((await assetLinks().expect(200)).body).toEqual([]);
-    await save({ appLinks: { android: { packageName: 'com.vivantihealth.carelink' } } }).expect(200);
+    await save({ appLinks: { android: { packageName: 'lk.pickcare.app' } } }).expect(200);
     expect((await assetLinks().expect(200)).body).toEqual([]);
   });
 
   it('publishes what the admin saved, in the form Android reads, to anyone', async () => {
     // Pasted as `keytool` and Play Console print them, or lower case without colons.
     const saved = await save({
-      appLinks: { android: { packageName: ' com.vivantihealth.carelink ', certFingerprints: [FINGERPRINT, PLAY_FINGERPRINT.replace(/:/g, '').toLowerCase(), FINGERPRINT] } },
+      appLinks: { android: { packageName: ' lk.pickcare.app ', certFingerprints: [FINGERPRINT, PLAY_FINGERPRINT.replace(/:/g, '').toLowerCase(), FINGERPRINT] } },
     }).expect(200);
-    expect(saved.body.appLinks.android).toEqual({ packageName: 'com.vivantihealth.carelink', certFingerprints: [FINGERPRINT, PLAY_FINGERPRINT] });
+    expect(saved.body.appLinks.android).toEqual({ packageName: 'lk.pickcare.app', certFingerprints: [FINGERPRINT, PLAY_FINGERPRINT] });
 
     const res = await assetLinks().expect(200);
     expect(res.headers['content-type']).toMatch(/application\/json/);
@@ -71,7 +71,7 @@ describe('Android app links (e2e)', () => {
     expect(res.body).toEqual([
       {
         relation: ['delegate_permission/common.handle_all_urls'],
-        target: { namespace: 'android_app', package_name: 'com.vivantihealth.carelink', sha256_cert_fingerprints: [FINGERPRINT, PLAY_FINGERPRINT] },
+        target: { namespace: 'android_app', package_name: 'lk.pickcare.app', sha256_cert_fingerprints: [FINGERPRINT, PLAY_FINGERPRINT] },
       },
     ]);
 
@@ -81,18 +81,18 @@ describe('Android app links (e2e)', () => {
   });
 
   it("refuses what isn't a package or a fingerprint, and keeps what was there", async () => {
-    await save({ appLinks: { android: { packageName: 'com.vivantihealth.carelink', certFingerprints: [FINGERPRINT] } } }).expect(200);
+    await save({ appLinks: { android: { packageName: 'lk.pickcare.app', certFingerprints: [FINGERPRINT] } } }).expect(200);
     const bad = await save({ appLinks: { android: { certFingerprints: [FINGERPRINT.slice(3)] } } }).expect(400);
     expect(bad.body.message).toMatch(/isn't a SHA-256 fingerprint/);
-    await save({ appLinks: { android: { packageName: 'carelink' } } }).expect(400);
-    await save({ appLinks: { android: { packageName: 'com.vivantihealth.carelink', certFingerprints: 'AB' } } }).expect(400);
+    await save({ appLinks: { android: { packageName: 'pickcare' } } }).expect(400);
+    await save({ appLinks: { android: { packageName: 'lk.pickcare.app', certFingerprints: 'AB' } } }).expect(400);
     expect((await assetLinks().expect(200)).body[0].target.sha256_cert_fingerprints).toEqual([FINGERPRINT]);
   });
 
   it('only an admin changes them', async () => {
     await save({ appLinks: { android: { packageName: 'com.attacker.app' } } }, staffToken).expect(403);
     await api().patch('/settings/mobile-app').send({ appLinks: { android: { packageName: 'com.attacker.app' } } }).expect(401);
-    expect((await assetLinks().expect(200)).body[0].target.package_name).toBe('com.vivantihealth.carelink');
+    expect((await assetLinks().expect(200)).body[0].target.package_name).toBe('lk.pickcare.app');
   });
 
   it('clears with an empty list', async () => {

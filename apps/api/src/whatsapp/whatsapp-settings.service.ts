@@ -62,7 +62,7 @@ export class WhatsappSettingsService {
         phoneNumberId: env('WHATSAPP_PHONE_NUMBER_ID') ?? null,
         businessAccountId: env('WHATSAPP_BUSINESS_ACCOUNT_ID') ?? null,
         accessTokenEncrypted: token ? encryptSecret(token, this.encryptionKey) : null,
-        templateName: env('WHATSAPP_TEMPLATE_NAME') ?? 'carelink_otp',
+        templateName: env('WHATSAPP_TEMPLATE_NAME') ?? 'pickcare_otp',
         templateLanguage: env('WHATSAPP_TEMPLATE_LANGUAGE') ?? 'en',
       })
       .onDuplicateKeyUpdate({ set: { id: SETTINGS_ID } });

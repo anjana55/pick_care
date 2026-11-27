@@ -276,7 +276,7 @@ export default function BillingSettingsPage() {
             </div>
             <div className="sm:col-span-2">
               <Label htmlFor="phNotify">{t('billingAdmin.notifyBase')}</Label>
-              <Input id="phNotify" maxLength={255} value={draft.payhereNotifyBaseUrl} onChange={(e) => set('payhereNotifyBaseUrl', e.target.value)} placeholder="https://find.caregivers.lk/api" />
+              <Input id="phNotify" maxLength={255} value={draft.payhereNotifyBaseUrl} onChange={(e) => set('payhereNotifyBaseUrl', e.target.value)} placeholder="https://pickcare.lk/api" />
               <div className="mt-1 flex items-center gap-2 text-xs text-ink/50">
                 <span>
                   {t('billingAdmin.notifyUrl')} <code className="rounded bg-paper px-1">{settings.payhereNotifyUrl}</code>

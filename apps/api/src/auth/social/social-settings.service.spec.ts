@@ -64,7 +64,7 @@ function make(rows: Row[], env: Record<string, string> = {}) {
   };
   let currentTarget = 'GOOGLE';
   const config = {
-    get: (k: string) => ({ SETTINGS_ENCRYPTION_KEY: ROOT, PUBLIC_WEB_URL: 'https://carelink.example', ...env })[k],
+    get: (k: string) => ({ SETTINGS_ENCRYPTION_KEY: ROOT, PUBLIC_WEB_URL: 'https://pickcare.example', ...env })[k],
   } as unknown as ConfigService;
   const service = new SocialAuthSettingsService(db, config);
   return { service, store, writes, target: (p: string) => (currentTarget = p) };
@@ -156,15 +156,15 @@ describe('SocialAuthSettingsService', () => {
       const { service } = make(empty());
       const list = await service.getForAdmin();
       expect(list.map((s) => s.redirectUri)).toEqual([
-        'https://carelink.example/api/auth/social/google/callback',
-        'https://carelink.example/api/auth/social/microsoft/callback',
-        'https://carelink.example/api/auth/social/facebook/callback',
+        'https://pickcare.example/api/auth/social/google/callback',
+        'https://pickcare.example/api/auth/social/microsoft/callback',
+        'https://pickcare.example/api/auth/social/facebook/callback',
       ]);
     });
 
     it('honours SOCIAL_AUTH_CALLBACK_BASE_URL', async () => {
-      const { service } = make(empty(), { SOCIAL_AUTH_CALLBACK_BASE_URL: 'https://api.carelink.example/' });
-      expect(service.redirectUri('GOOGLE')).toBe('https://api.carelink.example/auth/social/google/callback');
+      const { service } = make(empty(), { SOCIAL_AUTH_CALLBACK_BASE_URL: 'https://api.pickcare.example/' });
+      expect(service.redirectUri('GOOGLE')).toBe('https://api.pickcare.example/auth/social/google/callback');
     });
   });
 
@@ -230,7 +230,7 @@ describe('SocialAuthSettingsService', () => {
     });
 
     it('refuses an http callback URL in production', async () => {
-      const { service } = make(empty(), { NODE_ENV: 'production', PUBLIC_WEB_URL: 'http://carelink.example' });
+      const { service } = make(empty(), { NODE_ENV: 'production', PUBLIC_WEB_URL: 'http://pickcare.example' });
       await expect(service.update('GOOGLE', { enabled: true, clientId: 'g', clientSecret: 's' }, 'a')).rejects.toThrow(/https/);
     });
   });

@@ -8,7 +8,7 @@ import { UpdateEmailSettingsDto } from './dto/update-email-settings.dto';
 import { BrandingSettingsService } from '../branding/branding-settings.service';
 
 const SETTINGS_ID = 'default';
-const DEFAULT_FROM_NAME = 'CareLink';
+const DEFAULT_FROM_NAME = 'Pick Care';
 
 type Row = typeof emailSettings.$inferSelect;
 
@@ -26,7 +26,7 @@ export type AdminEmailSettings = Omit<Row, 'passwordEncrypted'> & {
 };
 
 /**
- * Splits an SMTP_FROM such as `CareLink <no-reply@example.com>` (or a bare
+ * Splits an SMTP_FROM such as `Pick Care <no-reply@example.com>` (or a bare
  * address) into the name and address the settings row stores separately.
  */
 export function parseFromHeader(raw: string | undefined): { name: string | null; address: string | null } {

@@ -466,7 +466,7 @@ or blank `=` at the end of any line? If yes, move on.
 
 ### 8.4 Email (set up in the app, after deploying)
 
-Nothing to fill in here. The mail server CareLink sends verification emails and sign-in
+Nothing to fill in here. The mail server the platform sends verification emails and sign-in
 codes through is configured **inside the app**, by an admin, under
 **Settings > Email** - host, port, security, username/password and the sender address,
 with a **Send test email** button that shows the mail server's own error if something is
@@ -541,11 +541,11 @@ development only and is refused when `NODE_ENV=production`.
 
 ### 8.6 Branding: your company name, logo, colours and languages
 
-The product is white-labelled. Out of the box it is branded **CareLink**; to ship it under
+The product is white-labelled. Out of the box it is branded **Pick Care**; to ship it under
 your own name, an admin opens **Settings → Branding** (staff app, the first Settings tab)
 after deploying and sets:
 
-- **Company name** (and an optional 1-4 letter short name and tagline). It replaces "CareLink"
+- **Company name** (and an optional 1-4 letter short name and tagline). It replaces "Pick Care"
   everywhere - both apps, browser tabs, every email and every WhatsApp notice. The email
   sender name and the invoice business name follow a rename too, unless you have already set
   them to something else under Settings → Email / Billing.
@@ -557,6 +557,14 @@ after deploying and sets:
   darker alternative.
 - **Languages** - which of English, Sinhala and Tamil are offered, and the default for
   visitors who have not chosen one. With a single language the switcher is hidden.
+
+**Servers set up before the Pick Care rename** (the product used to ship as CareLink):
+migration `0061` renames whatever still has the old defaults the next time `update.sh`
+runs. That covers a company name of exactly "CareLink" (and the short name "CL"), the
+old olive and teal colours if both were never changed, and an email sender or invoice
+business name of exactly "CareLink". Anything you had set yourself is left alone. The
+WhatsApp template names saved in Settings → WhatsApp don't change either, because they
+must match the templates Meta approved; only a new server starts with `pickcare_otp`.
 
 Changes apply at once in the browser of the admin who saves them and within about 30 seconds
 for everyone else. The two web containers read the branding from the API over the compose
@@ -574,7 +582,7 @@ if you are registered for it; set the rate and your tax registration number at t
 To let clients pay online with **PayHere**:
 
 1. In the [PayHere merchant portal](https://www.payhere.lk) go to *Settings → Domains &
-   Credentials*, add your site's domain (e.g. `find.caregivers.lk`) and wait for it to be
+   Credentials*, add your site's domain (e.g. `pickcare.lk`) and wait for it to be
    approved (PayHere says up to 24 hours). Note the **Merchant ID** and the **Merchant
    Secret** for that domain. Use a sandbox account first.
 2. In **Settings → Billing → Online payment**, choose *Sandbox*, enter the merchant ID and
@@ -735,7 +743,7 @@ of the output to say `HTTP/1.1 200` or `HTTP/2 200` - `200` means
 "success."
 
 Now, on **your own laptop** (not the server), open a normal web browser
-and visit your domain. You should see the CareLink Finder homepage - a
+and visit your domain. You should see the Pick Care homepage - a
 search box for finding caregivers.
 
 Also check the staff app and the sign-up page:

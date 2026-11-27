@@ -14,7 +14,7 @@ export interface TokenStore {
   clear(): Promise<void>;
 }
 
-const KEY = 'carelink.session';
+const KEY = 'pickcare.session';
 
 export function createSecureTokenStore(): TokenStore {
   let current: Tokens | null = null;

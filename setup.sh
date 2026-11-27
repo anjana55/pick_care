@@ -532,7 +532,7 @@ on_exit() {
 }
 trap on_exit EXIT
 
-log "About to build and start CareLink using $ENV_FILE"
+log "About to build and start Pick Care using $ENV_FILE"
 echo "  Domain:      ${ENV_DOMAIN:-<not set>}"
 echo "  Admin email: ${ADMIN_EMAIL}"
 if [ "$TLS_PLANNED" -eq 1 ]; then

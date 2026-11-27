@@ -62,7 +62,7 @@ export interface BankAccount {
   updatedAt: string;
 }
 
-/** "Commercial Bank - 1234567890 (CareLink Pvt Ltd)" - how an account is shown in a picker or on a payment. */
+/** "Commercial Bank - 1234567890 (Pick Care Pvt Ltd)" - how an account is shown in a picker or on a payment. */
 export function bankAccountLabel(a: Pick<BankAccount, 'bankName' | 'accountNumber' | 'accountName'>): string {
   return `${a.bankName} - ${a.accountNumber} (${a.accountName})`;
 }

@@ -55,7 +55,7 @@ export function appScreenFor(path: string): string {
 /**
  * What the app does with an address the phone opened it with. A link to the
  * website (https, on `siteHost`) becomes the matching screen; anything else -
- * the app's own carelink:// addresses, such as the social sign-in return - is
+ * the app's own pickcare:// addresses, such as the social sign-in return - is
  * left as it came.
  */
 export function routeForIncoming(url: string, siteHost: string | null | undefined): string {

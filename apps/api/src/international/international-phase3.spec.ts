@@ -143,7 +143,7 @@ describe('placement invoice rules', () => {
   });
 
   it('sends PayHere placement payments to their own notify address', () => {
-    expect(placementNotifyUrl('https://find.caregivers.lk/api/payments/payhere/notify')).toBe('https://find.caregivers.lk/api/payments/payhere/placement-notify');
+    expect(placementNotifyUrl('https://pickcare.lk/api/payments/payhere/notify')).toBe('https://pickcare.lk/api/payments/payhere/placement-notify');
   });
 });
 

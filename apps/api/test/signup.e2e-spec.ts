@@ -297,7 +297,7 @@ describe('Sign-up with the sign-in method first (e2e)', () => {
 
     it('from the app, hands the ticket only to the verifier behind the challenge', async () => {
       const { verifier, landing } = await googleRoundTrip('client', { app: true });
-      expect(landing.protocol).toBe('carelink:');
+      expect(landing.protocol).toBe('pickcare:');
       const code = landing.searchParams.get('code');
       await api().post('/auth/signup/identity/exchange').send({ code, verifier: 'w'.repeat(50) }).expect(401);
       // Spent by the failed attempt.

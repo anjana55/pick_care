@@ -312,7 +312,7 @@ describe("an employer's placements and invoices", () => {
       billToEmail: 'aiko@example.jp',
       billToAddress: null,
       billToCountry: 'JP',
-      seller: { name: 'CareLink', address: 'Colombo', phone: null, email: null, registrationNumber: 'PV 1234', taxRegistrationNumber: null },
+      seller: { name: 'Pick Care', address: 'Colombo', phone: null, email: null, registrationNumber: 'PV 1234', taxRegistrationNumber: null },
       footer: 'Bank: Commercial Bank, A/C 1234',
       notes: null,
       voidReason: null,

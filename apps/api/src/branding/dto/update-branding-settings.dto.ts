@@ -42,11 +42,11 @@ export class UpdateBrandingSettingsDto {
   @Matches(/^$|^\+?[\d\s().-]{7,32}$/, { message: 'Enter the office phone number using digits, spaces and an optional leading +' })
   officePhone?: string;
 
-  @ApiPropertyOptional({ example: '#5F6952' })
+  @ApiPropertyOptional({ example: '#0F5C5C' })
   @IsOptional() @Matches(/^#[0-9a-fA-F]{6}$/, { message: 'Enter the primary colour as a hex value, e.g. #5F6952' })
   primaryColor?: string;
 
-  @ApiPropertyOptional({ example: '#2F7A84' })
+  @ApiPropertyOptional({ example: '#BA5942' })
   @IsOptional() @Matches(/^#[0-9a-fA-F]{6}$/, { message: 'Enter the accent colour as a hex value, e.g. #2F7A84' })
   accentColor?: string;
 

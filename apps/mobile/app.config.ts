@@ -12,19 +12,18 @@ declare const __dirname: string;
  * the API's /branding (Settings > Branding), so an admin's change shows up
  * without a new build. Only what the stores bake in lives here.
  *
- *   BRAND=carelink npx expo start
+ *   BRAND=pickcare npx expo start
  *   EXPO_PUBLIC_API_URL=http://192.168.1.10:3001 npx expo start   (a dev API on your network)
  */
 interface Brand {
   /** Name under the icon and in the stores. */
   name: string;
   slug: string;
-  /** Deep links: carelink://... */
+  /** Deep links: pickcare://... */
   scheme: string;
   /**
-   * PROVISIONAL. The real identifiers are chosen when Vivanti Health's Apple
-   * and Google developer accounts exist (see the mobile app plan, section 9),
-   * and can't be changed once an app is published under them.
+   * The iOS bundle id and Android package. It can't be changed once an app
+   * is published under it: a new id is a different app in both stores.
    */
   bundleId: string;
   apiUrl: string;
@@ -37,7 +36,7 @@ interface Brand {
   /**
    * The brand's Expo (EAS) project: the account that owns it and the project
    * id `eas init` prints. Needed for builds, push and over-the-air updates;
-   * see BUILDING.md. Empty until Vivanti Health's Expo account is set up -
+   * see BUILDING.md. Empty until the brand's Expo account is set up -
    * the app runs without them, just without push. EAS_PROJECT_ID / EXPO_OWNER
    * override them.
    */
@@ -105,20 +104,20 @@ function permissionLocales(brandName: string): Record<string, Record<string, str
 }
 
 const BRANDS: Record<string, Brand> = {
-  carelink: {
-    name: 'CareLink',
-    slug: 'carelink',
-    scheme: 'carelink',
-    bundleId: 'com.vivantihealth.carelink',
-    apiUrl: 'https://find.caregivers.lk/api',
-    siteHost: 'find.caregivers.lk',
+  pickcare: {
+    name: 'Pick Care',
+    slug: 'pickcare',
+    scheme: 'pickcare',
+    bundleId: 'lk.pickcare.app',
+    apiUrl: 'https://pickcare.lk/api',
+    siteHost: 'pickcare.lk',
     owner: '',
     easProjectId: '',
   },
 };
 
 export default ({ config }: ConfigContext): ExpoConfig => {
-  const key = process.env.BRAND ?? 'carelink';
+  const key = process.env.BRAND ?? 'pickcare';
   const brand = BRANDS[key];
   if (!brand) throw new Error(`Unknown BRAND "${key}". Known: ${Object.keys(BRANDS).join(', ')}`);
   const projectId = process.env.EAS_PROJECT_ID || brand.easProjectId;

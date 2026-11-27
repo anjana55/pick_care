@@ -6,7 +6,7 @@
   "build": {
     "base": {
       "env": {
-        "BRAND": "carelink"
+        "BRAND": "pickcare"
       }
     },
     "development": {

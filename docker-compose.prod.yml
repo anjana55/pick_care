@@ -83,7 +83,7 @@ services:
       SMTP_SECURE: ${SMTP_SECURE:-false}
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
-      SMTP_FROM: ${SMTP_FROM:-CareLink <no-reply@care-platform.local>}
+      SMTP_FROM: ${SMTP_FROM:-Pick Care <no-reply@care-platform.local>}
       # Optional WhatsApp sign-in bootstrap values - see .env.production.example.
       # The feature itself is managed by an admin in the app (Settings).
       SETTINGS_ENCRYPTION_KEY: ${SETTINGS_ENCRYPTION_KEY:-}
@@ -98,7 +98,7 @@ services:
       WHATSAPP_PHONE_NUMBER_ID: ${WHATSAPP_PHONE_NUMBER_ID:-}
       WHATSAPP_BUSINESS_ACCOUNT_ID: ${WHATSAPP_BUSINESS_ACCOUNT_ID:-}
       WHATSAPP_ACCESS_TOKEN: ${WHATSAPP_ACCESS_TOKEN:-}
-      WHATSAPP_TEMPLATE_NAME: ${WHATSAPP_TEMPLATE_NAME:-carelink_otp}
+      WHATSAPP_TEMPLATE_NAME: ${WHATSAPP_TEMPLATE_NAME:-pickcare_otp}
       WHATSAPP_TEMPLATE_LANGUAGE: ${WHATSAPP_TEMPLATE_LANGUAGE:-en}
       # Push notifications to the mobile app, sent through Expo in addition to
       # WhatsApp/email - see .env.production.example.

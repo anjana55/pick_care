@@ -7,7 +7,7 @@ function fakeDb(rows: unknown[]) {
   return { select: () => chain } as never;
 }
 
-const ACCOUNT = { id: 'acc-1', bankName: 'Commercial Bank', branch: null, accountName: 'CareLink', accountNumber: '1000123', active: true };
+const ACCOUNT = { id: 'acc-1', bankName: 'Commercial Bank', branch: null, accountName: 'Pick Care', accountNumber: '1000123', active: true };
 
 describe('BankAccountsService.resolvePayment', () => {
   it('accepts cash with no detail and no account', async () => {
@@ -21,7 +21,7 @@ describe('BankAccountsService.resolvePayment', () => {
       paymentType: 'BANK',
       method: 'CHEQUE',
       bankAccountId: 'acc-1',
-      note: 'cheque · Commercial Bank - 1000123 (CareLink)',
+      note: 'cheque · Commercial Bank - 1000123 (Pick Care)',
     });
   });
 

@@ -33,7 +33,7 @@ const isDuplicate = (err: unknown) => {
 };
 
 /**
- * What CareLink owes each caregiver. A statement covers one caregiver and one
+ * What the business owes each caregiver. A statement covers one caregiver and one
  * period: a line for every shift they completed in it - as the booked
  * caregiver or as a cover - priced at the booking's pay rate, plus whatever
  * allowances (ITEM) or deductions (negative ADJUSTMENT) staff add.

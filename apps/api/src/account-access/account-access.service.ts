@@ -271,7 +271,7 @@ export class AccountAccessService {
 
   /**
    * Where the caregiver enters the code: the claim page on the public site
-   * (apps/public-web), e.g. https://find.caregivers.lk/caregiver/claim. Staff
+   * (apps/public-web), e.g. https://pickcare.lk/caregiver/claim. Staff
    * read it out or write it down with the code, so it comes from the same
    * PUBLIC_WEB_URL the API already uses for public-site links.
    */

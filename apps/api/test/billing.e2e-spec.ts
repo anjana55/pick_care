@@ -188,7 +188,7 @@ describe('Invoicing and payouts (e2e)', () => {
     const taxed = await api()
       .patch(`/invoices/${draft.body.id}`)
       .set(bearer(staffToken))
-      .send({ applyTax: true, discountType: 'AMOUNT', discountValue: '650.00', discountReason: 'Goodwill', notes: 'Thank you for choosing CareLink.' })
+      .send({ applyTax: true, discountType: 'AMOUNT', discountValue: '650.00', discountReason: 'Goodwill', notes: 'Thank you for choosing Pick Care.' })
       .expect(200);
     // discount 650 of 10650; taxable lines 9150 carry 9150/10650 of it = 558.45; tax 18% of 8591.55
     expect(taxed.body.discountAmount).toBe('650.00');

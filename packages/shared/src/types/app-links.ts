@@ -9,7 +9,7 @@
  * website, so all three agree on what a valid one is.
  */
 
-/** An Android package name: two or more dot-separated parts, each starting with a letter (com.vivantihealth.carelink). */
+/** An Android package name: two or more dot-separated parts, each starting with a letter (lk.pickcare.app). */
 export const ANDROID_PACKAGE_RE = /^[a-zA-Z][a-zA-Z0-9_]*(\.[a-zA-Z][a-zA-Z0-9_]*)+$/;
 
 /** A SHA-256 certificate fingerprint as Android writes it: 32 bytes in upper-case hex, separated by colons. */

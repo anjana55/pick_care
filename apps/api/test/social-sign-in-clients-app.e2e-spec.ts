@@ -246,7 +246,7 @@ describe('Social sign-in for clients and the app (e2e)', () => {
 
       const { verifier, challenge } = verifierAndChallenge();
       const back = await signIn({ side: 'client', client: 'app', challenge });
-      expect(`${back.protocol}//${back.host}${back.pathname}`).toBe('carelink://auth/callback');
+      expect(`${back.protocol}//${back.host}${back.pathname}`).toBe('pickcare://auth/callback');
       expect(back.searchParams.get('flow')).toBe('login');
       const session = await exchange(back.searchParams.get('code')!, verifier).expect(201);
       expect(decodeJwt(session.body.accessToken)).toMatchObject({ role: 'PATIENT_GUARDIAN', patientId: client.patientId });
@@ -272,7 +272,7 @@ describe('Social sign-in for clients and the app (e2e)', () => {
     it('sends failures back to the app too', async () => {
       signInAs(`g-app-nobody-${run}-${++n}`, newEmail());
       const back = await signIn({ side: 'client', client: 'app', challenge: verifierAndChallenge().challenge });
-      expect(`${back.protocol}//${back.host}${back.pathname}`).toBe('carelink://auth/callback');
+      expect(`${back.protocol}//${back.host}${back.pathname}`).toBe('pickcare://auth/callback');
       expect(back.searchParams.get('error')).toBe('not_registered');
       expect(back.searchParams.get('flow')).toBe('login');
 
@@ -280,7 +280,7 @@ describe('Social sign-in for clients and the app (e2e)', () => {
       const started = await api().get('/auth/social/google/login-url').query({ nonce: nonce(), client: 'app', challenge: verifierAndChallenge().challenge }).expect(200);
       const state = new URL(started.body.url).searchParams.get('state')!;
       const declined = await api().get('/auth/social/google/callback').query({ error: 'access_denied', state }).expect(302);
-      expect(declined.headers.location).toBe('carelink://auth/callback?error=declined&flow=login');
+      expect(declined.headers.location).toBe('pickcare://auth/callback?error=declined&flow=login');
     });
   });
 });

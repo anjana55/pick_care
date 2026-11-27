@@ -20,7 +20,7 @@ export class CreateBankAccountDto {
   @MaxLength(120)
   branch?: string;
 
-  @ApiProperty({ example: 'CareLink (Pvt) Ltd' })
+  @ApiProperty({ example: 'Pick Care (Pvt) Ltd' })
   @Transform(trim)
   @IsString()
   @MinLength(1, { message: 'Enter the account name' })

@@ -162,7 +162,7 @@ function interpolate(template: string, vars?: Record<string, string | number>): 
 export function createI18n(
   dictionaries: Record<Locale, Record<string, unknown>>,
   storageKey: string,
-  /** Placeholders filled when the provider is given none, e.g. `{ brand: 'CareLink' }`. */
+  /** Placeholders filled when the provider is given none, e.g. `{ brand: 'Pick Care' }`. */
   defaultVars: Record<string, string | number> = {},
   { storage = browserLocaleStorage, onLocaleChange = setDocumentLang }: CreateI18nOptions = {},
 ) {

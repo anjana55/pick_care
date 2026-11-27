@@ -59,7 +59,7 @@ export const whatsappAuthSettings = mysqlTable('whatsapp_auth_settings', {
   accessTokenEncrypted: text('access_token_encrypted'),
 
   // The pre-approved WhatsApp authentication template carrying the code.
-  templateName: varchar('template_name', { length: 128 }).notNull().default('carelink_otp'),
+  templateName: varchar('template_name', { length: 128 }).notNull().default('pickcare_otp'),
   templateLanguage: varchar('template_language', { length: 16 }).notNull().default('en'),
   templateHasCopyCodeButton: boolean('template_has_copy_code_button').notNull().default(true),
 
@@ -70,7 +70,7 @@ export const whatsappAuthSettings = mysqlTable('whatsapp_auth_settings', {
   // text parameter ({{1}}) carrying the update. It must be approved in each
   // language it is sent in (en, si, ta) - the recipient's language picks it.
   notificationsEnabled: boolean('notifications_enabled').notNull().default(false),
-  notificationTemplateName: varchar('notification_template_name', { length: 128 }).notNull().default('carelink_update'),
+  notificationTemplateName: varchar('notification_template_name', { length: 128 }).notNull().default('pickcare_update'),
 
   // OTP policy.
   otpLength: int('otp_length').notNull().default(6),

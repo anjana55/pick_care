@@ -196,10 +196,11 @@ export function interviewIcs(i: Pick<Interview, 'id' | 'scheduledAt' | 'duration
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//CareLink//Interview//EN',
+    'PRODID:-//Pick Care//Interview//EN',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     'BEGIN:VEVENT',
+    // Kept from the CareLink name: calendars match updates to an event by UID.
     `UID:interview-${i.id}@carelink`,
     `DTSTAMP:${stamp(now)}`,
     `DTSTART:${stamp(start)}`,

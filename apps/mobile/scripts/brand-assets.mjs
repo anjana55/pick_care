@@ -6,8 +6,8 @@
  * colours, the name inside the app) is read live from the API, so only these
  * need a new build when they change.
  *
- *   npm run brand:assets              (the brand in BRAND, default carelink)
- *   BRAND=carelink npm run brand:assets -- --api https://find.caregivers.lk/api
+ *   npm run brand:assets              (the brand in BRAND, default pickcare)
+ *   BRAND=pickcare npm run brand:assets -- --api https://pickcare.lk/api
  *
  * Writes assets/brand/<brand>/: icon.png (1024, no transparency - the App
  * Store refuses it), adaptive-icon.png (1024, transparent, the mark inside
@@ -48,7 +48,7 @@ try {
 // The brand's API from app.config.ts, unless given.
 const { getConfig } = require('@expo/config');
 const { exp } = getConfig(root, { skipSDKVersionRequirement: true });
-const brand = exp.extra?.brand ?? 'carelink';
+const brand = exp.extra?.brand ?? 'pickcare';
 const api = (apiArg > -1 ? process.argv[apiArg + 1] : exp.extra?.apiUrl)?.replace(/\/+$/, '');
 if (!api) fail('no API address');
 

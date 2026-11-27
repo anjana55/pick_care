@@ -38,7 +38,7 @@ describe('text size per language', () => {
   }
 
   it('follows the size set for the language in Settings > Branding', async () => {
-    serveApi({ 'GET /branding': () => ({ status: 200, body: { companyName: 'CareLink', textScale: { en: 100, si: 85, ta: 90 } } }) });
+    serveApi({ 'GET /branding': () => ({ status: 200, body: { companyName: 'Pick Care', textScale: { en: 100, si: 85, ta: 90 } } }) });
     await render(
       <AppProviders>
         <Switcher />

@@ -46,7 +46,7 @@ export const bankAccounts = mysqlTable('bank_accounts', {
  */
 export const billingSettings = mysqlTable('billing_settings', {
   id: varchar('id', { length: 36 }).primaryKey(),
-  businessName: varchar('business_name', { length: 200 }).notNull().default('CareLink'),
+  businessName: varchar('business_name', { length: 200 }).notNull().default('Pick Care'),
   businessAddress: varchar('business_address', { length: 500 }),
   businessPhone: varchar('business_phone', { length: 40 }),
   businessEmail: varchar('business_email', { length: 255 }),
@@ -75,7 +75,7 @@ export const billingSettings = mysqlTable('billing_settings', {
   payhereMerchantId: varchar('payhere_merchant_id', { length: 40 }),
   payhereMerchantSecretEncrypted: text('payhere_merchant_secret_encrypted'),
   // Where PayHere posts payment notifications: the API's public address, e.g.
-  // https://find.caregivers.lk/api. Empty = PUBLIC_WEB_URL + /api.
+  // https://pickcare.lk/api. Empty = PUBLIC_WEB_URL + /api.
   payhereNotifyBaseUrl: varchar('payhere_notify_base_url', { length: 255 }),
 
   updatedBy: varchar('updated_by', { length: 36 }),
@@ -290,7 +290,7 @@ export const invoiceEvents = mysqlTable(
 );
 
 /**
- * What CareLink owes one caregiver for one period: the shifts they worked
+ * What the business owes one caregiver for one period: the shifts they worked
  * (booked or covering), at the booking's pay rate, plus any allowances or
  * deductions staff add.
  *
@@ -357,7 +357,7 @@ export const payoutLines = mysqlTable(
  * invoice, the change in what it came to after its discount and before tax:
  * on CLIENT, more
  * than zero means the client owes more, less than zero is a credit; on
- * CAREGIVER, more than zero means CareLink owes the caregiver more, less than
+ * CAREGIVER, more than zero means the business owes the caregiver more, less than
  * zero is a deduction.
  *
  * Status:

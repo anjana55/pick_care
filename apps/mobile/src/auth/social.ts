@@ -65,7 +65,7 @@ export function phoneSocialDeps(): SocialDeps | null {
     sha256Base64: (text) => crypto.digestStringAsync(crypto.CryptoDigestAlgorithm.SHA256, text, { encoding: crypto.CryptoEncoding.BASE64 }),
     openAuthSession: (url, redirect) => browser.openAuthSessionAsync(url, redirect),
     // The API sends the result here (its MOBILE_APP_SCHEME, which is this app's scheme).
-    redirectUrl: `${Constants.expoConfig?.scheme ?? 'carelink'}://auth/callback`,
+    redirectUrl: `${Constants.expoConfig?.scheme ?? 'pickcare'}://auth/callback`,
   };
 }
 

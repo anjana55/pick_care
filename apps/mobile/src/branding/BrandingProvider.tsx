@@ -11,7 +11,7 @@ import { config } from '@/config';
  * build. The last answer is kept on the phone and used first, so the right name
  * and colours show from the first frame and with no signal.
  */
-const CACHE_KEY = 'carelink.branding';
+const CACHE_KEY = 'pickcare.branding';
 
 type PngSize = (typeof BRAND_PNG_SIZES)[number];
 

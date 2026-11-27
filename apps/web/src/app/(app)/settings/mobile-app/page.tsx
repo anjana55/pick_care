@@ -223,7 +223,7 @@ export default function MobileAppSettingsPage() {
                 id="links-package"
                 autoComplete="off"
                 spellCheck={false}
-                placeholder="com.vivantihealth.carelink"
+                placeholder="lk.pickcare.app"
                 value={draft.links.packageName}
                 aria-invalid={Boolean(linkIssues.packageName)}
                 aria-describedby="links-package-hint"
