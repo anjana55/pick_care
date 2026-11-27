@@ -16,7 +16,7 @@ afterEach(async () => {
   await AsyncStorage.clear();
 });
 
-const sizeOf = (node: { props: { style: unknown } }) => StyleSheet.flatten(node.props.style as never).fontSize as number;
+const sizeOf = (node: { props: { style?: unknown } }) => StyleSheet.flatten(node.props.style as never).fontSize as number;
 
 describe('text size per language', () => {
   it('scales a size and its line height, and leaves 100% alone', () => {

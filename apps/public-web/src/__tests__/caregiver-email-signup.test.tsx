@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { ProviderChoices } from '@/components/caregivers/provider-choices';
 import { I18nProvider } from '@/lib/i18n';
 import { ApiError } from '@/lib/api/client';

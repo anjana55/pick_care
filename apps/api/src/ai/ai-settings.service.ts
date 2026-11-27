@@ -32,13 +32,6 @@ export interface ResolvedAiSettings {
 
 export type AiFeature = 'publicSearch' | 'staffMatching' | 'staffAssistant';
 
-/** Provider defaults so switching provider in the form gives a working starting point. */
-export const PROVIDER_DEFAULT_URLS: Record<AiProvider, string> = {
-  OLLAMA: 'http://localhost:11434',
-  OPENAI_COMPATIBLE: 'https://api.openai.com/v1',
-  ANTHROPIC: 'https://api.anthropic.com',
-};
-
 /**
  * Owns the single Settings > AI row. Read per use, uncached, like the other
  * settings services: one primary-key lookup, and switching AI off in an

@@ -21,11 +21,6 @@ export const paymentTypeEnum = ['CASH', 'BANK', 'ONLINE'] as const;
 export const payoutStatusEnum = ['DRAFT', 'APPROVED', 'PAID', 'VOID'] as const;
 export const payhereModeEnum = ['SANDBOX', 'LIVE'] as const;
 
-export type InvoiceStatusDb = (typeof invoiceStatusEnum)[number];
-export type PayoutStatusDb = (typeof payoutStatusEnum)[number];
-export type PaymentMethodDb = (typeof paymentMethodEnum)[number];
-export type PaymentTypeDb = (typeof paymentTypeEnum)[number];
-
 /**
  * The business's own bank accounts, managed in Settings > Billing. A BANK
  * payment - a client paying in, or a caregiver being paid out - can name the
@@ -376,7 +371,6 @@ export const payoutLines = mysqlTable(
  */
 export const billingAdjustmentSideEnum = ['CLIENT', 'CAREGIVER'] as const;
 export const billingAdjustmentStatusEnum = ['OPEN', 'SETTLED', 'CANCELLED'] as const;
-export type BillingAdjustmentSideDb = (typeof billingAdjustmentSideEnum)[number];
 
 export const billingAdjustments = mysqlTable(
   'billing_adjustments',

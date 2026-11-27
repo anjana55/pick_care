@@ -1,3 +1,8 @@
+> **Historical record.** This is the original build report and the per-feature
+> changelog kept while the platform was first built (as "Care Platform", later
+> CareLink). It is not maintained and parts of it no longer describe the code -
+> for the current state see the [README](../../README.md) and [docs/](../README.md).
+
 # Implementation Report — Care Platform (Caregiver Registration, Management & Verification)
 
 ## 1. What was requested vs. what was built

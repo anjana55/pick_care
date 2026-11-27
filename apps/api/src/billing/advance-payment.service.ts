@@ -1,6 +1,6 @@
 import { BadRequestException, ConflictException, Inject, Injectable, Logger, NotFoundException, OnApplicationBootstrap, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { and, asc, eq, gt, inArray, isNotNull, isNull, like, lt, ne, or } from 'drizzle-orm';
+import { and, asc, eq, gt, inArray, isNotNull, isNull, like, lt, ne } from 'drizzle-orm';
 import { randomUUID as uuid } from 'crypto';
 import { UNPAID_ALERT_DAYS_BEFORE_START, addDays, advancePeriods, colomboToday, type PayableInvoice } from '@care-platform/shared';
 import { DRIZZLE, type Database } from '../database/database.module';

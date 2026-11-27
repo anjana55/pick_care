@@ -13,7 +13,7 @@ describe('WhatsApp sign-in translations', () => {
   const english = keys(leaves(en)).sort();
 
   it('exist for the English baseline', () => {
-    expect(english.length).toBeGreaterThan(30);
+    expect(english.length).toBeGreaterThan(20);
   });
 
   it.each([

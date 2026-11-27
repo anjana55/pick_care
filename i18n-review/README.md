@@ -3,17 +3,23 @@
 The Sinhala and Tamil strings need correcting. Everything you need is here; you do
 not need the app running.
 
-## The six source-of-truth files
+## The source-of-truth files
 
-| App | Directory | Keys |
-|---|---|---|
-| Public site (landing, finder, register, login) | `apps/public-web/src/lib/i18n/dictionaries/` | `en.json`, `si.json`, `ta.json` — 261 strings |
-| Staff portal (`/staff`) | `apps/web/src/lib/i18n/` | `en.json`, `si.json`, `ta.json` — 422 strings |
+| App | Directory | Keys (Nov 2026) | In `translations.csv` |
+|---|---|---|---|
+| Public site | `apps/public-web/src/lib/i18n/dictionaries/` | 2,275 | yes |
+| Staff portal (`/staff`) | `apps/web/src/lib/i18n/` | 3,730 | yes |
+| Mobile app | `apps/mobile/src/i18n/` | 1,220 | no - most of its strings are reused from the public site |
 
-**683 strings total.** `en.json` is the reference: `si.json` and `ta.json` must have
-exactly the same key structure, no more and no less. There is a test that enforces
-this (`apps/public-web/src/__tests__/dictionary-parity.test.ts`) — it fails the
-build if a key is added, removed or renamed in only one language.
+`en.json` is the reference: `si.json` and `ta.json` must have exactly the same key
+structure, no more and no less (`apps/public-web/src/__tests__/dictionary-parity.test.ts`
+enforces it for the public site).
+
+`translations.csv` is a snapshot: it holds the rows that existed when it was last
+exported, plus the reviewer's corrections. Keys added since are not in it, and
+rows for keys that have since been removed are skipped when the corrections are
+applied. Some strings were reworded in the apps after the review, so run
+`--dry-run` first and check what would be overwritten.
 
 ## `translations.csv`
 

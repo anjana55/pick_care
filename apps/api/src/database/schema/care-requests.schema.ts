@@ -33,7 +33,6 @@ export type CareRequestSource = (typeof careRequestSourceEnum)[number];
 
 /** The kinds of care a request can be for - mirrors careTypeValues in @care-platform/shared. */
 export const careTypeEnum = ['HOME_SHIFT', 'LIVE_IN', 'HOSPITAL', 'NURSING_HOME', 'RETIREMENT_HOME'] as const;
-export type CareTypeDb = (typeof careTypeEnum)[number];
 
 /** Statuses in which a request still counts as open for the one-open-request-per-pair rule. */
 export const OPEN_CARE_REQUEST_STATUSES: readonly CareRequestStatus[] = ['NEW', 'IN_PROGRESS'];
@@ -144,7 +143,6 @@ export const careRequests = mysqlTable(
 // who, as "registration number - name", at the time.
 // CAREGIVER_NOTIFIED: the caregiver was told about the request (automatically, or by staff).
 export const careRequestEventTypeEnum = ['CREATED', 'STATUS_CHANGED', 'NOTE', 'ASSIGNED', 'CANCELLED', 'CAREGIVER_CHANGED', 'CAREGIVER_NOTIFIED'] as const;
-export type CareRequestEventType = (typeof careRequestEventTypeEnum)[number];
 
 export const careRequestEvents = mysqlTable(
   'care_request_events',

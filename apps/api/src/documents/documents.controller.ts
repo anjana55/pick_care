@@ -61,7 +61,7 @@ export class DocumentsController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { buffer, mimeType, filename } = await this.documentsService.getFile(caregiverId, id, user.userId, req.ip);
+    const { buffer, mimeType } = await this.documentsService.getFile(caregiverId, id, user.userId, req.ip);
     res.set({
       'Content-Type': mimeType,
       'Content-Disposition': `inline; filename="document-${id}"`,

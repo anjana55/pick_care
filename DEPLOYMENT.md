@@ -158,9 +158,14 @@ server, here's how:
 ```bash
 sudo apt-get update
 sudo apt-get install -y git
-git clone https://github.com/anjana55/care_platform.git care_link
+git clone https://github.com/anjana55/pick_care.git care_link
 cd care_link
 ```
+
+The folder is still called `care_link` on purpose. Docker Compose names the
+database and document volumes after the folder, so a server that already
+runs the site must keep that name or it would start with empty volumes. A
+brand-new server can use any folder name, as long as it never changes.
 
 - `sudo apt-get update` - refreshes the list of installable software.
   Expect a screen of text scrolling by; that's normal.

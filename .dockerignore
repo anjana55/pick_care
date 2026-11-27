@@ -45,7 +45,6 @@ i18n-review
 **/*.spec.ts
 **/*.test.ts
 **/*.test.tsx
-DEPLOYMENT.md
-IMPLEMENTATION_REPORT.md
-WHATSAPP_DEPLOYMENT_GUIDE.md
-learn-codebase-complete.md
+/*.md
+docs
+.github

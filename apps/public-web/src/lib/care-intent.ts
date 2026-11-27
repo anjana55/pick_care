@@ -80,10 +80,6 @@ export function loadSearch(): SearchContext | null {
   };
 }
 
-export function forgetSearch() {
-  remove(SEARCH_KEY);
-}
-
 /* ------------------------------------------------------------------------ */
 /* The caregiver they were about to contact                                 */
 /* ------------------------------------------------------------------------ */

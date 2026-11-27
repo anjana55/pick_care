@@ -2,7 +2,6 @@ import { mysqlTable, varchar, text, int, datetime, mysqlEnum, index, primaryKey 
 import { sql } from 'drizzle-orm';
 
 export const proficiencyLevelEnum = ['BASIC', 'INTERMEDIATE', 'ADVANCED', 'EXPERT'] as const;
-export type ProficiencyLevel = (typeof proficiencyLevelEnum)[number];
 
 /**
  * A skill caregivers are matched on. `name` / `category` are the English

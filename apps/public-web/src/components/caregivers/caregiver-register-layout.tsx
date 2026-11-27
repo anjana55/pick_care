@@ -1,7 +1,6 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import Link from 'next/link';
 import { SiteHeader } from '@/components/layout/site-header';
 import { SiteFooter } from '@/components/layout/site-footer';
 
@@ -45,20 +44,5 @@ export function CaregiverRegisterHeader({ title, subtitle, children }: { title: 
       <p className="text-sm text-ink/60">{subtitle}</p>
       {children}
     </div>
-  );
-}
-
-/**
- * The one-line "use the other route instead" affordance, styled identically on
- * both pages and always sitting directly under the subtitle.
- */
-export function CaregiverRegisterAlternate({ href, linkText, prefix }: { href: string; linkText: string; prefix?: string }) {
-  return (
-    <p className="mt-2 text-sm text-ink/60">
-      {prefix ? `${prefix} ` : null}
-      <Link href={href} className="font-medium text-brand-dark hover:underline">
-        {linkText}
-      </Link>
-    </p>
   );
 }

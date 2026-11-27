@@ -1,5 +1,4 @@
 import { CaregiversService } from './caregivers.service';
-import { DRIZZLE } from '../database/database.module';
 import { caregivers, cities, districts, provinces } from '../database/schema';
 import type { Database } from '../database/database.module';
 

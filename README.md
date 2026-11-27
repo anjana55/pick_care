@@ -1,598 +1,77 @@
-# Care Platform — Caregiver Registration, Management & Verification
+# Pick Care
 
-A local-first foundation for an Uber-like patient-care platform, starting with caregiver
-registration, management and verification. Runs entirely on a local machine or local
-network — no cloud services required — while staying portable to a managed/cloud
-deployment later.
+An Uber-style platform that connects people who need care with caregivers, run by
+an office team. Families search for and book caregivers; caregivers register, get
+verified and work shifts; staff run requests, bookings, care plans, invoicing and
+payouts, with optional AI agents doing parts of the work under a manual fallback.
 
-```
-Next.js (apps/web)  →  REST API  →  NestJS (apps/api)  →  Drizzle ORM  →  MySQL
-                                                        →  Local file storage
-```
+The product is **white-labelled**: the name, logo, colours and languages come from
+**Settings > Branding**, so one codebase serves several brands. The built-in
+default brand in the code is still called *CareLink* (the project's earlier name).
 
-## A note on two deliberate deviations from the original spec
+Everything is available in **English, Sinhala and Tamil**.
 
-1. **ORM: Drizzle instead of Prisma.** Prisma downloads a native query-engine binary
-   from `binaries.prisma.sh` on `generate`/`migrate`. That domain was unreachable from
-   the sandboxed environment this was built in, so Prisma could not be made to work
-   there at all. Drizzle ORM + the `mysql2` driver is a pure TypeScript/JS alternative —
-   no native binary, same MySQL target, same "swap the database layer later without
-   touching business logic" portability story. If you have normal internet access,
-   Prisma would work fine per the original spec; this repo just wasn't built against it.
-2. **Database: MySQL instead of PostgreSQL**, per your explicit request.
+## What's in the repo
 
-Everything else follows the original brief: local file storage behind a
-`StorageService` abstraction, NestJS + REST + Swagger, JWT auth, RBAC, audit logging,
-a separated/restricted health-information table, English/Sinhala/Tamil UI, and a
-caregiver domain modelled for a future marketplace (patients, matching, bookings)
-without redesigning it today.
-
----
-
-## 1. Project structure
-
-```
-care-platform/
-  apps/
-    web/     Next.js 14 (App Router) + TypeScript + Tailwind + TanStack Query
-    api/     NestJS + TypeScript + Drizzle ORM + MySQL + Swagger
-  packages/
-    shared/  (reserved for cross-app types if/when the mobile app is built)
-  storage/
-    caregiver-documents/   Local file storage root (never served directly)
-  docker-compose.yml        MySQL (+ optional Adminer) for local development
-```
-
-## 2. Prerequisites
-
-- Node.js **24** (the LTS line) and npm. `.nvmrc` says so: run `nvm use` in the
-  repo. The mobile app's tools (Expo SDK 58, React Native 0.88) support Node
-  22.13+, 24.3+ and 26+, but not odd-numbered releases such as 25, which npm
-  reports as `EBADENGINE` warnings. The servers' Docker images bring their own Node.
-- Docker Desktop / Docker Engine (for MySQL via Compose) **or** a local MySQL 8 install
-- Windows, macOS or Linux
-
-`npm audit` findings, as of Nov 2026, are all in development tools or the
-browser - none in what the API runs:
-
-- Jest, the Expo command line and the Nest command line (`glob`, `minimatch`,
-  `deepmerge`). npm's suggested fixes are downgrades (Expo 51, older Jest), so
-  don't run `npm audit fix --force`; they clear as those tools release updates.
-- `zod` 3 (high: memory on oversized input). It only checks what a person types
-  into the websites' forms, in their own browser; the API validates with
-  class-validator. Moving to zod 4 means reworking the form schemas, so it's left
-  for a planned upgrade.
-
-The API itself: NestJS v11.2.5-line, `bcrypt` v6, `multer` v2.4; `apps/web`: Next.js
-16.3.5. See IMPLEMENTATION_REPORT.md §15 if you're wondering why it's v11 rather than
-the latest NestJS major — the short version is that v12 is ESM-only and breaks this
-project's CommonJS-based test tooling.
-
-## 3. First-time setup
-
-```bash
-# 1. Start MySQL
-docker compose up -d
-
-# 2. Backend
-cd apps/api
-cp .env.example .env          # defaults already match docker-compose.yml (a repo-root .env also works)
-npm install
-npm run db:generate           # generate SQL migrations from the Drizzle schema
-npm run db:migrate            # apply them to MySQL
-npm run db:seed               # seed skills, languages, locations, users, sample caregivers
-npm run build
-npm run start:dev             # http://localhost:3001  (Swagger: /docs)
-
-# 3. Frontend (in a second terminal)
-cd apps/web
-cp .env.local.example .env.local
-npm install
-npm run dev                   # http://localhost:3000
-```
-
-`npm run db:seed` creates one demo account per role so you have something to log in
-with locally. It prints each account's generated password once, at the end of the
-run — the passwords are not stored in this file, in the source, or anywhere else
-that gets committed. Set `SEED_PASSWORD` beforehand if you need a known value
-(for instance when the e2e tests will log in afterwards):
-
-| Role       | Email                              | Can access                                    |
-|------------|--------------------------------------|------------------------------------------------|
-| ADMIN      | admin@care-platform.local          | Everything, incl. audit log, user management  |
-| STAFF      | staff@care-platform.local          | Register/edit caregivers, upload documents    |
-| VERIFIER   | verifier@care-platform.local       | Verification workflow, restricted health data |
-| CAREGIVER  | selfregistered@care-platform.local | Their own profile only, via the `/me` self-service area |
-
-The CAREGIVER account lands in a completely different, lightweight part of the app
-(`/me`) rather than the staff dashboard - see §7a.
-
-## 4. Running the tests
-
-```bash
-cd apps/api
-npm test                              # unit tests
-npm run test:e2e -- --forceExit       # e2e tests against a live MySQL connection
-```
-
-`--forceExit` is needed because the mysql2 connection pool keeps the process alive
-after the test suite finishes; it does not indicate a failing test.
-
-The e2e tests log in as the seeded demo accounts, and the seed picks a random
-password unless you pin one. Seed and test with the same value:
-
-```bash
-SEED_PASSWORD=<password> npm run db:seed
-SEED_PASSWORD=<password> npm run test:e2e -- --forceExit
-```
-
-`test/whatsapp-auth.e2e-spec.ts` covers WhatsApp sign-in end to end (registration, login,
-recovery and logout for caregivers and customers; invalid, expired, reused and locked-out
-codes; duplicate and existing accounts; admin settings and feature toggles; and that
-email/password authentication is unchanged). It runs against the same migrated and seeded
-database as the other e2e tests, using the Console provider so no WhatsApp account is needed.
-`test/clients.e2e-spec.ts` covers the staff Clients list against the real database: who may
-see it (ADMIN/STAFF yes; VERIFIER and clients no), what a registration stores and what staff
-are shown, search, every filter, pagination, auditing, and clients that predate the intake
-fields.
-The customer app has its own component tests: `cd apps/public-web && npx jest`.
-The mobile app (`apps/mobile`, Expo) has its own too: `cd apps/mobile && npm test` - see
-`apps/mobile/README.md`.
-
-## 5. Database
-
-- **Engine:** MySQL 8, run via `docker-compose.yml` (a named volume persists data).
-- **ORM:** Drizzle ORM. Schema lives in `apps/api/src/database/schema/*.ts`, one file
-  per domain area. `apps/api/src/database/migrations/` holds a single `0000_baseline.sql`
-  generated from that schema — the project has not shipped with real user data, so the
-  migrations were squashed into one baseline rather than kept as an incremental history.
-  Going forward, `npm run db:generate` diffs the schema against the baseline and appends
-  a new numbered migration; `npm run db:migrate` applies pending ones.
-  `npm run db:studio` opens Drizzle Studio against the local DB.
-- **Entities:** Users, Caregivers, Qualifications, Experience, Skills (+ join table),
-  Languages (+ join table), Locations (+ join table), Availability, CaregiverDocuments
-  (metadata only — files live on disk), References, Verifications, the **separated**
-  CaregiverHealthInformation table, and AuditLogs. See §7 for the full list of endpoints
-  and §8 for the security model.
-- **Caregiver status** is a small state machine (`DRAFT → REGISTERED →
-  DOCUMENTS_PENDING → UNDER_VERIFICATION → VERIFIED → ACTIVE ⇄ INACTIVE/SUSPENDED`,
-  with `REJECTED` reachable from several states). The allowed-transitions map lives
-  next to the schema in `apps/api/src/database/schema/caregivers.schema.ts` and is
-  enforced server-side — the frontend's copy in `apps/web/src/lib/caregiver-status.ts`
-  only decides which options a dropdown offers.
-
-## 6. Document storage
-
-Documents are stored on disk at `storage/caregiver-documents/{caregiverId}/{documentId}/original-file.ext`,
-behind a `StorageService` interface (`apps/api/src/storage/storage.interface.ts`) with a
-`LocalFileStorageService` implementation. To move to S3/MinIO/Azure Blob later, implement
-the same three-method interface (`upload`, `download`, `delete`, `getSignedUrl`) and swap
-the provider in `storage.module.ts` — no caregiver/document business logic changes.
-
-The storage key is always server-generated (never the uploaded filename), the directory
-is never served as static files, uploads are validated by MIME type + extension + a 10MB
-size cap, and every file read is written to the audit log.
-
-## 7. API overview
-
-Full interactive documentation: `http://localhost:3001/docs` (Swagger/OpenAPI) once
-the API is running. Route groups:
-
-- `POST /auth/login`, `/auth/refresh`, `/auth/logout`
-- `POST /auth/register-caregiver`, `/auth/verify-email`, `/auth/resend-verification` — public, see §7a
-- `/auth/whatsapp/*` — WhatsApp OTP registration, login and recovery, public, see §7b
-- `/settings/whatsapp` (ADMIN only) — WhatsApp sign-in configuration, see §7b
-- `POST /auth/register-caregiver/unified`, `/auth/social/*` — single caregiver registration form and Google/Microsoft/Facebook sign-in, public, see §7d
-- `POST /auth/register-patient` — public client (patient/guardian) sign-up by email, see §7c
-- `/users` (ADMIN only)
-- `/clients`, `/clients/:id` (ADMIN and STAFF) — the registered patients/guardians, see §7c
-- `/caregivers`, `/caregivers/:id`, `/caregivers/:id/status`, `/caregivers/dashboard`
-- `/caregivers/:id/qualifications`, `/experiences`, `/skills`, `/languages`,
-  `/availability`, `/preferred-locations`, `/references`, `/documents`,
-  `/verifications`
-- `/caregivers/:id/health-information` — **restricted** (ADMIN/VERIFIER, or the
-  caregiver themself; every access audit-logged)
-- `/skills`, `/languages`, `/locations` — master data
-- `/audit-logs` (ADMIN only)
-
-The OpenAPI spec is generated directly from the NestJS controllers/DTOs, so it stays in
-sync with the code. The same REST API is what a future React Native app would consume —
-nothing here is shaped around the Next.js UI specifically.
-
-### 7a. Caregiver self-registration
-
-A caregiver can create their own login and profile without staff involvement:
-
-1. `POST /auth/register-caregiver` (public, rate-limited to 5/min) — takes the same
-   personal-info fields as the staff-mediated `POST /caregivers`, plus `email`,
-   `password`, and `consentAccepted`. Creates the login (`users`, role `CAREGIVER`,
-   unverified) and the profile (`caregivers`, status `DRAFT`) atomically. **Visible to
-   staff immediately** — it's an ordinary `caregivers` row from the moment of
-   registration, showing up in the list/search and dashboard `DRAFT` count right away.
-2. **Email verification is stubbed** — no provider is wired up. The link is logged to
-   the server console and, outside `NODE_ENV=production`, also returned in the API
-   response as `devVerificationUrl`, so the whole loop is testable without a real inbox.
-   Swap `AuthService.sendVerificationEmailStub` for a real provider before going live;
-   nothing else in the flow changes.
-3. `POST /auth/verify-email` marks the account verified and immediately logs the
-   caregiver in (no separate login step). Login is blocked before this with a specific
-   error message. `POST /auth/resend-verification` responds identically whether or not
-   the email exists, to avoid leaking account existence.
-4. Once logged in, a `CAREGIVER`-role token can use the *same* nested endpoints
-   (`/caregivers/:id/qualifications`, `/skills`, `/documents`, etc.) staff already use —
-   scoped to their own record by a new `@CaregiverScope()` guard (staff roles pass by
-   role as before; a caregiver additionally passes when the route's id matches the
-   `caregiverId` embedded in their own JWT). They can self-submit `DRAFT → REGISTERED`;
-   every later transition (verification, activation, suspension) is still staff/
-   verifier-only, enforced in `CaregiversService.updateStatus` since it depends on the
-   *current* status, not just the caller's role.
-
-On the frontend: a public `/register` page and `/verify-email` page (outside the staff
-`(app)` shell), and a separate `(caregiver)` route group providing a lightweight
-self-service shell at `/me` — the wizard step components staff already use
-(`QualificationsStep`, `SkillsStep`, `DocumentsStep`, etc.) are reused there directly,
-just pointed at the logged-in caregiver's own id. Each shell redirects the other role
-away, so neither ends up on a page that's entirely 403s.
-
-### 7b. WhatsApp sign-in (alternative to email)
-
-Caregivers and customers (patients/guardians) who don't have an email address can
-register and sign in with a **one-time code sent over WhatsApp**. It is an *addition*:
-email + password registration, verification, login and password change are untouched,
-and a WhatsApp user ends up with the very same `users` row shape, role, `caregivers` /
-`patients` profile, JWT claims and permissions as an email user — so every guard
-(`@Roles()`, `@CaregiverScope()`, refresh rotation, logout, deactivation) applies
-identically. The feature is **off until an admin turns it on**.
-
-| Endpoint (all public, rate-limited) | Purpose |
-| --- | --- |
-| `GET /auth/whatsapp/config` | What the sign-in screens may offer (no secrets) |
-| `POST /auth/whatsapp/register-caregiver` | Create an unverified caregiver login + DRAFT profile, send a code |
-| `POST /auth/whatsapp/register-patient` | Create an unverified customer login + profile, send a code |
-| `POST /auth/whatsapp/request-otp` | Send a `REGISTER` (re-send), `LOGIN` or `RECOVERY` code |
-| `POST /auth/whatsapp/verify-otp` | Check a code; on success returns the normal `{ accessToken, refreshToken }` |
-
-Logout and token refresh are the existing `POST /auth/logout` and `POST /auth/refresh`.
-
-**Flows**
-
-- **Registration** – the personal-information requirements are identical to email
-  registration (the DTO extends the same `CreateCaregiverDto`); a WhatsApp number replaces
-  email + password, and a caregiver's primary phone defaults to that number. The account
-  can't sign in until the number is verified with the `REGISTER` code.
-- **Login** – request a `LOGIN` code, submit it, receive tokens.
-- **Account recovery** – the same, with a `RECOVERY` code; on success **every existing
-  session is revoked** and only the new one survives (use this when a phone is lost).
-- WhatsApp-only accounts have no password, so email login rejects them and
-  *change password* is hidden/refused for them. Staff/admin/verifier accounts can never use WhatsApp.
-
-**Duplicate prevention** – numbers are normalised to E.164 (`0771234567`, `+94 77 123 4567`
-and `94771234567` are the same number). Registration is refused with `409` if the number
-already belongs to a WhatsApp login, a caregiver profile (including staff-entered ones) or
-a customer profile, and an *email* registration whose phone is already a WhatsApp login is
-refused too. A sign-up that never completed its OTP is replaced rather than blocking the
-real owner from using their own number. Unique indexes settle simultaneous sign-ups.
-
-**OTP security** – codes are generated with a CSPRNG, stored only as a keyed HMAC, are
-single-use, expire (default 5 min), lock after a configurable number of wrong guesses
-(default 5), and only the newest code for a number works. Sending is limited by a
-per-number resend cooldown and an hourly cap, plus per-IP throttling on the endpoints.
-Login/recovery requests answer identically for registered and unregistered numbers, and a
-wrong, expired, used or locked code all produce the same error, so the API can't be used
-to discover who has an account.
-
-**Admin configuration** – an admin manages everything under **Settings → WhatsApp
-sign-in** in the staff app (`GET/PATCH /settings/whatsapp`, ADMIN only, audit-logged):
-master switch and per-role / per-flow toggles (caregivers, customers, new registrations,
-login, recovery); delivery provider and WhatsApp Business Cloud API credentials (phone
-number ID, business account ID, access token, API version); the approved authentication
-template (name, language, copy-code button); OTP policy (length, lifetime, attempts,
-resend cooldown, sends per hour); default country code; and a **Send test** button. The
-access token is **encrypted at rest** (AES-256-GCM) and write-only — it is never returned
-by the API. Settings are stored in the `whatsapp_auth_settings` table (migration `0007`);
-the `WHATSAPP_*` environment variables only seed it on first start. See DEPLOYMENT.md §8.5
-for the Meta-side setup.
-
-For local development choose the **Console** provider: no Meta account is needed, codes
-are written to the API log and echoed to the screen (and as `devOtp` in responses). The
-Console provider is refused when `NODE_ENV=production`.
-
-### 7c. Clients (patients/guardians) and the staff Clients list
-
-A **client** is a self-registered patient or guardian: a `users` row with role
-`PATIENT_GUARDIAN` plus a 1:1 `patients` profile. They register on the public site by
-email (`POST /auth/register-patient`) or by WhatsApp (`POST /auth/whatsapp/register-patient`,
-§7b). Both flows accept the same **care intake**, defined once in
-`apps/api/src/auth/dto/patient-profile.dto.ts` and stored by one helper
-(`apps/api/src/clients/patient-profile.util.ts`), so they cannot drift apart. The public
-site's two register pages share `apps/public-web/src/lib/schemas/patient-intake.ts` and
-`components/register/patient-intake-fields.tsx` in the same way.
-
-| Group | Fields | Required |
-| --- | --- | --- |
-| Who needs care | `registrantType` (`SELF` / `GUARDIAN`) | yes |
-| | `recipientName`, `recipientRelationship` | yes, for `GUARDIAN` only (ignored for `SELF`) |
-| | `recipientAge` (0–120), `recipientGender` | yes |
-| Contact | `phone` (email sign-up) / `whatsappNumber` (WhatsApp sign-up) | yes |
-| | `preferredContactMethod` (`PHONE_CALL` / `WHATSAPP` / `EMAIL`) | yes — `EMAIL` is refused for accounts with no email address |
-| | `preferredContactTime` (default `ANYTIME`), `alternatePhone` | no |
-| Location | `districtId`, `cityId` (same reference ids as caregivers; the city must belong to the district) | yes |
-| | `careAddress` | no |
-| Care | `careNeeds` (10–1000 characters), `careSchedule` (`DAY` / `NIGHT` / `LIVE_IN_24H` / `NOT_SURE`), `careStart` | yes |
-| | `preferredCaregiverGender` (default `NO_PREFERENCE`) | no |
-
-The intake columns are **nullable in the database** because clients who registered before
-they existed have none of them; the DTOs are what make them mandatory for new sign-ups.
-Staff screens show such clients with empty fields and a note rather than hiding them.
-A bad location or contact method is rejected inside the registration transaction, so it
-never leaves a half-created account behind.
-
-**Staff access.** `GET /clients` (paginated; `search`, `districtId`, `cityId`,
-`careSchedule`, `careStart`, `contactMethod`, `registrantType`, `verification=VERIFIED|UNVERIFIED`,
-`sortBy`, `sortDir`, `page`, `pageSize`) and `GET /clients/:id` are **ADMIN and STAFF
-only**. VERIFIERs and the clients themselves get 403. Unlike the caregiver list, contact
-details are returned unmasked — calling the client is the point — so opening a record is
-audit-logged as `VIEW_CLIENT`. Passwords and verification timestamps are never returned.
-In the staff app this is **Clients** in the sidebar (`apps/web/src/app/(app)/clients`),
-laid out like the caregiver list, with a detail view with tap-to-call and WhatsApp links.
-`/users` is unchanged and still manages staff accounts only.
-
-The list is read-only for now. Linking a client to a caregiver is a later step; the
-location, schedule and gender-preference fields are shaped to line up with the caregiver
-filters (`locationIds`, `dayDuty` / `nightDuty` / `liveIn24h`, `gender`) for that.
-
-### Caregiver search & advanced filters
-
-`GET /caregivers` accepts, all optional and combinable:
-
-| Param | Type | Semantics |
+| Path | What it is | Runs on |
 |---|---|---|
-| `search` | string | Matches name, registration number or phone (`LIKE %term%`) |
-| `status` | enum | Exact match on caregiver status |
-| `gender` | enum | Exact match |
-| `skillIds` | comma-separated IDs | Caregiver must have **ALL** listed skills |
-| `languageIds` | comma-separated IDs | Caregiver must speak **ALL** listed languages |
-| `locationIds` | comma-separated IDs | Caregiver must prefer **ANY** of the listed locations |
-| `dayDuty`, `nightDuty`, `liveIn24h` | boolean | Caregiver's availability matches **ANY** checked flag |
-| `page`, `pageSize`, `sortBy`, `sortDir` | — | Pagination/sorting, unchanged |
+| `apps/api` | NestJS REST API, Drizzle ORM, MySQL 8. Swagger at `/docs`. | `:3001` (`/api` in production) |
+| `apps/public-web` | Next.js public site: search, sign-up, the client account, the caregiver portal, overseas employers. | `:3002` (`/` in production) |
+| `apps/web` | Next.js staff app (office staff and admins). | `:3000/staff` (`/staff` in production) |
+| `apps/mobile` | Expo / React Native app for caregivers and clients (iOS and Android). | Expo |
+| `packages/shared` | Types, value lists, validation helpers and the i18n engine used by every app. | — |
+| `deploy/`, `setup.sh`, `update.sh`, `uninstall.sh` | nginx config and the server install / update / removal scripts. | Server |
+| `i18n-review/` | Offline Sinhala/Tamil review spreadsheet and the script that applies it. | — |
+| `docs/` | Architecture, development and feature reference. | — |
 
-All provided facets are combined with AND (e.g. `gender=FEMALE&skillIds=a,b&locationIds=c,d`
-means: female AND has skills a+b AND prefers location c or d). An impossible combination
-returns an empty page, not an error. Skill/language AND-matching is done via a
-`GROUP BY ... HAVING COUNT(DISTINCT ...) = N` query against the join table rather than a
-chain of joins on the main query, which avoids row fan-out from joining several
-one-to-many tables at once. See `CaregiversService.findAll` and the `caregiverIdsWith*`
-helpers in `apps/api/src/caregivers/caregivers.service.ts`.
+```
+browser ─┬─ /         → public-web ─┐
+         ├─ /staff    → web ────────┼─→ /api → api ─→ MySQL
+phone ───┴─ mobile app ─────────────┘          └──→ document storage (local disk)
+```
 
-On the frontend, the caregiver list page (`apps/web/src/app/(app)/caregivers/page.tsx`)
-exposes this through a "Filters" toggle (`apps/web/src/components/caregivers/advanced-filters.tsx`)
-with checkbox pills for skills/languages/locations, a gender select, and availability
-checkboxes — plus removable filter chips summarizing what's active.
+## Quick start (local development)
 
-### 7d. Caregiver registration and sign-in with Google / Microsoft / Facebook
+Requirements: **Node 24** (`nvm use` reads `.nvmrc`), npm, and Docker for MySQL
+(or a local MySQL 8).
 
-"Join as a caregiver" on the landing page opens one form (`/caregiver/signup`): a single
-phone number (required), an optional email, no password, and the shared personal
-information. `/caregiver/join` only redirects there.
+```bash
+npm install                                  # one install for every workspace
+docker compose up -d                         # MySQL on :3306 (+ Adminer on :8080)
 
-1. `POST /auth/register-caregiver/unified` creates the login (no password) and the
-   profile, and returns a 15-minute *pending token*.
-2. The caregiver is then *optionally* offered Google, Microsoft and Facebook (or
-   "Skip for now"). `GET /auth/social/:provider/authorize-url?token=` returns the consent
-   URL; the pending token travels through the provider as the OAuth `state`.
-3. `GET /auth/social/:provider/callback` verifies the state, links the provider's stable
-   account id to the user (and, if the caregiver gave an email, requires the provider's
-   verified email to match it), then redirects to `/caregiver/social/callback` with a
-   single-use, 60-second handoff code. The browser trades it for a normal JWT pair via
-   `POST /auth/social/exchange`, so tokens never appear in a URL.
+cp apps/api/.env.example apps/api/.env       # defaults match docker-compose.yml
+cp apps/web/.env.local.example apps/web/.env.local
+cp apps/public-web/.env.example apps/public-web/.env.local
 
-**Returning caregivers** sign in at `/caregiver/login` with the same providers:
-`GET /auth/social/:provider/login-url?nonce=` (the nonce is generated by the browser and
-kept in `sessionStorage`) returns the consent URL with a signed login `state`. The same
-callback URL serves both flows, so **no extra redirect URI needs registering**. Sign-in
-looks the account up by the provider's account id - never by email - and never creates
-anything: an unlinked provider account is sent to registration. The callback page refuses
-to spend the handoff code unless the nonce that came back matches the one this tab stored.
+npm run db:migrate -w @care-platform/api     # apply the committed migrations
+npm run db:seed -w @care-platform/api        # reference data + demo accounts (passwords printed once)
 
-**Configuring the providers** is done by an admin in the staff app under **Settings → Social
-sign-in** (`/staff/settings`), which also holds the **WhatsApp** tab that used to be a
-top-level menu item. Per provider: on/off, client ID, client secret (encrypted at rest,
-never shown again), Microsoft tenant, Facebook Graph API version, the exact callback URL to
-register in the provider's console, and a **Test credentials** button that asks the provider
-whether it accepts the saved client ID and secret. Changes apply immediately, no redeploy.
-API: `GET /settings/social-auth`, `PATCH /settings/social-auth/:provider`,
-`POST /settings/social-auth/:provider/test` (all ADMIN-only). The `GOOGLE_*` / `MICROSOFT_*` /
-`FACEBOOK_*` environment variables only seed a provider the first time it is needed.
+npm run dev:api          # http://localhost:3001  (Swagger: /docs)
+npm run dev:public-web   # http://localhost:3002
+npm run dev:web          # http://localhost:3000/staff
+npm run dev:mobile       # Expo; see apps/mobile/README.md
+```
 
-A provider's button appears only when it is switched on and has both a client ID and a secret.
-Caregivers who skip the provider step have no way to sign
-in with a provider later; they can still be reached by phone, and email/password and
-WhatsApp sign-in are unchanged.
+More detail, including the environment variables, demo accounts and e2e tests, is
+in [docs/development.md](docs/development.md).
 
-### 7e. The signed-in caregiver's area
+## Everyday commands (repo root)
 
-After any caregiver sign-in (email, WhatsApp, Google/Microsoft/Facebook) the caregiver lands on
-`/caregiver/dashboard` in the public site. Four pages, all under one guarded layout:
-
-| Page | What it does |
+| Command | Does |
 |---|---|
-| **Overview** `/caregiver/dashboard` | Registration status, a checklist (skills & languages, documents, shifts) and "Submit for review" (DRAFT → REGISTERED, the one transition a caregiver may make) |
-| **Profile** `/caregiver/profile` | Personal details, skills, languages, qualifications and work experience |
-| **Documents** `/caregiver/documents` | Upload (PDF/JPG/PNG/WEBP, 10 MB), see each document's verification status, open it, withdraw an unchecked one |
-| **Shifts** `/caregiver/shifts` | Day / night / 24-hour live-in, preferred shift, start date, expected rates and leave. These are the flags the public caregiver search filters on |
+| `npm run typecheck` | Builds `packages/shared`, then type-checks every workspace. |
+| `npm test` | Unit and component tests for the API, the public site and the mobile app. |
+| `npm run build` | Production builds of the API and both web apps. |
+| `npm run db:generate -w @care-platform/api` | Writes a new migration after a schema change. |
 
-Rules the API enforces (and the UI mirrors), all under `/caregivers/:id/...` via `@CaregiverScope`
-(a caregiver reaches only their own record):
+CI (`.github/workflows/ci.yml`) runs `typecheck` and `test` on every pull request.
 
-- `PATCH /caregivers/:id/profile` - a short allowlist; never the login phone, status or ownership.
-  Identity fields (name, date of birth, gender, NIC/passport) lock once verification starts.
-- Documents: the file's first bytes must match its declared type; at most 20 per caregiver;
-  a caregiver may delete only `PENDING`/`REJECTED` documents.
-- Qualifications and experience: a caregiver's edit sets the entry back to `PENDING`; they cannot
-  set verification status, and may delete only `PENDING`/`REJECTED` entries.
-- Staff keep their existing endpoints and powers.
+## Documentation
 
-"Shifts" here means the caregiver's shift *availability*. There is no scheduled-shift or booking
-table in the data model, so assigned work for a given date is not part of this area.
-
-### 7f. Sign-in portals and message language
-
-**Portals.** There are three places to sign in, and each only serves its own kind of account:
-
-| Portal | Screen | Accounts |
-|---|---|---|
-| `staff` | `/staff/login` | ADMIN, STAFF, VERIFIER |
-| `caregiver` | `/caregiver/login` (+ WhatsApp, Google/Microsoft/Facebook) | CAREGIVER |
-| `customer` | `/login` (+ WhatsApp) | PATIENT_GUARDIAN |
-
-`POST /auth/login` takes an optional `portal`. Correct credentials for an account that belongs to a
-different portal are refused **exactly like a wrong password** - same status, same
-`"Invalid credentials"`, same body - and no session is created. The attempt is written to the audit log
-as `LOGIN_WRONG_PORTAL` (with the account's user id), which is where staff can see it. The check runs
-after the password is proven and before anything else is said about the account (for example "verify
-your email"), so nothing about an account on another portal is revealed. WhatsApp
-`request-otp`/`verify-otp` take the same `portal` (`caregiver` or `customer`): a number that belongs to
-the other kind of account is treated as not registered. Google/Microsoft/Facebook sign-in is
-caregiver-only by construction.
-
-Each login screen also shows a fixed "Are you a caregiver? / Looking for care? / Office staff?" set of
-links to the other sign-ins, to everyone, whatever they type, so a refusal never has to explain itself.
-
-`portal` is optional so web apps that predate it keep working during a rollout (API first, web apps
-after). Once every client sends it, set `AUTH_REQUIRE_LOGIN_PORTAL=true` and a sign-in without one is
-rejected with 400.
-
-**Language.** Every response that carries a message - errors from services, guards and validation, and
-the `message` of a success body - can be requested in English, Sinhala or Tamil:
-
-- `?lang=en|si|ta` on any request, or
-- the standard `Accept-Language` header (`si-LK,si;q=0.9,en;q=0.8` is understood, in order of preference).
-
-`lang` wins over the header; anything unsupported falls back to English rather than failing. Responses
-carry `Content-Language` (what was chosen) and `Vary: Accept-Language`. Both web apps send
-`Accept-Language` from their language switcher on every call.
-
-The messages live in `apps/api/src/common/i18n/messages.ts` (English text -> Sinhala, Tamil), applied by
-one global exception filter and one response interceptor. Services keep throwing plain English. A
-message with no translation is returned in English. **A unit test scans the source and fails when a new
-user-facing message is added without a translation** (or without being listed as exempt, with a reason,
-in `messages.coverage.spec.ts`). Not translated: the administrator configuration screens' messages,
-validation field names that the API itself receives (`email`, `password`), email bodies, and the text of
-WhatsApp messages (those are templates approved in Meta's console, one language per template). The
-Sinhala and Tamil wording is machine-drafted and needs a native speaker's review.
-
-### 7g. AI: search, caregiver suggestions and the staff assistant
-
-Everything AI is configured in **Settings › AI** (admin only, `GET/PATCH /settings/ai`) and is **off by
-default** - Normal Search, matching rules and every staff page work the same without it.
-
-- **Provider.** Ollama (`/api/chat`, local or self-hosted), any OpenAI-compatible endpoint
-  (`/v1/chat/completions`: OpenAI, vLLM, LM Studio, OpenRouter, Ollama's `/v1`) or Anthropic
-  (`/v1/messages`). Model, endpoint, key (AES-GCM encrypted at rest with `SETTINGS_ENCRYPTION_KEY`, never
-  returned), temperature, max tokens, timeout, candidate pool size and optional extra instructions are all
-  editable. `POST /settings/ai/test` tries the saved configuration, including whether the model can call
-  tools (the assistant needs it).
-- **Public AI Search** (`POST /public/ai/extract`, `POST /public/ai/search`). The visitor's words are
-  turned into the same structured request Normal Search uses; every value is checked against the
-  skills/languages/districts catalogue and the search bounds, and the visitor checks it in the normal form
-  before searching. Search applies exactly the Normal Search hard filters; the model only re-orders the top
-  `candidatePoolSize` matches, seeing only their anonymous public card, and adds a one-line reason in the
-  visitor's language. Any model failure falls back to the rule-based order (`aiRanked: false`). Orders are
-  cached for 10 minutes so paging does not call the model again. `/public/meta/search-config` reports
-  `aiSearchEnabled` from these settings.
-- **Caregiver suggestions** (`GET /care-requests/:id/suggestions`, ADMIN/STAFF). Built from the client's
-  intake (district, city, shift, caregiver gender, recipient) and - with AI matching on - what their care
-  needs and message say. Works without AI too, using the rule-based ranking. Shown on the request page.
-- **Staff assistant** (`/assistant/*`, ADMIN/STAFF, page `/staff/assistant`). A tool-calling chat over the
-  Requests queue and bookings. Look-ups run straight away; every change (status, note, assignment,
-  caregiver, new request for an existing client, draft/confirm/cancel/extend booking, booking note) is
-  stored as a proposal that the staff member approves or rejects. An approval runs the same service method
-  the page would, as that staff member - so validation, notifications and audit entries (with
-  `metadata.via = "assistant"`) are identical. Conversations are private to their owner. Tool results
-  never include phone numbers, emails, addresses or ID numbers.
-
-Tables: `ai_settings`, `assistant_conversations`, `assistant_messages`, `assistant_actions`
-(migration `0011_ai_features`). The e2e suite `test/ai.e2e-spec.ts` runs all of this against a stand-in
-model server, so it needs no real model.
-
-## 8. Security
-
-- JWT access tokens (15 min) + rotating refresh tokens (7 days, hashed before storage,
-  revoked on use/logout)
-- bcrypt password hashing (cost 12)
-- Role-based authorization (`ADMIN` / `STAFF` / `VERIFIER`) via a `@Roles()` decorator + guard
-- Helmet security headers, configurable CORS, request rate limiting
-- class-validator DTO validation on every endpoint
-- NIC/passport/phone are masked on caregiver **list/search** endpoints (full values are
-  only returned from a caregiver's own detail endpoint)
-- File upload validation: MIME type + extension allow-list, 10MB size cap, no arbitrary
-  executables, non-guessable storage keys
-- `CaregiverHealthInformation` lives in its own table, is never joined into normal
-  caregiver list/profile responses, and is restricted to ADMIN/VERIFIER roles
-- WhatsApp sign-in OTPs are HMAC-hashed, single-use, expiring and attempt-limited; the
-  WhatsApp access token is encrypted at rest and never returned by the API (§7b)
-- Every sensitive action (login/logout, caregiver create/update/status change, document
-  upload/verify/access, health-information access) is written to `audit_logs`
-
-## 9. Multilingual UI
-
-English, Sinhala and Tamil translation resources live in `apps/web/src/lib/i18n/{en,si,ta}.json`,
-loaded through a small custom provider (`apps/web/src/lib/i18n/provider.tsx`) rather than
-a heavyweight i18n library, with the selected locale persisted to `localStorage`. UI
-strings are not hard-coded in components — everything routes through `useTranslation()`.
-
-Sinhala and Tamil rendering uses system font stacks (`Iskoola Pota` / `Nirmala UI` with
-`Noto Sans Sinhala` / `Noto Sans Tamil` fallbacks) rather than a webfont CDN, since this
-build environment had no outbound access to font hosts — this is a one-line change in
-`apps/web/tailwind.config.js` if you'd rather self-host or CDN-load the Noto families.
-
-## 10. Frontend
-
-- Next.js 16 (App Router), TypeScript, Tailwind CSS
-- Hand-built UI primitives following shadcn/ui conventions (Button, Input, Card, Tabs,
-  Badge, etc. in `apps/web/src/components/ui/`) rather than the shadcn CLI, since the
-  CLI's registry host wasn't reachable from this build environment either — the
-  components are drop-in compatible if you want to run the CLI yourself later
-- TanStack Query for all server state; React Hook Form + Zod for the registration wizard
-  and the public self-registration form (which share field definitions via
-  `lib/schemas/personal-info.ts` and `components/caregivers/personal-info-fields.tsx`,
-  rather than duplicating the same 15-field form twice)
-- **Staff screens** (`(app)` shell, sidebar + topbar): Dashboard (status counts),
-  Caregiver List (search/filter/paginate, masked NIC/phone, plus an advanced filter
-  panel for skills/languages/locations/gender/availability — see §7), 8-step
-  Registration Wizard (personal info → qualifications → experience → skills →
-  languages → availability → documents → review & submit), tabbed Caregiver Profile
-  (overview, qualifications, documents, references, verification, restricted health
-  info for authorized roles, audit history for admins), and simple admin screens for
-  Skills/Languages/Locations master data
-- **Public pages**: `/register` (self-registration), `/verify-email` (reads the token
-  from the query string, verifies, auto-logs in)
-- **Caregiver self-service** (`(caregiver)` shell, no admin sidebar): `/me` — the same
-  wizard step components staff use, picking up from qualifications (personal info is
-  already collected at registration) and ending in self-submit; switches to a
-  status/overview view once submitted, still allowing further document uploads
-
-## 11. Mobile readiness
-
-The API was designed independent of the web UI: `GET /caregivers` returns a
-domain-level representation, not a UI-shaped one, and the OpenAPI contract at
-`/docs-json` (`/api/docs-json` behind nginx) can be used to generate a typed client for a future
-React Native/Expo app. No second backend would be needed — same NestJS API, same
-MySQL database.
-
-## 12. What's intentionally not built yet
-
-Per the original brief: ratings, GPS tracking and push notifications are out of scope.
-(Patients, caregiver matching, bookings, payments and AI matching have since been built -
-see §7c and §7g.) The caregiver domain (skills, qualifications, languages,
-location, availability, verification status) is modelled so a future matching engine can
-query all of that without a caregiver-table redesign.
-
-**Patient/guardian self-registration** is built (§7c), and staff can browse registered
-clients. What is still missing on that side is everything *after* registration: staff
-notes and contact status on a client, linking a client to a caregiver, contact requests,
-saved caregivers and bookings.
-
-A real email provider is the other explicit gap — see §7a. `AuthService.sendVerificationEmailStub`
-is the one place that needs to change; everything around it (the token table, the
-verify/resend endpoints, the login gate) is already provider-agnostic.
+- [docs/architecture.md](docs/architecture.md) — how the system fits together: apps, API modules, data, auth, i18n, branding, background jobs.
+- [docs/development.md](docs/development.md) — setting up, environment variables, tests, migrations, translations and coding conventions.
+- [docs/features.md](docs/features.md) — reference for sign-in, registration, search, AI and security rules.
+- [DEPLOYMENT.md](DEPLOYMENT.md) — putting it on a server: `setup.sh`, HTTPS, backups, updates, troubleshooting.
+- [apps/mobile/README.md](apps/mobile/README.md) and [apps/mobile/BUILDING.md](apps/mobile/BUILDING.md) — the mobile app and store builds.
+- [i18n-review/README.md](i18n-review/README.md) — reviewing Sinhala and Tamil wording.
+- [docs/history/implementation-report.md](docs/history/implementation-report.md) — the original build report and early changelog (historical).

@@ -9,7 +9,7 @@ import type { ApiClient } from '@/api/client';
 import { useAuth } from '@/auth/AuthProvider';
 import { useTranslation } from '@/i18n';
 import { getPushToken as defaultGetPushToken, localNotifications, notifications, screenFor } from './notifications';
-import { notificationsKey, useNotificationsSummary } from '@/notifications/api';
+import { useNotificationsSummary } from '@/notifications/api';
 
 export const DEVICE_ID_KEY = 'push.deviceId';
 

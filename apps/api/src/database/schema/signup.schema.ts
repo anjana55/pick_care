@@ -55,7 +55,6 @@ export const signupIdentities = mysqlTable(
 );
 
 export const agreementKindEnum = ['CLIENT_SERVICE', 'CAREGIVER_SERVICE'] as const;
-export type AgreementKind = (typeof agreementKindEnum)[number];
 
 /**
  * Who accepted which version of a service agreement, and when - written at

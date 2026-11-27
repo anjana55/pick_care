@@ -1,11 +1,12 @@
-# CareLink mobile app
+# Mobile app (`apps/mobile`)
 
 iOS and Android app for caregivers and clients, built with Expo (SDK 58,
 React Native 0.88) inside this repo's npm workspace. It shares types, value
 lists and the i18n engine with the web apps through `@care-platform/shared`.
 
-The plan, decisions and phases are in the CareLink project:
-`claude/mobile-app-plan.md`.
+The plan, decisions and phases are in the Pick Care project docs:
+`claude/mobile-app-plan.md`. The built-in brand in `app.config.ts` is still
+`carelink` (store name CareLink); see BUILDING.md to set up a brand.
 
 ## Run it
 

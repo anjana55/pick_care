@@ -2,7 +2,6 @@
   "welcome": {
     "tagline": "Find the right caregiver",
     "findCare": "Find a caregiver",
-    "joinAsCaregiver": "Join as a caregiver",
     "language": "Language",
     "haveAccount": "Already have an account?",
     "findCareHint": "Verified caregivers near you, for home, hospital or live-in care",
@@ -65,8 +64,7 @@
     "resend": "Send a new code"
   },
   "home": {
-    "welcome": "Welcome back",
-    "signOut": "Sign out"
+    "welcome": "Welcome back"
   },
   "common": {
     "loading": "Loading...",
@@ -93,38 +91,19 @@
     "aiUnavailable": "AI Search is temporarily unavailable — try Normal Search instead."
   },
   "normalSearch": {
-    "patientSection": "About the patient (optional)",
-    "age": "Age",
-    "gender": "Gender",
     "genderMale": "Male",
     "genderFemale": "Female",
-    "medicalConditions": "Medical conditions",
-    "medicalConditionsPlaceholder": "e.g. Parkinson's, Diabetes — press Enter to add",
-    "locationSection": "Location",
     "district": "District",
     "city": "City",
     "anyDistrict": "Any district",
     "anyCity": "Any city",
-    "careSection": "Care requirements",
     "mandatorySkills": "Must-have skills",
-    "optionalSkills": "Nice-to-have skills",
     "preferredGender": "Preferred caregiver gender",
     "genderAny": "No preference",
-    "languages": "Preferred languages",
-    "shift": "Required shift",
-    "shiftDay": "Day duty",
-    "shiftNight": "Night duty",
-    "shiftLiveIn": "24-hour live-in",
-    "shiftFlexible": "Flexible",
     "startDate": "Desired start date",
-    "minimumExperience": "Minimum experience (years)",
     "submit": "Search caregivers",
-    "reset": "Clear filters",
-    "startDateHint": "Required. Availability matching is not live yet, so this does not change results today.",
     "errors": {
       "districtRequired": "Please select a district.",
-      "startDateRequired": "Please choose a desired start date.",
-      "invalidValue": "Please check this value.",
       "careTypeRequired": "Please choose the type of care you need."
     },
     "locationsUnavailable": "Districts and cities could not be loaded. Please refresh the page or try again shortly.",
@@ -142,9 +121,7 @@
     "askLocationEmpty": "Happy to help. Where is the care needed? Tell me the town or district, and anything you can about the person who needs care.",
     "askLocationRetry": "I couldn't work out the area from that. Could you name the nearest town, or choose a district below?",
     "showingMatches": "Here are caregivers who match. You can fine-tune the results any time.",
-    "adjustFilters": "Adjust filters",
     "suggestMore": "Want better matches? Tell me about the person's condition or the help they need, and I'll put the best fits first.",
-    "filtersAdjusted": "You've adjusted the filters below the results.",
     "useNormalSearch": "Use Normal Search",
     "replyLabel": "Your answer",
     "replyPlaceholder": "Type the town or district...",
@@ -152,11 +129,8 @@
     "moreDetailsPlaceholder": "Add more details, e.g. needs help with bathing, speaks Tamil...",
     "send": "Send",
     "orPickDistrict": "Or choose a district:",
-    "pickDistrict": "Choose a district",
     "startOver": "Start over",
     "refineTitle": "Refine your search",
-    "refineHint": "Change any filter and update the results.",
-    "updateResults": "Update results",
     "askCareType": "What kind of care do you need? Choose one below, or tell me in your own words.",
     "careTypeReplyPlaceholder": "For example: someone to live with my mother"
   },
@@ -218,8 +192,6 @@
     "RETIREMENT_HOME": "Retirement home for the elderly"
   },
   "nav": {
-    "signIn": "Sign in",
-    "signUp": "Sign up",
     "myAccount": "My account",
     "signOut": "Sign out",
     "find": "Find",
@@ -252,29 +224,20 @@
     },
     "kmAway": "{km} km away",
     "travelsHere": "Works in {place}, {km} km away",
-    "districtCentre": "District centre",
-    "showOnMap": "Show on map",
-    "hideFromMap": "Hide from map",
     "pointOne": "1 caregiver in {place}, {km} km away",
     "pointOther": "{count} caregivers in {place}, {km} km away",
-    "serviceCity": "Works in {place}, {km} km away",
     "origin": "Search location",
     "originDevice": "Your location",
     "mapLabel": "Map of caregivers near the search location",
     "failed": "The map could not be loaded. Each caregiver's distance is still shown below.",
     "noneWithin": "No caregivers within {radius} km yet.",
     "widen": "Search within {km} km",
-    "legendOrigin": "Search location",
-    "legendOriginDevice": "You",
-    "legendCaregivers": "Caregivers living there",
-    "legendServiceArea": "Also works in",
     "coverageOne": "1 caregiver lives in {place}",
     "coverageOther": "{count} caregivers live in {place}",
     "coverageTotalOne": "1 caregiver on the map",
     "coverageTotalOther": "{count} caregivers across {places} places"
   },
   "account": {
-    "navLabel": "Account sections",
     "nav": {
       "requests": "My requests",
       "saved": "Saved caregivers",
@@ -517,7 +480,6 @@
     "balance": "To pay",
     "due": "Due",
     "back": "Back to invoices",
-    "print": "Print / save PDF",
     "pdf": {
       "download": "Download PDF",
       "preparing": "Preparing the PDF…",
@@ -588,7 +550,6 @@
     "reportShort": "Report a problem",
     "formIntro": "Tell our team what is wrong. We will check it against our records, put it right if needed, and let you know.",
     "whatsWrong": "What is wrong?",
-    "choose": "Choose…",
     "whichShift": "Which shift?",
     "wholeBooking": "The booking in general",
     "tellUs": "Tell us what happened",
@@ -621,7 +582,6 @@
       "documents": "Documents",
       "shifts": "Shifts",
       "payments": "Payments",
-      "workAbroad": "Work abroad",
       "ratings": "Ratings"
     },
     "loadError": "We could not load this page. Please refresh and try again.",
@@ -629,10 +589,6 @@
     "saved": "Saved",
     "welcome": "Welcome back",
     "registrationNumber": "Registration number",
-    "requiredField": "This field is required",
-    "edit": "Edit",
-    "remove": "Remove",
-    "editResetsVerification": "This entry has been verified. Changing it sends it back to staff to be checked again.",
     "status": {
       "DRAFT": "Draft",
       "REGISTERED": "Submitted",
@@ -663,47 +619,29 @@
     },
     "checklist": {
       "title": "Getting your profile ready",
-      "review": "Review",
       "start": "Start",
       "profile": {
-        "title": "Skills and languages",
-        "hint": "Choose the care skills you have and the languages you speak."
+        "title": "Skills and languages"
       },
       "documents": {
         "title": "Documents",
         "hint": "Upload your ID and the certificates staff need to verify you."
       },
       "shifts": {
-        "title": "Shifts",
-        "hint": "Tell us which shifts you can work and when you can start."
+        "title": "Shifts"
       }
     },
     "submit": {
       "ready": "Everything is in place. Submit your registration and our staff will start reviewing it.",
-      "notReady": "Finish the steps above, then you can submit your registration for review.",
       "button": "Submit for review"
     },
     "shifts": {
       "title": "Shifts",
-      "subtitle": "Families searching for care see you for the shifts you choose here.",
-      "canWork": "Shifts I can work",
       "dayDuty": "Day shifts",
-      "dayDutyHint": "Work during the day and go home at night.",
       "nightDuty": "Night shifts",
-      "nightDutyHint": "Overnight care.",
       "liveIn24h": "24-hour live-in",
-      "liveIn24hHint": "Stay with the family for the whole day.",
-      "noneSelected": "No shift is selected, so families will not be able to find you. Choose at least one.",
       "preferred": "Preferred shift",
       "availableFrom": "Available from",
-      "terms": "Pay and leave (optional)",
-      "dailyRate": "Expected daily rate (LKR)",
-      "monthlyRate": "Expected monthly rate (LKR)",
-      "leaveDays": "Leave days per month",
-      "leavePattern": "Preferred leave pattern",
-      "termsHint": "Only shown to our staff. Leave anything blank that you would rather discuss later.",
-      "invalidAmount": "Enter an amount using digits only, for example 6500",
-      "invalidDays": "Enter a whole number of days",
       "preference": {
         "DAY": "Day",
         "NIGHT": "Night",
@@ -814,14 +752,10 @@
       "title": "Qualifications",
       "add": "Add a qualification",
       "none": "No qualifications added yet.",
-      "confirmRemove": "Remove this qualification?",
       "fields": {
         "name": "Qualification",
         "type": "Type",
-        "institution": "Institution",
-        "certificateNumber": "Certificate number",
-        "issueDate": "Issued on",
-        "expiryDate": "Expires on"
+        "institution": "Institution"
       },
       "types": {
         "NVQ": "NVQ",
@@ -836,15 +770,12 @@
       "title": "Work experience",
       "add": "Add experience",
       "none": "No experience added yet.",
-      "confirmRemove": "Remove this experience?",
       "present": "present",
       "fields": {
-        "employerOrClient": "Employer or client",
         "role": "Role",
         "country": "Country",
         "location": "Location",
         "startDate": "Started",
-        "endDate": "Ended",
         "description": "What you did"
       }
     },
@@ -859,251 +790,6 @@
       },
       "reference": "Transfer reference: {reference}",
       "approvedHint": "Approved - the payment will be sent soon."
-    },
-    "workAbroad": {
-      "title": "Work abroad",
-      "intro": "Tell us if you want to work abroad, join our training, and choose whether to share your profile with overseas employers.",
-      "save": "Save",
-      "readiness": {
-        "title": "Working abroad",
-        "intro": "Our team uses this to find jobs that suit you. It is not shown publicly unless you share your profile.",
-        "open": "I am interested in working abroad",
-        "openHint": "You can change this at any time.",
-        "countries": "Countries I would like to work in (up to {max})",
-        "addCountry": "Add a country",
-        "removeCountry": "Remove {country}",
-        "passport": "Do you have a passport?",
-        "yes": "Yes",
-        "no": "No",
-        "passportExpiry": "Passport expiry date",
-        "availableFrom": "I could start from",
-        "passportNote": "We never ask for your passport number here, and it is never shown publicly."
-      },
-      "training": {
-        "title": "Training",
-        "intro": "Choose the courses you are interested in. Our team will contact you with dates and details.",
-        "interested": "I'm interested",
-        "withdraw": "Withdraw",
-        "interestedHint": "Thank you - our team will contact you about this course.",
-        "status": {
-          "INTERESTED": "Interested",
-          "ENROLLED": "Enrolled",
-          "COMPLETED": "Completed"
-        },
-        "progress": "{n}% done",
-        "score": "Final score: {n} / 100",
-        "certificate": "Your certificate"
-      },
-      "share": {
-        "title": "Share your profile with employers",
-        "intro": "Your shared profile shows your first name, photo and a short introduction alongside your checked skills, languages and training. Employers ask our team about you - they never see your contact details.",
-        "state": {
-          "live": "Your profile is live",
-          "liveHint": "Employers can see it at your link and in our list of caregivers ready to work abroad.",
-          "pending": "Waiting for review",
-          "pendingHint": "Our team is checking your profile. It will go live once it is approved.",
-          "rejected": "Changes needed",
-          "rejectedHint": "Please update your profile and share it again.",
-          "paused": "Sharing is paused",
-          "pausedHint": "Your profile is hidden. Switch sharing back on whenever you like.",
-          "notListed": "Approved, but not visible yet",
-          "notListedHint": "Your profile will be visible once your registration is complete.",
-          "draft": "Not shared",
-          "draftHint": "Fill in your details, read the consent below, and share when you are ready."
-        },
-        "reviewNote": "Our team says:",
-        "addPhoto": "Add a photo",
-        "changePhoto": "Change photo",
-        "removePhoto": "Remove photo",
-        "photoAlt": "Your profile photo",
-        "photoUploaded": "Photo uploaded",
-        "photoTooLarge": "That photo is too large. Please choose one under 8 MB.",
-        "firstName": "First name",
-        "firstNameHint": "Only your first name is shown - never your surname.",
-        "headline": "Headline",
-        "headlinePlaceholder": "e.g. Caregiver with 8 years of elderly care",
-        "bio": "About you",
-        "bioPlaceholder": "Your experience, the care you enjoy giving, and why you want to work abroad.",
-        "bioHint": "Do not include your phone number, email or address.",
-        "reReview": "Saving changes sends your profile to our team for review again. It is hidden until then.",
-        "saveDetails": "Save details",
-        "saveFirst": "Save your details first.",
-        "consentTitle": "Before you share",
-        "consent1": "Your first name, photo, headline and introduction will be shown publicly on this website, at your link and in our list of caregivers ready to work abroad.",
-        "consent2": "Your checked skills, languages, qualifications, completed training, approximate age, years of experience and the countries you chose will be shown with them.",
-        "consent3": "Your surname, phone number, email, address, NIC, passport number and documents will never be shown.",
-        "consent4": "Employers contact our team about you, not you directly. Our team will contact you before any introduction.",
-        "consent5": "You can pause sharing or withdraw your consent at any time. Withdrawing deletes your photo and takes your profile offline.",
-        "consentAgree": "I have read this and I agree to share my profile.",
-        "share": "Share my profile",
-        "resume": "Turn sharing back on",
-        "sharedNotice": "Thank you - your profile has been sent to our team.",
-        "yourLink": "Your profile link",
-        "view": "View",
-        "linkNotLive": "This link will work once your profile is approved.",
-        "pause": "Pause sharing",
-        "pausedNotice": "Sharing paused - your profile is hidden.",
-        "newLink": "Get a new link",
-        "newLinkConfirm": "Your old link will stop working straight away. Continue?",
-        "newLinkNotice": "You have a new link. The old one no longer works.",
-        "withdraw": "Withdraw my consent and delete my photo",
-        "withdrawConfirm": "This takes your profile offline, deletes your photo and removes your consent. Continue?",
-        "withdrawnNotice": "Consent withdrawn. Your profile is offline and your photo has been deleted."
-      },
-      "checklist": {
-        "title": "Ready to work abroad?",
-        "progress": "{done} of {total} done",
-        "done": "done",
-        "todo": "not done yet",
-        "note": "These are general steps, not for any one country. Our team checks each one.",
-        "items": {
-          "registrationVerified": "Your registration is verified",
-          "openToOverseas": "You told us where you would like to work",
-          "passportValid": "Passport valid for at least 6 months after you could start",
-          "policeClearance": "Police clearance verified",
-          "english": "English course completed, or fluent English",
-          "caregiving": "Caregiving course or a verified qualification",
-          "sharedProfile": "Your profile is shared with employers"
-        },
-        "hints": {
-          "registrationVerified": "Upload your documents",
-          "openToOverseas": "Add your countries below",
-          "passportValid": "Add your passport details below",
-          "policeClearance": "Upload your police clearance",
-          "english": "Join the English course",
-          "caregiving": "Join the caregiving course",
-          "sharedProfile": "Share your profile below"
-        }
-      },
-      "interest": {
-        "title": "Employers interested in you",
-        "intro": "Our team will call you before anything is arranged. We never give employers your phone number or address.",
-        "who": "{type} in {country}",
-        "status": {
-          "PROPOSED": "Our team suggested you",
-          "INTERVIEW_REQUESTED": "The employer would like to interview you",
-          "INTERVIEW_SCHEDULED": "Interview arranged",
-          "SELECTED": "The employer would like to hire you",
-          "PLACED": "Started work",
-          "NOT_PROCEEDING": "Not proceeding"
-        }
-      },
-      "applications": {
-        "title": "Your applications",
-        "intro": "Vacancies you applied for, and where each stands.",
-        "browse": "Browse vacancies",
-        "none": "You haven't applied for any vacancies yet.",
-        "closed": "Vacancy closed",
-        "withdraw": "Withdraw"
-      },
-      "dated": {
-        "title": "Passport and documents",
-        "intro": "Most countries need a passport valid for at least six months to issue a work visa.",
-        "valid": "Valid",
-        "expired": "Expired",
-        "daysLeft": "{days} days left",
-        "renew": "Renew it in good time and upload the new one.",
-        "upload": "Upload a document"
-      },
-      "placement": {
-        "title": "Your job abroad",
-        "departure": "Departure",
-        "arrived": "Arrived",
-        "contractStart": "Contract start",
-        "contractEnd": "Contract end",
-        "help": "Our team will call you after you arrive, and again during your contract. If you need help at any time, contact us.",
-        "status": {
-          "PRE_DEPARTURE": "Getting ready to travel",
-          "DEPLOYED": "Working",
-          "COMPLETED": "Contract completed",
-          "ENDED_EARLY": "Ended early"
-        }
-      },
-      "offers": {
-        "title": "Job offers",
-        "intro": "Offers employers have made you.",
-        "introWaiting": "An employer has made you a job offer. Read it carefully, then accept or decline it here.",
-        "answerBy": "Please answer by {date}.",
-        "accept": "Accept the offer",
-        "decline": "Decline",
-        "talkFirst": "Not sure? Call our team before you answer - we will go through it with you.",
-        "inPrinciple": "Accepting is an agreement in principle. You will sign the full employment contract later, with our help, before your visa application.",
-        "readTerms": "I have read the terms above and I want this job.",
-        "signLabel": "Type your full name to sign",
-        "signHint": "As it is written on your passport.",
-        "signAccept": "Sign and accept",
-        "reasonLabel": "Why are you declining? (optional - it helps our team find you a better match)",
-        "confirmDecline": "Decline the offer",
-        "yourReason": "Your reason: {reason}"
-      },
-      "interviews": {
-        "title": "Your interviews",
-        "intro": "Times are shown in your phone's time zone. Our team will call you before each interview to help you prepare."
-      },
-      "departure": {
-        "title": "Getting ready to go",
-        "intro": "What has to be done before you travel. Our team ticks each step off with you.",
-        "progress": "{done} of {total} done",
-        "done": "done",
-        "todo": "still to do",
-        "due": "by {date}",
-        "flight": "Your flight:",
-        "contactTitle": "Where we can reach you abroad",
-        "contactIntro": "Keep this up to date, so our team can reach you quickly. Your employer does not see it.",
-        "phone": "Phone number abroad",
-        "address": "Address abroad",
-        "saved": "Saved"
-      },
-      "welfare": {
-        "title": "Help while you are abroad",
-        "intro": "Tell us if something is wrong, or ask us anything. Only our team reads it - never your employer.",
-        "localNumbers": "In danger right now? Call the police in {country} on {police}, or an ambulance on {ambulance}.",
-        "localGeneric": "In danger right now? Call the local emergency number first - 112 works from most mobile phones.",
-        "sos": "SOS - I need help now",
-        "sosConfirm": "Send an SOS to our whole team now? We will call you straight away.",
-        "sosSend": "Yes, send SOS",
-        "sosHint": "For when you are not safe. Our whole team is alerted at once, with your phone number and address abroad.",
-        "sosSent": "Your SOS has been sent. Our team is calling you now. Keep your phone with you.",
-        "sent": "Sent. Our team will reply here and call you if needed.",
-        "reportTitle": "Tell us something",
-        "how": "How serious is it?",
-        "about": "What is it about?",
-        "message": "What is happening?",
-        "private": "Write in Sinhala, Tamil or English.",
-        "send": "Send to our team",
-        "yours": "Your messages to our team",
-        "ourTeam": "Our team",
-        "you": "You",
-        "reply": "Write a reply",
-        "sendReply": "Send reply"
-      },
-      "results": {
-        "title": "Test results",
-        "intro": "English tests and other results. Our team checks the original before a result counts - then it can show on your shared profile.",
-        "none": "No results yet.",
-        "add": "Add a result",
-        "kind": "What was tested",
-        "provider": "Test",
-        "testName": "Name of the test",
-        "testNamePlaceholder": "IELTS General Training",
-        "score": "Score or grade",
-        "cefr": "Level (CEFR)",
-        "cefrUnknown": "Not shown on the result",
-        "takenOn": "Date taken",
-        "validUntilLabel": "Valid until",
-        "validUntil": "valid until {date}",
-        "bringOriginal": "Bring or send the original result to our office, so we can verify it.",
-        "save": "Save result",
-        "verified": "Verified",
-        "waiting": "Waiting for our team",
-        "remove": "Remove {title}"
-      },
-      "certificate": {
-        "back": "Back to Work abroad",
-        "print": "Print or save as PDF",
-        "missing": "This certificate is not available.",
-        "englishNote": "The certificate is in English, for employers abroad."
-      }
     },
     "rates": {
       "title": "Your rates",
@@ -1188,19 +874,13 @@
       "dateOfBirth": "Date of birth",
       "gender": "Gender",
       "civilStatus": "Civil status",
-      "heightIn": "Height (in)",
-      "weightKg": "Weight (kg)",
-      "primaryPhone": "Primary phone",
       "secondaryPhone": "Secondary phone",
       "emergencyContactName": "Emergency contact name",
       "emergencyContactNumber": "Emergency contact number",
       "emergencyContactRelationship": "Emergency contact relationship",
-      "policeDivision": "Police division",
-      "policeStation": "Police station",
       "preferredContactMethod": "Preferred contact method",
       "district": "District",
-      "city": "City",
-      "postalCode": "Postal code"
+      "city": "City"
     },
     "validation": {
       "fullName": {
@@ -1247,7 +927,6 @@
       }
     },
     "options": {
-      "select": "Select",
       "gender": {
         "MALE": "Male",
         "FEMALE": "Female",
@@ -1574,7 +1253,6 @@
     "message": "What do you need?",
     "about": "Is it about one of these?",
     "aboutNone": "Something else",
-    "aboutHint": "If you choose one, our team takes it over from the automatic helpers until they have spoken to you.",
     "aboutRequest": "Request {ref}",
     "aboutBooking": "Booking {ref} (from {date})",
     "aboutShift": "Shift on {date} ({ref})",
@@ -1692,13 +1370,9 @@
     "consentCaregiver": "I consent to my personal and health information being processed for caregiver registration and verification purposes."
   },
   "patientIntake": {
-    "phoneHint": "Our team will use this number to contact you.",
     "careNeedsPlaceholder": "e.g. help with bathing, meals and medication reminders; any medical conditions we should know about",
     "sections": {
-      "whoNeedsCare": "Who needs care?",
-      "contact": "How should we contact you?",
-      "location": "Where is care needed?",
-      "care": "What care is needed?"
+      "whoNeedsCare": "Who needs care?"
     },
     "fields": {
       "recipientName": "Name of the person needing care",
@@ -1707,7 +1381,6 @@
       "yourAge": "Your age",
       "recipientGender": "Their gender",
       "yourGender": "Your gender",
-      "alternatePhone": "Alternate phone number (optional)",
       "contactMethod": "Preferred contact method",
       "contactTime": "Best time to contact you",
       "district": "District",
@@ -1727,18 +1400,11 @@
         "invalid": "Please enter a valid age (0–120)"
       },
       "recipientGender": "Please choose a gender",
-      "alternatePhone": "Please enter a valid phone number",
-      "contactMethod": "Please choose how we should contact you",
       "contactTime": "Please choose a contact time",
       "district": "Please choose a district",
       "city": "Please choose a city",
-      "careNeeds": {
-        "required": "Please describe the care needed",
-        "invalid": "Please describe the care needed in at least 10 characters"
-      },
       "careSchedule": "Please choose when care is needed",
-      "careStart": "Please choose when care should start",
-      "caregiverGender": "Please choose a preference"
+      "careStart": "Please choose when care should start"
     },
     "options": {
       "registrantType": {
@@ -1897,7 +1563,7 @@
     }
   },
   "visitChecks": {
-    "notice": "While you're checked in, Pick Care checks your location every {minutes} minutes. Only the office sees it.",
+    "notice": "While you're checked in, {brand} checks your location every {minutes} minutes. Only the office sees it.",
     "running": "Location checked every {minutes} minutes until you check out.",
     "notThisPhone": "Your location isn't being checked from this phone.",
     "askTitle": "Still with the client?",

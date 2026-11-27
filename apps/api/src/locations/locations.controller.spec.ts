@@ -4,7 +4,7 @@ import { join } from 'path';
 import { validate as validateOrReject } from 'class-validator';
 import { LocationsService } from './locations.service';
 import { LocationsController } from './locations.controller';
-import { BrowseCitiesQueryDto, CitiesQueryDto } from './dto/cities-query.dto';
+import { BrowseCitiesQueryDto } from './dto/cities-query.dto';
 import { IS_PUBLIC_KEY } from '../common/decorators/public.decorator';
 import { ROLES_KEY } from '../common/decorators/roles.decorator';
 import { Reflector } from '@nestjs/core';

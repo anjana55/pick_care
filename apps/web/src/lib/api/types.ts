@@ -215,15 +215,6 @@ export interface Experience {
   updatedAt: string;
 }
 
-export interface CaregiverHealthInfo {
-  hasDiabetes: boolean;
-  hasHighBloodPressure: boolean;
-  physicalAbilityToLiftPatients: boolean;
-  surgicalHistory: string | null;
-  mentalHealthInformation: string | null;
-  otherNotes: string | null;
-}
-
 export interface Availability {
   dayDuty: boolean;
   nightDuty: boolean;

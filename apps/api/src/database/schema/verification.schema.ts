@@ -39,7 +39,6 @@ export const verificationTypeEnum = [
   'REFERENCE',
   'OVERALL',
 ] as const;
-export type VerificationType = (typeof verificationTypeEnum)[number];
 
 export const verifications = mysqlTable(
   'verifications',

@@ -6,8 +6,6 @@ import { skills } from '../database/schema';
 import type { CreateSkillDto, UpdateSkillDto } from './dto/create-skill.dto';
 import { localSkillCategory, localSkillName } from './skill-name';
 
-export type CreateSkillInput = CreateSkillDto;
-
 /** A skill as the staff app and the admin editor see it. */
 export interface SkillView {
   id: string;

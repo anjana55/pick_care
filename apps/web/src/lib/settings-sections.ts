@@ -91,7 +91,3 @@ export function settingsGroupsFor(role: string | undefined): SettingsGroup[] {
   if (!role) return [];
   return SETTINGS_GROUPS.map((g) => ({ ...g, sections: g.sections.filter((s) => s.roles.includes(role)) })).filter((g) => g.sections.length > 0);
 }
-
-export function settingsSectionsFor(role: string | undefined): SettingsSection[] {
-  return settingsGroupsFor(role).flatMap((g) => g.sections);
-}

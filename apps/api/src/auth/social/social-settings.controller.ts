@@ -18,10 +18,7 @@ import { CurrentUser, AuthenticatedUser } from '../../common/decorators/current-
 @Controller('settings/social-auth')
 @Roles('ADMIN')
 export class SocialAuthSettingsController {
-  constructor(
-    private readonly settings: SocialAuthSettingsService,
-    private readonly registry: SocialProviderRegistry,
-  ) {}
+  constructor(private readonly settings: SocialAuthSettingsService) {}
 
   @Get()
   list() {

@@ -1,5 +1,5 @@
 import { LocationsService } from './locations.service';
-import { cities, districts, provinces } from '../database/schema';
+import { districts, provinces } from '../database/schema';
 import type { Database } from '../database/database.module';
 import type { Locale } from '@care-platform/shared';
 

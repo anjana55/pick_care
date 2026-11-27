@@ -38,7 +38,6 @@ import {
 import { useAuth } from '@/lib/api/auth-context';
 import { useTranslation } from '@/lib/i18n/provider';
 import { RecordPager } from '@/components/ui/record-pager';
-import { useRouter } from 'next/navigation';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { CommunicationPreferencesCard } from '@/components/accounts/communication-preferences-card';
 import { CaregiverRatingsPanel } from '@/components/reviews/rating-panels';
@@ -81,7 +80,6 @@ function Field({ label, value }: { label: string; value: string | number | null 
 export default function CaregiverProfilePage() {
   const { id } = useParams<{ id: string }>();
   const { t, locale } = useTranslation();
-  const router = useRouter();
   const { user } = useAuth();
   // Asked to delete their account (ADMIN + STAFF can see the requests): say so, rather than just "Inactive".
   const pendingDeletion = usePendingAccountDeletion({ caregiverId: id }, user?.role === 'ADMIN' || user?.role === 'STAFF');

@@ -2,7 +2,6 @@ import { mysqlTable, varchar, datetime, mysqlEnum, int, json, index, uniqueIndex
 import { sql } from 'drizzle-orm';
 
 export const jobStatusEnum = ['PENDING', 'RUNNING', 'DONE', 'FAILED'] as const;
-export type JobStatus = (typeof jobStatusEnum)[number];
 
 /**
  * Durable background work: "send this offer", "check this shift in 15

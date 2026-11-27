@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import { and, eq, inArray, or, sql } from 'drizzle-orm';
 import { createHash } from 'crypto';
 import {
@@ -33,7 +33,6 @@ const SCHEDULE_TO_SHIFT = { DAY: 'DAY', NIGHT: 'NIGHT', LIVE_IN_24H: 'TWENTY_FOU
  */
 @Injectable()
 export class AiMatchingService {
-  private readonly logger = new Logger(AiMatchingService.name);
   /** Re-ranked orders by request, so paging through AI results does not call the model again. */
   private readonly cache = new Map<string, { at: number; order: string[]; reasons: Map<string, string>; aiRanked: boolean }>();
 

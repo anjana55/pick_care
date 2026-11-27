@@ -2,7 +2,6 @@ import { mysqlTable, varchar, datetime, mysqlEnum, index, primaryKey } from 'dri
 import { sql } from 'drizzle-orm';
 
 export const languageProficiencyEnum = ['BASIC', 'CONVERSATIONAL', 'FLUENT', 'NATIVE'] as const;
-export type LanguageProficiency = (typeof languageProficiencyEnum)[number];
 
 export const languages = mysqlTable('languages', {
   id: varchar('id', { length: 36 }).primaryKey(),
