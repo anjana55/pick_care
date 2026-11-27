@@ -13,7 +13,7 @@ import { Text } from '@/ui/Text';
 import { Card } from '@/ui/visual';
 import { submitSignup, type ChosenSignIn } from '@/signup/api';
 import { ChosenSummary, MethodStep } from '@/signup/MethodStep';
-import { AgreementBox, CallOfficeCard, TickBox } from '@/signup/Agreement';
+import { AgreementBox, TickBox } from '@/signup/Agreement';
 import { ClientDetails, clientPayload, clientProblems, startClientForm, useIntakeFromLastSearch, type ClientForm } from '@/signup/ClientDetails';
 import { CaregiverDetails, caregiverPayload, caregiverProblems, startCaregiverForm, type CaregiverForm } from '@/signup/CaregiverDetails';
 
@@ -28,8 +28,8 @@ import { CaregiverDetails, caregiverPayload, caregiverProblems, startCaregiverFo
  *    settled, plus the service agreement.
  *
  * WhatsApp and provider sign-ups finish signed in; email confirms the
- * address by the link sent to it. Caregivers who would rather not type can
- * call the office from step 1.
+ * address by the link sent to it. Clients and caregivers who would rather not
+ * type can call the office from step 1.
  *
  * Every way here is an explicit "I'm new" (Create an account, Get started),
  * so this screen does not ask again whether they have an account. Anyone who
@@ -148,7 +148,6 @@ export default function Register() {
       <ScrollView ref={scroll} contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
         {!chosen ? (
           <>
-            {side === 'caregiver' ? <CallOfficeCard /> : null}
             <FormError message={error} />
             <MethodStep side={side} onChosen={choose} onSignedIn={(tokens) => void finishSignedIn(tokens)} />
           </>

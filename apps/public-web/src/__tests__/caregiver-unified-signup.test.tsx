@@ -83,7 +83,12 @@ describe('caregiver registration', () => {
     expect(screen.getByRole('button', { name: 'Continue with Microsoft' })).toBeInTheDocument();
     expect(screen.queryByText('Already have an account?')).toBeNull();
     expect(screen.getByText('Prefer to register by phone?')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Call 011 234 5678/ })).toHaveAttribute('href', 'tel:0112345678');
+    const call = screen.getByRole('link', { name: /Call 011 234 5678/ });
+    expect(call).toHaveAttribute('href', 'tel:0112345678');
+    // The 3rd choice: after WhatsApp and the providers, before email.
+    const after = (a: Element, b: Element) => Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(after(screen.getByRole('button', { name: 'Continue with Microsoft' }), call)).toBe(true);
+    expect(after(call, screen.getByRole('button', { name: /Continue with email and password/ }))).toBe(true);
   });
 
   it('shows no call button when the office has no number set', async () => {

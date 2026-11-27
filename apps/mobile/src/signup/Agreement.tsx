@@ -64,8 +64,9 @@ export function AgreementBox({ side, checked, onChange, error }: { side: SignupS
 export const dialUrl = (phone: string) => `tel:${phone.replace(/[^\d+]/g, '')}`;
 
 /**
- * "Call the office to register" - one big button that dials, for caregivers
- * who would rather not fill in a form. Nothing when the office has no number.
+ * "Call the office to register" - one big button that dials, for clients and
+ * caregivers who would rather not fill in a form. The 3rd choice in step 1 of
+ * registering (MethodStep). Nothing when the office has no number.
  */
 export function CallOfficeCard() {
   const { t } = useTranslation();

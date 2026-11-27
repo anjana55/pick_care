@@ -13,6 +13,8 @@ const applyTokens = jest.fn();
 
 jest.mock('@/lib/navigation', () => ({ hardNavigate: jest.fn() }));
 jest.mock('@/lib/api/auth-context', () => ({ useAuth: () => ({ user: null, logout: jest.fn(), applyTokens: (...a: unknown[]) => applyTokens(...a) }) }));
+let officePhone: string | null = '011 234 5678';
+jest.mock('@/lib/branding/provider', () => ({ useBranding: () => ({ ...jest.requireActual('@care-platform/shared').DEFAULT_BRANDING, officePhone, logoUrl: null }) }));
 jest.mock('next/navigation', () => ({ useRouter: () => ({ push: jest.fn(), replace: jest.fn() }) }));
 jest.mock('@/lib/api/client', () => ({
   ...jest.requireActual('@/lib/api/client'),
@@ -63,6 +65,7 @@ async function chooseWhatsapp() {
 }
 
 beforeEach(() => {
+  officePhone = '011 234 5678';
   window.localStorage.clear();
   window.sessionStorage.clear();
   get.mockReset();
@@ -191,6 +194,28 @@ describe('client registration asks how they will sign in first', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Create my account' }));
     expect(await screen.findByText('Your sign-in step has expired. Please choose how to sign in again.')).toBeInTheDocument();
     expect(screen.getByText('How would you like to sign in?')).toBeInTheDocument();
+  });
+});
+
+describe('client registration: calling the office instead', () => {
+  it('is the 3rd choice: after WhatsApp and the providers, before email - and dials the office', async () => {
+    renderPage(<RegisterPage />);
+    const whatsapp = await screen.findByRole('button', { name: /Continue with WhatsApp/ });
+    const google = screen.getByRole('button', { name: 'Continue with Google' });
+    const call = screen.getByRole('link', { name: /Call 011 234 5678/ });
+    const email = screen.getByRole('button', { name: /Continue with email and password/ });
+    expect(call).toHaveAttribute('href', 'tel:0112345678');
+    const after = (a: Element, b: Element) => Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(after(whatsapp, google)).toBe(true);
+    expect(after(google, call)).toBe(true);
+    expect(after(call, email)).toBe(true);
+  });
+
+  it('is left out when the office has no number', async () => {
+    officePhone = null;
+    renderPage(<RegisterPage />);
+    await screen.findByRole('button', { name: /Continue with WhatsApp/ });
+    expect(screen.queryByText('Prefer to register by phone?')).toBeNull();
   });
 });
 

@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button';
 import { FieldError, Input, Label } from '@/components/ui/input';
 import { PasswordInput } from '@/components/ui/password-input';
 import { useSignupMethods, type ChosenSignIn } from '@/lib/signup';
+import { CallOfficeCard } from '@/components/signup/agreement';
 
 function makeNonce() {
   const bytes = new Uint8Array(16);
@@ -39,8 +40,10 @@ type Open = 'whatsapp' | 'email' | null;
  * The first step of registering: how this person will sign in. WhatsApp
  * (a code, here and now), Google / Microsoft / Facebook (the provider's own
  * screen, back to this page), or an email address and password (typed here,
- * confirmed by email after the form). Whatever is chosen is not asked again
- * on the details form.
+ * confirmed by email after the form) - and, always the 3rd choice for
+ * clients and caregivers alike, calling the office to be registered by staff
+ * (left out when the office has no number). Whatever is chosen is not asked
+ * again on the details form.
  *
  * Someone who turns out to be registered already - their WhatsApp number or
  * provider account is a login on this side - is simply signed in. There is
@@ -84,43 +87,45 @@ export function SignInMethodStep({ side, onChosen }: { side: SignupSide; onChose
         <p className="mt-1 text-sm text-ink/60">{t('signup.chooseSubtitle')}</p>
       </div>
 
-      {whatsappOn && (
+      {withCallOffice([
+        whatsappOn ? (
+          <MethodCard
+            key="whatsapp"
+            icon={<MessageCircle className="h-5 w-5 text-brand" aria-hidden />}
+            title={t('signup.whatsapp')}
+            hint={t('signup.whatsappHint')}
+            open={open === 'whatsapp'}
+            onOpen={() => (setOpen('whatsapp'), setError(null))}
+          >
+            <WhatsappVerify side={side} onIdentity={(identity) => onChosen({ method: 'WHATSAPP', identity })} onSignedIn={signedIn} />
+          </MethodCard>
+        ) : null,
+        providers.length > 0 ? (
+          <div key="providers" className="grid gap-2">
+            {providers.map((provider) => (
+              <button
+                key={provider}
+                type="button"
+                onClick={() => startProvider(provider)}
+                disabled={pending !== null}
+                className="flex min-h-11 items-center justify-center gap-2 rounded border border-border bg-white px-4 py-2.5 text-sm font-medium text-ink transition-colors hover:border-brand hover:bg-brand-light disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {pending === provider ? t('common.loading') : t(`signup.providers.${provider}`)}
+              </button>
+            ))}
+          </div>
+        ) : null,
         <MethodCard
-          icon={<MessageCircle className="h-5 w-5 text-brand" aria-hidden />}
-          title={t('signup.whatsapp')}
-          hint={t('signup.whatsappHint')}
-          open={open === 'whatsapp'}
-          onOpen={() => (setOpen('whatsapp'), setError(null))}
+          key="email"
+          icon={<Mail className="h-5 w-5 text-brand" aria-hidden />}
+          title={t('signup.email')}
+          hint={t('signup.emailHint')}
+          open={open === 'email' || (!whatsappOn && providers.length === 0)}
+          onOpen={() => (setOpen('email'), setError(null))}
         >
-          <WhatsappVerify side={side} onIdentity={(identity) => onChosen({ method: 'WHATSAPP', identity })} onSignedIn={signedIn} />
-        </MethodCard>
-      )}
-
-      {providers.length > 0 && (
-        <div className="grid gap-2">
-          {providers.map((provider) => (
-            <button
-              key={provider}
-              type="button"
-              onClick={() => startProvider(provider)}
-              disabled={pending !== null}
-              className="flex min-h-11 items-center justify-center gap-2 rounded border border-border bg-white px-4 py-2.5 text-sm font-medium text-ink transition-colors hover:border-brand hover:bg-brand-light disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {pending === provider ? t('common.loading') : t(`signup.providers.${provider}`)}
-            </button>
-          ))}
-        </div>
-      )}
-
-      <MethodCard
-        icon={<Mail className="h-5 w-5 text-brand" aria-hidden />}
-        title={t('signup.email')}
-        hint={t('signup.emailHint')}
-        open={open === 'email' || (!whatsappOn && providers.length === 0)}
-        onOpen={() => (setOpen('email'), setError(null))}
-      >
-        <EmailPassword onDone={(email, password) => onChosen({ method: 'EMAIL', email, password })} />
-      </MethodCard>
+          <EmailPassword onDone={(email, password) => onChosen({ method: 'EMAIL', email, password })} />
+        </MethodCard>,
+      ])}
 
       {error && (
         <p role="alert" className="text-sm text-danger">
@@ -130,6 +135,17 @@ export function SignInMethodStep({ side, onChosen }: { side: SignupSide; onChose
 
     </div>
   );
+}
+
+/**
+ * The choices in order with "Call the office to register" 3rd: after
+ * WhatsApp and the Google / Microsoft / Facebook buttons (one choice
+ * together), before email - or as near 3rd as the choices switched on allow.
+ */
+function withCallOffice(choices: (React.ReactElement | null)[]) {
+  const shown = choices.filter((c): c is React.ReactElement => c !== null);
+  shown.splice(Math.min(2, shown.length), 0, <CallOfficeCard key="call-office" />);
+  return shown;
 }
 
 function MethodCard({

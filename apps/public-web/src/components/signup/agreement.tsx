@@ -82,9 +82,10 @@ export function AgreementCheckbox({
 }
 
 /**
- * "Prefer to register by phone? Call our office" - for caregivers who would
- * rather not fill in a form. One big button that dials. Nothing at all when
- * Settings > Branding has no office number.
+ * "Prefer to register by phone? Call our office" - for clients and caregivers
+ * who would rather not fill in a form. One big button that dials; the 3rd
+ * choice in SignInMethodStep. Nothing at all when Settings > Branding has no
+ * office number.
  */
 export function CallOfficeCard({ compact = false }: { compact?: boolean }) {
   const { t } = useTranslation();
