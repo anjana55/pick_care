@@ -92,6 +92,14 @@ English, Sinhala and Tamil everywhere:
 - The mobile app's iOS permission prompts are in `apps/mobile/locales/` (Sinhala,
   Tamil) and `app.config.ts` (English).
 
+## Help
+
+The staff app and the mobile app have built-in, context-sensitive help in all
+three languages: a **?** beside a page heading opens the topic for that task,
+and the reader can switch the help's language without changing the app's.
+Topics quote the apps' own labels, so the help always names buttons exactly as
+they appear. See [help.md](help.md).
+
 ## Branding (white label)
 
 `GET /branding` serves the company name, short name, logo, colours, enabled

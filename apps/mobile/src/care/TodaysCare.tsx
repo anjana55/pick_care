@@ -9,6 +9,7 @@ import { fontFamilyFor } from '@/ui/fonts';
 import { Text } from '@/ui/Text';
 import { fmtDay, fmtTime, formatDate } from '@/ui/dates';
 import { useCareDay, useMarkCareItem, useSetCareReminders } from './bookings-api';
+import { HelpHint } from '@/help/HelpLinks';
 
 /**
  * Today's care, as on the website: the client ticks off what the caregiver
@@ -49,6 +50,7 @@ export function TodaysCare() {
         <Pressable accessibilityRole="button" accessibilityLabel={t('carePlan.nextDay')} onPress={() => setDate(addDays(day, 1))} style={styles.arrow}>
           <Text style={{ fontSize: 22, color: colors.brand }}>›</Text>
         </Pressable>
+        <HelpHint topic="tick-off-care" />
       </View>
       {day !== data.today ? <Button variant="link" label={t('carePlan.today')} onPress={() => setDate(null)} /> : null}
       <Text style={{ fontSize: 15, lineHeight: 22, color: colors.muted }}>{t('carePlan.intro')}</Text>

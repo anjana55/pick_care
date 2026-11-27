@@ -56,6 +56,7 @@ import {
 import { cn } from '@/lib/utils';
 import type { BookingDetail, BookingShift, IssueReportView, RateType, ShiftStatus } from '@/lib/api/types';
 import { CaseAutomationPanel } from '@/components/automation/case-automation-panel';
+import { HelpHint } from '@/components/help/help-button';
 
 /** How the Correct panel was opened: plain, to close a booking billed in advance, or from a report. */
 type Correcting = { close?: 'COMPLETED' | 'CANCELLED'; issue?: IssueReportView };
@@ -120,10 +121,13 @@ export default function BookingPage() {
 
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="flex items-center gap-3 text-xl font-semibold tabular-nums text-ink">
-            {booking.reference}
-            <BookingStatusBadge status={booking.status} label={t(`bookings.status.${booking.status}`)} />
-          </h1>
+          <div className="flex items-center gap-1.5">
+            <h1 className="flex items-center gap-3 text-xl font-semibold tabular-nums text-ink">
+              {booking.reference}
+              <BookingStatusBadge status={booking.status} label={t(`bookings.status.${booking.status}`)} />
+            </h1>
+            <HelpHint topic="manage-booking" />
+          </div>
           <p className="mt-1 text-sm text-ink/60">
             {t(`bookings.scheduleType.${booking.scheduleType}`)} · {booking.daysOfWeek.map((d) => fmtWeekday(d, locale)).join(' ')} · {booking.shiftStartTime}–
             {booking.shiftEndTime}

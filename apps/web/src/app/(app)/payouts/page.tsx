@@ -19,6 +19,7 @@ import { PayoutStatusBadge } from '@/components/billing/billing-badges';
 import { cn } from '@/lib/utils';
 import type { PayoutStatus } from '@/lib/api/types';
 import { useInitialParam } from '@/lib/use-initial-param';
+import { HelpHint } from '@/components/help/help-button';
 
 const TABS: (PayoutStatus | 'all')[] = ['DRAFT', 'APPROVED', 'PAID', 'VOID', 'all'];
 
@@ -67,7 +68,10 @@ export default function PayoutsPage() {
 
   return (
     <div>
-      <h1 className="mb-2 text-xl font-semibold text-ink">{t('billing.payouts.title')}</h1>
+      <div className="flex items-center gap-1.5 mb-2">
+        <h1 className="text-xl font-semibold text-ink">{t('billing.payouts.title')}</h1>
+        <HelpHint topic="pay-caregivers" />
+      </div>
       <p className="mb-6 text-sm text-ink/60">{t('billing.payouts.subtitle')}</p>
 
       <Card className="mb-6">

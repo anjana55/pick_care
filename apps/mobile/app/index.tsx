@@ -12,6 +12,7 @@ import { Text } from '@/ui/Text';
 import { CaregiversIllustration } from '@/ui/Illustration';
 import { BrandLogo, tint } from '@/ui/visual';
 import { Button } from '@/ui/controls';
+import { HelpLink } from '@/help/HelpLinks';
 
 /**
  * First screen, kept simple: the brand, the language, a picture of the people
@@ -79,6 +80,7 @@ export default function Welcome() {
             onPress={() => router.push({ pathname: '/sign-in', params: { role: 'caregiver' } })}
           />
         </View>
+        <HelpLink topic="get-started" />
       </View>
     </ScrollView>
   );

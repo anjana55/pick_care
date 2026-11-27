@@ -20,6 +20,7 @@ import { CaregiverFilterBar, EMPTY_ADVANCED_FILTERS, toApiFilters, type Advanced
 import { CAREGIVER_STATUS_OPTIONS } from '@/lib/caregiver-status';
 import { CaregiverRef } from '@/components/caregivers/caregiver-ref';
 import { useInitialParam } from '@/lib/use-initial-param';
+import { HelpHint } from '@/components/help/help-button';
 
 export default function CaregiversListPage() {
   const { t } = useTranslation();
@@ -61,7 +62,10 @@ export default function CaregiversListPage() {
   return (
     <div>
       <div className="mb-2 flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-ink">{t('caregivers.title')}</h1>
+        <div className="flex items-center gap-1.5">
+          <h1 className="text-xl font-semibold text-ink">{t('caregivers.title')}</h1>
+          <HelpHint topic="verify-caregiver" />
+        </div>
         <div className="flex items-center gap-2">
           {user?.role === 'ADMIN' && (
             <Link href="/settings/import-export">

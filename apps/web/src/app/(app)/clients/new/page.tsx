@@ -11,6 +11,7 @@ import { useCreateClient } from '@/lib/hooks/use-clients';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EMPTY_NEW_CLIENT, NewClientFields, missingNewClientFields, toPhoneClientInput, type NewClientDraft } from '@/components/clients/new-client-fields';
+import { HelpHint } from '@/components/help/help-button';
 
 /**
  * "Add new client" - for people who reach the office by phone (or in person)
@@ -51,7 +52,10 @@ export default function NewClientPage() {
         <ChevronLeft size={16} />
         {t('clients.back')}
       </Link>
-      <h1 className="text-xl font-semibold text-ink">{t('clients.new.title')}</h1>
+      <div className="flex items-center gap-1.5">
+        <h1 className="text-xl font-semibold text-ink">{t('clients.new.title')}</h1>
+        <HelpHint topic="manage-clients" />
+      </div>
       <p className="mb-6 mt-1 text-sm text-ink/60">{t('clients.new.subtitle')}</p>
 
       <form

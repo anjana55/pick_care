@@ -31,6 +31,7 @@ import { CaregiverPicker, type PickedCaregiver } from '@/components/requests/car
 import { cn } from '@/lib/utils';
 import type { Client, RateType, ScheduleType } from '@/lib/api/types';
 import { useAcceptedOffer } from '@/lib/hooks/use-care-offers';
+import { HelpHint } from '@/components/help/help-button';
 
 const TYPES: ScheduleType[] = ['DAY', 'NIGHT', 'LIVE_IN', 'CUSTOM'];
 const RATE_TYPES: RateType[] = ['DAILY', 'MONTHLY', 'HOURLY'];
@@ -169,7 +170,10 @@ function NewBookingPage() {
         <ChevronLeft size={16} />
         {request ? request.reference : t('bookings.back')}
       </Link>
-      <h1 className="text-xl font-semibold text-ink">{t('bookings.new.title')}</h1>
+      <div className="flex items-center gap-1.5">
+        <h1 className="text-xl font-semibold text-ink">{t('bookings.new.title')}</h1>
+        <HelpHint topic="create-booking" />
+      </div>
       <p className="mb-6 mt-1 text-sm text-ink/60">{t('bookings.new.subtitle')}</p>
 
       <div className="space-y-4">

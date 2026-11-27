@@ -19,6 +19,8 @@ export const mockRouter = {
   /** Whether there's a screen to go back to; nothing by default, as when a link opens the app. */
   canGoBack: jest.fn(() => false),
   params: {} as Record<string, string>,
+  /** What usePathname reports: the screen under test, for the header's ? button. */
+  pathname: '/',
   reset() {
     this.push.mockReset();
     this.replace.mockReset();
@@ -27,6 +29,7 @@ export const mockRouter = {
     this.navigate.mockReset();
     this.canGoBack.mockReset().mockReturnValue(false);
     this.params = {};
+    this.pathname = '/';
   },
 };
 
@@ -45,6 +48,7 @@ export function expoRouterMock() {
     Stack: () => createElement(require('../app/index').default),
     useRouter: () => mockRouter,
     useLocalSearchParams: () => mockRouter.params,
+    usePathname: () => mockRouter.pathname,
     // A screen in a test is in view once, when it renders.
     useFocusEffect: (effect: () => void | (() => void)) => useEffect(effect, [effect]),
   };

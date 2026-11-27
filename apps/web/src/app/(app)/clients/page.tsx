@@ -26,6 +26,7 @@ import {
 } from '@/components/clients/client-filters';
 import { CLIENT_STATUS_OPTIONS } from '@/lib/client-status';
 import { useInitialParam } from '@/lib/use-initial-param';
+import { HelpHint } from '@/components/help/help-button';
 
 /**
  * Staff view of self-registered patients/guardians. Mirrors the Caregivers
@@ -102,7 +103,10 @@ export default function ClientsListPage() {
   return (
     <div>
       <div className="mb-2 flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-ink">{t('clients.title')}</h1>
+        <div className="flex items-center gap-1.5">
+          <h1 className="text-xl font-semibold text-ink">{t('clients.title')}</h1>
+          <HelpHint topic="manage-clients" />
+        </div>
         <div className="flex flex-wrap items-center gap-2">
           {/* Account deletions have no menu item of their own: the queue opens from here, with what is waiting. */}
           <Link href="/account-deletions">

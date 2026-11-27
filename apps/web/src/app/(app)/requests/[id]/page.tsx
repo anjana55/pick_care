@@ -31,6 +31,7 @@ import { RequestStatusBadge } from '@/components/requests/request-status-badge';
 import { CaregiverRef } from '@/components/caregivers/caregiver-ref';
 import type { CareRequestCloseReason, CareRequestDetail, CareRequestEvent, CareRequestStatus } from '@/lib/api/types';
 import { CaseAutomationPanel } from '@/components/automation/case-automation-panel';
+import { HelpHint } from '@/components/help/help-button';
 
 const CLOSE_REASONS: CareRequestCloseReason[] = [
   'PLACED',
@@ -90,10 +91,13 @@ export default function RequestDetailPage() {
 
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="flex items-center gap-3 text-xl font-semibold tabular-nums text-ink">
-            {request.reference}
-            <RequestStatusBadge status={request.status} label={t(`requests.status.${request.status}`)} />
-          </h1>
+          <div className="flex items-center gap-1.5">
+            <h1 className="flex items-center gap-3 text-xl font-semibold tabular-nums text-ink">
+              {request.reference}
+              <RequestStatusBadge status={request.status} label={t(`requests.status.${request.status}`)} />
+            </h1>
+            <HelpHint topic="handle-request" />
+          </div>
           <p className="mt-1 text-sm text-ink/60">
             {t('requests.detail.received', { date: new Date(request.createdAt).toLocaleString() })}
             {' · '}

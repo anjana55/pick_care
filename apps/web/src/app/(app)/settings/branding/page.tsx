@@ -29,6 +29,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input, Label, Select } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { BrandAssetSlot } from '@/components/settings/brand-asset-slot';
+import { HelpHint } from '@/components/help/help-button';
 
 type Draft = {
   companyName: string;
@@ -142,7 +143,10 @@ export default function BrandingSettingsPage() {
       <div className="space-y-4">
         <Card>
           <CardHeader>
-            <CardTitle>{t('brandingAdmin.companyTitle')}</CardTitle>
+            <CardTitle className="flex items-center gap-1.5">
+              {t('brandingAdmin.companyTitle')}
+              <HelpHint topic="set-up-branding" />
+            </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_8rem]">
             <p className="text-sm text-ink/60 sm:col-span-2">{t('brandingAdmin.companyHint')}</p>

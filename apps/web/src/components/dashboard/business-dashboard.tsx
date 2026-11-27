@@ -42,6 +42,7 @@ import { useReviewCounts } from '@/lib/hooks/use-reviews';
 import { cn } from '@/lib/utils';
 import { ColumnChart, Funnel, Gauge, HBarList, Legend, LineChart, PairedBars, Sparkline, SplitBar, type HealthLevel } from './charts';
 import { useAwaitingProposals } from '@/lib/hooks/use-automation';
+import { HelpHint } from '@/components/help/help-button';
 
 // --- formatting ---------------------------------------------------------------------
 
@@ -212,7 +213,10 @@ export function BusinessDashboard() {
       {/* Header + range */}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-ink">{t(`dashboard.greeting.${greeting}`)}</h1>
+          <div className="flex items-center gap-1.5">
+            <h1 className="text-2xl font-bold tracking-tight text-ink">{t(`dashboard.greeting.${greeting}`)}</h1>
+            <HelpHint topic="daily-dashboard" />
+          </div>
           <p className="mt-1 text-sm text-ink/60">
             {data
               ? t('dashboard.periodLine', {

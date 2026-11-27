@@ -7,6 +7,8 @@ import { useTranslation } from '@/lib/i18n/provider';
 import { Sidebar } from '@/components/layout/sidebar';
 import { Topbar } from '@/components/layout/topbar';
 import { AssistantLauncher } from '@/components/assistant/assistant-launcher';
+import { HelpProvider } from '@/help/help-context';
+import { HelpPanel } from '@/components/help/help-panel';
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -37,19 +39,22 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className={`flex min-h-screen ${fontClass}`}>
-      {/* Printing (an invoice, a payout statement) prints the page's content only. */}
-      <div className="flex print:hidden">
-        <Sidebar open={navOpen} onClose={() => setNavOpen(false)} />
-      </div>
-      <div className="flex min-h-screen min-w-0 flex-1 flex-col">
-        <div className="print:hidden">
-          <Topbar onMenu={() => setNavOpen(true)} />
+    <HelpProvider>
+      <div className={`flex min-h-screen ${fontClass}`}>
+        {/* Printing (an invoice, a payout statement) prints the page's content only. */}
+        <div className="flex print:hidden">
+          <Sidebar open={navOpen} onClose={() => setNavOpen(false)} />
         </div>
-        <main className="flex-1 overflow-y-auto p-6 print:overflow-visible print:p-0">{children}</main>
+        <div className="flex min-h-screen min-w-0 flex-1 flex-col">
+          <div className="print:hidden">
+            <Topbar onMenu={() => setNavOpen(true)} />
+          </div>
+          <main className="flex-1 overflow-y-auto p-6 print:overflow-visible print:p-0">{children}</main>
+        </div>
+        {/* Floats over every page; renders nothing unless the assistant is on and this role may use it. */}
+        <AssistantLauncher />
+        <HelpPanel />
       </div>
-      {/* Floats over every page; renders nothing unless the assistant is on and this role may use it. */}
-      <AssistantLauncher />
-    </div>
+    </HelpProvider>
   );
 }

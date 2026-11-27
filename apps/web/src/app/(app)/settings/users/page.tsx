@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { UserFormModal, type UserFormValues } from '@/components/users/user-form-modal';
 import { ResetPasswordModal } from '@/components/users/reset-password-modal';
 import type { StaffUser } from '@/lib/api/types';
+import { HelpHint } from '@/components/help/help-button';
 
 export default function UsersPage() {
   const { t } = useTranslation();
@@ -110,7 +111,10 @@ export default function UsersPage() {
   return (
     <div>
       <div className="mb-2 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-ink">{t('users.title')}</h2>
+        <div className="flex items-center gap-1.5">
+          <h2 className="text-lg font-semibold text-ink">{t('users.title')}</h2>
+          <HelpHint topic="manage-users" />
+        </div>
         <Button
           onClick={() => {
             setFormError(null);

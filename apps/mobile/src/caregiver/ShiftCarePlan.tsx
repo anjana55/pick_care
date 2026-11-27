@@ -4,6 +4,7 @@ import { useTranslation } from '@/i18n';
 import { useColors } from '@/theme';
 import { Text } from '@/ui/Text';
 import { useShiftCarePlan } from './api';
+import { HelpHint } from '@/help/HelpLinks';
 
 /**
  * What the caregiver is asked to do on one shift, from the booking's care
@@ -20,7 +21,10 @@ export function ShiftCarePlan({ shiftId }: { shiftId: string }) {
   }
   return (
     <View style={[styles.box, { borderColor: colors.border, backgroundColor: colors.background }]}>
-      <Text style={[styles.label, { color: colors.muted }]}>{t('carePlan.caregiverTitle')}</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <Text style={[styles.label, { color: colors.muted, flex: 1 }]}>{t('carePlan.caregiverTitle')}</Text>
+        <HelpHint topic="work-a-shift" />
+      </View>
       {data.planNotes ? <Text style={[styles.notes, { color: colors.ink, backgroundColor: colors.surface }]}>{data.planNotes}</Text> : null}
       {data.items.length === 0 ? <Text style={{ color: colors.muted }}>{t('carePlan.nothingDue')}</Text> : null}
       {data.items.map((i) => {

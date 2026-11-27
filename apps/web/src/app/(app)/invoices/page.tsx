@@ -16,6 +16,7 @@ import { InvoiceStatusBadge, OverdueBadge } from '@/components/billing/billing-b
 import { cn } from '@/lib/utils';
 import type { InvoiceStatus } from '@/lib/api/types';
 import { useInitialParam } from '@/lib/use-initial-param';
+import { HelpHint } from '@/components/help/help-button';
 
 type Tab = InvoiceStatus | 'overdue' | 'all';
 const TABS: Tab[] = ['ISSUED', 'overdue', 'DRAFT', 'PAID', 'VOID', 'all'];
@@ -54,7 +55,10 @@ export default function InvoicesPage() {
   return (
     <div>
       <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold text-ink">{t('billing.invoices.title')}</h1>
+        <div className="flex items-center gap-1.5">
+          <h1 className="text-xl font-semibold text-ink">{t('billing.invoices.title')}</h1>
+          <HelpHint topic="create-invoice" />
+        </div>
         <Link href="/invoices/new" className="inline-flex h-9 items-center gap-2 rounded bg-brand px-4 text-sm font-medium text-white hover:bg-brand-dark">
           <FilePlus2 size={16} aria-hidden />
           {t('billing.invoices.new')}

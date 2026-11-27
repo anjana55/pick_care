@@ -10,8 +10,10 @@ import ta from './ta.json';
 export type { Locale } from '@care-platform/shared';
 import { DEFAULT_COMPANY_NAME, LOCALES, type Locale } from '@care-platform/shared';
 
-const DICTIONARIES: Record<Locale, Record<string, unknown>> = { en, si, ta };
-const FONT_CLASS: Record<Locale, string> = { en: 'font-sans', si: 'font-sinhala', ta: 'font-tamil' };
+/** Every language's strings - the help quotes app labels in its own language, which may differ from the app's. */
+export const DICTIONARIES: Record<Locale, Record<string, unknown>> = { en, si, ta };
+export const FONT_CLASSES: Record<Locale, string> = { en: 'font-sans', si: 'font-sinhala', ta: 'font-tamil' };
+const FONT_CLASS = FONT_CLASSES;
 const STORAGE_KEY = 'care-platform-locale';
 // `{brand}` in the dictionaries is the company name; BrandingProvider passes the configured one.
 const DEFAULT_VARS = { brand: DEFAULT_COMPANY_NAME };

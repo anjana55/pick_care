@@ -20,6 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input, Label, Select } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import type { InvoiceBasis } from '@/lib/api/types';
+import { HelpHint } from '@/components/help/help-button';
 
 const BASES: InvoiceBasis[] = ['COMPLETED', 'SCHEDULED', 'MANUAL'];
 
@@ -86,7 +87,10 @@ function NewInvoice() {
         <ChevronLeft size={16} />
         {t('billing.invoices.back')}
       </Link>
-      <h1 className="text-xl font-semibold text-ink">{t('billing.newInvoice.title')}</h1>
+      <div className="flex items-center gap-1.5">
+        <h1 className="text-xl font-semibold text-ink">{t('billing.newInvoice.title')}</h1>
+        <HelpHint topic="create-invoice" />
+      </div>
       <p className="mb-6 mt-1 text-sm text-ink/60">{t('billing.newInvoice.subtitle')}</p>
 
       <div className="space-y-4">

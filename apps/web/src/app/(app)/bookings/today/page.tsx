@@ -17,6 +17,7 @@ import { ShiftStatusBadge } from '@/components/bookings/booking-badges';
 import { VisitChip, VisitNotes } from '@/components/bookings/visit-chip';
 import { CoverPanel } from '@/components/bookings/cover-panel';
 import { LiveVisitsPanel } from '@/components/bookings/live-visits-panel';
+import { HelpHint } from '@/components/help/help-button';
 
 /**
  * Today's visits: every shift on today's roster in time order, and whether
@@ -47,7 +48,10 @@ export default function TodayVisitsPage() {
         <ArrowLeft size={14} aria-hidden />
         {t('visits.back')}
       </Link>
-      <h1 className="text-xl font-semibold text-ink">{t('visits.title')}</h1>
+      <div className="flex items-center gap-1.5">
+        <h1 className="text-xl font-semibold text-ink">{t('visits.title')}</h1>
+        <HelpHint topic="todays-visits" />
+      </div>
       <p className="mb-4 text-sm text-ink/60">
         {fmtDate(data.date, locale)} · {t('visits.summary', { total: data.visits.length, here, late: late.length })}
       </p>

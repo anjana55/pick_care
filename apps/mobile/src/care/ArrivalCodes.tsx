@@ -4,6 +4,7 @@ import { useTranslation } from '@/i18n';
 import { useColors } from '@/theme';
 import { Text } from '@/ui/Text';
 import { fmtDay, fmtTime } from '@/ui/dates';
+import { HelpHint } from '@/help/HelpLinks';
 
 /**
  * The code the client reads to the caregiver at the door, as on the website:
@@ -24,9 +25,12 @@ export function ArrivalCodes({ bookings }: { bookings: ClientBooking[] }) {
     <View style={{ gap: 12 }}>
       {due.map((s) => (
         <View key={s.id} style={[styles.card, { borderColor: colors.brand, backgroundColor: colors.surface }]} testID={`arrival-code-${s.id}`}>
-          <Text accessibilityRole="header" style={[styles.title, { color: colors.ink }]}>
-            {t('checkIn.client.title')}
-          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+            <Text accessibilityRole="header" style={[styles.title, { color: colors.ink }]}>
+              {t('checkIn.client.title')}
+            </Text>
+            <HelpHint topic="follow-visits" />
+          </View>
           <Text style={{ color: colors.muted }}>
             {t('checkIn.client.forVisit', { day: fmtDay(s.startsAt, locale), start: fmtTime(s.startsAt), end: fmtTime(s.endsAt) })}
           </Text>

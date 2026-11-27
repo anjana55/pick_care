@@ -7,6 +7,7 @@ import { fmtDateTime } from '@/lib/colombo-time';
 import { useAwaitingProposals } from '@/lib/hooks/use-automation';
 import { Card, CardContent } from '@/components/ui/card';
 import { ProposalActions } from '@/components/automation/proposal-actions';
+import { HelpHint } from '@/components/help/help-button';
 
 const CASE_PATHS: Partial<Record<AutomationCaseType, string>> = {
   REQUEST: '/requests',
@@ -27,7 +28,10 @@ export default function AgentProposalsPage() {
 
   return (
     <div className="max-w-4xl">
-      <h1 className="mb-1 text-xl font-semibold text-ink">{t('automation.proposals.title')}</h1>
+      <div className="flex items-center gap-1.5 mb-1">
+        <h1 className="text-xl font-semibold text-ink">{t('automation.proposals.title')}</h1>
+        <HelpHint topic="agent-proposals" />
+      </div>
       <p className="mb-4 text-sm text-ink/60">{t('automation.proposals.subtitle')}</p>
       {isLoading ? (
         <p className="text-sm text-ink/50">{t('common.loading')}</p>

@@ -97,7 +97,7 @@ Per app:
 | `apps/api` | `npm test` (unit), `npm run test:e2e -- --forceExit` (against a migrated, seeded MySQL) |
 | `apps/public-web` | `npm test` |
 | `apps/mobile` | `npm test`, `npm run bundle:check` |
-| `apps/web` | `npm run typecheck` (no component tests yet) |
+| `apps/web` | `npm test` |
 
 The e2e suites sign in as the demo accounts, so seed and test with the same
 password:
@@ -142,6 +142,8 @@ Every user-facing string goes through the app's `t()` with keys in that app's
 - New API messages go into `apps/api/src/common/i18n/messages.ts` with Sinhala
   and Tamil; the coverage test fails otherwise.
 - Native-speaker review happens offline in `i18n-review/` (see its README).
+- When a screen changes, update its help topic too (`src/help/` in the staff and
+  mobile apps; see [help.md](help.md)).
 - Remove keys you stop using, in all three languages.
 
 ## Conventions

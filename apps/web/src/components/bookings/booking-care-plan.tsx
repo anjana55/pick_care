@@ -12,6 +12,7 @@ import { ActivityEditor, draftProblems, fromDraft, toDraft, whenText, type Draft
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input, Label, Select, Textarea } from '@/components/ui/input';
+import { HelpHint } from '@/components/help/help-button';
 
 const errorText = (err: unknown, fallback: string) => (err instanceof ApiError && err.message ? err.message : fallback);
 
@@ -29,7 +30,10 @@ export function BookingCarePlan({ bookingId, editable }: { bookingId: string; ed
     return (
       <Card>
         <CardHeader>
-          <CardTitle>{t('carePlans.plan.title')}</CardTitle>
+          <CardTitle className="flex items-center gap-1.5">
+            {t('carePlans.plan.title')}
+            <HelpHint topic="care-plan" />
+          </CardTitle>
         </CardHeader>
         <CardContent className="text-sm text-ink/50">{t('common.loading')}</CardContent>
       </Card>
